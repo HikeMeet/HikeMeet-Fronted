@@ -9,16 +9,16 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/components/useColorScheme';
 
 export {
-  // Catch any errors thrown by the Layout component.
+  // טיפול בשגיאות
   ErrorBoundary,
 } from 'expo-router';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
+  // קביעת מסלול התחלתי
   initialRouteName: '(tabs)',
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
+// מונע מה-Splash Screen להיעלם לפני הטעינה
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -27,11 +27,12 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
+  // טיפול בשגיאות טעינה
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
+  // הסתרת ה-Splash Screen כשהגופנים נטענים
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
@@ -51,8 +52,14 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
+        {/* מסלול של טאבים */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
+        {/* מסכים נוספים */}
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="home" options={{ title: 'דף הבית' }} />
+        <Stack.Screen name="login" options={{ title: 'התחברות' }} />
+        <Stack.Screen name="register" options={{ title: 'הרשמה' }} />
       </Stack>
     </ThemeProvider>
   );
