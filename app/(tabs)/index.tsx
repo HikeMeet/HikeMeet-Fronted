@@ -1,31 +1,61 @@
-import { StyleSheet } from 'react-native';
+import React from "react";
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  ImageBackground,
+} from "react-native";
+import { useRouter } from "expo-router";
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+export default function HomeScreen() {
+  const router = useRouter();
 
-export default function TabOneScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
-    </View>
+    <ImageBackground
+      source={require("../../assets/images/landing_page.jpg")} // עדכן לנתיב התמונה שלך
+      style={styles.background}
+      resizeMode="cover" // מתאים את התמונה למסך
+    >
+      <View style={styles.overlay}>
+        <Text style={styles.title}>HikeMeet</Text>
+        <Text style={styles.text}>ברוך הבא לאפליקציית הטיולים שלך!</Text>
+        <Button
+          title="Login"
+          onPress={() => router.push("/register_login/login")}
+        />
+        <Button
+          title="Register"
+          onPress={() => router.push("/register_login/register")}
+        />
+      </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // אפקט כהה על הרקע
+    width: "100%",
+    height: "100%",
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 20,
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  text: {
+    fontSize: 16,
+    color: "#fff",
+    marginBottom: 20,
   },
 });

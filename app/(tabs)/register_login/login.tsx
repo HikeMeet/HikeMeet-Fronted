@@ -1,12 +1,15 @@
 import { StyleSheet, Text, TextInput, View, Button } from 'react-native';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export default function LoginScreen() {
+  const { login } = useAuth();
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>התחברות</Text>
       <TextInput style={styles.input} placeholder="אימייל" keyboardType="email-address" />
       <TextInput style={styles.input} placeholder="סיסמה" secureTextEntry />
-      <Button title="התחבר" onPress={() => alert('התחברת בהצלחה!')} />
+      <Button title="התחבר" onPress={login} />
       <Text style={styles.link}>עוד לא נרשמת? עבור לדף הרשמה</Text>
     </View>
   );
