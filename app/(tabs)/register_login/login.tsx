@@ -1,44 +1,36 @@
-import { StyleSheet, Text, TextInput, View, Button } from 'react-native';
+import { Text, TextInput, View, TouchableOpacity } from 'react-native';
 import { useAuth } from '../../../contexts/AuthContext';
 
 export default function LoginScreen() {
   const { login } = useAuth();
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>התחברות</Text>
-      <TextInput style={styles.input} placeholder="אימייל" keyboardType="email-address" />
-      <TextInput style={styles.input} placeholder="סיסמה" secureTextEntry />
-      <Button title="התחבר" onPress={login} />
-      <Text style={styles.link}>עוד לא נרשמת? עבור לדף הרשמה</Text>
+    <View className="flex-1 bg-gradient-to-br from-indigo-500 to-purple-600 p-6 justify-center items-center">
+      <View className="bg-white w-full max-w-md rounded-2xl shadow-lg p-6">
+        <Text className="text-3xl font-bold text-center text-gray-800 mb-6">התחברות</Text>
+        <TextInput
+          className="w-full p-4 border border-gray-300 rounded-lg mb-4 text-gray-700"
+          placeholder="אימייל"
+          keyboardType="email-address"
+          placeholderTextColor="#aaa"
+        />
+        <TextInput
+          className="w-full p-4 border border-gray-300 rounded-lg mb-6 text-gray-700"
+          placeholder="סיסמה"
+          secureTextEntry
+          placeholderTextColor="#aaa"
+        />
+        <TouchableOpacity
+          onPress={login}
+          className="bg-indigo-500 py-3 rounded-lg shadow-md active:bg-indigo-600"
+        >
+          <Text className="text-white text-center font-semibold text-lg">התחבר</Text>
+        </TouchableOpacity>
+        <Text className="mt-6 text-center text-gray-600">
+          עוד לא נרשמת?{' '}
+          <Text className="text-indigo-500 underline">עבור לדף הרשמה</Text>
+        </Text>
+      </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  input: {
-    width: '100%',
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    marginBottom: 10,
-    borderRadius: 5,
-  },
-  link: {
-    marginTop: 20,
-    color: 'blue',
-    textDecorationLine: 'underline',
-  },
-});
