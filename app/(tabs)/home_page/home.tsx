@@ -6,15 +6,39 @@ import NavigationBar from "../../../components/NavigationBar";
 
 export default function HomeScreen() {
   const [posts, setPosts] = useState([
-    { id: 1, title: "Trip to the mountains", content: "Amazing view!", author: "User1" },
-    { id: 2, title: "Night hike", content: "Beautiful stars!", author: "User2" },
+    {
+      id: 1,
+      title: "Trip to the mountains",
+      content: "Amazing view!",
+      author: "Ron Wizly",
+      date: "12.12.2022",
+      images: [],
+    },
+    {
+      id: 2,
+      title: "Night hike",
+      content: "Beautiful stars!",
+      author: "Clara Bitch",
+      date: "12.12.2022",
+      images: ["https://via.placeholder.com/150", "https://via.placeholder.com/150"],
+    },
   ]);
   const [newPost, setNewPost] = useState("");
   const [filter, setFilter] = useState("all");
 
   const handleCreatePost = () => {
     if (newPost.trim()) {
-      setPosts([{ id: Date.now(), title: newPost, content: "New Post!", author: "Me" }, ...posts]);
+      setPosts([
+        {
+          id: Date.now(),
+          title: newPost,
+          content: "New Post!",
+          author: "Me",
+          date: new Date().toLocaleDateString(),
+          images: [],
+        },
+        ...posts,
+      ]);
       setNewPost("");
     }
   };
@@ -48,10 +72,7 @@ export default function HomeScreen() {
           value={newPost}
           onChangeText={setNewPost}
         />
-        <TouchableOpacity
-          style={tw`bg-blue-500 mt-3 py-2 rounded-lg`}
-          onPress={handleCreatePost}
-        >
+        <TouchableOpacity style={tw`bg-blue-500 mt-3 py-2 rounded-lg`} onPress={handleCreatePost}>
           <Text style={tw`text-white text-center`}>+ Create Post</Text>
         </TouchableOpacity>
       </View>
@@ -59,7 +80,7 @@ export default function HomeScreen() {
       {/* Posts */}
       <ScrollView style={tw`p-4`}>
         {posts.map((post) => (
-          <Post key={post.id} title={post.title} content={post.content} author={post.author} />
+          <Post key={post.id} {...post} />
         ))}
       </ScrollView>
 
