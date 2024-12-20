@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getApiUrl } from "./apiConfig";
+import { saveToken } from "../services/tokenService";
 
 export interface LoginUserParams {
   email: string;
@@ -22,7 +23,13 @@ export const loginUser = async ({
       email,
       password,
     });
-    console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"+response);
+
+    const token = response.data.token;
+
+    if (token) {
+      await saveToken(token);
+    }
+
     return {
       success: true,
       token: response.data.token,

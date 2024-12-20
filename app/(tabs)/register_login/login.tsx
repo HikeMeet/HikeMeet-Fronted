@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Text, TextInput, View, TouchableOpacity, Alert } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // הוספת AsyncStorage
 import tw from "tailwind-react-native-classnames";
 import { loginUser } from "../../../api/login";
 import { useNavigationHelpers } from "../../../navigation/navigation";
@@ -22,13 +23,15 @@ export default function LoginScreen() {
     });
 
     if (result.success && result.token) {
-      // שמירת הטוקן ב-AsyncStorage (או כל מנגנון אחסון אחר)
-      // לדוגמה:
-      // await AsyncStorage.setItem("token", result.token);
-
-      Alert.alert("התחברות הצליחה!", "ברוך הבא!", [
-        { text: "אישור", onPress: navigateToHome },
-      ]);
+      try {
+        // שמירת הטוקן ב-AsyncStorage
+        await AsyncStorage.setItem("token", result.token);
+        Alert.alert("התחברות הצליחה!", "ברוך הבא!", [
+          { text: "אישור", onPress: navigateToHome },
+        ]);
+      } catch (error) {
+        Alert.alert("שגיאה", "אירעה שגיאה בשמירת הטוקן");
+      }
     } else {
       Alert.alert("שגיאה בהתחברות", result.error || "משהו השתבש");
     }

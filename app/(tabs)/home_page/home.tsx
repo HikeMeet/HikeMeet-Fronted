@@ -1,28 +1,70 @@
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState } from "react";
+import { View, Text, ScrollView, TouchableOpacity, TextInput } from "react-native";
+import tw from "tailwind-react-native-classnames";
+import Post from "../../../components/Post";
+import NavigationBar from "../../../components/NavigationBar";
 
 export default function HomeScreen() {
+  const [posts, setPosts] = useState([
+    { id: 1, title: "Trip to the mountains", content: "Amazing view!", author: "User1" },
+    { id: 2, title: "Night hike", content: "Beautiful stars!", author: "User2" },
+  ]);
+  const [newPost, setNewPost] = useState("");
+  const [filter, setFilter] = useState("all");
+
+  const handleCreatePost = () => {
+    if (newPost.trim()) {
+      setPosts([{ id: Date.now(), title: newPost, content: "New Post!", author: "Me" }, ...posts]);
+      setNewPost("");
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>ברוך הבא!</Text>
-      <Text style={styles.subtitle}>זהו דף הבית שלך.</Text>
+    <View style={tw`flex-1 bg-gray-100`}>
+      {/* Header */}
+      <View style={tw`p-4 bg-white shadow-md`}>
+        <Text style={tw`text-2xl font-bold text-gray-800`}>HikeMeet</Text>
+        <View style={tw`flex-row justify-between mt-2`}>
+          <TouchableOpacity
+            onPress={() => setFilter("friends")}
+            style={filter === "friends" ? tw`border-b-2 border-blue-500` : {}}
+          >
+            <Text style={tw`text-lg text-gray-600`}>Friends Only</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setFilter("all")}
+            style={filter === "all" ? tw`border-b-2 border-blue-500` : {}}
+          >
+            <Text style={tw`text-lg text-gray-600`}>All</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Create Post */}
+      <View style={tw`p-4 bg-white shadow-md`}>
+        <TextInput
+          style={tw`w-full p-3 border border-gray-300 rounded-lg`}
+          placeholder="Write a new post..."
+          value={newPost}
+          onChangeText={setNewPost}
+        />
+        <TouchableOpacity
+          style={tw`bg-blue-500 mt-3 py-2 rounded-lg`}
+          onPress={handleCreatePost}
+        >
+          <Text style={tw`text-white text-center`}>+ Create Post</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Posts */}
+      <ScrollView style={tw`p-4`}>
+        {posts.map((post) => (
+          <Post key={post.id} title={post.title} content={post.content} author={post.author} />
+        ))}
+      </ScrollView>
+
+      {/* Navigation */}
+      <NavigationBar />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f9f9f9',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: 'gray',
-  },
-});
