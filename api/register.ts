@@ -2,6 +2,7 @@ import axios from "axios";
 import { getApiUrl } from "./apiConfig";
 
 export interface RegisterUserParams {
+  username: string;
   email: string;
   password: string;
   firstName: string;
@@ -15,6 +16,7 @@ export interface RegisterUserResponse {
 }
 
 export const registerUser = async ({
+  username,
   email,
   password,
   firstName,
@@ -22,6 +24,7 @@ export const registerUser = async ({
 }: RegisterUserParams): Promise<RegisterUserResponse> => {
   try {
     const response = await axios.post(getApiUrl("/api/register"), {
+      username,
       email,
       password,
       firstName,
@@ -35,7 +38,7 @@ export const registerUser = async ({
   } catch (error: any) {
     return {
       success: false,
-      error: error.response?.data?.message || "לא ניתן להתחבר לשרת, נסה שוב מאוחר יותר.",
+      error: error.response?.data?.message || "Unable to connect to the server. Please try again later.",
     };
   }
 };
