@@ -1,43 +1,35 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
 # dependencies
-/node_modules
-/.pnp
-.pnp.js
+node_modules/
 
-# testing
-/coverage
-
-# expo
+# Expo
 .expo/
-android
-ios
-index.js
-
-# production
 dist/
 web-build/
 
-# debug
-npm-debug.log*
-pnpm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.vscode/.react
-
-# misc
+# Native
+*.orig.*
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
-*.orig.*
-*.pem
-Thumbs.db
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
 
 # macOS
 .DS_Store
+*.pem
 
 # local env files
 .env*.local
 
-# Temporary files created by Metro to check the health of the file watcher
-.metro-health-check*
+# typescript
+*.tsbuildinfo
