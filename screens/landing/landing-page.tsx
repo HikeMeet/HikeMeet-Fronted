@@ -1,6 +1,5 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-
 export default function LandingPage({ navigation }: { navigation: any }) {
   return (
     <View className="flex-1 items-center justify-center bg-white">
