@@ -17,20 +17,12 @@ export const handleRegisterService = async ({
   lastName,
 }: RegisterServiceParams): Promise<{ success: boolean; error?: string }> => {
   try {
-    // שלב 1: יצירת משתמש בשרת
-    const serverResponse = await registerUser({
-      username,
-      email,
-      password,
-      firstName,
-      lastName,
-    });
+    const serverResponse = await registerUser({username,email,password,firstName,lastName});
 
     if (!serverResponse.success) {
       throw new Error(serverResponse.error);
     }
 
-    // שלב 2: יצירת משתמש ב-Firebase
     const firebaseResponse = await createFirebaseUser(email, password);
 
     if (!firebaseResponse.success) {

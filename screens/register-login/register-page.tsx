@@ -9,7 +9,7 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
-import { handleRegisterService } from "../../api/Registeration/handleRegisterService";
+import { sendVerificationCode } from "../../api/Registeration/VerificationService"; // Add this function
 
 export default function RegisterPage({ navigation }: { navigation: any }) {
   const [username, setUsername] = useState("");
@@ -64,21 +64,23 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
 
     try {
       setLoading(true);
-
-      const response = await handleRegisterService({
-        username,
-        email,
-        password,
-        firstName,
-        lastName,
-      });
-
+      const response = await sendVerificationCode({ username, email, password });
       if (!response.success) {
-        throw new Error(response.error);
+        throw new Error(response.error || "Failed to send verification code.");
       }
 
-      Alert.alert("Success", "Registration Complete!", [
-        { text: "OK", onPress: () => navigation.navigate("Home") },
+      Alert.alert("Success", "Verification code sent to your email.", [
+        {
+          text: "OK",
+          onPress: () =>
+            navigation.navigate("VerificationPage", {
+              email, // ודא ש-email מוגדר ולא undefined
+              username,
+              firstName,
+              lastName,
+              password,
+            })
+        },
       ]);
     } catch (error: any) {
       Alert.alert("Error", error.message || "Something went wrong");
@@ -105,6 +107,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
         <Text className="text-lg text-gray-300 mb-6">Join us to get started!</Text>
 
         <TextInput
+
           className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-4 text-gray-800"
           placeholder="Username"
           value={username}
@@ -142,15 +145,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           placeholderTextColor="#aaa"
         />
         {passwordStrength && (
-          <Text
-            className={`text-center font-bold mb-4 ${
-              passwordStrength === "Strong"
-                ? "text-green-400"
-                : passwordStrength === "Moderate"
-                ? "text-yellow-400"
-                : "text-red-400"
-            }`}
-          >
+          <Text className={`text-center font-bold mb-4 ${passwordStrength === "Strong" ? "text-green-400" : passwordStrength === "Moderate" ? "text-yellow-400" : "text-red-400"}`}>
             Password Strength: {passwordStrength}
           </Text>
         )}
@@ -168,7 +163,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           onPress={handleRegister}
           disabled={loading}
         >
-          {loading ? (
+                    {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
             <Text className="text-center text-white text-lg">Register</Text>

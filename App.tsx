@@ -8,6 +8,7 @@ import Home from "./screens/home-page/home";
 import MyProfile from "./screens/my-profile/my-profile";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { FIREBASE_AUTH } from "./firebaseconfig";
+import VerificationPage from "./screens/register-login/VerificationPage";
 
 const Stack = createNativeStackNavigator();
 const InsideStack = createNativeStackNavigator();
@@ -36,6 +37,7 @@ export default function App() {
           <Stack.Screen name="Inside" component={InsideLayout} options={{ headerShown: false }} />
         ) : (
           <>
+            <Stack.Screen name="VerificationPage" component={VerificationPage} options={{ headerShown: false }} />
             <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
             <Stack.Screen name="Landing" component={LandingPage} options={{ headerShown: false }} />
             <Stack.Screen name="Login" component={LoginPage} options={{ headerShown: false }} />
