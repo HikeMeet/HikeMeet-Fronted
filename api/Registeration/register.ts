@@ -35,7 +35,7 @@ export const registerUser = async ({
   } catch (error: any) {
     return {
       success: false,
-      error: error.response?.data?.message || "Unable to connect to the server.",
+      error: error.response?.data?.message || "Unable connecting to the server.",
     };
   }
 };
