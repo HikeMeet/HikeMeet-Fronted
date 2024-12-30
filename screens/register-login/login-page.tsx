@@ -13,7 +13,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
 
-export default function LoginPage({ navigation }: { navigation: any }) {
+export default function LoginPage({
+  navigation,
+  route,
+}: {
+  navigation: any;
+  route: any;
+}) {
+  const { toResetPassword } = route.params || {};
+  console.log(`\nXXXXXXXXX\n${toResetPassword}\nXXXXXXXX`);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,6 +40,12 @@ export default function LoginPage({ navigation }: { navigation: any }) {
       const token = await result.user.getIdToken();
       await AsyncStorage.setItem("token", token);
       Alert.alert("Success", "Login successful!");
+      if (toResetPassword !== undefined) {
+        navigation.navigate(toResetPassword ? "ResetPassword" : "Home");
+      } else {
+        // Handle the case when toResetPassword is undefined
+        console.warn("toResetPassword is undefined");
+      }
     } catch (error: any) {
       Alert.alert("Login Error", error.message || "Something went wrong");
     } finally {

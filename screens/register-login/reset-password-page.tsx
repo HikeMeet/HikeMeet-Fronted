@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,8 @@ import {
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
+  onAuthStateChanged,
+  User,
 } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
 
@@ -20,8 +22,14 @@ export default function ResetPasswordPage({ navigation }: { navigation: any }) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
+  const [user, setUser] = useState<User | null>(null);
 
-  const auth = FIREBASE_AUTH;
+  useEffect(() => {
+    onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
+      console.log(":::::::", currentUser);
+      setUser(currentUser);
+    });
+  }, []);
 
   const handlePasswordUpdate = () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
@@ -33,8 +41,6 @@ export default function ResetPasswordPage({ navigation }: { navigation: any }) {
       Alert.alert("Error", "New passwords do not match");
       return;
     }
-
-    const user = auth.currentUser;
 
     if (user && user.email) {
       const credential = EmailAuthProvider.credential(
@@ -50,7 +56,7 @@ export default function ResetPasswordPage({ navigation }: { navigation: any }) {
         })
         .then(() => {
           Alert.alert("Success", "Password updated successfully");
-          navigation.navigate("Login"); // Navigate to the desired screen after update
+          navigation.navigate("Home"); // Navigate to the desired screen after update
         })
         .catch((error) => {
           Alert.alert(

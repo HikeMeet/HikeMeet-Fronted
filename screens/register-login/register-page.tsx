@@ -75,24 +75,6 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
             });
         }
       );
-      // const response = await sendVerificationCode({ username, email, password });
-      // if (!response.success) {
-      //   throw new Error(response.error || "Failed to send verification code.");
-      // }
-
-      // Alert.alert("Success", "Verification code sent to your email.", [
-      //   {
-      //     text: "OK",
-      //     onPress: () =>
-      //       navigation.navigate("VerificationPage", {
-      //         email, // ודא ש-email מוגדר ולא undefined
-      //         username,
-      //         firstName,
-      //         lastName,
-      //         password,
-      //       })
-      //   },
-      // ]);
     } catch (error: any) {
       Alert.alert("Error", error.message || "Something went wrong");
     } finally {

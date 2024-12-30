@@ -12,7 +12,7 @@ export default function LandingPage({ navigation }: { navigation: any }) {
 
       <TouchableOpacity
         className="w-48 py-3 bg-blue-500 rounded-lg mb-4"
-        onPress={() => navigation.navigate("Login")}
+        onPress={() => navigation.navigate("Login", { toResetPassword: false })}
       >
         <Text className="text-center text-white text-lg font-semibold">
           Login

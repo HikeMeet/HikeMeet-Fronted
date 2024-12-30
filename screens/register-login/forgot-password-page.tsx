@@ -32,7 +32,7 @@ export default function ForgotPasswordPage({
           "Password Reset",
           "A password reset link has been sent to your email address."
         );
-        navigation.navigate("ResetPassword");
+        navigation.navigate("Login", { toResetPassword: true });
       })
       .catch((error) => {
         Alert.alert("Error", error.message || "An error occurred");
