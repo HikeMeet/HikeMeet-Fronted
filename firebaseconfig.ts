@@ -9,19 +9,18 @@ import { getFirestore } from "firebase/firestore";
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyDEaZ1g62ZbD-m4c5tPOpUpyuWV-cn1QF4",
-  authDomain: "hikemeet-a918c.firebaseapp.com",
-  projectId: "hikemeet-a918c",
-  storageBucket: "hikemeet-a918c.firebasestorage.app",
-  messagingSenderId: "887562416024",
-  appId: "1:887562416024:web:22ca1d6acb12ea7b0f05ed",
-  measurementId: "G-FL074B78P0"
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID,
+  measurementId: process.env.FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
 export const FIREBASE_APP = initializeApp(firebaseConfig);
 export const FIREBASE_AUTH = getAuth(FIREBASE_APP);
 export const FIREBASE_DB = getFirestore(FIREBASE_APP);
-
 
 const analytics = getAnalytics(FIREBASE_APP);

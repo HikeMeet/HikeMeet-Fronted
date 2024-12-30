@@ -1,5 +1,4 @@
 import axios from "axios";
-import { getApiUrl } from "../apiConfig";
 
 // Interfaces for input and output
 export interface VerificationRequestParams {
@@ -22,28 +21,40 @@ export const sendVerificationCode = async ({
   username,
   email,
   password,
-}: VerificationRequestParams & { password: string }): Promise<VerificationResponse> => {
+}: VerificationRequestParams & {
+  password: string;
+}): Promise<VerificationResponse> => {
   try {
-    const response = await axios.post(getApiUrl("/api/request-verification"), {
-      username,
-      email,
-      password,
-    });
+    const response = await axios.post(
+      `${process.env.EXPO_BASE_IP}/api/request-verification`,
+      {
+        username,
+        email,
+        password,
+      }
+    );
     return { success: true, data: response.data };
   } catch (error: any) {
     return {
       success: false,
-      error: error.response?.data?.message || "Failed to send verification code.",
+      error:
+        error.response?.data?.message || "Failed to send verification code.",
     };
   }
 };
 
-export const verifyEmailCode = async ({email,code,}: CodeVerificationParams): Promise<VerificationResponse> => {
+export const verifyEmailCode = async ({
+  email,
+  code,
+}: CodeVerificationParams): Promise<VerificationResponse> => {
   try {
-    const response = await axios.post(getApiUrl("/api/verify-code"), {
-      email,
-      code,
-    });
+    const response = await axios.post(
+      `${process.env.EXPO_BASE_IP}/api/verify-code`,
+      {
+        email,
+        code,
+      }
+    );
     return { success: true, data: response.data };
   } catch (error: any) {
     return {
@@ -58,14 +69,18 @@ export const resendVerificationCode = async ({
 }: Pick<VerificationRequestParams, "email">): Promise<VerificationResponse> => {
   try {
     console.log("Email passed to resendVerificationCode:", email); // בדוק את הערך של email כאן
-    const response = await axios.post(getApiUrl("/api/resend-code"), {
-      email,
-    });
+    const response = await axios.post(
+      `${process.env.EXPO_BASE_IP}/api/resend-code`,
+      {
+        email,
+      }
+    );
     return { success: true, data: response.data };
   } catch (error: any) {
     return {
       success: false,
-      error: error.response?.data?.message || "Failed to resend verification code.",
+      error:
+        error.response?.data?.message || "Failed to resend verification code.",
     };
   }
 };

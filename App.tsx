@@ -16,7 +16,11 @@ const InsideStack = createNativeStackNavigator();
 function InsideLayout() {
   return (
     <InsideStack.Navigator>
-      <InsideStack.Screen name="Home" component={Home} options={{ headerShown: true }} />
+      <InsideStack.Screen
+        name="Home"
+        component={Home}
+        options={{ headerShown: true }}
+      />
     </InsideStack.Navigator>
   );
 }
@@ -25,7 +29,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-     onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
+    onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
       setUser(currentUser);
     });
   }, []);
@@ -34,14 +38,38 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Landing">
         {user ? (
-          <Stack.Screen name="Inside" component={InsideLayout} options={{ headerShown: false }} />
+          <Stack.Screen
+            name="Inside"
+            component={InsideLayout}
+            options={{ headerShown: false }}
+          />
         ) : (
           <>
-            <Stack.Screen name="VerificationPage" component={VerificationPage} options={{ headerShown: false }} />
-            <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
-            <Stack.Screen name="Landing" component={LandingPage} options={{ headerShown: false }} />
-            <Stack.Screen name="Login" component={LoginPage} options={{ headerShown: false }} />
-            <Stack.Screen name="Register" component={RegisterPage} options={{ headerShown: false }} />
+            <Stack.Screen
+              name="VerificationPage"
+              component={VerificationPage}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Home"
+              component={Home}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Landing"
+              component={LandingPage}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Login"
+              component={LoginPage}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Register"
+              component={RegisterPage}
+              options={{ headerShown: false }}
+            />
           </>
         )}
       </Stack.Navigator>
