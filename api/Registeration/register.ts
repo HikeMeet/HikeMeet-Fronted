@@ -1,6 +1,4 @@
 import axios from "axios";
-import { getApiUrl } from "../apiConfig";
-
 export interface RegisterUserParams {
   username: string;
   email: string;
@@ -23,7 +21,7 @@ export const registerUser = async ({
   lastName,
 }: RegisterUserParams): Promise<RegisterUserResponse> => {
   try {
-    const response = await axios.post(getApiUrl("/api/register"), {
+    const response = await axios.post(`${process.env.EXPO_BASE_IP}/api/user/insert`, {
       username,
       email,
       password,
