@@ -8,35 +8,35 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import {
-  sendPasswordResetEmail,
-  updatePassword,
-  reauthenticateWithCredential,
-  EmailAuthProvider,
-} from "firebase/auth";
+import { sendPasswordResetEmail } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
 
-export default function ResetPasswordPage({ navigation }: { navigation: any }) {
+export default function ForgotPasswordPage({
+  navigation,
+}: {
+  navigation: any;
+}) {
   const [email, setEmail] = useState("");
 
   const auth = FIREBASE_AUTH;
 
-  const handlePasswordReset = async () => {
+  const handlePasswordReset = () => {
     if (!email) {
       Alert.alert("Error", "Please enter your email address");
       return;
     }
 
-    try {
-      await sendPasswordResetEmail(auth, email);
-      Alert.alert(
-        "Password Reset",
-        "A password reset link has been sent to your email address."
-      );
-      navigation.navigate("Login");
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "An error occurred");
-    }
+    sendPasswordResetEmail(auth, email)
+      .then(() => {
+        Alert.alert(
+          "Password Reset",
+          "A password reset link has been sent to your email address."
+        );
+        navigation.navigate("ResetPassword");
+      })
+      .catch((error) => {
+        Alert.alert("Error", error.message || "An error occurred");
+      });
   };
 
   return (
