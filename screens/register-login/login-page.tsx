@@ -13,7 +13,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
 
-export default function LoginPage({ navigation }: { navigation: any }) {
+export default function LoginPage({
+  navigation,
+  route,
+}: {
+  navigation: any;
+  route: any;
+}) {
+  const { toResetPassword } = route.params || {};
+  console.log(`\nXXXXXXXXX\n${toResetPassword}\nXXXXXXXX`);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,6 +40,12 @@ export default function LoginPage({ navigation }: { navigation: any }) {
       const token = await result.user.getIdToken();
       await AsyncStorage.setItem("token", token);
       Alert.alert("Success", "Login successful!");
+      if (toResetPassword !== undefined) {
+        navigation.navigate(toResetPassword ? "ResetPassword" : "Home");
+      } else {
+        // Handle the case when toResetPassword is undefined
+        console.warn("toResetPassword is undefined");
+      }
     } catch (error: any) {
       Alert.alert("Login Error", error.message || "Something went wrong");
     } finally {
@@ -52,8 +67,12 @@ export default function LoginPage({ navigation }: { navigation: any }) {
           <Text className="text-gray-800 font-bold">Back</Text>
         </TouchableOpacity>
 
-        <Text className="text-3xl font-bold text-white mb-4">Welcome Back!</Text>
-        <Text className="text-lg text-gray-300 mb-6">Log in to your account</Text>
+        <Text className="text-3xl font-bold text-white mb-4">
+          Welcome Back!
+        </Text>
+        <Text className="text-lg text-gray-300 mb-6">
+          Log in to your account
+        </Text>
 
         <TextInput
           className="w-full p-4 border border-gray-300 rounded-lg bg-white text-gray-800 text-lg mb-4"
@@ -82,7 +101,9 @@ export default function LoginPage({ navigation }: { navigation: any }) {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text className="text-white text-center text-lg font-bold">Login</Text>
+            <Text className="text-white text-center text-lg font-bold">
+              Login
+            </Text>
           )}
         </TouchableOpacity>
 
@@ -90,6 +111,12 @@ export default function LoginPage({ navigation }: { navigation: any }) {
           <Text className="text-sm text-gray-300">
             Don't have an account?{" "}
             <Text className="text-blue-300 font-bold">Register here</Text>
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
+          <Text className="text-sm text-gray-300 mb-4">
+            Forgot your password?{" "}
+            <Text className="text-blue-300 font-bold">Reset here</Text>
           </Text>
         </TouchableOpacity>
       </View>

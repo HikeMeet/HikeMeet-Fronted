@@ -23,7 +23,7 @@ export const handleRegisterService = async ({
       throw new Error(serverResponse.error);
     }
 
-    const firebaseResponse = await createFirebaseUser(email, password);
+    const firebaseResponse = await createFirebaseUser(email, password, );
 
     if (!firebaseResponse.success) {
       throw new Error(firebaseResponse.error);

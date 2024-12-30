@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
+
 export default function LandingPage({ navigation }: { navigation: any }) {
   return (
     <View className="flex-1 items-center justify-center bg-white">
@@ -11,7 +12,7 @@ export default function LandingPage({ navigation }: { navigation: any }) {
 
       <TouchableOpacity
         className="w-48 py-3 bg-blue-500 rounded-lg mb-4"
-        onPress={() => navigation.navigate("Login")}
+        onPress={() => navigation.navigate("Login", { toResetPassword: false })}
       >
         <Text className="text-center text-white text-lg font-semibold">
           Login
