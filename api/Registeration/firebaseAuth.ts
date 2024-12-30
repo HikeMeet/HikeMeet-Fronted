@@ -15,10 +15,17 @@ export const createFirebaseUser = async (
   password: string
 ): Promise<FirebaseAuthResponse> => {
   try {
-    const result = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
+    const result = await createUserWithEmailAndPassword(
+      FIREBASE_AUTH,
+      email,
+      password
+    );
     return { success: true, data: result.user };
   } catch (error: any) {
-    return { success: false, error: error.message || "Failed to create user in Firebase." };
+    return {
+      success: false,
+      error: error.message || "Failed to create user in Firebase.",
+    };
   }
 };
 
@@ -27,9 +34,16 @@ export const loginFirebaseUser = async (
   password: string
 ): Promise<FirebaseAuthResponse> => {
   try {
-    const result = await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
+    const result = await signInWithEmailAndPassword(
+      FIREBASE_AUTH,
+      email,
+      password
+    );
     return { success: true, data: result.user };
   } catch (error: any) {
-    return { success: false, error: error.message || "Failed to log in to Firebase." };
+    return {
+      success: false,
+      error: error.message || "Failed to log in to Firebase.",
+    };
   }
 };

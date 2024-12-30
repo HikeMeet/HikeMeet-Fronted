@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { FIREBASE_AUTH } from "../../firebaseconfig";
+import { evaluatePasswordStrength } from "../utils/passwordUtils";
 import {
   View,
   Text,
@@ -9,6 +11,13 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  signInWithEmailAndPassword,
+  User,
+  UserCredential,
+} from "firebase/auth";
 import { sendVerificationCode } from "../../api/Registeration/VerificationService"; // Add this function
 
 export default function RegisterPage({ navigation }: { navigation: any }) {
@@ -21,31 +30,15 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
   const [passwordStrength, setPasswordStrength] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
-  const evaluatePasswordStrength = (password: string) => {
-    if (!password) {
+  const handlePasswordChange = (pass: string) => {
+    setPassword(pass);
+    if (!pass) {
       setPasswordStrength("");
-      return;
+    } else {
+      const strength = evaluatePasswordStrength(pass);
+      setPasswordStrength(strength);
     }
-
-    let strength = "Weak";
-    let score = 0;
-
-    if (password.length >= 8) score++;
-    if (/[A-Z]/.test(password)) score++;
-    if (/[0-9]/.test(password)) score++;
-    if (/[^A-Za-z0-9]/.test(password)) score++;
-
-    if (score === 4) strength = "Strong";
-    else if (score === 3) strength = "Moderate";
-
-    setPasswordStrength(strength);
   };
-
-  const handlePasswordChange = (value: string) => {
-    setPassword(value);
-    evaluatePasswordStrength(value);
-  };
-
   const handleRegister = async () => {
     if (!email || !password || !confirmPassword) {
       Alert.alert("Error", "Please fill in all fields");
@@ -58,30 +51,48 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
     }
 
     if (password.length < 8) {
-      Alert.alert("Weak Password", "Password must be at least 8 characters long.");
+      Alert.alert(
+        "Weak Password",
+        "Password must be at least 8 characters long."
+      );
       return;
     }
 
     try {
       setLoading(true);
-      const response = await sendVerificationCode({ username, email, password });
-      if (!response.success) {
-        throw new Error(response.error || "Failed to send verification code.");
-      }
 
-      Alert.alert("Success", "Verification code sent to your email.", [
-        {
-          text: "OK",
-          onPress: () =>
-            navigation.navigate("VerificationPage", {
-              email, // ודא ש-email מוגדר ולא undefined
-              username,
-              firstName,
-              lastName,
-              password,
+      createUserWithEmailAndPassword(FIREBASE_AUTH, email, password).then(
+        (userCredential: UserCredential) => {
+          const user = userCredential.user;
+          sendEmailVerification(user)
+            .then(() => {
+              console.log("User created successfuly!");
+              navigation.navigate("Verify");
             })
-        },
-      ]);
+            .catch((e) => {
+              Alert.alert("Email verification could not be sent");
+              console.log(e);
+            });
+        }
+      );
+      // const response = await sendVerificationCode({ username, email, password });
+      // if (!response.success) {
+      //   throw new Error(response.error || "Failed to send verification code.");
+      // }
+
+      // Alert.alert("Success", "Verification code sent to your email.", [
+      //   {
+      //     text: "OK",
+      //     onPress: () =>
+      //       navigation.navigate("VerificationPage", {
+      //         email, // ודא ש-email מוגדר ולא undefined
+      //         username,
+      //         firstName,
+      //         lastName,
+      //         password,
+      //       })
+      //   },
+      // ]);
     } catch (error: any) {
       Alert.alert("Error", error.message || "Something went wrong");
     } finally {
@@ -103,11 +114,14 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           <Text className="text-gray-800 font-bold">Back</Text>
         </TouchableOpacity>
 
-        <Text className="text-3xl font-bold text-white mb-4">Create an Account</Text>
-        <Text className="text-lg text-gray-300 mb-6">Join us to get started!</Text>
+        <Text className="text-3xl font-bold text-white mb-4">
+          Create an Account
+        </Text>
+        <Text className="text-lg text-gray-300 mb-6">
+          Join us to get started!
+        </Text>
 
         <TextInput
-
           className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-4 text-gray-800"
           placeholder="Username"
           value={username}
@@ -145,7 +159,15 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           placeholderTextColor="#aaa"
         />
         {passwordStrength && (
-          <Text className={`text-center font-bold mb-4 ${passwordStrength === "Strong" ? "text-green-400" : passwordStrength === "Moderate" ? "text-yellow-400" : "text-red-400"}`}>
+          <Text
+            className={`text-center font-bold mb-4 ${
+              passwordStrength === "Strong"
+                ? "text-green-400"
+                : passwordStrength === "Moderate"
+                ? "text-yellow-400"
+                : "text-red-400"
+            }`}
+          >
             Password Strength: {passwordStrength}
           </Text>
         )}
@@ -159,18 +181,23 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
         />
 
         <TouchableOpacity
-          className={`w-full p-4 rounded-lg ${loading ? "bg-green-400" : "bg-green-600"}`}
+          className={`w-full p-4 rounded-lg ${
+            loading ? "bg-green-400" : "bg-green-600"
+          }`}
           onPress={handleRegister}
           disabled={loading}
         >
-                    {loading ? (
+          {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
             <Text className="text-center text-white text-lg">Register</Text>
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate("Login")} className="mt-6">
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Login")}
+          className="mt-6"
+        >
           <Text className="text-gray-300">
             Already have an account?{" "}
             <Text className="text-green-300 font-bold">Log in here</Text>
