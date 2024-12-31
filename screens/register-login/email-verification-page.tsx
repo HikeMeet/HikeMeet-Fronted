@@ -49,7 +49,7 @@ export default function VerifyEmailPage({
   };
 
   //todo: Make it call the backend shit fuckk
-  const insertUser = async (user: any) => {
+  const insertUser = async (userId: any) => {
     try {
       const response = await fetch(
         `${process.env.EXPO_LOCAL_SERVER}/api/user/insert`,
@@ -63,7 +63,7 @@ export default function VerifyEmailPage({
             email,
             first_name: firstName,
             last_name: lastName,
-            firebase_id: "user.uid",
+            firebase_id: userId,
           }),
         }
       );
