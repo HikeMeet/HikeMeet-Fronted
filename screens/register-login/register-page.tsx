@@ -67,7 +67,13 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           sendEmailVerification(user)
             .then(() => {
               console.log("User created successfuly!");
-              navigation.navigate("Verify");
+
+              navigation.navigate("Verify", {
+                username,
+                email,
+                firstName,
+                lastName,
+              });
             })
             .catch((e) => {
               Alert.alert("Email verification could not be sent");

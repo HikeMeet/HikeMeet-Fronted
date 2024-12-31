@@ -26,7 +26,6 @@ export default function ResetPasswordPage({ navigation }: { navigation: any }) {
 
   useEffect(() => {
     onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
-      console.log(":::::::", currentUser);
       setUser(currentUser);
     });
   }, []);
