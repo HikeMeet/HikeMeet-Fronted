@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
-import { evaluatePasswordStrength } from "../utils/passwordUtils";
 import {
   View,
   Text,
@@ -19,25 +18,19 @@ import {
   UserCredential,
 } from "firebase/auth";
 import { sendVerificationCode } from "../../api/Registeration/VerificationService"; // Add this function
+import PasswordStrength from "../../components/password-strength";
 
 export default function RegisterPage({ navigation }: { navigation: any }) {
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordStrength, setPasswordStrength] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   const handlePasswordChange = (pass: string) => {
     setPassword(pass);
-    if (!pass) {
-      setPasswordStrength("");
-    } else {
-      const strength = evaluatePasswordStrength(pass);
-      setPasswordStrength(strength);
-    }
   };
   const handleRegister = async () => {
     if (!email || !password || !confirmPassword) {
@@ -67,7 +60,13 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           sendEmailVerification(user)
             .then(() => {
               console.log("User created successfuly!");
-              navigation.navigate("Verify");
+
+              navigation.navigate("Verify", {
+                username,
+                email,
+                firstName,
+                lastName,
+              });
             })
             .catch((e) => {
               Alert.alert("Email verification could not be sent");
@@ -140,19 +139,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           onChangeText={handlePasswordChange}
           placeholderTextColor="#aaa"
         />
-        {passwordStrength && (
-          <Text
-            className={`text-center font-bold mb-4 ${
-              passwordStrength === "Strong"
-                ? "text-green-400"
-                : passwordStrength === "Moderate"
-                ? "text-yellow-400"
-                : "text-red-400"
-            }`}
-          >
-            Password Strength: {passwordStrength}
-          </Text>
-        )}
+        <PasswordStrength password={password} />
         <TextInput
           className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-6 text-gray-800"
           placeholder="Confirm Password"

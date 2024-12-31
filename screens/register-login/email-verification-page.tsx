@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { onAuthStateChanged, sendEmailVerification, User } from "firebase/auth";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
+import axios from "axios";
 
-export default function VerifyEmailPage({ navigation }: { navigation: any }) {
+export default function VerifyEmailPage({
+  navigation,
+  route,
+}: {
+  navigation: any;
+  route: any;
+}) {
   const [message, setMessage] = useState<string>("");
   const [user, setUser] = useState<User | null>(null);
   const [isButtonDisabled, setIsButtonDisabled] = useState<boolean>(false);
   const [countdown, setCountdown] = useState<number>(0);
-
+  const { username, email, firstName, lastName } = route.params;
   useEffect(() => {
     onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
-      console.log(":::::::", currentUser);
       setUser(currentUser);
     });
   }, []);
@@ -42,12 +48,44 @@ export default function VerifyEmailPage({ navigation }: { navigation: any }) {
     }
   };
 
+  //todo: Make it call the backend shit fuckk
+  const insertUser = async (userId: any) => {
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_BASE_IP}/api/user/insert`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+            email,
+            first_name: firstName,
+            last_name: lastName,
+            firebase_id: userId,
+          }),
+        }
+      );
+
+      console.log(":::", response);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("User inserted successfully:", data);
+    } catch (error) {
+      console.error("Error inserting user:", error);
+    }
+  };
+
   const checkVerificationStatus = async () => {
     if (user) {
       try {
         await user.reload();
         if (user.emailVerified) {
-          // Redirect to home page
+          insertUser(user.uid);
           navigation.navigate("Home");
         } else {
           setMessage("Email not verified yet. Please check your inbox.");
