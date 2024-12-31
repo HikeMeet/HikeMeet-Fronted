@@ -51,8 +51,9 @@ export default function VerifyEmailPage({
   //todo: Make it call the backend shit fuckk
   const insertUser = async (userId: any) => {
     try {
+      console.log(`${process.env.EXPO_LOCAL_SERVER}/api/user/insert`);
       const response = await fetch(
-        `${process.env.EXPO_BASE_IP}/api/user/insert`,
+        `${process.env.EXPO_LOCAL_SERVER}/api/user/insert`,
         {
           method: "POST",
           headers: {
