@@ -17,6 +17,7 @@ import {
   User,
 } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
+import PasswordStrength from "../../components/password-strength";
 
 export default function ResetPasswordPage({ navigation }: { navigation: any }) {
   const [newPassword, setNewPassword] = useState("");
@@ -97,6 +98,8 @@ export default function ResetPasswordPage({ navigation }: { navigation: any }) {
           onChangeText={setNewPassword}
           placeholderTextColor="#aaa"
         />
+        <PasswordStrength password={newPassword} />
+
         <TextInput
           className="w-full p-4 border border-gray-300 rounded-lg bg-white text-gray-800 text-lg mb-4"
           placeholder="Confirm New Password"
