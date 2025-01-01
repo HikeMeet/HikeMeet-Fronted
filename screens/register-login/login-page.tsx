@@ -11,7 +11,16 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithCredential,
+} from "firebase/auth";
+import * as Google from "expo-auth-session/providers/google";
+import * as WebBrowser from "expo-web-browser";
+
+// To handle Google OAuth redirect
+WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginPage({
   navigation,
@@ -21,12 +30,35 @@ export default function LoginPage({
   route: any;
 }) {
   const { toResetPassword } = route.params || {};
-  console.log(`\nXXXXXXXXX\n${toResetPassword}\nXXXXXXXX`);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const auth = FIREBASE_AUTH;
+
+  // Google Sign-In
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    clientId: "944247154328-qa987493smdrejuftrpc32jf88ivu4bj.apps.googleusercontent.com",
+    redirectUri: "https://auth.expo.io/@roeina/expo-react-native-w-tailwind",
+  });
+
+  React.useEffect(() => {
+    if (response?.type === "success") {
+      const { id_token } = response.params;
+      const credential = GoogleAuthProvider.credential(id_token);
+
+      signInWithCredential(auth, credential)
+        .then(async (result) => {
+          const token = await result.user.getIdToken();
+          await AsyncStorage.setItem("token", token);
+          Alert.alert("Success", "Logged in with Google!");
+          navigation.navigate("Home");
+        })
+        .catch((error) => {
+          Alert.alert("Google Login Error", error.message || "Something went wrong.");
+        });
+    }
+  }, [response]);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -40,12 +72,7 @@ export default function LoginPage({
       const token = await result.user.getIdToken();
       await AsyncStorage.setItem("token", token);
       Alert.alert("Success", "Login successful!");
-      if (toResetPassword !== undefined) {
-        navigation.navigate(toResetPassword ? "ResetPassword" : "Home");
-      } else {
-        // Handle the case when toResetPassword is undefined
-        console.warn("toResetPassword is undefined");
-      }
+      navigation.navigate("Home");
     } catch (error: any) {
       Alert.alert("Login Error", error.message || "Something went wrong");
     } finally {
@@ -105,6 +132,17 @@ export default function LoginPage({
               Login
             </Text>
           )}
+        </TouchableOpacity>
+
+        {/* Google Sign-In Button */}
+        <TouchableOpacity
+          onPress={() => promptAsync()}
+          disabled={!request}
+          className="w-full py-4 bg-red-500 rounded-lg flex items-center mb-4"
+        >
+          <Text className="text-white text-center text-lg font-bold">
+            Sign in with Google
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate("Register")}>
