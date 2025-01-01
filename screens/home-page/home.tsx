@@ -2,6 +2,7 @@ import { View, Text } from "react-native";
 import React from "react";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
 import { Button } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
 
 const Home = ({ navigation }: any) => {
   return (
