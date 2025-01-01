@@ -4,6 +4,7 @@ import Home from "../../screens/home-page/home";
 import ProfilePage from "../../screens/my-profile/my-profile";
 import GroupsPage from "../../screens/groups/groups-page";
 import TripsPage from "../../screens/trips/trips-page";
+import ChatListPage from "../../screens/chats/caht-list";
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +29,11 @@ const BottomNavigationStack = () => {
       <Stack.Screen
         name="Trips"
         component={TripsPage}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Chats"
+        component={ChatListPage}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
