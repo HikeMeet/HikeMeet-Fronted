@@ -1,12 +1,12 @@
 import { View, Text } from "react-native";
 import React from "react";
 
-const ProfilePage = () => {
+const ChatListPage = () => {
   return (
     <View className="flex-1 justify-center items-center">
-      <Text>my-profile</Text>
+      <Text>Chat List</Text>
     </View>
   );
 };
 
-export default ProfilePage;
+export default ChatListPage;

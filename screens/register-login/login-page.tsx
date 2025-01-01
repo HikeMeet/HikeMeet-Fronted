@@ -21,7 +21,6 @@ export default function LoginPage({
   route: any;
 }) {
   const { toResetPassword } = route.params || {};
-  console.log(`\nXXXXXXXXX\n${toResetPassword}\nXXXXXXXX`);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
