@@ -5,7 +5,7 @@ import { Button } from "react-native";
 
 const Home = ({ navigation }: any) => {
   return (
-    <View>
+    <View className="flex-1 justify-center items-center">
       <Text>home-page</Text>
       <Button onPress={() => navigation.navigate("Home")} title="Home" />
       <Button
