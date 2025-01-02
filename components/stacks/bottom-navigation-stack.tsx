@@ -17,7 +17,7 @@ const BottomNavigationStack = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="Profile"
+        name="ProfilePage"
         component={ProfilePage}
         options={{ headerShown: false }}
       />
@@ -36,6 +36,7 @@ const BottomNavigationStack = () => {
         component={ChatListPage}
         options={{ headerShown: false }}
       />
+      
     </Stack.Navigator>
   );
 };

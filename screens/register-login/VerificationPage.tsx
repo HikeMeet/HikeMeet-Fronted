@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import {View,Text,TextInput,TouchableOpacity,Alert,KeyboardAvoidingView,Platform,ActivityIndicator,} from "react-native";
-import { handleRegisterService } from "../../api/Registeration/handleRegisterService";
-import {verifyEmailCode,resendVerificationCode,} from "../../api/Registeration/VerificationService";
-import { createFirebaseUser } from "../../api/Registeration/firebaseAuth";
+import { handleRegisterService } from "../../api/auth/handleRegisterService";
+import {verifyEmailCode,resendVerificationCode,} from "../../api/auth/VerificationService";
+import { createFirebaseUser } from "../../api/auth/firebaseAuth";
 
 export default function VerificationPage({ route, navigation }: { route: any; navigation: any }) {
 

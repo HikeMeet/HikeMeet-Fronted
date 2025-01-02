@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 
 export default function LandingPage({ navigation }: { navigation: any }) {
   return (
-    <View className="flex-1 items-center justify-center bg-white">
+    <View className="flex-1 items-center justify-center bg-neutral-3">
       <Text className="text-4xl font-bold mb-6">HikeMeet</Text>
       <Text className="text-center text-gray-600 px-6 mb-8">
         Welcome to HikeMeet, where you can connect with fellow hiking

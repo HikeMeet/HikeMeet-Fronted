@@ -55,7 +55,7 @@ export default function LoginPage({
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-blue-700"
+      className="flex-1 bg-blue-900"
     >
       <View className="flex-1 justify-center items-center p-5">
         {/* Back Button */}

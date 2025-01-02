@@ -1,7 +1,7 @@
 import React from "react";
 import { Text } from "react-native";
 
-function evaluatePasswordStrength(password: string): string {
+export function evaluatePasswordStrength(password: string): string | null {
   let score = 0;
 
   // Criteria for scoring
@@ -12,33 +12,28 @@ function evaluatePasswordStrength(password: string): string {
 
   // Determine strength based on score
   if (score === 4) {
-    return "Strong";
+    return null; // No error for strong password
   } else if (score === 3) {
-    return "Moderate";
+    return "Password strength is moderate. Consider making it stronger.";
   } else {
-    return "Weak";
+    return "Password strength is weak. Please include uppercase letters, numbers, and special characters.";
   }
 }
 
 const PasswordStrength = ({ password }: { password: string }) => {
   if (!password) return null;
 
-  const passwordStrength = evaluatePasswordStrength(password);
+  const strength = evaluatePasswordStrength(password);
 
   const getStrengthColor = () => {
-    switch (passwordStrength) {
-      case "Strong":
-        return "text-green-400";
-      case "Moderate":
-        return "text-yellow-400";
-      default:
-        return "text-red-400";
-    }
+    if (!strength) return "text-green-400"; // Strong password
+    if (strength.includes("moderate")) return "text-yellow-400";
+    return "text-red-400"; // Weak password
   };
 
   return (
     <Text className={`text-center font-bold mb-4 ${getStrengthColor()}`}>
-      Password Strength: {passwordStrength}
+      {strength || "Password is strong"}
     </Text>
   );
 };

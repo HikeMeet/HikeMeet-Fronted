@@ -1,24 +1,16 @@
 import React, { useState } from "react";
-import { FIREBASE_AUTH } from "../../firebaseconfig";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
 } from "react-native";
-import {
-  createUserWithEmailAndPassword,
-  sendEmailVerification,
-  signInWithEmailAndPassword,
-  User,
-  UserCredential,
-} from "firebase/auth";
-import { sendVerificationCode } from "../../api/Registeration/VerificationService"; // Add this function
-import PasswordStrength from "../../components/password-strength";
+import ErrorMessage from "../../components/error/ErrorMessage";
+import PasswordStrength, { evaluatePasswordStrength } from "../../components/password-strength";
+import { handleRegisterService } from "../../api/auth/handleRegisterService";
 
 export default function RegisterPage({ navigation }: { navigation: any }) {
   const [username, setUsername] = useState("");
@@ -28,66 +20,45 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>("");
 
-  const handlePasswordChange = (pass: string) => {
-    setPassword(pass);
-  };
-  const handleRegister = async () => {
+  const handleRegisterSubmit = async () => {
+    setError("");
+
     if (!email || !password || !confirmPassword) {
-      Alert.alert("Error", "Please fill in all fields");
+      setError("Please fill in all fields.");
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match.");
+      setError("Passwords do not match.");
       return;
     }
 
-    if (password.length < 8) {
-      Alert.alert(
-        "Weak Password",
-        "Password must be at least 8 characters long."
-      );
+    const passwordStrengthError = evaluatePasswordStrength(password);
+    if (passwordStrengthError) {
+      setError(passwordStrengthError);
       return;
     }
 
+    setLoading(true);
     try {
       setLoading(true);
-
-      createUserWithEmailAndPassword(FIREBASE_AUTH, email, password).then(
-        (userCredential: UserCredential) => {
-          const user = userCredential.user;
-          sendEmailVerification(user)
-            .then(() => {
-              console.log("User created successfuly!");
-
-              navigation.navigate("Verify", {
-                username,
-                email,
-                firstName,
-                lastName,
-              });
-            })
-            .catch((e) => {
-              Alert.alert("Email verification could not be sent");
-              console.log(e);
-            });
-        }
-      );
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Something went wrong");
+      await handleRegisterService(email, password, username, firstName, lastName);
+      navigation.navigate("Login");
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
-
+  
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-indigo-700"
+      className="flex-1 bg-slate-700"
     >
       <View className="flex-1 items-center justify-center px-6">
-        {/* Back Button */}
         <TouchableOpacity
           onPress={() => navigation.navigate("Landing")}
           className="absolute top-10 left-4 bg-gray-200 p-3 rounded-full"
@@ -101,6 +72,8 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
         <Text className="text-lg text-gray-300 mb-6">
           Join us to get started!
         </Text>
+
+        {error && <ErrorMessage message={error} />}
 
         <TextInput
           className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-4 text-gray-800"
@@ -136,10 +109,9 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           placeholder="Password"
           secureTextEntry
           value={password}
-          onChangeText={handlePasswordChange}
+          onChangeText={setPassword}
           placeholderTextColor="#aaa"
         />
-        <PasswordStrength password={password} />
         <TextInput
           className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-6 text-gray-800"
           placeholder="Confirm Password"
@@ -149,11 +121,11 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           placeholderTextColor="#aaa"
         />
 
+        <PasswordStrength password={password} />
+
         <TouchableOpacity
-          className={`w-full p-4 rounded-lg ${
-            loading ? "bg-green-400" : "bg-green-600"
-          }`}
-          onPress={handleRegister}
+          className={`w-full p-4 rounded-lg ${loading ? "bg-green-400" : "bg-green-600"}`}
+          onPress={handleRegisterSubmit}
           disabled={loading}
         >
           {loading ? (
