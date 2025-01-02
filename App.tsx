@@ -17,7 +17,8 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      {user ? <BottomNavigationStack /> : <SignInLandingStack />}
+      <SignInLandingStack />
+      {/* {user ? <BottomNavigationStack /> : <SignInLandingStack />} */}
     </NavigationContainer>
   );
 }
