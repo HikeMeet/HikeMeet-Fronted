@@ -90,8 +90,8 @@ export default function LoginPage({
 
         {/* Email Input with Icon */}
         <View className="flex-row items-center w-full p-4 border border-gray-300 rounded-lg bg-white mb-4">
-          <Icon name="email" size={20} color="#aaa" className="mr-2" />
-          <TextInput
+        <Icon name="email" size={20} color="#aaa" style={{ marginRight: 8 }} />
+        <TextInput
             className="flex-1 text-gray-800 text-lg"
             placeholder="Email"
             keyboardType="email-address"
@@ -103,8 +103,8 @@ export default function LoginPage({
 
         {/* Password Input with Icon */}
         <View className="flex-row items-center w-full p-4 border border-gray-300 rounded-lg bg-white mb-4">
-          <Icon name="lock" size={20} color="#aaa" className="mr-2" />
-          <TextInput
+        <Icon name="lock" size={20} color="#aaa" style={{ marginRight: 8 }} />
+        <TextInput
             className="flex-1 text-gray-800 text-lg"
             placeholder="Password"
             secureTextEntry
