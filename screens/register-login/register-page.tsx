@@ -13,12 +13,11 @@ import {
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
-  signInWithEmailAndPassword,
-  User,
   UserCredential,
 } from "firebase/auth";
-import { sendVerificationCode } from "../../api/Registeration/VerificationService"; // Add this function
-import PasswordStrength from "../../components/password-strength";
+import { sendVerificationCode } from "../../api/Registeration/VerificationService";
+import PasswordStrength, { evaluatePasswordStrength } from "../../components/password-strength";
+import ErrorAlertComponent from "../../components/error/ErrorAlertComponent"; // Component for error alerts
 
 export default function RegisterPage({ navigation }: { navigation: any }) {
   const [username, setUsername] = useState("");
@@ -28,54 +27,47 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>("");
 
-  const handlePasswordChange = (pass: string) => {
-    setPassword(pass);
-  };
   const handleRegister = async () => {
+    setError("");
+
     if (!email || !password || !confirmPassword) {
-      Alert.alert("Error", "Please fill in all fields");
+      setError("Please fill in all fields.");
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match.");
+      setError("Passwords do not match.");
       return;
     }
+    const enforceStrongPassword = false;    //If this is true then you need a strong password.
 
-    if (password.length < 8) {
-      Alert.alert(
-        "Weak Password",
-        "Password must be at least 8 characters long."
-      );
+    const passwordStrengthError = evaluatePasswordStrength(password, enforceStrongPassword);
+        if (passwordStrengthError) {
+      setError(passwordStrengthError);
       return;
     }
 
     try {
       setLoading(true);
-
-      createUserWithEmailAndPassword(FIREBASE_AUTH, email, password).then(
-        (userCredential: UserCredential) => {
-          const user = userCredential.user;
-          sendEmailVerification(user)
-            .then(() => {
-              console.log("User created successfuly!");
-
-              navigation.navigate("Verify", {
-                username,
-                email,
-                firstName,
-                lastName,
-              });
-            })
-            .catch((e) => {
-              Alert.alert("Email verification could not be sent");
-              console.log(e);
-            });
-        }
+      const userCredential: UserCredential = await createUserWithEmailAndPassword(
+        FIREBASE_AUTH,
+        email,
+        password
       );
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Something went wrong");
+      const user = userCredential.user;
+
+      await sendEmailVerification(user);
+
+      navigation.navigate("Verify", {
+        username,
+        email,
+        firstName,
+        lastName,
+      });
+    } catch (err: any) {
+      setError(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -101,6 +93,8 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
         <Text className="text-lg text-gray-300 mb-6">
           Join us to get started!
         </Text>
+
+        {error && <ErrorAlertComponent message={error} />}
 
         <TextInput
           className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-4 text-gray-800"
@@ -136,7 +130,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           placeholder="Password"
           secureTextEntry
           value={password}
-          onChangeText={handlePasswordChange}
+          onChangeText={setPassword}
           placeholderTextColor="#aaa"
         />
         <PasswordStrength password={password} />

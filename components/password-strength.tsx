@@ -1,7 +1,10 @@
 import React from "react";
 import { Text } from "react-native";
 
-function evaluatePasswordStrength(password: string): string {
+export function evaluatePasswordStrength(
+  password: string,
+  enforceStrongPassword: boolean
+): string | null {
   let score = 0;
 
   // Criteria for scoring
@@ -11,34 +14,43 @@ function evaluatePasswordStrength(password: string): string {
   if (/[^A-Za-z0-9]/.test(password)) score++; // Contains special character
 
   // Determine strength based on score
-  if (score === 4) {
-    return "Strong";
-  } else if (score === 3) {
-    return "Moderate";
+  if (enforceStrongPassword) {
+    if (score === 4) {
+      return null; // No error for strong password
+    } else if (score === 3) {
+      return "Password strength is moderate. Consider making it stronger.";
+    } else {
+      return "Password strength is weak";
+    }
   } else {
-    return "Weak";
+    // Simple validation: At least 8 characters and contains digits
+    if (password.length >= 8 && /[0-9]/.test(password)) {
+      return null; // Sufficient password
+    }
+    return "Password must be at least 8 characters and contain digits.";
   }
 }
 
-const PasswordStrength = ({ password }: { password: string }) => {
+const PasswordStrength = ({
+  password,
+  enforceStrongPassword = true,
+}: {
+  password: string;
+  enforceStrongPassword?: boolean;
+}) => {
   if (!password) return null;
 
-  const passwordStrength = evaluatePasswordStrength(password);
+  const strength = evaluatePasswordStrength(password, enforceStrongPassword);
 
   const getStrengthColor = () => {
-    switch (passwordStrength) {
-      case "Strong":
-        return "text-green-400";
-      case "Moderate":
-        return "text-yellow-400";
-      default:
-        return "text-red-400";
-    }
+    if (!strength) return "text-green-400"; // Strong password
+    if (strength.includes("moderate")) return "text-yellow-400";
+    return "text-red-400"; // Weak password
   };
 
   return (
     <Text className={`text-center font-bold mb-4 ${getStrengthColor()}`}>
-      Password Strength: {passwordStrength}
+      {strength || "Password is strong"}
     </Text>
   );
 };
