@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FIREBASE_AUTH } from "../firebaseconfig";
+import { ActivityIndicator } from "react-native-paper";
+import { View } from "react-native";
 
 interface AuthContextProps {
   user: User | null;
@@ -15,12 +17,21 @@ const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isVerified, setIsVerified] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-        const loadUserFromStorage = async () => {
-      const storedUser = await AsyncStorage.getItem("user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+    const loadUserFromStorage = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem("user");
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+          setIsVerified(parsedUser.emailVerified || false);
+        }
+      } catch (error) {
+        console.error("Error loading user from AsyncStorage:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -40,6 +51,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => unsubscribe();
   }, []);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
   return (
     <AuthContext.Provider value={{ user, setUser, isVerified, setIsVerified }}>
