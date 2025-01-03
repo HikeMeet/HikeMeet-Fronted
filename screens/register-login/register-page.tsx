@@ -15,11 +15,12 @@ import {
   sendEmailVerification,
   UserCredential,
 } from "firebase/auth";
-import { sendVerificationCode } from "../../api/Registeration/VerificationService";
+import { useAuth } from "../../contexts/AuthContext";
 import PasswordStrength, { evaluatePasswordStrength } from "../../components/password-strength";
 import ErrorAlertComponent from "../../components/error/ErrorAlertComponent"; // Component for error alerts
 
 export default function RegisterPage({ navigation }: { navigation: any }) {
+  const { setUser, setIsVerified } = useAuth(); // Accessing the AuthContext
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -32,6 +33,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
   const handleRegister = async () => {
     setError("");
 
+    // Validation for fields
     if (!email || !password || !confirmPassword) {
       setError("Please fill in all fields.");
       return;
@@ -41,21 +43,21 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
       setError("Passwords do not match.");
       return;
     }
-    const enforceStrongPassword = false;    //If this is true then you need a strong password.
 
+    const enforceStrongPassword = false; // Change to true to enforce strong passwords
     const passwordStrengthError = evaluatePasswordStrength(password, enforceStrongPassword);
-        if (passwordStrengthError) {
+    if (passwordStrengthError) {
       setError(passwordStrengthError);
       return;
     }
-
-
     try {
       setLoading(true);
 
       createUserWithEmailAndPassword(FIREBASE_AUTH, email, password).then(
         (userCredential: UserCredential) => {
           const user = userCredential.user;
+          setUser(user); // Update the user in the context
+          setIsVerified(false); // Set user as not verified    
           sendEmailVerification(user)
             .then(() => {
               console.log("User created successfuly!");
@@ -79,7 +81,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
       setLoading(false);
     }
   };
-  
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -101,8 +103,10 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           Join us to get started!
         </Text>
 
+        {/* Error message */}
         {error && <ErrorAlertComponent message={error} />}
 
+        {/* Input fields */}
         <TextInput
           className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-4 text-gray-800"
           placeholder="Username"
@@ -150,6 +154,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           placeholderTextColor="#aaa"
         />
 
+        {/* Register button */}
         <TouchableOpacity
           className={`w-full p-4 rounded-lg ${
             loading ? "bg-green-400" : "bg-green-600"
@@ -164,6 +169,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           )}
         </TouchableOpacity>
 
+        {/* Redirect to login */}
         <TouchableOpacity
           onPress={() => navigation.navigate("Login")}
           className="mt-6"

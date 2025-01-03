@@ -6,30 +6,35 @@ import { FIREBASE_AUTH } from "../firebaseconfig";
 interface AuthContextProps {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  isVerified: boolean;
+  setIsVerified: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isVerified, setIsVerified] = useState<boolean>(false);
 
   useEffect(() => {
-    const loadUserFromStorage = async () => {
+        const loadUserFromStorage = async () => {
       const storedUser = await AsyncStorage.getItem("user");
       if (storedUser) {
-        setUser(JSON.parse(storedUser)); // טען משתמש מאוחסן
+        setUser(JSON.parse(storedUser));
       }
     };
 
     loadUserFromStorage();
 
-    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        AsyncStorage.setItem("user", JSON.stringify(currentUser)); // שמור משתמש חדש
+        setIsVerified(currentUser.emailVerified);
+        await AsyncStorage.setItem("user", JSON.stringify(currentUser));
       } else {
         setUser(null);
-        AsyncStorage.removeItem("user"); // מחק משתמש אם לא מחובר
+        setIsVerified(false);
+        await AsyncStorage.removeItem("user");
       }
     });
 
@@ -37,7 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser }}>
+    <AuthContext.Provider value={{ user, setUser, isVerified, setIsVerified }}>
       {children}
     </AuthContext.Provider>
   );

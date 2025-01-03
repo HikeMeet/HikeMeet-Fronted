@@ -22,7 +22,7 @@ export default function LoginPage({
   navigation: any;
   route: any;
 }) {
-  const { setUser } = useAuth();
+  const { setUser, setIsVerified } = useAuth(); // Accessing setUser and setIsVerified from AuthContext
   const { toResetPassword } = route.params || {};
 
   const [email, setEmail] = useState("");
@@ -42,7 +42,23 @@ export default function LoginPage({
       const token = await result.user.getIdToken();
       await AsyncStorage.setItem("token", token);
       setUser(result.user);
-      Alert.alert("Success", "Login successful!");
+
+      if (!result.user.emailVerified) {
+        setIsVerified(false); // Set verification status to false
+        Alert.alert("Verify Email", "Please verify your email before proceeding.", [
+          {
+            text: "OK",
+            onPress: () => navigation.navigate("Verify", { email }),
+          },
+        ]);
+      } else {
+        setIsVerified(true); // Set verification status to true
+        Alert.alert("Success", "Login successful!", [
+          {
+            text: "OK",
+          },
+        ]);
+      }
     } catch (error: any) {
       Alert.alert("Login Error", error.message || "Something went wrong");
     } finally {

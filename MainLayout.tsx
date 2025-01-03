@@ -6,25 +6,34 @@ import BottomTabs from "./components/stacks/bottom-tabs";
 import { View, ActivityIndicator } from "react-native";
 
 const MainLayout = () => {
-  const { user } = useAuth();
+  const { user, isVerified } = useAuth();
   const [initialRoute, setInitialRoute] = useState<string>("Landing");
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const loadInitialRoute = async () => {
       const storedRoute = await AsyncStorage.getItem("lastRoute");
-      setInitialRoute(storedRoute || (user ? "Home" : "Landing"));
+      setInitialRoute(storedRoute || (user ? (isVerified ? "Home" : "Verify") : "Landing"));   //need to fix navigation to home
       setLoading(false);
     };
     loadInitialRoute();
-  }, [user]);
+  }, [user, isVerified]);
 
   useEffect(() => {
-    AsyncStorage.setItem("lastRoute", user ? "Home" : "Landing");
-  }, [user]);
+    AsyncStorage.setItem("lastRoute", user ? (isVerified ? "Home" : "Verify") : "Landing");   //need to fix navigation to home
+  }, [user, isVerified]);
 
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
-  return user ? <BottomTabs  /> : <SignInLandingStack />;
+  if (!user) return <SignInLandingStack />;   //need to combine with !isVerified
+  if (!isVerified) return <SignInLandingStack />;
+  return <BottomTabs />;
 };
 
 export default MainLayout;

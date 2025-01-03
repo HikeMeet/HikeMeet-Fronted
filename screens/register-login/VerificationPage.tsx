@@ -4,7 +4,7 @@ import { handleRegisterService } from "../../api/Registeration/handleRegisterSer
 import {verifyEmailCode,resendVerificationCode,} from "../../api/Registeration/VerificationService";
 import { createFirebaseUser } from "../../api/Registeration/firebaseAuth";
 
-export default function VerificationPage({ route, navigation }: { route: any; navigation: any }) {
+export default function VerificationPage({ route, navigation }: { route: any; navigation: any }) {   //need to fix the navigation move bottom-tab and not to home specific
 
   const { email, username, firstName, lastName, password } = route.params;
   const [code, setCode] = useState(["", "", "", "", ""]);
