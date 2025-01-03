@@ -49,30 +49,37 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
       return;
     }
 
+
     try {
       setLoading(true);
-      const userCredential: UserCredential = await createUserWithEmailAndPassword(
-        FIREBASE_AUTH,
-        email,
-        password
+
+      createUserWithEmailAndPassword(FIREBASE_AUTH, email, password).then(
+        (userCredential: UserCredential) => {
+          const user = userCredential.user;
+          sendEmailVerification(user)
+            .then(() => {
+              console.log("User created successfuly!");
+
+              navigation.navigate("Verify", {
+                username,
+                email,
+                firstName,
+                lastName,
+              });
+            })
+            .catch((e) => {
+              Alert.alert("Email verification could not be sent");
+              console.log(e);
+            });
+        }
       );
-      const user = userCredential.user;
-
-      await sendEmailVerification(user);
-
-      navigation.navigate("Verify", {
-        username,
-        email,
-        firstName,
-        lastName,
-      });
-    } catch (err: any) {
-      setError(err.message || "Something went wrong.");
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
-
+  
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
