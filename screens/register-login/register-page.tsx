@@ -41,9 +41,10 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
       setError("Passwords do not match.");
       return;
     }
+    const enforceStrongPassword = false;    //If this is true then you need a strong password.
 
-    const passwordStrengthError = evaluatePasswordStrength(password);
-    if (passwordStrengthError) {
+    const passwordStrengthError = evaluatePasswordStrength(password, enforceStrongPassword);
+        if (passwordStrengthError) {
       setError(passwordStrengthError);
       return;
     }
