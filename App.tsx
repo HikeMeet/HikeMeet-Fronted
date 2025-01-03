@@ -1,24 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { FIREBASE_AUTH } from "./firebaseconfig";
-import SignInLandingStack from "./components/stacks/signin-landing-stack";
-import BottomNavigationStack from "./components/stacks/bottom-navigation-stack";
+import MainLayout from "./MainLayout";
+import { AuthProvider } from "./contexts/AuthContext";
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
-      console.log("XXX", currentUser);
-      setUser(currentUser);
-    });
-  }, []);
-
   return (
-    <NavigationContainer>
-      <SignInLandingStack />
-      {/* {user ? <BottomNavigationStack /> : <SignInLandingStack />} */}
-    </NavigationContainer>
+    <AuthProvider>
+      <NavigationContainer>
+        <MainLayout />
+      </NavigationContainer>
+    </AuthProvider>
   );
 }
