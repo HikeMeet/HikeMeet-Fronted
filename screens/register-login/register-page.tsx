@@ -76,7 +76,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-indigo-700"
+      className="flex-1 bg-slate-700"
     >
       <View className="flex-1 items-center justify-center px-6">
         {/* Back Button */}
