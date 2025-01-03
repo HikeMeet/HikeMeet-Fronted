@@ -13,14 +13,14 @@ import {
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
-  signInWithEmailAndPassword,
-  User,
   UserCredential,
 } from "firebase/auth";
-import { sendVerificationCode } from "../../api/Registeration/VerificationService"; // Add this function
-import PasswordStrength from "../../components/password-strength";
+import { useAuth } from "../../contexts/AuthContext";
+import PasswordStrength, { evaluatePasswordStrength } from "../../components/password-strength";
+import ErrorAlertComponent from "../../components/error/ErrorAlertComponent"; // Component for error alerts
 
 export default function RegisterPage({ navigation }: { navigation: any }) {
+  const { setUser, setIsVerified } = useAuth(); // Accessing the AuthContext
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -28,35 +28,36 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>("");
 
-  const handlePasswordChange = (pass: string) => {
-    setPassword(pass);
-  };
   const handleRegister = async () => {
+    setError("");
+
+    // Validation for fields
     if (!email || !password || !confirmPassword) {
-      Alert.alert("Error", "Please fill in all fields");
+      setError("Please fill in all fields.");
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match.");
+      setError("Passwords do not match.");
       return;
     }
 
-    if (password.length < 8) {
-      Alert.alert(
-        "Weak Password",
-        "Password must be at least 8 characters long."
-      );
+    const enforceStrongPassword = false; // Change to true to enforce strong passwords
+    const passwordStrengthError = evaluatePasswordStrength(password, enforceStrongPassword);
+    if (passwordStrengthError) {
+      setError(passwordStrengthError);
       return;
     }
-
     try {
       setLoading(true);
 
       createUserWithEmailAndPassword(FIREBASE_AUTH, email, password).then(
         (userCredential: UserCredential) => {
           const user = userCredential.user;
+          setUser(user); // Update the user in the context
+          setIsVerified(false); // Set user as not verified    
           sendEmailVerification(user)
             .then(() => {
               console.log("User created successfuly!");
@@ -84,7 +85,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-indigo-700"
+      className="flex-1 bg-slate-700"
     >
       <View className="flex-1 items-center justify-center px-6">
         {/* Back Button */}
@@ -102,6 +103,10 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           Join us to get started!
         </Text>
 
+        {/* Error message */}
+        {error && <ErrorAlertComponent message={error} />}
+
+        {/* Input fields */}
         <TextInput
           className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-4 text-gray-800"
           placeholder="Username"
@@ -136,7 +141,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           placeholder="Password"
           secureTextEntry
           value={password}
-          onChangeText={handlePasswordChange}
+          onChangeText={setPassword}
           placeholderTextColor="#aaa"
         />
         <PasswordStrength password={password} />
@@ -149,6 +154,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           placeholderTextColor="#aaa"
         />
 
+        {/* Register button */}
         <TouchableOpacity
           className={`w-full p-4 rounded-lg ${
             loading ? "bg-green-400" : "bg-green-600"
@@ -163,6 +169,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           )}
         </TouchableOpacity>
 
+        {/* Redirect to login */}
         <TouchableOpacity
           onPress={() => navigation.navigate("Login")}
           className="mt-6"
