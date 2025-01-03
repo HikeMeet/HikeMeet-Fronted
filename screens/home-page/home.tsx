@@ -1,21 +1,25 @@
-import { View, Text } from "react-native";
 import React from "react";
+import { View, Text, Button } from "react-native";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
-import { Button } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
+import { useAuth } from "../../contexts/AuthContext";
 
 const Home = ({ navigation }: any) => {
+  const { setUser } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await FIREBASE_AUTH.signOut();
+      setUser(null); // Clear user context
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  };
+
   return (
-    <View className="flex-1 justify-center items-center">
-      <Text>home-page</Text>
-      <Button onPress={() => navigation.navigate("Home")} title="Home" />
-      <Button
-        onPress={() => {
-          FIREBASE_AUTH.signOut();
-          navigation.navigate("Landing");
-        }}
-        title="Logout"
-      />
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text>Home Page</Text>
+      <Button onPress={() => navigation.navigate("Home")} title="Go to Home" />
+      <Button onPress={handleLogout} title="Logout" />
     </View>
   );
 };

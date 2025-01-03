@@ -12,6 +12,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { useAuth } from "../../contexts/AuthContext"; // Importing the AuthContext
 
 export default function LoginPage({
   navigation,
@@ -20,6 +21,7 @@ export default function LoginPage({
   navigation: any;
   route: any;
 }) {
+  const { setUser } = useAuth(); // Accessing setUser from AuthContext
   const { toResetPassword } = route.params || {};
 
   const [email, setEmail] = useState("");
@@ -32,27 +34,26 @@ export default function LoginPage({
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
-
+  
     try {
       setLoading(true);
       const result = await signInWithEmailAndPassword(auth, email, password);
+  
       const token = await result.user.getIdToken();
       await AsyncStorage.setItem("token", token);
+  
+      setUser(result.user);
+  
       Alert.alert("Success", "Login successful!");
-      if (toResetPassword !== undefined) {
-        navigation.navigate(toResetPassword ? "ResetPassword" : "Home");
-      } else {
-        // Handle the case when toResetPassword is undefined
-        console.warn("toResetPassword is undefined");
-      }
+  
     } catch (error: any) {
       Alert.alert("Login Error", error.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
-
-  return (
+  
+    return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1 bg-blue-700"
