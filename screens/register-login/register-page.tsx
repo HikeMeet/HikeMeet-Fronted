@@ -54,27 +54,30 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
     try {
       setLoading(true);
 
-      createUserWithEmailAndPassword(FIREBASE_AUTH, email, password).then(
-        (userCredential: UserCredential) => {
-          const user = userCredential.user;
-          setUser(user);
-          setIsVerified(false);
-          sendEmailVerification(user)
-            .then(() => {
-              navigation.navigate("Verify", {
-                username,
-                email,
-                firstName,
-                lastName,
-              });
-            })
-            .catch((e) => {
-              Alert.alert("Email verification could not be sent");
-            });
-        }
+      const userCredential: UserCredential = await createUserWithEmailAndPassword(
+        FIREBASE_AUTH,
+        email,
+        password
       );
+
+      const user = userCredential.user;
+      setUser(user);
+      setIsVerified(false);
+
+      // Send verification email
+      await sendEmailVerification(user);
+      navigation.navigate("Verify", {
+        username,
+        email,
+        firstName,
+        lastName,
+      });
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Something went wrong");
+      if (error.code === "auth/email-already-in-use") {
+        setError("This email is already registered. Please use another email.");
+      } else {
+        setError(error.message || "Something went wrong.");
+      }
     } finally {
       setLoading(false);
     }
@@ -88,13 +91,10 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
       <View className="flex-1 items-center justify-center px-6">
         <BackButton onPress={() => navigation.navigate("Landing")} />
 
-        <Text className="text-3xl font-bold text-white mb-4">
-          Create an Account
-        </Text>
-        <Text className="text-lg text-gray-300 mb-6">
-          Join us to get started!
-        </Text>
+        <Text className="text-3xl font-bold text-white mb-4">Create an Account</Text>
+        <Text className="text-lg text-gray-300 mb-6">Join us to get started!</Text>
 
+        {/* Display error messages */}
         {error && <ErrorAlertComponent message={error} />}
 
         <CustomTextInput
@@ -138,12 +138,9 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           onChangeText={setConfirmPassword}
         />
 
-      <Button title="Register" onPress={handleRegister} isLoading={loading} color="bg-green-600" />
+        <Button title="Register" onPress={handleRegister} isLoading={loading} color="bg-green-600" />
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Login")}
-          className="mt-6"
-        >
+        <TouchableOpacity onPress={() => navigation.navigate("Login")} className="mt-6">
           <Text className="text-gray-300">
             Already have an account?{" "}
             <Text className="text-green-300 font-bold">Log in here</Text>
