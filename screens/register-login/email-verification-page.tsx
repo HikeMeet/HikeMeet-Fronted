@@ -41,29 +41,37 @@ export default function VerifyEmailPage({ navigation, route }: { navigation: any
     }
   };
 
-  const insertUser = async (userId: any) => {
-    try {
-      const response = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/user/insert`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username,
-            email,
-            first_name: firstName,
-            last_name: lastName,
-            firebase_id: userId,
-          }),
+    const insertUser = async (userId: any) => {
+      try {
+        const response = await fetch(
+          `${process.env.EXPO_LOCAL_SERVER}/api/user/insert`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              username,
+              email,
+              first_name: firstName,
+              last_name: lastName,
+              firebase_id: userId,
+            }),
+          }
+        );
+  
+        console.log(":::", response);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+  
+        const data = await response.json();
+        console.log("User inserted successfully:", data);
+      } catch (error) {
+        console.error("Error inserting user:", error);
       }
-    } catch (error) {
-      console.error("Error inserting user:", error);
-    }
-  };
+    };
+
 
   const checkVerificationStatus = async () => {
     if (user) {
@@ -71,6 +79,7 @@ export default function VerifyEmailPage({ navigation, route }: { navigation: any
         await user.reload();
         if (user.emailVerified) {
           insertUser(user.uid);
+          navigation.navigate("Login");
         } else {
           setMessage("Email not verified yet. Please check your inbox.");
         }
