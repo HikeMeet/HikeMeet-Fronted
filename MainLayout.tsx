@@ -12,16 +12,46 @@ const MainLayout = () => {
 
   useEffect(() => {
     const loadInitialRoute = async () => {
-      const storedRoute = await AsyncStorage.getItem("lastRoute");
-      setInitialRoute(storedRoute || (user ? (isVerified ? "Home" : "Verify") : "Landing"));   //need to fix navigation to home
-      setLoading(false);
+      try {
+        const storedUser = await AsyncStorage.getItem("user");
+        const storedRoute = await AsyncStorage.getItem("lastRoute");
+
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser.emailVerified) {
+            setInitialRoute("Home");
+          } else {
+            setInitialRoute("Verify");
+          }
+        } else {
+          setInitialRoute("Landing");
+        }
+
+        // שמירה של המסלול האחרון
+        if (storedRoute) {
+          setInitialRoute(storedRoute);
+        }
+      } catch (error) {
+        console.error("Error loading initial route:", error);
+        setInitialRoute("Landing");
+      } finally {
+        setLoading(false);
+      }
     };
+
     loadInitialRoute();
-  }, [user, isVerified]);
+  }, []);
 
   useEffect(() => {
-    AsyncStorage.setItem("lastRoute", user ? (isVerified ? "Home" : "Verify") : "Landing");   //need to fix navigation to home
-  }, [user, isVerified]);
+    const updateLastRoute = async () => {
+      if (!loading) {
+        const route = user ? (isVerified ? "Home" : "Verify") : "Landing";
+        await AsyncStorage.setItem("lastRoute", route);
+      }
+    };
+
+    updateLastRoute();
+  }, [user, isVerified, loading]);
 
   if (loading) {
     return (
@@ -31,7 +61,7 @@ const MainLayout = () => {
     );
   }
 
-  if (!user) return <SignInLandingStack />;   //need to combine with !isVerified
+  if (!user) return <SignInLandingStack />;
   if (!isVerified) return <SignInLandingStack />;
   return <BottomTabs />;
 };

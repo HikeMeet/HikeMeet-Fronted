@@ -1,15 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { View, Text, Alert, KeyboardAvoidingView, Platform } from "react-native";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
-import {
-  sendPasswordResetEmail,
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
@@ -18,6 +9,9 @@ import {
 } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
 import PasswordStrength from "../../components/password-strength";
+import BackButton from "../../components/BackButton";
+import CustomTextInput from "../../components/CustomTextInput";
+import Button from "../../components/Button";
 
 export default function ResetPasswordPage({ navigation }: { navigation: any }) {
   const [newPassword, setNewPassword] = useState("");
@@ -56,7 +50,7 @@ export default function ResetPasswordPage({ navigation }: { navigation: any }) {
         })
         .then(() => {
           Alert.alert("Success", "Password updated successfully");
-          navigation.navigate("Home"); // Navigate to the desired screen after update
+          navigation.navigate("Home");
         })
         .catch((error) => {
           Alert.alert(
@@ -75,6 +69,7 @@ export default function ResetPasswordPage({ navigation }: { navigation: any }) {
       className="flex-1 bg-blue-700"
     >
       <View className="flex-1 justify-center items-center p-5">
+        <BackButton onPress={() => navigation.goBack()} />
         <Text className="text-3xl font-bold text-white mb-4">
           Update Password
         </Text>
@@ -82,48 +77,33 @@ export default function ResetPasswordPage({ navigation }: { navigation: any }) {
           Enter your current password and a new password to update
         </Text>
 
-        <TextInput
-          className="w-full p-4 border border-gray-300 rounded-lg bg-white text-gray-800 text-lg mb-4"
+        <CustomTextInput
+          iconName="lock"
           placeholder="Current Password"
           secureTextEntry
           value={currentPassword}
           onChangeText={setCurrentPassword}
-          placeholderTextColor="#aaa"
         />
-        <TextInput
-          className="w-full p-4 border border-gray-300 rounded-lg bg-white text-gray-800 text-lg mb-4"
+        <CustomTextInput
+          iconName="lock-reset"
           placeholder="New Password"
           secureTextEntry
           value={newPassword}
           onChangeText={setNewPassword}
-          placeholderTextColor="#aaa"
         />
         <PasswordStrength password={newPassword} />
-
-        <TextInput
-          className="w-full p-4 border border-gray-300 rounded-lg bg-white text-gray-800 text-lg mb-4"
+        <CustomTextInput
+          iconName="lock-check"
           placeholder="Confirm New Password"
           secureTextEntry
           value={confirmPassword}
           onChangeText={setConfirmPassword}
-          placeholderTextColor="#aaa"
         />
 
-        <TouchableOpacity
-          className="w-full py-4 rounded-lg bg-blue-500 mb-4"
+        <Button
+          title="Update Password"
           onPress={handlePasswordUpdate}
-        >
-          <Text className="text-white text-center text-lg font-bold">
-            Update Password
-          </Text>
-        </TouchableOpacity>
-
-        {/* <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
-          <Text className="text-sm text-gray-300">
-            Changed your mind?{" "}
-            <Text className="text-blue-300 font-bold">Go back to Profile</Text>
-          </Text>
-        </TouchableOpacity> */}
+        />
       </View>
     </KeyboardAvoidingView>
   );
