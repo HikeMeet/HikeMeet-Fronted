@@ -1,15 +1,13 @@
 import React, { useState } from "react";
-import { FIREBASE_AUTH } from "../../firebaseconfig";
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   Alert,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
+import { FIREBASE_AUTH } from "../../firebaseconfig";
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
@@ -17,10 +15,13 @@ import {
 } from "firebase/auth";
 import { useAuth } from "../../contexts/AuthContext";
 import PasswordStrength, { evaluatePasswordStrength } from "../../components/password-strength";
-import ErrorAlertComponent from "../../components/error/ErrorAlertComponent"; // Component for error alerts
+import ErrorAlertComponent from "../../components/error/ErrorAlertComponent";
+import CustomTextInput from "../../components/CustomTextInput";
+import BackButton from "../../components/BackButton";
+import Button from "../../components/Button";
 
 export default function RegisterPage({ navigation }: { navigation: any }) {
-  const { setUser, setIsVerified } = useAuth(); // Accessing the AuthContext
+  const { setUser, setIsVerified } = useAuth();
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -33,7 +34,6 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
   const handleRegister = async () => {
     setError("");
 
-    // Validation for fields
     if (!email || !password || !confirmPassword) {
       setError("Please fill in all fields.");
       return;
@@ -44,39 +44,40 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
       return;
     }
 
-    const enforceStrongPassword = false; // Change to true to enforce strong passwords
+    const enforceStrongPassword = false;
     const passwordStrengthError = evaluatePasswordStrength(password, enforceStrongPassword);
     if (passwordStrengthError) {
       setError(passwordStrengthError);
       return;
     }
+
     try {
       setLoading(true);
 
-      createUserWithEmailAndPassword(FIREBASE_AUTH, email, password).then(
-        (userCredential: UserCredential) => {
-          const user = userCredential.user;
-          setUser(user); // Update the user in the context
-          setIsVerified(false); // Set user as not verified    
-          sendEmailVerification(user)
-            .then(() => {
-              console.log("User created successfuly!");
-
-              navigation.navigate("Verify", {
-                username,
-                email,
-                firstName,
-                lastName,
-              });
-            })
-            .catch((e) => {
-              Alert.alert("Email verification could not be sent");
-              console.log(e);
-            });
-        }
+      const userCredential: UserCredential = await createUserWithEmailAndPassword(
+        FIREBASE_AUTH,
+        email,
+        password
       );
+
+      const user = userCredential.user;
+      setUser(user);
+      setIsVerified(false);
+
+      // Send verification email
+      await sendEmailVerification(user);
+      navigation.navigate("Verify", {
+        username,
+        email,
+        firstName,
+        lastName,
+      });
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Something went wrong");
+      if (error.code === "auth/email-already-in-use") {
+        setError("This email is already registered. Please use another email.");
+      } else {
+        setError(error.message || "Something went wrong.");
+      }
     } finally {
       setLoading(false);
     }
@@ -88,92 +89,58 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
       className="flex-1 bg-slate-700"
     >
       <View className="flex-1 items-center justify-center px-6">
-        {/* Back Button */}
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Landing")}
-          className="absolute top-10 left-4 bg-gray-200 p-3 rounded-full"
-        >
-          <Text className="text-gray-800 font-bold">Back</Text>
-        </TouchableOpacity>
+        <BackButton onPress={() => navigation.navigate("Landing")} />
 
-        <Text className="text-3xl font-bold text-white mb-4">
-          Create an Account
-        </Text>
-        <Text className="text-lg text-gray-300 mb-6">
-          Join us to get started!
-        </Text>
+        <Text className="text-3xl font-bold text-white mb-4">Create an Account</Text>
+        <Text className="text-lg text-gray-300 mb-6">Join us to get started!</Text>
 
-        {/* Error message */}
+        {/* Display error messages */}
         {error && <ErrorAlertComponent message={error} />}
 
-        {/* Input fields */}
-        <TextInput
-          className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-4 text-gray-800"
+        <CustomTextInput
+          iconName="account"
           placeholder="Username"
           value={username}
           onChangeText={setUsername}
-          placeholderTextColor="#aaa"
         />
-        <TextInput
-          className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-4 text-gray-800"
+        <CustomTextInput
+          iconName="account-outline"
           placeholder="First Name"
           value={firstName}
           onChangeText={setFirstName}
-          placeholderTextColor="#aaa"
         />
-        <TextInput
-          className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-4 text-gray-800"
+        <CustomTextInput
+          iconName="account-outline"
           placeholder="Last Name"
           value={lastName}
           onChangeText={setLastName}
-          placeholderTextColor="#aaa"
         />
-        <TextInput
-          className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-4 text-gray-800"
+        <CustomTextInput
+          iconName="email"
           placeholder="Email"
           keyboardType="email-address"
           value={email}
           onChangeText={setEmail}
-          placeholderTextColor="#aaa"
         />
-        <TextInput
-          className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-4 text-gray-800"
+        <CustomTextInput
+          iconName="lock"
           placeholder="Password"
           secureTextEntry
           value={password}
           onChangeText={setPassword}
-          placeholderTextColor="#aaa"
         />
         <PasswordStrength password={password} />
-        <TextInput
-          className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-6 text-gray-800"
+        <CustomTextInput
+          iconName="lock"
           placeholder="Confirm Password"
           secureTextEntry
           value={confirmPassword}
           onChangeText={setConfirmPassword}
-          placeholderTextColor="#aaa"
         />
 
-        {/* Register button */}
-        <TouchableOpacity
-          className={`w-full p-4 rounded-lg ${
-            loading ? "bg-green-400" : "bg-green-600"
-          }`}
-          onPress={handleRegister}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text className="text-center text-white text-lg">Register</Text>
-          )}
-        </TouchableOpacity>
+        <Button title="Register" onPress={handleRegister} isLoading={loading} color="bg-green-600" />
 
-        {/* Redirect to login */}
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Login")}
-          className="mt-6"
-        >
+        <TouchableOpacity onPress={() => navigation.navigate("Login")} className="mt-6">
           <Text className="text-gray-300">
             Already have an account?{" "}
             <Text className="text-green-300 font-bold">Log in here</Text>

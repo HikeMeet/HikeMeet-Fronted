@@ -1,15 +1,29 @@
-import React from "react";
-import { View, Text, Button } from "react-native";
+import React, { useEffect } from "react";
+import { View, Text, Button, Alert } from "react-native";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "../../contexts/AuthContext";
 
 const Home = ({ navigation }: any) => {
-  const { setUser } = useAuth();
+  const { user, setUser, isVerified, setIsVerified } = useAuth();
+
+  useEffect(() => {
+    const checkUserState = async () => {
+      if (!user || !isVerified) {
+        Alert.alert("Session Expired", "Please log in again.");
+        navigation.navigate("Landing");
+      }
+    };
+
+    checkUserState();
+  }, [user, isVerified, navigation]);
 
   const handleLogout = async () => {
     try {
       await FIREBASE_AUTH.signOut();
-      setUser(null); // Clear user context
+      await AsyncStorage.removeItem("user");
+      setUser(null);
+      setIsVerified(false);
     } catch (error) {
       console.error("Error during logout:", error);
     }
@@ -17,8 +31,14 @@ const Home = ({ navigation }: any) => {
 
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Home Page</Text>
-      <Button onPress={() => navigation.navigate("Home")} title="Go to Home" />
+      <Text>Welcome to the Home Page</Text>
+      <Text style={{ marginTop: 10 }}>
+        {user?.email || "No user information available"}
+      </Text>
+      <Button
+        onPress={() => navigation.navigate("Home")}
+        title="Stay on Home Page"
+      />
       <Button onPress={handleLogout} title="Logout" />
     </View>
   );

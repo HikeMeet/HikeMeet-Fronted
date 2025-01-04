@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const loadUserFromStorage = async () => {
+    const initializeAuth = async () => {
       try {
         const storedUser = await AsyncStorage.getItem("user");
         if (storedUser) {
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    loadUserFromStorage();
+    initializeAuth();
 
     const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (currentUser) => {
       if (currentUser) {

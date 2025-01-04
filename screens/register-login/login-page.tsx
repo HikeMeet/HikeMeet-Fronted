@@ -2,27 +2,21 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   Alert,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useAuth } from "../../contexts/AuthContext";
+import CustomTextInput from "../../components/CustomTextInput";
+import BackButton from "../../components/BackButton";
+import Button from "../../components/Button";
 
-export default function LoginPage({
-  navigation,
-  route,
-}: {
-  navigation: any;
-  route: any;
-}) {
-  const { setUser, setIsVerified } = useAuth(); // Accessing setUser and setIsVerified from AuthContext
+export default function LoginPage({ navigation, route }: { navigation: any; route: any }) {
+  const { setUser, setIsVerified } = useAuth();
   const { toResetPassword } = route.params || {};
 
   const [email, setEmail] = useState("");
@@ -44,7 +38,7 @@ export default function LoginPage({
       setUser(result.user);
 
       if (!result.user.emailVerified) {
-        setIsVerified(false); // Set verification status to false
+        setIsVerified(false);
         Alert.alert("Verify Email", "Please verify your email before proceeding.", [
           {
             text: "OK",
@@ -52,12 +46,8 @@ export default function LoginPage({
           },
         ]);
       } else {
-        setIsVerified(true); // Set verification status to true
-        Alert.alert("Success", "Login successful!", [
-          {
-            text: "OK",
-          },
-        ]);
+        setIsVerified(true);
+        Alert.alert("Success", "Login successful!");
       }
     } catch (error: any) {
       Alert.alert("Login Error", error.message || "Something went wrong");
@@ -72,14 +62,7 @@ export default function LoginPage({
       className="flex-1 bg-blue-900"
     >
       <View className="flex-1 justify-center items-center p-5">
-        {/* Back Button */}
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Landing")}
-          className="absolute top-10 left-4 bg-gray-200 p-3 rounded-full flex-row items-center"
-        >
-          <Icon name="arrow-left" size={20} color="#333" />
-          <Text className="ml-2 text-gray-800 font-bold">Back</Text>
-        </TouchableOpacity>
+        <BackButton onPress={() => navigation.navigate("Landing")} />
 
         <Text className="text-3xl font-bold text-white mb-4">
           Welcome Back!
@@ -88,56 +71,28 @@ export default function LoginPage({
           Log in to your account
         </Text>
 
-        {/* Email Input with Icon */}
-        <View className="flex-row items-center w-full p-4 border border-gray-300 rounded-lg bg-white mb-4">
-        <Icon name="email" size={20} color="#aaa" style={{ marginRight: 8 }} />
-        <TextInput
-            className="flex-1 text-gray-800 text-lg"
-            placeholder="Email"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-            placeholderTextColor="#aaa"
-          />
-        </View>
+        <CustomTextInput
+          iconName="email"
+          placeholder="Email"
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <CustomTextInput
+          iconName="lock"
+          placeholder="Password"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
 
-        {/* Password Input with Icon */}
-        <View className="flex-row items-center w-full p-4 border border-gray-300 rounded-lg bg-white mb-4">
-        <Icon name="lock" size={20} color="#aaa" style={{ marginRight: 8 }} />
-        <TextInput
-            className="flex-1 text-gray-800 text-lg"
-            placeholder="Password"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-            placeholderTextColor="#aaa"
-          />
-        </View>
-
-        <TouchableOpacity
-          className={`w-full py-4 rounded-lg flex items-center ${
-            loading ? "bg-blue-300" : "bg-blue-500"
-          } mb-4 flex-row justify-center`}
-          onPress={handleLogin}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <>
-              <Text className="text-white text-center text-lg font-bold">
-                Login
-              </Text>
-            </>
-          )}
-        </TouchableOpacity>
+        <Button title="Login" onPress={handleLogin} isLoading={loading} />
 
         <TouchableOpacity
           onPress={() => navigation.navigate("Register")}
-          className="flex-row items-center"
+          className="flex-row items-center mt-4"
         >
-          <Icon name="account-plus" size={16} color="#aaa" />
-          <Text className="text-sm text-gray-300 ml-2">
+          <Text className="text-sm text-gray-300">
             Don't have an account?{" "}
             <Text className="text-blue-300 font-bold">Register here</Text>
           </Text>
@@ -147,8 +102,7 @@ export default function LoginPage({
           onPress={() => navigation.navigate("ForgotPassword")}
           className="flex-row items-center mt-2"
         >
-          <Icon name="lock-question" size={16} color="#aaa" />
-          <Text className="text-sm text-gray-300 ml-2">
+          <Text className="text-sm text-gray-300">
             Forgot your password?{" "}
             <Text className="text-blue-300 font-bold">Reset here</Text>
           </Text>
