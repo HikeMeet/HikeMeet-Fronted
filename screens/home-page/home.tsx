@@ -33,10 +33,7 @@ const Home = ({ navigation }: any) => {
       <Text style={{ marginTop: 10 }}>
         {user?.email || "No user information available"}
       </Text>
-      <Button
-        onPress={() => navigation.navigate("Home")}
-        title="Stay on Home Page"
-      />
+
       <Button onPress={handleLogout} title="Logout" />
     </View>
   );
