@@ -5,7 +5,13 @@ import { FIREBASE_AUTH } from "../../firebaseconfig";
 import BackButton from "../../components/BackButton";
 import Button from "../../components/Button";
 
-export default function VerifyEmailPage({ navigation, route }: { navigation: any; route: any }) {
+export default function VerifyEmailPage({
+  navigation,
+  route,
+}: {
+  navigation: any;
+  route: any;
+}) {
   const [message, setMessage] = useState<string>("");
   const [user, setUser] = useState<User | null>(null);
   const [isButtonDisabled, setIsButtonDisabled] = useState<boolean>(false);
@@ -41,37 +47,38 @@ export default function VerifyEmailPage({ navigation, route }: { navigation: any
     }
   };
 
-    const insertUser = async (userId: any) => {
-      try {
-        const response = await fetch(
-          `${process.env.EXPO_LOCAL_SERVER}/api/user/insert`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              username,
-              email,
-              first_name: firstName,
-              last_name: lastName,
-              firebase_id: userId,
-            }),
-          }
-        );
-  
-        console.log(":::", response);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+  const insertUser = async (userId: any) => {
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/user/insert`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+            email,
+            first_name: firstName,
+            last_name: lastName,
+            firebase_id: userId,
+          }),
         }
-  
-        const data = await response.json();
-        console.log("User inserted successfully:", data);
-      } catch (error) {
-        console.error("Error inserting user:", error);
-      }
-    };
+      );
 
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          `HTTP error! status: ${response.status}, error: ${data.error}`
+        );
+      }
+
+      console.log("User inserted successfully:", data);
+    } catch (error) {
+      console.error("Error inserting user:", error);
+    }
+  };
 
   const checkVerificationStatus = async () => {
     if (user) {
@@ -106,21 +113,29 @@ export default function VerifyEmailPage({ navigation, route }: { navigation: any
 
       {/* Message */}
       {message && (
-        <Text className="text-base text-red-500 text-center mb-4">{message}</Text>
+        <Text className="text-base text-red-500 text-center mb-4">
+          {message}
+        </Text>
       )}
 
       {/* Resend Email Button */}
-        <Button
-          title={isButtonDisabled ? `Resend in ${countdown}s` : "Resend Verification Email"}
-          onPress={resendVerificationEmail}
-          disabled={isButtonDisabled}
-          color={isButtonDisabled ? "bg-gray-400" : "bg-blue-500"} // Use consistent color props
-        />
-
+      <Button
+        title={
+          isButtonDisabled
+            ? `Resend in ${countdown}s`
+            : "Resend Verification Email"
+        }
+        onPress={resendVerificationEmail}
+        disabled={isButtonDisabled}
+        color={isButtonDisabled ? "bg-gray-400" : "bg-blue-500"} // Use consistent color props
+      />
 
       {/* Verification Confirmation Button */}
-      <Button title="I Have Verified My Email" onPress={checkVerificationStatus}  color="bg-green-600" />
-
+      <Button
+        title="I Have Verified My Email"
+        onPress={checkVerificationStatus}
+        color="bg-green-600"
+      />
 
       {/* Loading Indicator */}
       {isButtonDisabled && (

@@ -48,6 +48,7 @@ export default function LoginPage({ navigation, route }: { navigation: any; rout
       } else {
         setIsVerified(true);
         Alert.alert("Success", "Login successful!");
+        
       }
     } catch (error: any) {
       Alert.alert("Login Error", error.message || "Something went wrong");

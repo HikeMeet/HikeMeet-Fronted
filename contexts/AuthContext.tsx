@@ -10,6 +10,7 @@ interface AuthContextProps {
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   isVerified: boolean;
   setIsVerified: React.Dispatch<React.SetStateAction<boolean>>;
+  userId: string | null; // Add userId to the context
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isVerified, setIsVerified] = useState<boolean>(false);
+  const [userId, setUserId] = useState<string | null>(null); // State for userId
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -27,6 +29,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
           setIsVerified(parsedUser.emailVerified || false);
+          setUserId(parsedUser.uid || null); // Extract userId from the stored user
         }
       } catch (error) {
         console.error("Error loading user from AsyncStorage:", error);
@@ -37,17 +40,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     initializeAuth();
 
-    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        setIsVerified(currentUser.emailVerified);
-        await AsyncStorage.setItem("user", JSON.stringify(currentUser));
-      } else {
-        setUser(null);
-        setIsVerified(false);
-        await AsyncStorage.removeItem("user");
+    const unsubscribe = onAuthStateChanged(
+      FIREBASE_AUTH,
+      async (currentUser) => {
+        if (currentUser) {
+          setUser(currentUser);
+          setIsVerified(currentUser.emailVerified);
+          setUserId(currentUser.uid); // Set userId from Firebase user object
+          await AsyncStorage.setItem("user", JSON.stringify(currentUser));
+        } else {
+          setUser(null);
+          setIsVerified(false);
+          setUserId(null); // Clear userId when logged out
+          await AsyncStorage.removeItem("user");
+        }
       }
-    });
+    );
 
     return () => unsubscribe();
   }, []);
@@ -61,7 +69,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, setUser, isVerified, setIsVerified }}>
+    <AuthContext.Provider
+      value={{ user, setUser, isVerified, setIsVerified, userId }}
+    >
       {children}
     </AuthContext.Provider>
   );
