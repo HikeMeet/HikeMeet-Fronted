@@ -43,8 +43,9 @@ export default function VerifyEmailPage({ navigation, route }: { navigation: any
 
     const insertUser = async (userId: any) => {
       try {
+        console.log("aaaa");
         const response = await fetch(
-          `${process.env.EXPO_LOCAL_SERVER}/api/user/insert`,
+          `${process.env.EXPO_BASE_IP}/api/user/insert`,
           {
             method: "POST",
             headers: {
