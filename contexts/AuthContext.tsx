@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUserId(parsedUser.uid || null); // Extract userId from the stored user
         }
       } catch (error) {
-        console.error("Error loading user from Async Storage:", error);
+        console.error("Error loading user from AsyncStorage:", error);
       } finally {
         setLoading(false);
       }
