@@ -2,17 +2,18 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
 } from "react-native";
+
 import { FIREBASE_AUTH } from "../../firebaseconfig";
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
   UserCredential,
 } from "firebase/auth";
+
 import { useAuth } from "../../contexts/AuthContext";
 import PasswordStrength, { evaluatePasswordStrength } from "../../components/password-strength";
 import ErrorAlertComponent from "../../components/error/ErrorAlertComponent";
@@ -20,7 +21,11 @@ import CustomTextInput from "../../components/CustomTextInput";
 import BackButton from "../../components/BackButton";
 import Button from "../../components/Button";
 
-export default function RegisterPage({ navigation }: { navigation: any }) {
+interface RegisterScreenProps {
+  navigation: any;
+}
+
+const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const { setUser, setIsVerified } = useAuth();
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -44,6 +49,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
       return;
     }
 
+    // Password strength calculation
     const enforceStrongPassword = false;
     const passwordStrengthError = evaluatePasswordStrength(password, enforceStrongPassword);
     if (passwordStrengthError) {
@@ -72,11 +78,11 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
         firstName,
         lastName,
       });
-    } catch (error: any) {
-      if (error.code === "auth/email-already-in-use") {
+    } catch (err: any) {
+      if (err.code === "auth/email-already-in-use") {
         setError("This email is already registered. Please use another email.");
       } else {
-        setError(error.message || "Something went wrong.");
+        setError(err.message || "Something went wrong.");
       }
     } finally {
       setLoading(false);
@@ -95,7 +101,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
         <Text className="text-lg text-gray-300 mb-6">Join us to get started!</Text>
 
         {/* Display error messages */}
-        {error && <ErrorAlertComponent message={error} />}
+        {error ? <ErrorAlertComponent message={error} /> : null}
 
         <CustomTextInput
           iconName="account"
@@ -138,7 +144,12 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           onChangeText={setConfirmPassword}
         />
 
-        <Button title="Register" onPress={handleRegister} isLoading={loading} color="bg-green-600" />
+        <Button 
+          title="Register" 
+          onPress={handleRegister} 
+          isLoading={loading} 
+          color="bg-green-600" 
+        />
 
         <TouchableOpacity onPress={() => navigation.navigate("Login")} className="mt-6">
           <Text className="text-gray-300">
@@ -149,4 +160,6 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
       </View>
     </KeyboardAvoidingView>
   );
-}
+};
+
+export default RegisterScreen;
