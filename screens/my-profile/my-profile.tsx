@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,32 +10,40 @@ import {
 } from "react-native";
 import { MongoUser } from "../../interfaces/user-interface";
 import { useAuth } from "../../contexts/auth-context";
+import { useFocusEffect } from "@react-navigation/native";
 
 const ProfilePage = () => {
   const [user, setUser] = useState<MongoUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const { mongoId } = useAuth();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoId}`
-        );
-        if (!response.ok) {
-          throw new Error(`Error fetching user data: ${response.status}`);
+  useFocusEffect(
+    useCallback(() => {
+      const fetchUser = async () => {
+        try {
+          const response = await fetch(
+            `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoId}`
+          );
+          if (!response.ok) {
+            throw new Error(`Error fetching user data: ${response.status}`);
+          }
+          const data = await response.json();
+          setUser(data);
+        } catch (error) {
+          console.error("Error fetching user:", error);
+        } finally {
+          setLoading(false);
         }
-        const data: MongoUser = await response.json();
-        setUser(data);
-      } catch (error) {
-        console.error("Error fetching user:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
-    fetchUser();
-  }, [mongoId]);
+      fetchUser();
+
+      return () => {
+        // Optional: Cleanup logic when leaving the page
+        console.log("Cleaning up on screen blur");
+      };
+    }, [mongoId])
+  );
 
   if (loading) {
     return (
