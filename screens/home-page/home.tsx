@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { View, Text, Button, Alert } from "react-native";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/auth-context";
 
 const Home = ({ navigation }: any) => {
   const { user, setUser, isVerified, setIsVerified } = useAuth();

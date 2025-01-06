@@ -10,12 +10,19 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useAuth } from "../../contexts/AuthContext";
-import CustomTextInput from "../../components/CustomTextInput";
-import BackButton from "../../components/BackButton";
+import { useAuth } from "../../contexts/auth-context";
+import CustomTextInput from "../../components/custom-text-input";
+import BackButton from "../../components/back-button";
 import Button from "../../components/Button";
+import { CommonActions } from "@react-navigation/native";
 
-export default function LoginPage({ navigation, route }: { navigation: any; route: any }) {
+export default function LoginPage({
+  navigation,
+  route,
+}: {
+  navigation: any;
+  route: any;
+}) {
   const { setUser, setIsVerified } = useAuth();
   const { toResetPassword } = route.params || {};
 
@@ -39,16 +46,26 @@ export default function LoginPage({ navigation, route }: { navigation: any; rout
 
       if (!result.user.emailVerified) {
         setIsVerified(false);
-        Alert.alert("Verify Email", "Please verify your email before proceeding.", [
-          {
-            text: "OK",
-            onPress: () => navigation.navigate("Verify", { email }),
-          },
-        ]);
+        Alert.alert(
+          "Verify Email",
+          "Please verify your email before proceeding.",
+          [
+            {
+              text: "OK",
+              onPress: () => navigation.navigate("Verify", { email }),
+            },
+          ]
+        );
       } else {
         setIsVerified(true);
         Alert.alert("Success", "Login successful!");
-        
+        if (toResetPassword !== undefined) {
+          console.log(toResetPassword);
+          navigation.navigate(toResetPassword ? "ResetPassword" : "Home");
+        } else {
+          // Handle the case when toResetPassword is undefined
+          console.warn("toResetPassword is undefined");
+        }
       }
     } catch (error: any) {
       Alert.alert("Login Error", error.message || "Something went wrong");

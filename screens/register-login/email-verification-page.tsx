@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Image, Alert, ActivityIndicator } from "react-native";
 import { onAuthStateChanged, sendEmailVerification, User } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
-import BackButton from "../../components/BackButton";
+import BackButton from "../../components/back-button";
 import Button from "../../components/Button";
 
 export default function VerifyEmailPage({
@@ -16,6 +16,7 @@ export default function VerifyEmailPage({
   const [user, setUser] = useState<User | null>(null);
   const [isButtonDisabled, setIsButtonDisabled] = useState<boolean>(false);
   const [countdown, setCountdown] = useState<number>(0);
+
   const { username, email, firstName, lastName } = route.params;
 
   useEffect(() => {

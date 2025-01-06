@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useAuth } from "./contexts/AuthContext";
+import { useAuth } from "./contexts/auth-context";
 import SignInLandingStack from "./components/stacks/signin-landing-stack";
 import BottomTabs from "./components/stacks/bottom-tabs";
 import { View, ActivityIndicator } from "react-native";
