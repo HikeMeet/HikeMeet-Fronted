@@ -1,12 +1,22 @@
 import React, { useState } from "react";
-import { View, Text, Alert, KeyboardAvoidingView, Platform } from "react-native";
+import {
+  View,
+  Text,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
 import CustomTextInput from "../../components/CustomTextInput";
 import BackButton from "../../components/BackButton";
 import Button from "../../components/Button";
 
-export default function ForgotPasswordPage({ navigation }: { navigation: any }) {
+export default function ForgotPasswordPage({
+  navigation,
+}: {
+  navigation: any;
+}) {
   const [email, setEmail] = useState("");
 
   const handlePasswordReset = () => {
@@ -35,7 +45,9 @@ export default function ForgotPasswordPage({ navigation }: { navigation: any }) 
     >
       <View className="flex-1 justify-center items-center p-5">
         <BackButton onPress={() => navigation.goBack()} />
-        <Text className="text-3xl font-bold text-white mb-4">Reset Password</Text>
+        <Text className="text-3xl font-bold text-white mb-4">
+          Reset Password
+        </Text>
         <Text className="text-lg text-gray-300 mb-6">
           Enter your email to receive a password reset link
         </Text>
@@ -48,14 +60,13 @@ export default function ForgotPasswordPage({ navigation }: { navigation: any }) 
           onChangeText={setEmail}
         />
 
-        <Button
-          title="Send Reset Link"
-          onPress={handlePasswordReset}
-        />
+        <Button title="Send Reset Link" onPress={handlePasswordReset} />
 
         <Button
           title="Remembered your password? Log in here"
-          onPress={() => navigation.navigate("Login")}
+          onPress={() =>
+            navigation.navigate("Login", { toResetPassword: true })
+          }
           color="#6c757d"
         />
       </View>

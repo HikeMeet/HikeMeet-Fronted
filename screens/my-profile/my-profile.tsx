@@ -9,17 +9,18 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { MongoUser } from "../../interfaces/user-interface";
+import { useAuth } from "../../contexts/AuthContext";
 
 const ProfilePage = () => {
-  const id = "6779bdf8f86eb961d76cbae0"; // Assuming the user ID is passed as a route param
   const [user, setUser] = useState<MongoUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const { mongoId } = useAuth();
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await fetch(
-          `${process.env.EXPO_LOCAL_SERVER}/api/user/${id}`
+          `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoId}`
         );
         if (!response.ok) {
           throw new Error(`Error fetching user data: ${response.status}`);
@@ -34,7 +35,7 @@ const ProfilePage = () => {
     };
 
     fetchUser();
-  }, [id]);
+  }, [mongoId]);
 
   if (loading) {
     return (

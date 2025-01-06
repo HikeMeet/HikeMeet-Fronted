@@ -82,7 +82,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
       setLoading(false);
     }
   };
-
+  
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}

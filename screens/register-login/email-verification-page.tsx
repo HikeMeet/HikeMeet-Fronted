@@ -16,6 +16,7 @@ export default function VerifyEmailPage({
   const [user, setUser] = useState<User | null>(null);
   const [isButtonDisabled, setIsButtonDisabled] = useState<boolean>(false);
   const [countdown, setCountdown] = useState<number>(0);
+
   const { username, email, firstName, lastName } = route.params;
 
   useEffect(() => {
