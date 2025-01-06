@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Alert, KeyboardAvoidingView, Platform } from "react-native";
+import {
+  View,
+  Text,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import {
   updatePassword,
   reauthenticateWithCredential,
@@ -9,8 +15,8 @@ import {
 } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
 import PasswordStrength from "../../components/password-strength";
-import BackButton from "../../components/BackButton";
-import CustomTextInput from "../../components/CustomTextInput";
+import BackButton from "../../components/back-button";
+import CustomTextInput from "../../components/custom-text-input";
 import Button from "../../components/Button";
 
 export default function ResetPasswordPage({ navigation }: { navigation: any }) {
@@ -100,10 +106,7 @@ export default function ResetPasswordPage({ navigation }: { navigation: any }) {
           onChangeText={setConfirmPassword}
         />
 
-        <Button
-          title="Update Password"
-          onPress={handlePasswordUpdate}
-        />
+        <Button title="Update Password" onPress={handlePasswordUpdate} />
       </View>
     </KeyboardAvoidingView>
   );

@@ -13,11 +13,13 @@ import {
   sendEmailVerification,
   UserCredential,
 } from "firebase/auth";
-import { useAuth } from "../../contexts/AuthContext";
-import PasswordStrength, { evaluatePasswordStrength } from "../../components/password-strength";
-import ErrorAlertComponent from "../../components/error/ErrorAlertComponent";
-import CustomTextInput from "../../components/CustomTextInput";
-import BackButton from "../../components/BackButton";
+import { useAuth } from "../../contexts/auth-context";
+import PasswordStrength, {
+  evaluatePasswordStrength,
+} from "../../components/password-strength";
+import ErrorAlertComponent from "../../components/error/error-alert-component";
+import CustomTextInput from "../../components/custom-text-input";
+import BackButton from "../../components/back-button";
 import Button from "../../components/Button";
 
 export default function RegisterPage({ navigation }: { navigation: any }) {
@@ -45,7 +47,10 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
     }
 
     const enforceStrongPassword = false;
-    const passwordStrengthError = evaluatePasswordStrength(password, enforceStrongPassword);
+    const passwordStrengthError = evaluatePasswordStrength(
+      password,
+      enforceStrongPassword
+    );
     if (passwordStrengthError) {
       setError(passwordStrengthError);
       return;
@@ -54,11 +59,8 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
     try {
       setLoading(true);
 
-      const userCredential: UserCredential = await createUserWithEmailAndPassword(
-        FIREBASE_AUTH,
-        email,
-        password
-      );
+      const userCredential: UserCredential =
+        await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
 
       const user = userCredential.user;
       setUser(user);
@@ -82,7 +84,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
       setLoading(false);
     }
   };
-  
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -91,8 +93,12 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
       <View className="flex-1 items-center justify-center px-6">
         <BackButton onPress={() => navigation.navigate("Landing")} />
 
-        <Text className="text-3xl font-bold text-white mb-4">Create an Account</Text>
-        <Text className="text-lg text-gray-300 mb-6">Join us to get started!</Text>
+        <Text className="text-3xl font-bold text-white mb-4">
+          Create an Account
+        </Text>
+        <Text className="text-lg text-gray-300 mb-6">
+          Join us to get started!
+        </Text>
 
         {/* Display error messages */}
         {error && <ErrorAlertComponent message={error} />}
@@ -138,9 +144,17 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           onChangeText={setConfirmPassword}
         />
 
-        <Button title="Register" onPress={handleRegister} isLoading={loading} color="bg-green-600" />
+        <Button
+          title="Register"
+          onPress={handleRegister}
+          isLoading={loading}
+          color="bg-green-600"
+        />
 
-        <TouchableOpacity onPress={() => navigation.navigate("Login")} className="mt-6">
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Login")}
+          className="mt-6"
+        >
           <Text className="text-gray-300">
             Already have an account?{" "}
             <Text className="text-green-300 font-bold">Log in here</Text>

@@ -10,9 +10,9 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useAuth } from "../../contexts/AuthContext";
-import CustomTextInput from "../../components/CustomTextInput";
-import BackButton from "../../components/BackButton";
+import { useAuth } from "../../contexts/auth-context";
+import CustomTextInput from "../../components/custom-text-input";
+import BackButton from "../../components/back-button";
 import Button from "../../components/Button";
 import { CommonActions } from "@react-navigation/native";
 

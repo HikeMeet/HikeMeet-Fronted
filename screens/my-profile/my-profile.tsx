@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { MongoUser } from "../../interfaces/user-interface";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/auth-context";
 
 const ProfilePage = () => {
   const [user, setUser] = useState<MongoUser | null>(null);

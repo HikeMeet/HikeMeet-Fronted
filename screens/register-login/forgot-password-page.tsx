@@ -8,8 +8,8 @@ import {
 } from "react-native";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
-import CustomTextInput from "../../components/CustomTextInput";
-import BackButton from "../../components/BackButton";
+import CustomTextInput from "../../components/custom-text-input";
+import BackButton from "../../components/back-button";
 import Button from "../../components/Button";
 
 export default function ForgotPasswordPage({
