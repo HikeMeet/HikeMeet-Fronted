@@ -13,6 +13,7 @@ interface AuthContextProps {
   setIsVerified: React.Dispatch<React.SetStateAction<boolean>>;
   userId: string | null; // Add userId to the context
   mongoId: string | null; // MongoDB _id
+  setMongoId: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -54,17 +55,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(currentUser);
           setIsVerified(currentUser.emailVerified);
           setUserId(currentUser.uid); // Set userId from Firebase user object
-          try {
-            const response = await fetch(
-              `${process.env.EXPO_LOCAL_SERVER}/api/user/${currentUser.uid}?firebase=true`
-            );
-            if (!response.ok) {
-              throw new Error(`Error fetching user data: ${response.status}`);
+          if (currentUser.emailVerified) {
+            try {
+              const response = await fetch(
+                `${process.env.EXPO_LOCAL_SERVER}/api/user/${currentUser.uid}?firebase=true`
+              );
+              if (!response.ok) {
+                throw new Error(`Error fetching user data: ${response.status}`);
+              }
+              const data: MongoUser = await response.json();
+              setMongoId(data._id);
+            } catch (error) {
+              console.error("Error fetching user:", error);
             }
-            const data: MongoUser = await response.json();
-            setMongoId(data._id);
-          } catch (error) {
-            console.error("Error fetching user:", error);
           }
 
           //*******
@@ -95,7 +98,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, setUser, isVerified, setIsVerified, userId, mongoId }}
+      value={{
+        user,
+        setUser,
+        isVerified,
+        setIsVerified,
+        userId,
+        mongoId,
+        setMongoId,
+      }}
     >
       {children}
     </AuthContext.Provider>
