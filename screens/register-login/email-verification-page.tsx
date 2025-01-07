@@ -48,7 +48,7 @@ export default function VerifyEmailPage({
     }
   };
 
-  const insertUser = async (userId: any) => {
+  const insertUser = async (userId: string): Promise<string | null> => {
     try {
       const response = await fetch(
         `${process.env.EXPO_LOCAL_SERVER}/api/user/insert`,
@@ -75,9 +75,11 @@ export default function VerifyEmailPage({
         );
       }
 
-      console.log("User inserted successfully:", data);
+      console.log("data:\n", data.user._id);
+      return data.user._id; // Return the _id
     } catch (error) {
       console.error("Error inserting user:", error);
+      return null; // Return null in case of error
     }
   };
 
@@ -86,8 +88,10 @@ export default function VerifyEmailPage({
       try {
         await user.reload();
         if (user.emailVerified) {
-          insertUser(user.uid);
-          navigation.navigate("Login");
+          const registeredMonogoId = insertUser(user.uid);
+          navigation.navigate("Login", {
+            registeredMonogoId: registeredMonogoId,
+          });
         } else {
           setMessage("Email not verified yet. Please check your inbox.");
         }
