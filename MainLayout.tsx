@@ -4,6 +4,7 @@ import { useAuth } from "./contexts/auth-context";
 import SignInLandingStack from "./components/stacks/signin-landing-stack";
 import BottomTabs from "./components/stacks/bottom-tabs";
 import { View, ActivityIndicator } from "react-native";
+import NonTabScreensStack from "./components/stacks/non-tab-stack";
 
 const MainLayout = () => {
   const { user, isVerified } = useAuth();
@@ -63,7 +64,7 @@ const MainLayout = () => {
 
   if (!user) return <SignInLandingStack />;
   if (!isVerified) return <SignInLandingStack />;
-  return <BottomTabs />;
+  return <NonTabScreensStack />;
 };
 
 export default MainLayout;
