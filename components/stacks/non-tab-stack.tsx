@@ -39,14 +39,6 @@ const NonTabScreensStack = () => {
           title: "Home", // Set the title for the settings screen
         }}
       />
-      <Stack.Screen
-        name="Profile"
-        component={ProfilePage}
-        options={{
-          headerShown: true, // Show the header for the settings screen
-          title: "Profile", // Set the title for the settings screen
-        }}
-      />
     </Stack.Navigator>
   );
 };
