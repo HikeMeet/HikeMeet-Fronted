@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,66 +6,48 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import {
-  updatePassword,
-  reauthenticateWithCredential,
-  EmailAuthProvider,
-  onAuthStateChanged,
-  User,
-} from "firebase/auth";
-import { FIREBASE_AUTH } from "../../firebaseconfig";
-import PasswordStrength from "../../components/password-strength";
-import BackButton from "../../components/back-button";
 import CustomTextInput from "../../components/custom-text-input";
+import BackButton from "../../components/back-button";
 import Button from "../../components/Button";
 
-export default function ResetPasswordPage({ navigation }: { navigation: any }) {
+export default function ResetPasswordPage({ navigation, route }: { navigation: any; route: any }) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [user, setUser] = useState<User | null>(null);
+  const { email } = route.params;
 
-  useEffect(() => {
-    onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
-      setUser(currentUser);
-    });
-  }, []);
-
-  const handlePasswordUpdate = () => {
-    if (!currentPassword || !newPassword || !confirmPassword) {
+  const handlePasswordUpdate = async () => {
+    if (!newPassword || !confirmPassword) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert("Error", "New passwords do not match");
+      Alert.alert("Error", "Passwords do not match");
       return;
     }
 
-    if (user && user.email) {
-      const credential = EmailAuthProvider.credential(
-        user.email,
-        currentPassword
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/user/reset-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, newPassword }),
+        }
       );
 
-      // Re-authenticate the user
-      reauthenticateWithCredential(user, credential)
-        .then(() => {
-          // Update the password
-          return updatePassword(user, newPassword);
-        })
-        .then(() => {
-          Alert.alert("Success", "Password updated successfully");
-          navigation.navigate("Home");
-        })
-        .catch((error) => {
-          Alert.alert(
-            "Error",
-            error.message || "An error occurred during password update"
-          );
-        });
-    } else {
-      Alert.alert("Error", "No authenticated user found");
+      if (response.ok) {
+        Alert.alert("Success", "Your password has been updated successfully.");
+        navigation.navigate("Login");
+      } else {
+        const { error } = await response.json();
+        Alert.alert("Error", error || "An error occurred");
+      }
+    } catch (error) {
+      console.error("Error updating password:", error);
+      Alert.alert("Error", "An error occurred. Please try again later.");
     }
   };
 
@@ -76,20 +58,11 @@ export default function ResetPasswordPage({ navigation }: { navigation: any }) {
     >
       <View className="flex-1 justify-center items-center p-5">
         <BackButton onPress={() => navigation.goBack()} />
-        <Text className="text-3xl font-bold text-white mb-4">
-          Update Password
-        </Text>
+        <Text className="text-3xl font-bold text-white mb-4">Update Password</Text>
         <Text className="text-lg text-gray-300 mb-6">
-          Enter your current password and a new password to update
+          Enter your new password below.
         </Text>
 
-        <CustomTextInput
-          iconName="lock"
-          placeholder="Current Password"
-          secureTextEntry
-          value={currentPassword}
-          onChangeText={setCurrentPassword}
-        />
         <CustomTextInput
           iconName="lock-reset"
           placeholder="New Password"
@@ -97,7 +70,6 @@ export default function ResetPasswordPage({ navigation }: { navigation: any }) {
           value={newPassword}
           onChangeText={setNewPassword}
         />
-        <PasswordStrength password={newPassword} />
         <CustomTextInput
           iconName="lock-check"
           placeholder="Confirm New Password"

@@ -1,49 +1,21 @@
 import React, { useState, useRef, useEffect } from "react";
-import {View,Text,TextInput,TouchableOpacity,Alert,KeyboardAvoidingView,Platform,ActivityIndicator,} from "react-native";
-import { handleRegisterService } from "../../api/Registeration/handleRegisterService";
-import {verifyEmailCode,resendVerificationCode,} from "../../api/Registeration/VerificationService";
-import { createFirebaseUser } from "../../api/Registeration/firebaseAuth";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
 
-export default function VerificationPage({ route, navigation }: { route: any; navigation: any }) {   //need to fix the navigation move bottom-tab and not to home specific
-
-  const { email, username, firstName, lastName, password } = route.params;
+export default function VerificationPage({ route, navigation }: { route: any; navigation: any }) {
+  const { email } = route.params;
   const [code, setCode] = useState(["", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
-  const [timer, setTimer] = useState(60);
-  const [isResendAllowed, setIsResendAllowed] = useState(false);
+
   const inputs = useRef<Array<TextInput | null>>([]);
-
-  // Countdown timer for resend functionality
-  useEffect(() => {
-
-    let interval: NodeJS.Timeout | null = null;
-    if (timer > 0) {
-      interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
-    } else {
-      setIsResendAllowed(true);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [timer]);
-
-  const handleResendCode = async () => {
-    try {
-
-      setLoading(true);
-      const response = await resendVerificationCode(email);
-      if (!response.success) {
-        throw new Error(response.error || "Failed to resend verification code.");
-      }
-      Alert.alert("Success", "Verification code has been resent.");
-      setTimer(60);
-      setIsResendAllowed(false);
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Something went wrong.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleChange = (text: string, index: number) => {
     const newCode = [...code];
@@ -55,33 +27,40 @@ export default function VerificationPage({ route, navigation }: { route: any; na
     }
   };
 
-  const handleVerification = async () => {
+  const handleVerifyCode = async () => {
     try {
       setLoading(true);
+  
       const verificationCode = code.join("");
+      console.log("Sending verification code to server:", verificationCode);
   
-      // Verify the code with the server
-      const response = await verifyEmailCode({ email, code: verificationCode });
-      if (!response.success) {
-        throw new Error(response.error || "Invalid verification code.");
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/user/verify-code`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, code: verificationCode }),
+        }
+      );
+  
+      if (response.ok) {
+        Alert.alert("Success", "Verification successful!");
+        navigation.navigate("ResetPasswordPage", { email });
+      } else {
+        const errorResponse = await response.json();
+        console.error("Error response from server:", errorResponse);
+        Alert.alert("Error", errorResponse.error || "Invalid verification code");
       }
-  
-      // Create the user in Firebase
-      const firebaseResponse = await createFirebaseUser(email, password);
-      if (!firebaseResponse.success) {
-        throw new Error(firebaseResponse.error || "Failed to create Firebase user.");
-      }
-  
-      Alert.alert("Success", "User verified and registered!", [
-        { text: "OK", onPress: () => navigation.navigate("Home") },
-      ]);
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Something went wrong.");
+    } catch (error) {
+      console.error("Error verifying code:", error);
+      Alert.alert("Error", "An error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }
   };
-
+  
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -90,10 +69,9 @@ export default function VerificationPage({ route, navigation }: { route: any; na
       <View className="w-full max-w-sm p-6 bg-white rounded-lg shadow-md">
         <Text className="text-2xl font-bold text-gray-800 text-center mb-4">Verify Your Email</Text>
         <Text className="text-lg text-gray-600 text-center mb-6">
-          A verification code has been sent to <Text className="font-semibold">{email}</Text>.
+          Enter the 5-digit code sent to <Text className="font-semibold">{email}</Text>.
         </Text>
 
-        {/* Segmented Input for Verification Code */}
         <View className="flex-row justify-between mb-6">
           {code.map((digit, index) => (
             <TextInput
@@ -110,7 +88,7 @@ export default function VerificationPage({ route, navigation }: { route: any; na
 
         <TouchableOpacity
           className={`w-full py-4 rounded-lg ${loading ? "bg-gray-400" : "bg-green-600"}`}
-          onPress={handleVerification}
+          onPress={handleVerifyCode}
           disabled={loading}
         >
           {loading ? (
@@ -119,24 +97,6 @@ export default function VerificationPage({ route, navigation }: { route: any; na
             <Text className="text-center text-white text-lg font-bold">Verify</Text>
           )}
         </TouchableOpacity>
-
-        {/* Resend Code Section */}
-        <Text className="text-center text-gray-500 mt-4">
-          Didn't receive the code?{" "}
-          <TouchableOpacity
-            disabled={!isResendAllowed || loading}
-            onPress={handleResendCode}
-          >
-            <Text
-              className={`${
-                isResendAllowed ? "text-green-600 font-bold" : "text-gray-400"
-              }`}
-            >
-              Resend Code
-            </Text>
-          </TouchableOpacity>
-        </Text>
-        {timer > 0 && <Text className="text-center text-gray-500 mt-2">Resend available in {timer} seconds.</Text>}
       </View>
     </KeyboardAvoidingView>
   );
