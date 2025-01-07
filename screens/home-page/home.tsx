@@ -22,6 +22,7 @@ const Home = ({ navigation }: any) => {
     try {
       await FIREBASE_AUTH.signOut();
       await AsyncStorage.removeItem("user");
+      navigation.navigate("Landing");
     } catch (error) {
       console.error("Error during logout:", error);
     }
