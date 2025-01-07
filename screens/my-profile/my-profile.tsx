@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -7,14 +7,19 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  SafeAreaView,
+  StatusBar,
+  Alert,
 } from "react-native";
 import { MongoUser } from "../../interfaces/user-interface";
 import { useAuth } from "../../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
 
-const ProfilePage = () => {
+const ProfilePage = ({ navigation }: any) => {
   const [user, setUser] = useState<MongoUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [saving, setSaving] = useState<boolean>(false);
+  const [bio, setBio] = useState<string | undefined>("");
   const { mongoId } = useAuth();
 
   useFocusEffect(
@@ -29,8 +34,10 @@ const ProfilePage = () => {
           }
           const data = await response.json();
           setUser(data);
+          setBio(data.bio); // Set initial bio
         } catch (error) {
           console.error("Error fetching user:", error);
+          Alert.alert("Error", "Failed to fetch user data. Please try again.");
         } finally {
           setLoading(false);
         }
@@ -39,15 +46,41 @@ const ProfilePage = () => {
       fetchUser();
 
       return () => {
-        // Optional: Cleanup logic when leaving the page
         console.log("Cleaning up on screen blur");
       };
     }, [mongoId])
   );
 
+  const handleSaveBio = async () => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      console.log(mongoId);
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoId}/update`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ bio: bio }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to update bio.");
+      }
+      Alert.alert("Success", "Bio updated successfully.");
+    } catch (error) {
+      console.error("Error updating bio:", error);
+      Alert.alert("Error", "Failed to update bio. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center">
+      <View className="flex-1 justify-center items-center bg-white">
         <ActivityIndicator size="large" color="#0000ff" />
         <Text>Loading user profile...</Text>
       </View>
@@ -56,18 +89,39 @@ const ProfilePage = () => {
 
   if (!user) {
     return (
-      <View className="flex-1 justify-center items-center">
+      <View className="flex-1 justify-center items-center bg-white">
         <Text>Failed to load user data.</Text>
+        <TouchableOpacity
+          onPress={() => {
+            setLoading(true);
+            navigation.navigate("ProfilePage"); // Reload
+          }}
+          className="mt-4 bg-blue-500 px-4 py-2 rounded"
+        >
+          <Text className="text-white">Retry</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-white">
-      {/* Header */}
-      <View className="flex-row justify-between items-center p-5 bg-gray-100"></View>
+    <SafeAreaView className="flex-1 bg-white">
+      <StatusBar barStyle="dark-content" backgroundColor="white" />
 
-      {/* Scrollable Content */}
+      {/* Header */}
+      <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
+        <Text className="text-xl font-bold">Profile</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
+          <Image
+            source={{
+              uri: "https://cdn-icons-png.flaticon.com/512/2099/2099058.png",
+            }}
+            className="w-6 h-6"
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Main Content */}
       <ScrollView className="flex-1 p-4">
         {/* Profile Info */}
         <View className="flex-row items-center mb-4">
@@ -80,16 +134,9 @@ const ProfilePage = () => {
           <View className="flex-1">
             <Text className="text-lg font-bold">{user.username}</Text>
             <Text className="text-lg font-bold mb-1">{`${user.first_name} ${user.last_name}`}</Text>
-            <Text className="text-sm text-gray-500 mb-2">Rank: Adventurer</Text>
-            <TouchableOpacity className="bg-gray-200 px-4 py-2 rounded mb-2 flex-row items-center">
-              <Image
-                source={{
-                  uri: "https://cdn-icons-png.flaticon.com/512/847/847969.png",
-                }}
-                className="w-4 h-4 mr-2"
-              />
-              <Text>Hikers</Text>
-            </TouchableOpacity>
+            <Text className="text-sm text-gray-500 mb-2">
+              Rank: {"Adventurer"}
+            </Text>
           </View>
         </View>
 
@@ -99,13 +146,24 @@ const ProfilePage = () => {
           <TextInput
             className="border border-gray-300 p-2 rounded min-h-[60px]"
             placeholder="Write your bio here..."
-            editable={false}
             multiline
-            value={user.bio}
+            value={bio}
+            onChangeText={setBio}
           />
+          <TouchableOpacity
+            onPress={handleSaveBio}
+            className={`mt-4 bg-blue-500 px-4 py-2 rounded ${
+              saving ? "opacity-50" : ""
+            }`}
+            disabled={saving}
+          >
+            <Text className="text-white text-center">
+              {saving ? "Saving..." : "Save Bio"}
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -15,6 +15,7 @@ const BottomTabs = () => {
   return (
     <Provider>
       <Tab.Navigator
+        initialRouteName="Home" // Set the default page here
         screenOptions={{
           headerShown: false,
           tabBarStyle: { display: "none" }, // מחביא את הטאב המובנה
