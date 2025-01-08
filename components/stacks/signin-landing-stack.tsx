@@ -6,7 +6,7 @@ import LoginPage from "../../screens/register-login/login-page";
 import RegisterPage from "../../screens/register-login/register-page";
 import ForgotPasswordPage from "../../screens/register-login/forgot-password-page";
 import ResetPasswordPage from "../../screens/register-login/reset-password-page";
-import VerificationPage from "../../screens/register-login/VerificationPage";
+import VerificationPage from "../../screens/register-login/verification-page";
 
 const Stack = createNativeStackNavigator();
 

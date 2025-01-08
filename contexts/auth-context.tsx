@@ -30,7 +30,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const storedUser = await AsyncStorage.getItem("user");
         const storedMongoId = await AsyncStorage.getItem("mongoId");
-
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
