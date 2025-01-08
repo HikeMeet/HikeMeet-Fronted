@@ -84,6 +84,7 @@ export default function VerifyEmailPage({
   };
 
   const checkVerificationStatus = async () => {
+    console.log(user);
     if (user) {
       try {
         await user.reload();

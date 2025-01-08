@@ -75,7 +75,7 @@ export default function ResetPasswordPage({ navigation }: { navigation: any }) {
       className="flex-1 bg-blue-700"
     >
       <View className="flex-1 justify-center items-center p-5">
-        <BackButton onPress={() => navigation.goBack()} />
+        {/* <BackButton onPress={() => navigation.goBack()} /> */}
         <Text className="text-3xl font-bold text-white mb-4">
           Update Password
         </Text>
