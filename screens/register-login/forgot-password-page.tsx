@@ -52,7 +52,7 @@ export default function ForgotPasswordPage({ navigation }: { navigation: any }) 
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1 bg-blue-700"
     >
-      <View className="flex-1 justify-center items-center p-5">
+      <View className="flex-1 justify-center items-center p-4">
         <BackButton onPress={() => navigation.goBack()} />
         <Text className="text-3xl font-bold text-white mb-4">Reset Password</Text>
         <Text className="text-lg text-gray-300 mb-6">
