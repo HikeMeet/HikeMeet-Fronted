@@ -6,36 +6,45 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { sendPasswordResetEmail } from "firebase/auth";
-import { FIREBASE_AUTH } from "../../firebaseconfig";
 import CustomTextInput from "../../components/custom-text-input";
 import BackButton from "../../components/back-button";
 import Button from "../../components/Button";
 
-export default function ForgotPasswordPage({
-  navigation,
-}: {
-  navigation: any;
-}) {
+export default function ForgotPasswordPage({ navigation }: { navigation: any }) {
   const [email, setEmail] = useState("");
 
-  const handlePasswordReset = () => {
+  const handleSendVerificationCode = async () => {
     if (!email) {
       Alert.alert("Error", "Please enter your email address");
       return;
     }
 
-    sendPasswordResetEmail(FIREBASE_AUTH, email)
-      .then(() => {
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/user/send-verification-code`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        }
+      );
+
+      if (response.ok) {
         Alert.alert(
-          "Password Reset",
-          "A password reset link has been sent to your email address."
+          "Success",
+          "A verification code has been sent to your email."
         );
-        navigation.navigate("Login", { toResetPassword: true });
-      })
-      .catch((error) => {
-        Alert.alert("Error", error.message || "An error occurred");
-      });
+        navigation.navigate("VerificationPage", { email });
+      } else {
+        const { error } = await response.json();
+        Alert.alert("Error", error || "An error occurred");
+      }
+    } catch (error) {
+      console.error("Error sending verification code:", error);
+      Alert.alert("Error", "An error occurred. Please try again later.");
+    }
   };
 
   return (
@@ -45,11 +54,9 @@ export default function ForgotPasswordPage({
     >
       <View className="flex-1 justify-center items-center p-5">
         <BackButton onPress={() => navigation.goBack()} />
-        <Text className="text-3xl font-bold text-white mb-4">
-          Reset Password
-        </Text>
+        <Text className="text-3xl font-bold text-white mb-4">Reset Password</Text>
         <Text className="text-lg text-gray-300 mb-6">
-          Enter your email to receive a password reset link
+          Enter your email to receive a verification code.
         </Text>
 
         <CustomTextInput
@@ -60,15 +67,7 @@ export default function ForgotPasswordPage({
           onChangeText={setEmail}
         />
 
-        <Button title="Send Reset Link" onPress={handlePasswordReset} />
-
-        <Button
-          title="Remembered your password? Log in here"
-          onPress={() =>
-            navigation.navigate("Login", { toResetPassword: true })
-          }
-          color="#6c757d"
-        />
+        <Button title="Send Verification Code" onPress={handleSendVerificationCode} />
       </View>
     </KeyboardAvoidingView>
   );
