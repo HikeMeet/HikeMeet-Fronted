@@ -41,7 +41,7 @@ const SettingsScreen = ({ navigation }: any) => {
         />
         <SettingsButton
           title="Reset password"
-          onPress={() => navigation.navigate("ResetPasswordPage")}
+          onPress={() => console.log("go to reset page")}
         />
       </View>
 
