@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const storedUser = await AsyncStorage.getItem("user");
         const storedMongoId = await AsyncStorage.getItem("mongoId");
-
+  
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
     initializeAuth();
-
+  
     const unsubscribe = onAuthStateChanged(
       FIREBASE_AUTH,
       async (currentUser) => {
@@ -55,8 +55,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(currentUser);
           setIsVerified(currentUser.emailVerified);
           setUserId(currentUser.uid); // Set userId from Firebase user object
+  
           if (currentUser.emailVerified) {
             try {
+              console.log("Fetching user from MongoDB...");
               const response = await fetch(
                 `${process.env.EXPO_LOCAL_SERVER}/api/user/${currentUser.uid}?firebase=true`
               );
@@ -64,18 +66,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 throw new Error(`Error fetching user data: ${response.status}`);
               }
               const data: MongoUser = await response.json();
+              console.log("MongoDB User Data:", data); // Log MongoDB user data
               setMongoId(data._id);
+              console.log("MongoDB User Name:", data.name); // Log user name
             } catch (error) {
               console.error("Error fetching user:", error);
             }
           }
-
-          //*******
-          // endpoint */
-
+  
+          // Save to AsyncStorage
           await AsyncStorage.setItem("user", JSON.stringify(currentUser));
           await AsyncStorage.setItem("mongoId", "");
         } else {
+          console.log("No user is logged in");
           setUser(null);
           setIsVerified(false);
           setUserId(null); // Clear userId when logged out
@@ -84,9 +87,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
     );
-
+  
     return () => unsubscribe();
   }, []);
+  
 
   if (loading) {
     return (

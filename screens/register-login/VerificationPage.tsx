@@ -45,7 +45,7 @@ export default function VerificationPage({ route, navigation }: { route: any; na
 
       if (response.ok) {
         Alert.alert("Success", "Verification successful!");
-        navigation.navigate("ResetPasswordPage", { email }); // Navigate to reset password page
+        navigation.navigate("ResetPasswordPagetwo", { email }); // Navigate to reset password page
       } else {
         const errorResponse = await response.json();
         Alert.alert("Error", errorResponse.error || "Invalid verification code");

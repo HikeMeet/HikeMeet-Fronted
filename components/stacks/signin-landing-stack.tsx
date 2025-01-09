@@ -7,6 +7,7 @@ import RegisterPage from "../../screens/register-login/register-page";
 import ForgotPasswordPage from "../../screens/register-login/forgot-password-page";
 import ResetPasswordPage from "../../screens/register-login/reset-password-page";
 import VerificationPage from "../../screens/register-login/VerificationPage";
+import ResetPasswordPagetwo from "../../screens/register-login/reset-password-page-two";
 
 const Stack = createNativeStackNavigator();
 
@@ -43,6 +44,13 @@ const SignInLandingStack = () => {
         component={ResetPasswordPage}
         options={{ headerShown: false }}
       />
+
+      <Stack.Screen
+        name="ResetPasswordPagetwo"
+        component={ResetPasswordPagetwo}
+        options={{ headerShown: false }}
+      />
+
      <Stack.Screen
         name="VerificationPage"
         component={VerificationPage}
