@@ -21,7 +21,7 @@ export default function ForgotPasswordPage({ navigation }: { navigation: any }) 
 
     try {
       const response = await fetch(
-        `http://192.168.0.102:5000/api/user/send-verification-code`,
+        `${process.env.EXPO_BASE_IP}/api/user/send-verification-code`,
         {
           method: "POST",
           headers: {

@@ -51,7 +51,7 @@ export default function VerifyEmailPage({
   const insertUser = async (userId: string): Promise<string | null> => {
     try {
       const response = await fetch(
-        `http://192.168.0.102:5000/api/user/insert`,
+        `${process.env.EXPO_BASE_IP}/api/user/insert`,
         {
           method: "POST",
           headers: {
