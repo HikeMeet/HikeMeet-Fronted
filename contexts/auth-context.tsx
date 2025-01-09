@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             try {
               console.log("Fetching user from MongoDB...");
               const response = await fetch(
-                `${process.env.EXPO_LOCAL_SERVER}/api/user/${currentUser.uid}?firebase=true`
+                `http://192.168.0.102:5000/api/user/${currentUser.uid}?firebase=true`
               );
               if (!response.ok) {
                 throw new Error(`Error fetching user data: ${response.status}`);
@@ -68,7 +68,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               const data: MongoUser = await response.json();
               console.log("MongoDB User Data:", data); // Log MongoDB user data
               setMongoId(data._id);
-              console.log("MongoDB User Name:", data.name); // Log user name
             } catch (error) {
               console.error("Error fetching user:", error);
             }

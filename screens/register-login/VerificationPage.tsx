@@ -35,7 +35,7 @@ export default function VerificationPage({ route, navigation }: { route: any; na
     try {
       setLoading(true);
       setIsSubmitting(true); // Set submitting state to true
-      const response = await fetch(`${process.env.EXPO_LOCAL_SERVER}/api/user/verify-code`, {
+      const response = await fetch(`http://192.168.0.102:5000/api/user/verify-code`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -62,7 +62,7 @@ export default function VerificationPage({ route, navigation }: { route: any; na
   const handleResendCode = async () => {
     try {
       setResendLoading(true);
-      const response = await fetch(`${process.env.EXPO_LOCAL_SERVER}/api/user/send-verification-code`, {
+      const response = await fetch(`http://192.168.0.102:5000/api/user/send-verification-code`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

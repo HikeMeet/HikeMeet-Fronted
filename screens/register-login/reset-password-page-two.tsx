@@ -29,7 +29,7 @@ export default function ResetPasswordPagetwo({ route, navigation }: { route: any
     }
 
     try {
-      const response = await fetch("http://<SERVER_URL>/update-password", {
+      const response = await fetch(`http://192.168.0.102:5000/api/user/update-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,7 +43,7 @@ export default function ResetPasswordPagetwo({ route, navigation }: { route: any
       if (response.ok) {
         const responseData = await response.json();
         Alert.alert("Success", responseData.message || "Password updated successfully");
-        navigation.navigate("Home"); // חזרה לדף הבית לאחר עדכון
+        navigation.navigate("Login"); // חזרה לדף הבית לאחר עדכון
       } else {
         const errorData = await response.json();
         Alert.alert("Error", errorData.error || "Failed to update password");
