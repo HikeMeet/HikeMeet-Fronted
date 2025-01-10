@@ -119,20 +119,19 @@ const ProfilePage = ({ navigation }: any) => {
         <View className="h-px bg-gray-300 my-4" />
 
         <CreatePostButton
+          navigation={navigation}
           location="home"
           onPress={() => console.log("create post clicked")}
         />
-        <ScrollView className="flex-1 px-4">
-          {[1, 2, 3].map((post, index) => (
-            <View
-              key={index}
-              className="mb-4 p-4 bg-gray-100 rounded-lg flex-row justify-between items-center"
-            >
-              <Text className="text-sm">Post</Text>
-              <Ionicons name="create-outline" size={20} color="gray" />
-            </View>
-          ))}
-        </ScrollView>
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map((post, index) => (
+          <View
+            key={index}
+            className="mb-4 p-6 bg-gray-100 rounded-lg flex-row justify-between items-center"
+          >
+            <Text className="text-sm">Post {index}</Text>
+            <Ionicons name="create-outline" size={20} color="gray" />
+          </View>
+        ))}
       </ScrollView>
     </SafeAreaView>
   );
