@@ -27,7 +27,7 @@ const ProfilePage = ({ navigation }: any) => {
       const fetchUser = async () => {
         try {
           const response = await fetch(
-            `${process.env.EXPO_BASE_IP}/api/user/${mongoId}`
+            `http://192.168.0.102:5000/api/user/${mongoId}`
           );
           if (!response.ok) {
             throw new Error(`Error fetching user data: ${response.status}`);
@@ -57,7 +57,7 @@ const ProfilePage = ({ navigation }: any) => {
     try {
       console.log(mongoId);
       const response = await fetch(
-        `${process.env.EXPO_BASE_IP}/api/user/${mongoId}/update`,
+        `http://192.168.0.102:5000/api/user/${mongoId}/update`,
         {
           method: "POST",
           headers: {

@@ -29,7 +29,7 @@ export default function ResetPasswordPagetwo({ route, navigation }: { route: any
     }
 
     try {
-      const response = await fetch(`${process.env.EXPO_BASE_IP}/api/user/update-password`, {
+      const response = await fetch(`http://192.168.0.102:5000/api/auth/update-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

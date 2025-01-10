@@ -26,7 +26,7 @@ export const sendVerificationCode = async ({
 }): Promise<VerificationResponse> => {
   try {
     const response = await axios.post(
-      `${process.env.EXPO_BASE_IP}/api/request-verification`,
+      `http://192.168.0.102:5000/api/request-verification`,
       {
         username,
         email,
@@ -49,7 +49,7 @@ export const verifyEmailCode = async ({
 }: CodeVerificationParams): Promise<VerificationResponse> => {
   try {
     const response = await axios.post(
-      `${process.env.EXPO_BASE_IP}/api/verify-code`,
+      `http://192.168.0.102:5000/api/verify-code`,
       {
         email,
         code,
@@ -70,7 +70,7 @@ export const resendVerificationCode = async ({
   try {
     console.log("Email passed to resendVerificationCode:", email); // בדוק את הערך של email כאן
     const response = await axios.post(
-      `${process.env.EXPO_BASE_IP}/api/resend-code`,
+      `http://192.168.0.102:5000/api/resend-code`,
       {
         email,
       }
