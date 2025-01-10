@@ -9,7 +9,9 @@ import {
   Animated,
   Easing,
 } from "react-native";
-import PasswordStrength from "../../components/password-strength";
+import PasswordStrength, {
+  evaluatePasswordStrength,
+} from "../../components/password-strength";
 import BackButton from "../../components/back-button";
 import CustomTextInput from "../../components/custom-text-input";
 
@@ -18,6 +20,7 @@ export default function ResetPasswordPagetwo({ route, navigation }: { route: any
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Animation values
   const titleOpacity = new Animated.Value(0);
@@ -50,14 +53,27 @@ export default function ResetPasswordPagetwo({ route, navigation }: { route: any
   };
 
   const handlePasswordUpdate = async () => {
+    setError(null); // Clear any previous error
+
     // Input validation
     if (!email || !newPassword || !confirmPassword) {
-      Alert.alert("Error", "Please fill in all fields");
+      setError("Please fill in all fields.");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert("Error", "New passwords do not match");
+      setError("Passwords do not match.");
+      return;
+    }
+
+    // Validate password strength
+    const enforceStrongPassword = false; // Change to true if you want stricter rules
+    const passwordStrengthError = evaluatePasswordStrength(
+      newPassword,
+      enforceStrongPassword
+    );
+    if (passwordStrengthError) {
+      setError(passwordStrengthError);
       return;
     }
 
@@ -78,11 +94,11 @@ export default function ResetPasswordPagetwo({ route, navigation }: { route: any
         ]);
       } else {
         const errorData = await response.json();
-        Alert.alert("Error", errorData.error || "Failed to update password");
+        setError(errorData.error || "Failed to update password.");
       }
     } catch (error) {
       console.error("Error while sending the update password request:", error);
-      Alert.alert("Error", "An error occurred while updating the password");
+      setError("An error occurred while updating the password.");
     } finally {
       setIsLoading(false); // Stop loading animation
     }
@@ -118,6 +134,13 @@ export default function ResetPasswordPagetwo({ route, navigation }: { route: any
         <Text className="text-lg text-gray-300 mb-6">
           Enter a new password to update your account.
         </Text>
+
+        {/* Error Message */}
+        {error && (
+          <Text className="text-red-500 text-center mb-4">
+            {error}
+          </Text>
+        )}
 
         {/* New Password Input */}
         <CustomTextInput
