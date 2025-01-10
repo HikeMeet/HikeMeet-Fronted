@@ -1,43 +1,54 @@
-import React, { useEffect } from "react";
-import { View, Text, Button, Alert } from "react-native";
-import { FIREBASE_AUTH } from "../../firebaseconfig";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useAuth } from "../../contexts/auth-context";
+import React from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { styled } from "nativewind";
+import CreatePostButton from "../../components/create-post-buton";
 
-const Home = ({ navigation }: any) => {
-  const { user, setUser, isVerified, setIsVerified } = useAuth();
-
-  useEffect(() => {
-    const checkUserState = async () => {
-      if (!user || !isVerified) {
-        Alert.alert("Session Expired", "Please log in again.");
-        navigation.navigate("Landing");
-      }
-    };
-
-    checkUserState();
-  }, [user, isVerified, navigation]);
-
-  const handleLogout = async () => {
-    try {
-      await FIREBASE_AUTH.signOut();
-      await AsyncStorage.removeItem("user");
-      navigation.navigate("Landing");
-    } catch (error) {
-      console.error("Error during logout:", error);
-    }
-  };
-
+const App = () => {
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Welcome to the Home Page</Text>
-      <Text style={{ marginTop: 10 }}>
-        {user?.email || "No user information available"}
-      </Text>
+    <View className="flex-1 bg-white">
+      {/* Top Navigation */}
+      <View className="flex-row items-center justify-between p-4 border-b border-gray-300">
+        <Text className="text-lg font-bold">HikeMeet</Text>
+        <Ionicons name="search" size={24} color="black" />
+      </View>
 
-      <Button onPress={handleLogout} title="Logout" />
+      {/* Filters */}
+      <View className="flex-row justify-around py-2 border-b border-gray-300">
+        <TouchableOpacity className="px-4 py-2 bg-gray-100 rounded-lg">
+          <Text className="text-sm font-medium">Friends Only</Text>
+        </TouchableOpacity>
+        <TouchableOpacity className="px-4 py-2 bg-gray-100 rounded-lg">
+          <Text className="text-sm font-medium">All</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Create Post */}
+      <CreatePostButton
+        location="home"
+        onPress={() => console.log("create post clicked")}
+      />
+
+      {/* Posts */}
+      <ScrollView className="flex-1 px-4">
+        {[1, 2, 3].map((post, index) => (
+          <View
+            key={index}
+            className="mb-4 p-4 bg-gray-100 rounded-lg flex-row justify-between items-center"
+          >
+            <Text className="text-sm">Post</Text>
+            <Ionicons name="create-outline" size={20} color="gray" />
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 };
 
-export default Home;
+export default styled(App);
