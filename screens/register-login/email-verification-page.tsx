@@ -21,7 +21,9 @@ export default function VerifyEmailPage({
   const [user, setUser] = useState<User | null>(null);
   const [isButtonDisabled, setIsButtonDisabled] = useState<boolean>(false);
   const [countdown, setCountdown] = useState<number>(0);
-  const { username, email, firstName, lastName } = route.params;
+  const { username, email, firstName, lastName, birthdate, gender } =
+    route.params;
+  const birthdateAsDate = birthdate ? new Date(birthdate) : null;
 
   useEffect(() => {
     onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
@@ -67,6 +69,8 @@ export default function VerifyEmailPage({
             first_name: firstName,
             last_name: lastName,
             firebase_id: userId,
+            birth_date: birthdateAsDate,
+            gender: gender,
           }),
         }
       );
