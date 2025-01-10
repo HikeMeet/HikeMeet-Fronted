@@ -19,7 +19,11 @@ import BackButton from "../../components/back-button";
 import CustomTextInput from "../../components/custom-text-input";
 import Button from "../../components/Button";
 
-export default function ResetPasswordPage({ navigation }: { navigation: any }) {
+export default function ResetPasswordInsidePage({
+  navigation,
+}: {
+  navigation: any;
+}) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -56,7 +60,7 @@ export default function ResetPasswordPage({ navigation }: { navigation: any }) {
         })
         .then(() => {
           Alert.alert("Success", "Password updated successfully");
-          navigation.navigate("Home");
+          navigation.goBack()
         })
         .catch((error) => {
           Alert.alert(

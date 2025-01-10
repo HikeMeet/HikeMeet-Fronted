@@ -1,11 +1,14 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Modal } from "react-native";
+import { FIREBASE_AUTH } from "../firebaseconfig";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface ConfirmPopupProps {
   visible: boolean;
   message: string;
   onConfirm: () => void;
   onCancel?: () => void;
+  navigation: any;
 }
 
 const LogoutConfirmPopup: React.FC<ConfirmPopupProps> = ({
@@ -13,7 +16,18 @@ const LogoutConfirmPopup: React.FC<ConfirmPopupProps> = ({
   message,
   onConfirm,
   onCancel,
+  navigation,
 }) => {
+  const handleLogout = async () => {
+    try {
+      await FIREBASE_AUTH.signOut();
+      await AsyncStorage.removeItem("user");
+      navigation.navigate("Landing");
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  };
+
   return (
     <Modal transparent={true} visible={visible} animationType="fade">
       <View className="flex-1 justify-center items-center bg-black/50">
@@ -30,7 +44,10 @@ const LogoutConfirmPopup: React.FC<ConfirmPopupProps> = ({
             </TouchableOpacity>
             <TouchableOpacity
               className="flex-1 ml-2 bg-green-500 py-2 rounded-lg items-center"
-              onPress={onConfirm} // Handle confirm logic
+              onPress={() => {
+                onConfirm();
+                handleLogout();
+              }} // Handle confirm logic
             >
               <Text className="text-white text-base">Confirm</Text>
             </TouchableOpacity>

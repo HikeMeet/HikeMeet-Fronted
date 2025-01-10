@@ -12,7 +12,13 @@ import BackButton from "../../components/back-button";
 import { OtpInput } from "react-native-otp-entry"; // OTP input component for handling user input
 import tw from "tailwind-react-native-classnames"; // Tailwind styling utility
 
-export default function VerificationPage({ route, navigation }: { route: any; navigation: any }) {
+export default function CodeVerificationPage({
+  route,
+  navigation,
+}: {
+  route: any;
+  navigation: any;
+}) {
   const { email } = route.params; // Email passed from the previous screen
   const [code, setCode] = useState(""); // State to hold the OTP entered by the user
   const [loading, setLoading] = useState(false); // State to indicate verification process
@@ -35,20 +41,26 @@ export default function VerificationPage({ route, navigation }: { route: any; na
     try {
       setLoading(true);
       setIsSubmitting(true); // Set submitting state to true
-      const response = await fetch(`${process.env.EXPO_LOCAL_SERVER}/api/user/verify-code`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, code }), // Send email and OTP code to the server
-      });
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/auth/verify-code`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, code }), // Send email and OTP code to the server
+        }
+      );
 
       if (response.ok) {
         Alert.alert("Success", "Verification successful!");
-        navigation.navigate("ResetPasswordPage", { email }); // Navigate to reset password page
+        navigation.navigate("ResetPasswordOutside", { email }); // Navigate to reset password page
       } else {
         const errorResponse = await response.json();
-        Alert.alert("Error", errorResponse.error || "Invalid verification code");
+        Alert.alert(
+          "Error",
+          errorResponse.error || "Invalid verification code"
+        );
       }
     } catch (error) {
       Alert.alert("Error", "An error occurred. Please try again later.");
@@ -62,24 +74,33 @@ export default function VerificationPage({ route, navigation }: { route: any; na
   const handleResendCode = async () => {
     try {
       setResendLoading(true);
-      const response = await fetch(`${process.env.EXPO_LOCAL_SERVER}/api/user/send-verification-code`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }), // Send email to request a new OTP
-      });
-  
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/auth/send-verification-code`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }), // Send email to request a new OTP
+        }
+      );
+
       if (response.ok) {
         Alert.alert("Success", "Verification code sent successfully!");
         setCode(""); // Reset the code after resending                      //  I need to ckeck this
         setTimer(60); // Reset the timer to 60 seconds
       } else {
         const errorResponse = await response.json();
-        Alert.alert("Error", errorResponse.error || "Could not resend verification code");
+        Alert.alert(
+          "Error",
+          errorResponse.error || "Could not resend verification code"
+        );
       }
     } catch (error) {
-      Alert.alert("Error", "An error occurred while resending the code. Please try again.");
+      Alert.alert(
+        "Error",
+        "An error occurred while resending the code. Please try again."
+      );
     } finally {
       setResendLoading(false);
     }
@@ -103,9 +124,12 @@ export default function VerificationPage({ route, navigation }: { route: any; na
 
       <View className="w-full max-w-sm p-6 bg-white rounded-lg shadow-md">
         {/* Title and instructions */}
-        <Text className="text-2xl font-bold text-gray-800 text-center mb-4">Verify Your Email</Text>
+        <Text className="text-2xl font-bold text-gray-800 text-center mb-4">
+          Verify Your Email
+        </Text>
         <Text className="text-lg text-gray-600 text-center mb-6">
-          Enter the 5-digit code sent to <Text className="font-semibold">{email}</Text>.
+          Enter the 5-digit code sent to{" "}
+          <Text className="font-semibold">{email}</Text>.
         </Text>
 
         {/* OTP Input Component */}
@@ -126,20 +150,26 @@ export default function VerificationPage({ route, navigation }: { route: any; na
 
         {/* Verify Button */}
         <TouchableOpacity
-          className={`w-full py-4 rounded-lg ${loading ? "bg-gray-400" : "bg-green-600"}`}
+          className={`w-full py-4 rounded-lg ${
+            loading ? "bg-gray-400" : "bg-green-600"
+          }`}
           onPress={handleVerifyCode}
           disabled={loading || code.length !== 5} // Disable if loading or code is incomplete
         >
           {loading ? (
             <ActivityIndicator color="#fff" /> // Show spinner when loading
           ) : (
-            <Text className="text-center text-white text-lg font-bold">Verify</Text>
+            <Text className="text-center text-white text-lg font-bold">
+              Verify
+            </Text>
           )}
         </TouchableOpacity>
 
         {/* Resend Code Button */}
         <TouchableOpacity
-          className={`w-full py-4 mt-4 rounded-lg ${timer > 0 ? "bg-gray-400" : "bg-blue-600"}`}
+          className={`w-full py-4 mt-4 rounded-lg ${
+            timer > 0 ? "bg-gray-400" : "bg-blue-600"
+          }`}
           onPress={handleResendCode}
           disabled={timer > 0 || resendLoading} // Disable during countdown or when processing resend request
         >

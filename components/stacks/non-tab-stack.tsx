@@ -4,7 +4,7 @@ import BottomTabs from "./bottom-tabs";
 import SettingsScreen from "../../screens/my-profile/setting-page";
 import Home from "../../screens/home-page/home";
 import ProfilePage from "../../screens/my-profile/my-profile";
-import ResetPasswordPage from "../../screens/register-login/reset-password-page";
+import ResetPasswordInsidePage from "../../screens/register-login/reset-password-inside-page";
 
 const Stack = createNativeStackNavigator();
 
@@ -41,11 +41,11 @@ const NonTabScreensStack = () => {
         }}
       />
       <Stack.Screen
-        name="ResetPasswordPage"
-        component={ResetPasswordPage}
+        name="ResetPasswordInside"
+        component={ResetPasswordInsidePage}
         options={{
           headerShown: true, // Show the header for the settings screen
-          title: "Home",
+          title: "Reset Password",
         }}
       />
     </Stack.Navigator>
