@@ -86,7 +86,7 @@ export default function ResetPasswordForgotPage({
     setIsLoading(true); // Start loading animation
     try {
       const response = await fetch(
-        `http://10.100.102.172:3000/api/auth/update-password`,
+        `${process.env.EXPO_LOCAL_SERVER}/api/auth/update-password`,
         {
           method: "POST",
           headers: {

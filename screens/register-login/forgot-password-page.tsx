@@ -28,7 +28,7 @@ export default function ForgotPasswordPage({
     setIsLoading(true); // Start the loading animation
     try {
       const response = await fetch(
-        `http://10.100.102.172:3000/api/auth/send-verification-code`,
+        `${process.env.EXPO_LOCAL_SERVER}/api/auth/send-verification-code`,
         {
           method: "POST",
           headers: {

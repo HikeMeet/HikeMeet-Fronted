@@ -42,7 +42,7 @@ export default function CodeVerificationPage({
       setLoading(true);
       setIsSubmitting(true); // Set submitting state to true
       const response = await fetch(
-        `http://10.100.102.172:3000/api/auth/verify-code`,
+        `${process.env.EXPO_LOCAL_SERVER}/api/auth/verify-code`,
         {
           method: "POST",
           headers: {
@@ -75,7 +75,7 @@ export default function CodeVerificationPage({
     try {
       setResendLoading(true);
       const response = await fetch(
-        `http://10.100.102.172:3000/api/auth/send-verification-code`,
+        `${process.env.EXPO_LOCAL_SERVER}/api/auth/send-verification-code`,
         {
           method: "POST",
           headers: {

@@ -40,7 +40,7 @@ const DeleteConfirmPopup: React.FC<ConfirmPopupProps> = ({
       }
 
       const response = await fetch(
-        `http://10.100.102.172:3000/api/user/${mongoId}/delete`,
+        `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoId}/delete`,
         {
           method: "DELETE",
           headers: {
