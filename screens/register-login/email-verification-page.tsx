@@ -19,8 +19,8 @@ export default function VerifyEmailPage({
 }) {
   const [message, setMessage] = useState<string>("");
   const [user, setUser] = useState<User | null>(null);
-  const [isButtonDisabled, setIsButtonDisabled] = useState<boolean>(false);
-  const [countdown, setCountdown] = useState<number>(0);
+  const [isButtonDisabled, setIsButtonDisabled] = useState<boolean>(true);
+  const [countdown, setCountdown] = useState<number>(60);
   const { username, email, firstName, lastName, birthdate, gender } =
     route.params;
   const birthdateAsDate = birthdate ? new Date(birthdate) : null;
@@ -149,13 +149,6 @@ export default function VerifyEmailPage({
         onPress={checkVerificationStatus}
         color="bg-green-600"
       />
-
-      {/* Loading Indicator */}
-      {isButtonDisabled && (
-        <View style={{ marginTop: 20 }}>
-          <ActivityIndicator size="small" color="#2196f3" />
-        </View>
-      )}
     </View>
   );
 }

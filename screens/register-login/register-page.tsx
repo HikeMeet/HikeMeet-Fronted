@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
+
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
 import {
@@ -24,6 +25,8 @@ import CustomTextInput from "../../components/custom-text-input";
 import BackButton from "../../components/back-button";
 import Button from "../../components/Button";
 import GenderDropdown from "../../components/gender-dropdown";
+import TermsPopup from "../../components/turms-and-conditions";
+import CustomCheckbox from "../../components/custom-checkbox";
 
 export default function RegisterPage({ navigation }: { navigation: any }) {
   const { setUser, setIsVerified } = useAuth();
@@ -38,7 +41,8 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [gender, setGender] = useState("");
-
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [termsVisible, setTermsVisible] = useState(false);
   const handleRegister = async () => {
     setError("");
 
@@ -77,6 +81,10 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
     );
     if (passwordStrengthError) {
       setError(passwordStrengthError);
+      return;
+    }
+    if (!acceptTerms) {
+      setError("You must accept the Terms & Conditions to register.");
       return;
     }
 
@@ -212,6 +220,23 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
             onChangeText={setConfirmPassword}
           />
 
+          <View className="flex-row items-center mb-2">
+            <CustomCheckbox
+              checked={acceptTerms}
+              onChange={() => setAcceptTerms(!acceptTerms)}
+              label="I accept the Terms & Conditions"
+            />
+            <TouchableOpacity onPress={() => setTermsVisible(true)}>
+              <Text className="text-green-300 font-bold ml-2">
+                Terms & Conditions
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <TermsPopup
+            visible={termsVisible}
+            onClose={() => setTermsVisible(false)}
+          />
           <Button
             title="Register"
             onPress={handleRegister}
