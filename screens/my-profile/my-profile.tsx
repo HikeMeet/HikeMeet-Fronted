@@ -27,7 +27,7 @@ const ProfilePage = ({ navigation }: any) => {
       const fetchUser = async () => {
         try {
           const response = await fetch(
-            `http://172.20.10.4:5000/api/user/${mongoId}`
+            `http://10.100.102.172:3000/api/user/${mongoId}`
           );
           if (!response.ok) {
             throw new Error(`Error fetching user data: ${response.status}`);
@@ -57,7 +57,7 @@ const ProfilePage = ({ navigation }: any) => {
     try {
       console.log(mongoId);
       const response = await fetch(
-        `http://172.20.10.4:5000/api/user/${mongoId}/update`,
+        `http://10.100.102.172:3000/api/user/${mongoId}/update`,
         {
           method: "POST",
           headers: {

@@ -15,7 +15,13 @@ import PasswordStrength, {
 import BackButton from "../../components/back-button";
 import CustomTextInput from "../../components/custom-text-input";
 
-export default function ResetPasswordPagetwo({ route, navigation }: { route: any; navigation: any }) {
+export default function ResetPasswordForgotPage({
+  route,
+  navigation,
+}: {
+  route: any;
+  navigation: any;
+}) {
   const { email } = route.params;
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -79,19 +85,24 @@ export default function ResetPasswordPagetwo({ route, navigation }: { route: any
 
     setIsLoading(true); // Start loading animation
     try {
-      const response = await fetch(`http://172.20.10.4:5000/api/auth/update-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, newPassword }),
-      });
+      const response = await fetch(
+        `http://10.100.102.172:3000/api/auth/update-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, newPassword }),
+        }
+      );
 
       if (response.ok) {
         const responseData = await response.json();
-        Alert.alert("Success", responseData.message || "Password updated successfully", [
-          { text: "OK", onPress: () => navigation.navigate("Login") },
-        ]);
+        Alert.alert(
+          "Success",
+          responseData.message || "Password updated successfully",
+          [{ text: "OK", onPress: () => navigation.navigate("Login") }]
+        );
       } else {
         const errorData = await response.json();
         setError(errorData.error || "Failed to update password.");
@@ -137,9 +148,7 @@ export default function ResetPasswordPagetwo({ route, navigation }: { route: any
 
         {/* Error Message */}
         {error && (
-          <Text className="text-red-500 text-center mb-4">
-            {error}
-          </Text>
+          <Text className="text-red-500 text-center mb-4">{error}</Text>
         )}
 
         {/* New Password Input */}

@@ -24,7 +24,7 @@ export default function LoginPage({
   route: any;
 }) {
   const { setUser, setIsVerified, setMongoId } = useAuth();
-  const { toResetPassword, registeredMonogoId } = route.params || {};
+  const { toResetPassword } = route.params || {};
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -43,10 +43,6 @@ export default function LoginPage({
       const token = await result.user.getIdToken();
       await AsyncStorage.setItem("token", token);
       setUser(result.user);
-      if (registeredMonogoId !== undefined) {
-        console.log("xxx ", registeredMonogoId._j);
-        setMongoId(registeredMonogoId._j);
-      }
       if (!result.user.emailVerified) {
         setIsVerified(false);
         Alert.alert(

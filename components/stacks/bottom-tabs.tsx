@@ -7,7 +7,7 @@ import TripsPage from "../../screens/trips/trips-page";
 import ChatListPage from "../../screens/chats/caht-list";
 import CustomTabBar from "../custom-tab-bar";
 import { Provider } from "react-native-paper";
-import ResetPasswordPage from "../../screens/register-login/reset-password-page";
+import ResetPasswordInsidePage from "../../screens/register-login/reset-password-inside-page";
 
 const Tab = createBottomTabNavigator();
 
