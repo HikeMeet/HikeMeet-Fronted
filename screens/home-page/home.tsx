@@ -10,7 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { styled } from "nativewind";
 import CreatePostButton from "../../components/create-post-buton";
 
-const App = () => {
+const Home = ({ navigation }: any) => {
   return (
     <View className="flex-1 bg-white">
       {/* Top Navigation */}
@@ -31,18 +31,19 @@ const App = () => {
 
       {/* Create Post */}
       <CreatePostButton
+        navigation={navigation}
         location="home"
         onPress={() => console.log("create post clicked")}
       />
 
       {/* Posts */}
       <ScrollView className="flex-1 px-4">
-        {[1, 2, 3].map((post, index) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map((post, index) => (
           <View
             key={index}
-            className="mb-4 p-4 bg-gray-100 rounded-lg flex-row justify-between items-center"
+            className="mb-4 p-6 bg-gray-100 rounded-lg flex-row justify-between items-center"
           >
-            <Text className="text-sm">Post</Text>
+            <Text className="text-sm">Post {index}</Text>
             <Ionicons name="create-outline" size={20} color="gray" />
           </View>
         ))}
@@ -51,4 +52,4 @@ const App = () => {
   );
 };
 
-export default styled(App);
+export default styled(Home);

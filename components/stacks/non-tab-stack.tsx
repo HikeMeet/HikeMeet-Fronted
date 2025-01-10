@@ -5,6 +5,7 @@ import SettingsScreen from "../../screens/my-profile/setting-page";
 import Home from "../../screens/home-page/home";
 import ProfilePage from "../../screens/my-profile/my-profile";
 import ResetPasswordInsidePage from "../../screens/register-login/reset-password-inside-page";
+import CreatePostPage from "../../screens/post-creation/post-creation-page";
 
 const Stack = createNativeStackNavigator();
 
@@ -46,6 +47,14 @@ const NonTabScreensStack = () => {
         options={{
           headerShown: true,
           title: "Reset Password",
+        }}
+      />
+      <Stack.Screen
+        name="CreatePost"
+        component={CreatePostPage}
+        options={{
+          headerShown: true,
+          title: "Create Post",
         }}
       />
     </Stack.Navigator>
