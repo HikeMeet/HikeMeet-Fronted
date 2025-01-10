@@ -10,11 +10,14 @@ import {
   StatusBar,
   Alert,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+
 import { MongoUser } from "../../interfaces/user-interface";
 import { useAuth } from "../../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
 import BioSection from "../../components/profile-bio-section";
 import BackButton from "../../components/back-button";
+import CreatePostButton from "../../components/create-post-buton";
 
 const ProfilePage = ({ navigation }: any) => {
   const [user, setUser] = useState<MongoUser | null>(null);
@@ -113,6 +116,23 @@ const ProfilePage = ({ navigation }: any) => {
 
         {/* Bio Section */}
         <BioSection bio={user.bio} mongoId={mongoId} />
+        <View className="h-px bg-gray-300 my-4" />
+
+        <CreatePostButton
+          location="home"
+          onPress={() => console.log("create post clicked")}
+        />
+        <ScrollView className="flex-1 px-4">
+          {[1, 2, 3].map((post, index) => (
+            <View
+              key={index}
+              className="mb-4 p-4 bg-gray-100 rounded-lg flex-row justify-between items-center"
+            >
+              <Text className="text-sm">Post</Text>
+              <Ionicons name="create-outline" size={20} color="gray" />
+            </View>
+          ))}
+        </ScrollView>
       </ScrollView>
     </SafeAreaView>
   );
