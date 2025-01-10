@@ -3,7 +3,6 @@ import {
   View,
   Text,
   Image,
-  TextInput,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
@@ -14,12 +13,12 @@ import {
 import { MongoUser } from "../../interfaces/user-interface";
 import { useAuth } from "../../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
+import BioSection from "../../components/profile-bio-section";
+import BackButton from "../../components/back-button";
 
 const ProfilePage = ({ navigation }: any) => {
   const [user, setUser] = useState<MongoUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [saving, setSaving] = useState<boolean>(false);
-  const [bio, setBio] = useState<string | undefined>("");
   const { mongoId } = useAuth();
 
   useFocusEffect(
@@ -34,7 +33,6 @@ const ProfilePage = ({ navigation }: any) => {
           }
           const data = await response.json();
           setUser(data);
-          setBio(data.bio); // Set initial bio
         } catch (error) {
           console.error("Error fetching user:", error);
           Alert.alert("Error", "Failed to fetch user data. Please try again.");
@@ -50,33 +48,6 @@ const ProfilePage = ({ navigation }: any) => {
       };
     }, [mongoId])
   );
-
-  const handleSaveBio = async () => {
-    if (!user) return;
-    setSaving(true);
-    try {
-      console.log(mongoId);
-      const response = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoId}/update`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ bio: bio }),
-        }
-      );
-      if (!response.ok) {
-        throw new Error("Failed to update bio.");
-      }
-      Alert.alert("Success", "Bio updated successfully.");
-    } catch (error) {
-      console.error("Error updating bio:", error);
-      Alert.alert("Error", "Failed to update bio. Please try again.");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -110,7 +81,7 @@ const ProfilePage = ({ navigation }: any) => {
 
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
-        <Text className="text-xl font-bold">Profile</Text>
+        <Text className="text-xl font-bold"></Text>
         <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
           <Image
             source={{
@@ -140,28 +111,8 @@ const ProfilePage = ({ navigation }: any) => {
           </View>
         </View>
 
-        {/* Bio */}
-        <View className="mt-4">
-          <Text className="text-sm font-bold mb-2">Bio</Text>
-          <TextInput
-            className="border border-gray-300 p-2 rounded min-h-[60px]"
-            placeholder="Write your bio here..."
-            multiline
-            value={bio}
-            onChangeText={setBio}
-          />
-          <TouchableOpacity
-            onPress={handleSaveBio}
-            className={`mt-4 bg-blue-500 px-4 py-2 rounded ${
-              saving ? "opacity-50" : ""
-            }`}
-            disabled={saving}
-          >
-            <Text className="text-white text-center">
-              {saving ? "Saving..." : "Save Bio"}
-            </Text>
-          </TouchableOpacity>
-        </View>
+        {/* Bio Section */}
+        <BioSection bio={user.bio} mongoId={mongoId} />
       </ScrollView>
     </SafeAreaView>
   );

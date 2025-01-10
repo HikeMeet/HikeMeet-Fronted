@@ -19,7 +19,7 @@ const NonTabScreensStack = () => {
         name="Tabs"
         component={BottomTabs}
         options={{
-          headerShown: false, // Hide the header for the bottom tabs
+          headerShown: false,
         }}
       />
 
@@ -28,23 +28,23 @@ const NonTabScreensStack = () => {
         name="Settings"
         component={SettingsScreen}
         options={{
-          headerShown: true, // Show the header for the settings screen
-          title: "Settings", // Set the title for the settings screen
+          headerShown: true,
+          title: "Settings",
         }}
       />
       <Stack.Screen
         name="Home"
         component={Home}
         options={{
-          headerShown: true, // Show the header for the settings screen
-          title: "Home", // Set the title for the settings screen
+          headerShown: true,
+          title: "Home",
         }}
       />
       <Stack.Screen
         name="ResetPasswordInside"
         component={ResetPasswordInsidePage}
         options={{
-          headerShown: true, // Show the header for the settings screen
+          headerShown: true,
           title: "Reset Password",
         }}
       />
