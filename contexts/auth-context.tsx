@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             try {
               console.log("Fetching user from MongoDB...");
               const response = await fetch(
-                `http://192.168.0.102:5000/api/user/${currentUser.uid}?firebase=true`
+                `http://172.20.10.4:5000/api/user/${currentUser.uid}?firebase=true`
               );
               if (!response.ok) {
                 throw new Error(`Error fetching user data: ${response.status}`);

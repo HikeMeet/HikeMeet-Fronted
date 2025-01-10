@@ -21,7 +21,7 @@ export const registerUser = async ({
   lastName,
 }: RegisterUserParams): Promise<RegisterUserResponse> => {
   try {
-    const response = await axios.post(`http://192.168.0.102:5000/api/user/insert`, {
+    const response = await axios.post(`http://172.20.10.4:5000/api/user/insert`, {
       username,
       email,
       password,
