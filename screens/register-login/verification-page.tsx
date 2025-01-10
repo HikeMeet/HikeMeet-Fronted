@@ -35,7 +35,7 @@ export default function VerificationPage({ route, navigation }: { route: any; na
     try {
       setLoading(true);
       setIsSubmitting(true); // Set submitting state to true
-      const response = await fetch(`${process.env.EXPO_LOCAL_SERVER}/api/user/verify-code`, {
+      const response = await fetch(`http://172.20.10.4:5000/api/auth/verify-code`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -45,7 +45,7 @@ export default function VerificationPage({ route, navigation }: { route: any; na
 
       if (response.ok) {
         Alert.alert("Success", "Verification successful!");
-        navigation.navigate("ResetPasswordPage", { email }); // Navigate to reset password page
+        navigation.navigate("ResetPasswordPagetwo", { email }); // Navigate to reset password page
       } else {
         const errorResponse = await response.json();
         Alert.alert("Error", errorResponse.error || "Invalid verification code");
@@ -62,7 +62,7 @@ export default function VerificationPage({ route, navigation }: { route: any; na
   const handleResendCode = async () => {
     try {
       setResendLoading(true);
-      const response = await fetch(`${process.env.EXPO_LOCAL_SERVER}/api/user/send-verification-code`, {
+      const response = await fetch(`http://172.20.10.4:5000/api/auth/send-verification-code`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

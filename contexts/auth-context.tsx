@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const storedUser = await AsyncStorage.getItem("user");
         const storedMongoId = await AsyncStorage.getItem("mongoId");
+
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
@@ -54,27 +55,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(currentUser);
           setIsVerified(currentUser.emailVerified);
           setUserId(currentUser.uid); // Set userId from Firebase user object
+
           if (currentUser.emailVerified) {
             try {
+              console.log("Fetching user from MongoDB...");
               const response = await fetch(
-                `${process.env.EXPO_LOCAL_SERVER}/api/user/${currentUser.uid}?firebase=true`
+                `http://172.20.10.4:5000/api/user/${currentUser.uid}?firebase=true`
               );
               if (!response.ok) {
                 throw new Error(`Error fetching user data: ${response.status}`);
               }
               const data: MongoUser = await response.json();
+              console.log("MongoDB User Data:", data); // Log MongoDB user data
               setMongoId(data._id);
             } catch (error) {
               console.error("Error fetching user:", error);
             }
           }
 
-          //*******
-          // endpoint */
-
+          // Save to AsyncStorage
           await AsyncStorage.setItem("user", JSON.stringify(currentUser));
           await AsyncStorage.setItem("mongoId", "");
         } else {
+          console.log("No user is logged in");
           setUser(null);
           setIsVerified(false);
           setUserId(null); // Clear userId when logged out

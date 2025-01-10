@@ -20,7 +20,7 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
   keyboardType = "default",
 }) => {
   return (
-    <View className="flex-row items-center w-full p-4 border border-gray-300 rounded-lg bg-white mb-4">
+    <View className="flex-row items-center w-full p-5 border border-gray-300 rounded-lg bg-white mb-4">
       <Icon name={iconName} size={20} color="#aaa" style={{ marginRight: 8 }} />
       <TextInput
         className="flex-1 text-gray-800 text-lg"
@@ -30,6 +30,11 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
         onChangeText={onChangeText}
         keyboardType={keyboardType}
         placeholderTextColor="#aaa"
+        style={{
+          lineHeight: 20, 
+          textAlignVertical: "center",
+        }}
+
       />
     </View>
   );

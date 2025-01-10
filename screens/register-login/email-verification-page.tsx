@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Image, Alert, ActivityIndicator } from "react-native";
-import { onAuthStateChanged, sendEmailVerification, User } from "firebase/auth";
+import { onAuthStateChanged, sendEmailVerification, signOut, User } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
 import BackButton from "../../components/back-button";
 import Button from "../../components/Button";
@@ -51,7 +51,7 @@ export default function VerifyEmailPage({
   const insertUser = async (userId: string): Promise<string | null> => {
     try {
       const response = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/user/insert`,
+        `http://172.20.10.4:5000/api/user/insert`,
         {
           method: "POST",
           headers: {
@@ -88,10 +88,10 @@ export default function VerifyEmailPage({
     if (user) {
       try {
         await user.reload();
+        await signOut(FIREBASE_AUTH);
         if (user.emailVerified) {
-          const registeredMonogoId = insertUser(user.uid);
-          navigation.navigate("Login", {
-            registeredMonogoId: registeredMonogoId,
+            insertUser(user.uid);
+            navigation.navigate("Login", {
           });
         } else {
           setMessage("Email not verified yet. Please check your inbox.");
