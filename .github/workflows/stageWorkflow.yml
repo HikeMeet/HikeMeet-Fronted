@@ -61,8 +61,8 @@ jobs:
       # Ensure the React Native app builds
 
       - name: Install Dependencies
-        run: |
-          npm install -g expo-cli
+        run: npm install
+      - name: Install Expo CLI
+        run: npm install -g expo eas-cli
       - name: Build Android App
-        run: |
-          expo build:android --non-interactive || expo prebuild --non-interactive
+        run: npx eas-cli build --platform android
