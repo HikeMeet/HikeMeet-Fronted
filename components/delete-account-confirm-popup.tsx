@@ -33,12 +33,11 @@ const DeleteConfirmPopup: React.FC<ConfirmPopupProps> = ({
 }) => {
   const [password, setPassword] = useState("");
   const { mongoId } = useAuth(); // Get the mongoId from useAuth
-  const deleteUser = async () => {
+  const deleteMongoUser = async () => {
     try {
       if (!mongoId) {
-        throw new Error("User ID (mongoId) is not available.");
+        throw new Error(`User ID ${mongoId} is not available.`);
       }
-
       const response = await fetch(
         `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoId}/delete`,
         {
@@ -78,7 +77,7 @@ const DeleteConfirmPopup: React.FC<ConfirmPopupProps> = ({
       await user.delete();
       await AsyncStorage.removeItem("user");
       try {
-        await deleteUser();
+        await deleteMongoUser();
         console.log("User deletion successful");
       } catch (error: any) {
         console.error("Error during deletion:", error.message);
