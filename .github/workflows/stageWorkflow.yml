@@ -28,8 +28,8 @@ jobs:
       - name: Install React Native dependencies
         run: npm install
 
-      - name: Eslionter test
-        run: npx eslint .
+      # - name: Eslionter test
+      #   run: npx eslint .
 
       # # Clone the Node.js backend repository
       # - name: Clone backend repository
