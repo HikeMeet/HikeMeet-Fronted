@@ -1,11 +1,8 @@
 import React, { useState } from "react";
-import { View, Text, SafeAreaView } from "react-native";
+import { View, SafeAreaView } from "react-native";
 import SettingsButton from "../../components/settings-buttons";
-import { FIREBASE_AUTH } from "../../firebaseconfig";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import LogoutConfirmPopup from "../../components/logout-confirm-popup";
 import DeleteConfirmPopup from "../../components/delete-account-confirm-popup";
-import BackButton from "../../components/back-button";
 
 const SettingsScreen = ({ navigation }: any) => {
   const [logoutPopupVisible, setLogoutPopupVisible] = useState(false);

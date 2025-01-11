@@ -8,11 +8,7 @@ import {
   Alert,
 } from "react-native";
 import { FIREBASE_AUTH } from "../firebaseconfig";
-import {
-  getAuth,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-} from "firebase/auth";
+import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "../contexts/auth-context";
 

@@ -15,7 +15,6 @@ import {
 } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
 import PasswordStrength from "../../components/password-strength";
-import BackButton from "../../components/back-button";
 import CustomTextInput from "../../components/custom-text-input";
 import Button from "../../components/Button";
 
@@ -60,7 +59,7 @@ export default function ResetPasswordInsidePage({
         })
         .then(() => {
           Alert.alert("Success", "Password updated successfully");
-          navigation.goBack()
+          navigation.goBack();
         })
         .catch((error) => {
           Alert.alert(
