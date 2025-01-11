@@ -5,7 +5,7 @@
 .env
 # dependencies
 node_modules/
-
+.eslintignore
 # Expo
 .expo/
 dist/

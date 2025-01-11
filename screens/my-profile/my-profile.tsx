@@ -16,7 +16,6 @@ import { MongoUser } from "../../interfaces/user-interface";
 import { useAuth } from "../../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
 import BioSection from "../../components/profile-bio-section";
-import BackButton from "../../components/back-button";
 import CreatePostButton from "../../components/create-post-buton";
 
 const ProfilePage = ({ navigation }: any) => {

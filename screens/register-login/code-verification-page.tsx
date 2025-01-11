@@ -62,7 +62,7 @@ export default function CodeVerificationPage({
           errorResponse.error || "Invalid verification code"
         );
       }
-    } catch (error) {
+    } catch (err) {
       Alert.alert("Error", "An error occurred. Please try again later.");
     } finally {
       setLoading(false);
