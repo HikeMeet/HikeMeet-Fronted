@@ -8,7 +8,6 @@ on:
   pull_request:
     branches:
       - main
-      - woozai-patch-1
 
 jobs:
   build:
@@ -36,24 +35,24 @@ jobs:
       - name: Clone backend repository
         run: git clone https://github.com/HikeMeet/HikeMeet-Backend.git backend
 
-      # Set up Node.js for the backend
-      - name: Set up Node.js for backend
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18.x
-          cache: "npm"
+      # # Set up Node.js for the backend
+      # - name: Set up Node.js for backend
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: 18.x
+      #     cache: "npm"
 
-      # Install backend dependencies
-      - name: Install backend dependencies
-        working-directory: ./backend
-        run: npm install
+      # # Install backend dependencies
+      # - name: Install backend dependencies
+      #   working-directory: ./backend
+      #   run: npm install
 
-      # Start the backend server
-      - name: Start backend server
-        working-directory: ./backend
-        run: |
-          nohup npm start &
-          sleep 10
+      # # Start the backend server
+      # - name: Start backend server
+      #   working-directory: ./backend
+      #   run: |
+      #     nohup npm start &
+      #     sleep 10
 
       # Run tests for the React Native app
       #- name: Run tests
