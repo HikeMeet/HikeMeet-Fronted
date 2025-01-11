@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "./contexts/auth-context";
 import SignInLandingStack from "./components/stacks/signin-landing-stack";
-import BottomTabs from "./components/stacks/bottom-tabs";
 import { View, ActivityIndicator } from "react-native";
 import NonTabScreensStack from "./components/stacks/non-tab-stack";
 
@@ -11,6 +10,7 @@ const MainLayout = () => {
   const [initialRoute, setInitialRoute] = useState<string>("Landing");
   const [loading, setLoading] = useState<boolean>(true);
 
+  // need to delete (never used)
   useEffect(() => {
     const loadInitialRoute = async () => {
       try {

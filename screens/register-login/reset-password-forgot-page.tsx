@@ -40,7 +40,7 @@ export default function ResetPasswordForgotPage({
       easing: Easing.out(Easing.ease),
       useNativeDriver: true,
     }).start();
-  }, []);
+  });
 
   const handleButtonPress = () => {
     // Button press animation sequence

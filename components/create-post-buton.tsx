@@ -14,7 +14,7 @@ const CreatePostButton: React.FC<CreatePostButtonProps> = ({
 }) => {
   return (
     <TouchableOpacity
-      className={`mx-2 my-2 py-3 rounded-lg bg-blue-500`}
+      className={"mx-2 my-2 py-3 rounded-lg bg-blue-500"}
       onPress={() => navigation.navigate("CreatePost")}
     >
       <Text className="text-center text-white font-semibold">

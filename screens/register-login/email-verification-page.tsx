@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Image, Alert, ActivityIndicator } from "react-native";
+import { View, Text, Image } from "react-native";
 import {
   onAuthStateChanged,
   sendEmailVerification,

@@ -3,7 +3,6 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import BottomTabs from "./bottom-tabs";
 import SettingsScreen from "../../screens/my-profile/setting-page";
 import Home from "../../screens/home-page/home";
-import ProfilePage from "../../screens/my-profile/my-profile";
 import ResetPasswordInsidePage from "../../screens/register-login/reset-password-inside-page";
 import CreatePostPage from "../../screens/post-creation/post-creation-page";
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Home from "../../screens/home-page/home";
 import ProfilePage from "../../screens/my-profile/my-profile";
@@ -7,7 +7,6 @@ import TripsPage from "../../screens/trips/trips-page";
 import ChatListPage from "../../screens/chats/caht-list";
 import CustomTabBar from "../custom-tab-bar";
 import { Provider } from "react-native-paper";
-import ResetPasswordInsidePage from "../../screens/register-login/reset-password-inside-page";
 
 const Tab = createBottomTabNavigator();
 
