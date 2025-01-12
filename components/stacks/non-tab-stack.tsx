@@ -5,6 +5,7 @@ import SettingsScreen from "../../screens/my-profile/setting-page";
 import Home from "../../screens/home-page/home";
 import ResetPasswordInsidePage from "../../screens/register-login/reset-password-inside-page";
 import CreatePostPage from "../../screens/post-creation/post-creation-page";
+import ProfilePage from "../../screens/my-profile/my-profile";
 
 const Stack = createNativeStackNavigator();
 
@@ -51,6 +52,14 @@ const NonTabScreensStack = () => {
       <Stack.Screen
         name="CreatePost"
         component={CreatePostPage}
+        options={{
+          headerShown: true,
+          title: "Create Post",
+        }}
+      />
+      <Stack.Screen
+        name="ProfilePage"
+        component={ProfilePage}
         options={{
           headerShown: true,
           title: "Create Post",

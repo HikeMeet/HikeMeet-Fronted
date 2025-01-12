@@ -27,6 +27,8 @@ const ProfilePage = ({ navigation }: any) => {
     useCallback(() => {
       const fetchUser = async () => {
         try {
+          console.log(mongoId);
+          console.log(process.env.EXPO_LOCAL_SERVER);
           const response = await fetch(
             `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoId}`
           );
@@ -114,7 +116,7 @@ const ProfilePage = ({ navigation }: any) => {
         </View>
 
         {/* Bio Section */}
-        <BioSection bio={user.bio} mongoId={mongoId} />
+        <BioSection bio={user.bio} />
         <View className="h-px bg-gray-300 my-4" />
 
         <CreatePostButton
