@@ -59,6 +59,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (currentUser.emailVerified) {
             try {
               console.log("Fetching user from MongoDB...");
+              console.log(
+                `${process.env.EXPO_LOCAL_SERVER}/api/user/${currentUser.uid}?firebase=true`
+              );
               const response = await fetch(
                 `${process.env.EXPO_LOCAL_SERVER}/api/user/${currentUser.uid}?firebase=true`
               );
@@ -68,6 +71,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               const data: MongoUser = await response.json();
               console.log("MongoDB User Data:", data); // Log MongoDB user data
               setMongoId(data._id);
+              await AsyncStorage.setItem("user", JSON.stringify(currentUser));
+              await AsyncStorage.setItem("mongoId", data._id);
             } catch (error) {
               console.error("Error fetching user:", error);
             }

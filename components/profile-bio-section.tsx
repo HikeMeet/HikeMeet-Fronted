@@ -1,18 +1,16 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
+import { useAuth } from "../contexts/auth-context";
 
 interface BioSectionProps {
   bio: string;
-  mongoId: string | null;
 }
 
-const BioSection: React.FC<BioSectionProps> = ({
-  bio: initialBio,
-  mongoId,
-}) => {
+const BioSection: React.FC<BioSectionProps> = ({ bio: initialBio }) => {
   const [bio, setBio] = useState<string>(initialBio);
   const [editingBio, setEditingBio] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
+  const { mongoId } = useAuth();
 
   const handleSaveBio = async () => {
     setSaving(true);
