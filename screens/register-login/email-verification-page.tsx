@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { onAuthStateChanged, sendEmailVerification, User } from "firebase/auth";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { View, Text, Image } from "react-native";
+import {
+  onAuthStateChanged,
+  sendEmailVerification,
+  signOut,
+  User,
+} from "firebase/auth";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
-import axios from "axios";
+import BackButton from "../../components/back-button";
+import Button from "../../components/Button";
 
 export default function VerifyEmailPage({
   navigation,
@@ -13,9 +19,12 @@ export default function VerifyEmailPage({
 }) {
   const [message, setMessage] = useState<string>("");
   const [user, setUser] = useState<User | null>(null);
-  const [isButtonDisabled, setIsButtonDisabled] = useState<boolean>(false);
-  const [countdown, setCountdown] = useState<number>(0);
-  const { username, email, firstName, lastName } = route.params;
+  const [isButtonDisabled, setIsButtonDisabled] = useState<boolean>(true);
+  const [countdown, setCountdown] = useState<number>(60);
+  const { username, email, firstName, lastName, birthdate, gender } =
+    route.params;
+  const birthdateAsDate = birthdate ? new Date(birthdate) : null;
+
   useEffect(() => {
     onAuthStateChanged(FIREBASE_AUTH, (currentUser) => {
       setUser(currentUser);
@@ -25,7 +34,7 @@ export default function VerifyEmailPage({
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (countdown > 0) {
-      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
     } else if (countdown === 0 && isButtonDisabled) {
       setIsButtonDisabled(false);
     }
@@ -36,20 +45,16 @@ export default function VerifyEmailPage({
     if (user) {
       try {
         setIsButtonDisabled(true);
-        setCountdown(60); // Start countdown from 60 seconds
+        setCountdown(60);
         await sendEmailVerification(user);
         setMessage("Verification email resent. Please check your inbox.");
       } catch (error: any) {
         setMessage(`Error: ${error.message}`);
-      } finally {
-        // Re-enable the button after 60 seconds
-        setTimeout(() => setIsButtonDisabled(false), 60000);
       }
     }
   };
 
-  //todo: Make it call the backend shit fuckk
-  const insertUser = async (userId: any) => {
+  const insertUser = async (userId: string): Promise<string | null> => {
     try {
       const response = await fetch(
         `${process.env.EXPO_LOCAL_SERVER}/api/user/insert`,
@@ -64,29 +69,37 @@ export default function VerifyEmailPage({
             first_name: firstName,
             last_name: lastName,
             firebase_id: userId,
+            birth_date: birthdateAsDate,
+            gender: gender,
           }),
         }
       );
 
-      console.log(":::", response);
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(
+          `HTTP error! status: ${response.status}, error: ${data.error}`
+        );
       }
 
-      const data = await response.json();
-      console.log("User inserted successfully:", data);
+      console.log("data:\n", data.user._id);
+      return data.user._id; // Return the _id
     } catch (error) {
       console.error("Error inserting user:", error);
+      return null; // Return null in case of error
     }
   };
 
   const checkVerificationStatus = async () => {
+    console.log(user);
     if (user) {
       try {
         await user.reload();
+        await signOut(FIREBASE_AUTH);
         if (user.emailVerified) {
           insertUser(user.uid);
-          navigation.navigate("Home");
+          navigation.navigate("Login");
         } else {
           setMessage("Email not verified yet. Please check your inbox.");
         }
@@ -97,34 +110,45 @@ export default function VerifyEmailPage({
   };
 
   return (
-    <View className="flex-1 justify-center items-center p-4">
-      <Text className="text-2xl font-bold mb-4">Verify Your Email Address</Text>
-      {message ? (
-        <Text className="text-base text-red-500 mb-4 text-center">
+    <View className="flex-1 bg-white items-center justify-center px-6">
+      <BackButton onPress={() => navigation.goBack()} />
+
+      {/* Header Image */}
+      <Image
+        source={require("../../assets/email_verification.png")}
+        style={{ width: 150, height: 150, marginBottom: 20 }}
+      />
+
+      {/* Page Title */}
+      <Text className="text-2xl font-bold text-gray-800 text-center mb-4">
+        Verify Your Email Address
+      </Text>
+
+      {/* Message */}
+      {message && (
+        <Text className="text-base text-red-500 text-center mb-4">
           {message}
         </Text>
-      ) : null}
-      <TouchableOpacity
-        className={`p-3 rounded mb-2 w-full ${
-          isButtonDisabled ? "bg-gray-400" : "bg-blue-500"
-        }`}
+      )}
+
+      {/* Resend Email Button */}
+      <Button
+        title={
+          isButtonDisabled
+            ? `Resend in ${countdown}s`
+            : "Resend Verification Email"
+        }
         onPress={resendVerificationEmail}
         disabled={isButtonDisabled}
-      >
-        <Text className="text-white text-center text-base">
-          {isButtonDisabled
-            ? `Allow to resend in ${countdown}s`
-            : "Resend Verification Email"}
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        className="bg-green-500 p-3 rounded w-full"
+        color={isButtonDisabled ? "bg-gray-400" : "bg-blue-500"} // Use consistent color props
+      />
+
+      {/* Verification Confirmation Button */}
+      <Button
+        title="I Have Verified My Email"
         onPress={checkVerificationStatus}
-      >
-        <Text className="text-white text-center text-base">
-          I Have Verified My Email
-        </Text>
-      </TouchableOpacity>
+        color="bg-green-600"
+      />
     </View>
   );
 }

@@ -1,178 +1,260 @@
 import React, { useState } from "react";
-import { FIREBASE_AUTH } from "../../firebaseconfig";
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
-  Alert,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
+  TouchableOpacity,
+  ScrollView,
 } from "react-native";
+
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { FIREBASE_AUTH } from "../../firebaseconfig";
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
-  signInWithEmailAndPassword,
-  User,
   UserCredential,
 } from "firebase/auth";
-import { sendVerificationCode } from "../../api/Registeration/VerificationService"; // Add this function
-import PasswordStrength from "../../components/password-strength";
+import { useAuth } from "../../contexts/auth-context";
+import PasswordStrength, {
+  evaluatePasswordStrength,
+} from "../../components/password-strength";
+import ErrorAlertComponent from "../../components/error/error-alert-component";
+import CustomTextInput from "../../components/custom-text-input";
+import BackButton from "../../components/back-button";
+import Button from "../../components/Button";
+import GenderDropdown from "../../components/gender-dropdown";
+import TermsPopup from "../../components/turms-and-conditions";
+import CustomCheckbox from "../../components/custom-checkbox";
 
 export default function RegisterPage({ navigation }: { navigation: any }) {
+  const { setUser, setIsVerified } = useAuth();
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [birthdate, setBirthdate] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const handlePasswordChange = (pass: string) => {
-    setPassword(pass);
-  };
+  const [error, setError] = useState<string>("");
+  const [gender, setGender] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [termsVisible, setTermsVisible] = useState(false);
   const handleRegister = async () => {
-    if (!email || !password || !confirmPassword) {
-      Alert.alert("Error", "Please fill in all fields");
+    setError("");
+
+    if (!email || !password || !confirmPassword || !birthdate) {
+      setError("Please fill in all fields.");
       return;
     }
 
+    // Validate age
+    const today = new Date();
+    const birthDate = new Date(birthdate);
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const isBirthdayPassed =
+      today.getMonth() > birthDate.getMonth() ||
+      (today.getMonth() === birthDate.getMonth() &&
+        today.getDate() >= birthDate.getDate());
+
+    if (age < 18 || (age === 18 && !isBirthdayPassed)) {
+      setError("You must be at least 18 years old to register.");
+      return;
+    }
+    if (gender === "") {
+      console.log("gender", gender);
+      setError("No gender");
+      return;
+    }
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match.");
+      setError("Passwords do not match.");
       return;
     }
 
-    if (password.length < 8) {
-      Alert.alert(
-        "Weak Password",
-        "Password must be at least 8 characters long."
-      );
+    const enforceStrongPassword = false;
+    const passwordStrengthError = evaluatePasswordStrength(
+      password,
+      enforceStrongPassword
+    );
+    if (passwordStrengthError) {
+      setError(passwordStrengthError);
+      return;
+    }
+    if (!acceptTerms) {
+      setError("You must accept the Terms & Conditions to register.");
       return;
     }
 
     try {
       setLoading(true);
 
-      createUserWithEmailAndPassword(FIREBASE_AUTH, email, password).then(
-        (userCredential: UserCredential) => {
-          const user = userCredential.user;
-          sendEmailVerification(user)
-            .then(() => {
-              console.log("User created successfuly!");
+      const userCredential: UserCredential =
+        await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
 
-              navigation.navigate("Verify", {
-                username,
-                email,
-                firstName,
-                lastName,
-              });
-            })
-            .catch((e) => {
-              Alert.alert("Email verification could not be sent");
-              console.log(e);
-            });
-        }
-      );
+      const user = userCredential.user;
+      setUser(user);
+      setIsVerified(false);
+
+      // Send verification email
+      await sendEmailVerification(user);
+      navigation.navigate("Verify", {
+        username,
+        email,
+        firstName,
+        lastName,
+        birthdate: birthdate ? birthdate.toISOString() : null,
+        gender,
+      });
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Something went wrong");
+      if (error.code === "auth/email-already-in-use") {
+        setError("This email is already registered. Please use another email.");
+      } else {
+        setError(error.message || "Something went wrong.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  const onDateChange = (event: any, selectedDate: Date | undefined) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setBirthdate(selectedDate);
+    }
+  };
+
   return (
+    // <ScrollView className="flex-1 bg-gray-100">
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-indigo-700"
+      className="flex-1 bg-slate-700"
     >
       <View className="flex-1 items-center justify-center px-6">
-        {/* Back Button */}
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Landing")}
-          className="absolute top-10 left-4 bg-gray-200 p-3 rounded-full"
-        >
-          <Text className="text-gray-800 font-bold">Back</Text>
-        </TouchableOpacity>
+        <BackButton onPress={() => navigation.goBack()} />
 
-        <Text className="text-3xl font-bold text-white mb-4">
+        <Text className="text-3xl font-bold text-white mb-1">
           Create an Account
         </Text>
-        <Text className="text-lg text-gray-300 mb-6">
+        <Text className="text-lg text-gray-300 mb-2">
           Join us to get started!
         </Text>
 
-        <TextInput
-          className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-4 text-gray-800"
-          placeholder="Username"
-          value={username}
-          onChangeText={setUsername}
-          placeholderTextColor="#aaa"
-        />
-        <TextInput
-          className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-4 text-gray-800"
-          placeholder="First Name"
-          value={firstName}
-          onChangeText={setFirstName}
-          placeholderTextColor="#aaa"
-        />
-        <TextInput
-          className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-4 text-gray-800"
-          placeholder="Last Name"
-          value={lastName}
-          onChangeText={setLastName}
-          placeholderTextColor="#aaa"
-        />
-        <TextInput
-          className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-4 text-gray-800"
-          placeholder="Email"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-          placeholderTextColor="#aaa"
-        />
-        <TextInput
-          className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-4 text-gray-800"
-          placeholder="Password"
-          secureTextEntry
-          value={password}
-          onChangeText={handlePasswordChange}
-          placeholderTextColor="#aaa"
-        />
-        <PasswordStrength password={password} />
-        <TextInput
-          className="w-full p-4 bg-white border border-gray-300 rounded-lg mb-6 text-gray-800"
-          placeholder="Confirm Password"
-          secureTextEntry
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          placeholderTextColor="#aaa"
-        />
-
-        <TouchableOpacity
-          className={`w-full p-4 rounded-lg ${
-            loading ? "bg-green-400" : "bg-green-600"
-          }`}
-          onPress={handleRegister}
-          disabled={loading}
+        {/* Display error messages */}
+        {error && <ErrorAlertComponent message={error} />}
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ paddingBottom: 20 }}
         >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text className="text-center text-white text-lg">Register</Text>
+          <CustomTextInput
+            iconName="account"
+            placeholder="Username"
+            value={username}
+            onChangeText={setUsername}
+          />
+
+          {/* First and Last Name side by side */}
+          <View className="flex-row w-full space-x-4 mb-1">
+            <View className="flex-1">
+              <CustomTextInput
+                iconName="account-outline"
+                placeholder="First Name"
+                value={firstName}
+                onChangeText={setFirstName}
+              />
+            </View>
+            <View className="flex-1">
+              <CustomTextInput
+                iconName="account-outline"
+                placeholder="Last Name"
+                value={lastName}
+                onChangeText={setLastName}
+              />
+            </View>
+          </View>
+          <GenderDropdown
+            iconName="gender-male-female"
+            value={gender}
+            onValueChange={setGender}
+          />
+          {/* Birthdate Field */}
+          <CustomTextInput
+            iconName="calendar"
+            placeholder="Select Your Birthdate"
+            value={birthdate ? birthdate.toLocaleDateString() : ""}
+            onChangeText={() => setShowDatePicker(true)} // Trigger DatePicker on touch
+            onPress={() => setShowDatePicker(true)} // Trigger DatePicker on touch
+          />
+          {showDatePicker && (
+            <DateTimePicker
+              value={birthdate || new Date()}
+              mode="date"
+              display="default"
+              onChange={onDateChange}
+              maximumDate={new Date()} // Prevent future dates
+            />
           )}
-        </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Login")}
-          className="mt-6"
-        >
-          <Text className="text-gray-300">
-            Already have an account?{" "}
-            <Text className="text-green-300 font-bold">Log in here</Text>
-          </Text>
-        </TouchableOpacity>
+          <CustomTextInput
+            iconName="email"
+            placeholder="Email"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <CustomTextInput
+            iconName="lock"
+            placeholder="Password"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+          <PasswordStrength password={password} />
+          <CustomTextInput
+            iconName="lock"
+            placeholder="Confirm Password"
+            secureTextEntry
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+
+          <View className="flex-row items-center mb-2">
+            <CustomCheckbox
+              checked={acceptTerms}
+              onChange={() => setAcceptTerms(!acceptTerms)}
+              label="I accept the Terms & Conditions"
+            />
+            <TouchableOpacity onPress={() => setTermsVisible(true)}>
+              <Text className="text-green-300 font-bold ml-2">
+                Terms & Conditions
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <TermsPopup
+            visible={termsVisible}
+            onClose={() => setTermsVisible(false)}
+          />
+          <Button
+            title="Register"
+            onPress={handleRegister}
+            isLoading={loading}
+            color="bg-green-600"
+          />
+
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Login")}
+            className="mt-6"
+          >
+            <Text className="text-gray-300">
+              Already have an account?{" "}
+              <Text className="text-green-300 font-bold">Log in here</Text>
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
     </KeyboardAvoidingView>
+    // </ScrollView>
   );
 }
