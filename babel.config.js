@@ -1,5 +1,6 @@
 module.exports = function (api) {
   api.cache(true);
+  const ENV = process.env.APP_ENV || "prod"; // Default to local environment
   return {
     presets: ["babel-preset-expo"],
     plugins: [
@@ -8,7 +9,7 @@ module.exports = function (api) {
         "module:react-native-dotenv", // Include react-native-dotenv
         {
           moduleName: "@env",
-          path: ".env",
+          path: `.env.${ENV}`,
         },
       ],
     ],

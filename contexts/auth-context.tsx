@@ -17,8 +17,9 @@ interface AuthContextProps {
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
-
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  console.log(process.env.TEST);
+
   const [user, setUser] = useState<User | null>(null);
   const [isVerified, setIsVerified] = useState<boolean>(false);
   const [userId, setUserId] = useState<string | null>(null); // State for userId
