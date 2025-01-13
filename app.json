@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "expo-react-native-w-tailwind",
-    "slug": "expo-react-native-w-tailwind",
+    "slug": "hikemeet",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,7 +20,8 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#ffffff",
+        "buildType": "apk"
       },
       "package": "com.roeina.exporeactnativewtailwind"
     },
@@ -35,8 +36,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "649d46c5-9122-4865-8465-b99e3d34844f"
+        "projectId": "eb5549ff-c7f5-4a36-85c7-f4bb458abf52"
       }
-    }
+    },
+    "owner": "hikemeet"
   }
 }
