@@ -14,56 +14,58 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # שלב ראשון: הורדת קוד אפליקציית React Native
+      # Step 1: Checkout React Native project repository
       - name: Checkout React Native Repository
         uses: actions/checkout@v4
 
-      # שלב שני: הגדרת Node.js עבור האפליקציה
+      # Step 2: Set up Node.js for React Native
       - name: Set up Node.js for React Native
         uses: actions/setup-node@v4
         with:
           node-version: 18.x
           cache: "npm"
 
-      # שלב שלישי: התקנת תלויות האפליקציה
+      # Step 3: Install React Native dependencies
       - name: Install React Native Dependencies
         run: npm ci
 
-      # שלב רביעי: בדיקת תקינות קוד באמצעות Linter
+      # Step 4: Run Linter Check (optional)
       #- name: Run Linter
       #  run: npx eslint .
 
-      # שלב חמישי: הורדת קוד השרת
+      # Step 5: Clone the backend repository
       - name: Clone Backend Repository
         run: git clone https://github.com/HikeMeet/HikeMeet-Backend.git backend
 
-      # שלב שישי: הגדרת Node.js עבור השרת
+      # Step 6: Set up Node.js for the backend
       - name: Set up Node.js for Backend
         uses: actions/setup-node@v4
         with:
           node-version: 18.x
           cache: "npm"
 
-      # שלב שביעי: התקנת תלויות השרת
+      # Step 7: Install backend dependencies
       - name: Install Backend Dependencies
         working-directory: ./backend
         run: npm ci
 
-      # שלב שמיני: הרצת השרת
+      # Step 8: Start the backend server
       - name: Start Backend Server
         working-directory: ./backend
         run: |
           nohup npm start &
           sleep 10
 
-      # שלב תשיעי: בדיקות API
+      # Step 9: Run API Tests (optional)
       #- name: Run API Tests
       #  run: npm run test:api
 
-      # שלב עשירי: התקנת Expo CLI
+      # Step 10: Install Expo CLI
       - name: Install Expo CLI
         run: npm install -g expo eas-cli
 
-      # שלב אחד-עשר: בניית אפליקציית Android
+      # Step 11: Build the Android app
       - name: Build Android App
+        env:
+          EXPO_TOKEN: ${{ secrets.CI_CD_TOKEN }}
         run: npx eas build --platform android --non-interactive
