@@ -1,0 +1,45 @@
+name: React Native Expo CI - Production
+
+on:
+  push:
+    branches:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x] # ניתן להוסיף גרסאות נוספות
+
+    steps:
+      # שלב ראשון: הורדת קוד הפרויקט
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # שלב שני: הגדרת Node.js
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      # שלב שלישי: התקנת תלויות
+      - name: Install Dependencies
+        run: npm ci
+
+      # שלב רביעי: בדיקת תקינות קוד באמצעות Linter
+      - name: Run Linter Check
+        run: npm run lint
+
+      # שלב חמישי: התקנת Expo CLI
+      - name: Install Expo CLI
+        run: npm install -g expo eas-cli
+
+      # שלב שישי: בניית אפליקציית אנדרואיד
+      - name: Build Android App
+        run: npx eas build --platform android --non-interactive
+
+      # שלב שביעי: פריסת האפליקציה (אם יש צורך)
+      - name: Deploy App
+        run: curl https://api.render.com/deploy/your-app-deploy-url
