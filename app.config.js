@@ -2,11 +2,18 @@ import 'dotenv/config';
 import path from 'path';
 import dotenv from 'dotenv';
 
-// Determine the environment (default to 'local' if not specified)
-const env = process.env.APP_ENV || 'local';
 
-// Load the appropriate .env file
+// Load the main .env file
+dotenv.config({ path: path.resolve(__dirname, '.env') });
+
+// Determine the environment (default to 'local' if NODE_ENV is not defined)
+const env = process.env.NODE_ENV;
+
+// Load only the specific .env file based on NODE_ENV
 dotenv.config({ path: path.resolve(__dirname, `.env.${env}`) });
+
+// Log the active environment
+console.log(`Running in '${env}' environment`);
 
 export default {
   expo: {
