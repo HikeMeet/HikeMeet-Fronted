@@ -29,9 +29,9 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      # Step 4: Run Linter Check (optional)
-      #- name: Run Linter Check
-      #  run: npm run lint
+      # Step 4: Set APP_ENV for production
+      - name: Set APP_ENV to production
+        run: echo "APP_ENV=prod" >> $GITHUB_ENV
 
       # Step 5: Install Expo CLI
       - name: Install Expo CLI

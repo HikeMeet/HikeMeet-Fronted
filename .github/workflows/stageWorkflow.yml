@@ -29,9 +29,9 @@ jobs:
       - name: Install React Native Dependencies
         run: npm ci
 
-      # Step 4: Run Linter Check (optional)
-      #- name: Run Linter
-      #  run: npx eslint .
+      # Step 4: Set APP_ENV for CI/CD (local or prod)
+      - name: Set APP_ENV to local
+        run: echo "APP_ENV=local" >> $GITHUB_ENV
 
       # Step 5: Clone the backend repository
       - name: Clone Backend Repository
@@ -59,8 +59,3 @@ jobs:
       # Step 9: Run API Tests (optional)
       #- name: Run API Tests
       #  run: npm run test:api
-
-      # Step 10: Install Expo CLI
-      - name: Install Expo CLI
-        run: npm install -g expo eas-
-        
