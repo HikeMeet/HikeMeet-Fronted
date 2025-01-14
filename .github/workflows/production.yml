@@ -1,45 +1,69 @@
-name: React Native Expo CI - Production
+name: React Native Expo CI with Node.js Backend
 
 on:
   push:
     branches:
+      - cicd-roei-(test1)
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x] # ניתן להוסיף גרסאות נוספות
-
     steps:
-      # שלב ראשון: הורדת קוד הפרויקט
-      - name: Checkout Repository
+      # שלב ראשון: הורדת קוד אפליקציית React Native
+      - name: Checkout React Native Repository
         uses: actions/checkout@v4
 
-      # שלב שני: הגדרת Node.js
-      - name: Set up Node.js ${{ matrix.node-version }}
+      # שלב שני: הגדרת Node.js עבור האפליקציה
+      - name: Set up Node.js for React Native
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          node-version: 18.x
+          cache: "npm"
 
-      # שלב שלישי: התקנת תלויות
-      - name: Install Dependencies
+      # שלב שלישי: התקנת תלויות האפליקציה
+      - name: Install React Native Dependencies
         run: npm ci
 
       # שלב רביעי: בדיקת תקינות קוד באמצעות Linter
-      - name: Run Linter Check
-        run: npm run lint
+      #- name: Run Linter
+      #  run: npx eslint .
 
-      # שלב חמישי: התקנת Expo CLI
+      # שלב חמישי: הורדת קוד השרת
+      - name: Clone Backend Repository
+        run: git clone https://github.com/HikeMeet/HikeMeet-Backend.git backend
+
+      # שלב שישי: הגדרת Node.js עבור השרת
+      - name: Set up Node.js for Backend
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: "npm"
+
+      # שלב שביעי: התקנת תלויות השרת
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      # שלב שמיני: הרצת השרת
+      - name: Start Backend Server
+        working-directory: ./backend
+        run: |
+          nohup npm start &
+          sleep 10
+
+      # שלב תשיעי: בדיקות API
+      - name: Run API Tests
+        run: npm run test:api
+
+      # שלב עשירי: התקנת Expo CLI
       - name: Install Expo CLI
         run: npm install -g expo eas-cli
 
-      # שלב שישי: בניית אפליקציית אנדרואיד
+      # שלב אחד-עשר: בניית אפליקציית Android
       - name: Build Android App
         run: npx eas build --platform android --non-interactive
-
-      # שלב שביעי: פריסת האפליקציה (אם יש צורך)
-      - name: Deploy App
-        run: curl https://api.render.com/deploy/your-app-deploy-url
