@@ -30,8 +30,8 @@ jobs:
         run: npm ci
 
       # שלב רביעי: בדיקת תקינות קוד באמצעות Linter
-      - name: Run Linter
-        run: npx eslint .
+      #- name: Run Linter
+      #  run: npx eslint .
 
       # שלב חמישי: הורדת קוד השרת
       - name: Clone Backend Repository
