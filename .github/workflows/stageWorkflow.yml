@@ -3,7 +3,7 @@ name: React Native Expo CI with Node.js Backend
 on:
   push:
     branches:
-      - cicd-roei-(test1)
+      - cicd-roei-(test2)
       - main
   pull_request:
     branches:
