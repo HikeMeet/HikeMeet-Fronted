@@ -2,10 +2,10 @@ import path from 'path';
 import dotenv from 'dotenv';
 
 // Check the environment and set default to 'local'
-const env = process.env.NODE_ENV || 'stage';
+const env = process.env.NODE_ENV || 'production';
 
 // Validate the environment
-const validEnvironments = ['stage', 'prod', 'development', 'test'];
+const validEnvironments = ['test', 'production', 'development', 'test'];
 if (!validEnvironments.includes(env)) {
   throw new Error(`Invalid environment '${env}'. Expected one of: ${validEnvironments.join(', ')}`);
 }
