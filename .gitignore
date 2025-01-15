@@ -13,6 +13,8 @@ node_modules/
 dist/
 web-build/
 
+#eas file
+eas.json
 # Native
 *.orig.*
 *.jks
