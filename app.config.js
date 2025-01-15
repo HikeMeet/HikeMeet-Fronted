@@ -1,19 +1,34 @@
-import 'dotenv/config';
 import path from 'path';
 import dotenv from 'dotenv';
 
+// Check the environment and set default to 'local'
+const env = process.env.NODE_ENV || 'stage';
 
-// Load the main .env file
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+// Validate the environment
+const validEnvironments = ['stage', 'prod', 'development', 'test'];
+if (!validEnvironments.includes(env)) {
+  throw new Error(`Invalid environment '${env}'. Expected one of: ${validEnvironments.join(', ')}`);
+}
 
-// Determine the environment (default to 'local' if NODE_ENV is not defined)
-const env = process.env.NODE_ENV;
+// Explicitly load the environment-specific .env file
+const envFilePath = path.resolve(__dirname, `.env.${env}`);
+dotenv.config({ path: envFilePath });
 
-// Load only the specific .env file based on NODE_ENV
-dotenv.config({ path: path.resolve(__dirname, `.env.${env}`) });
-
-// Log the active environment
-console.log(`Running in '${env}' environment`);
+// Log the loaded environment and variables
+if (!global.__CONFIG_LOADED__) {
+  global.__CONFIG_LOADED__ = true;
+  console.log(`Running in '${env}' environment`);
+  console.log('Loaded Environment Variables:', {
+    FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,
+    FIREBASE_AUTH_DOMAIN: process.env.FIREBASE_AUTH_DOMAIN,
+    PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
+    STORAGE_BUCKET: process.env.FIREBASE_STORAGE_BUCKET,
+    MESSAGING_SENDER_ID: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    APP_ID: process.env.FIREBASE_APP_ID,
+    MEASUREMENT_ID: process.env.FIREBASE_MEASUREMENT_ID,
+    EXPO_LOCAL_SERVER: process.env.EXPO_LOCAL_SERVER,
+  });
+}
 
 export default {
   expo: {
@@ -51,7 +66,6 @@ export default {
       eas: {
         projectId: "eb5549ff-c7f5-4a36-85c7-f4bb458abf52",
       },
-      // Firebase credentials from the loaded .env file
       apiKey: process.env.FIREBASE_API_KEY,
       authDomain: process.env.FIREBASE_AUTH_DOMAIN,
       projectId: process.env.FIREBASE_PROJECT_ID,
@@ -59,7 +73,6 @@ export default {
       messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
       appId: process.env.FIREBASE_APP_ID,
       measurementId: process.env.FIREBASE_MEASUREMENT_ID,
-      // Example for a server URL
       serverUrl: process.env.EXPO_LOCAL_SERVER || "https://hikemeet-backend.onrender.com",
     },
     owner: "hikemeet",

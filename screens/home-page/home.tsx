@@ -8,6 +8,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { styled } from "nativewind";
 import CreatePostButton from "../../components/create-post-buton";
+import { FIREBASE_AUTH } from '../../firebaseconfig'
+import Button from "../../components/Button";
 
 const Home = ({ navigation }: any) => {
   return (
@@ -17,6 +19,8 @@ const Home = ({ navigation }: any) => {
         <Text className="text-lg font-bold">HikeMeet</Text>
         <Ionicons name="search" size={24} color="black" />
       </View>
+
+      <Button onPress={() => FIREBASE_AUTH.signOut()} title="Logout" />
 
       {/* Filters */}
       <View className="flex-row justify-around py-2 border-b border-gray-300">
