@@ -17,7 +17,7 @@ console.log(`Running in '${env}' environment`);
 
 export default {
   expo: {
-    name: "expo-react-native-w-tailwind",
+    name: "hikemeet",
     slug: "hikemeet",
     version: "1.0.0",
     orientation: "portrait",
