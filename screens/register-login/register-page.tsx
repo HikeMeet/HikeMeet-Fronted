@@ -6,7 +6,9 @@ import {
   Platform,
   TouchableOpacity,
   ScrollView,
+  Modal,
 } from "react-native";
+import { SafeAreaView } from "react-native";
 
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { FIREBASE_AUTH } from "../../firebaseconfig";
@@ -26,6 +28,7 @@ import Button from "../../components/Button";
 import GenderDropdown from "../../components/gender-dropdown";
 import TermsPopup from "../../components/turms-and-conditions";
 import CustomCheckbox from "../../components/custom-checkbox";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 export default function RegisterPage({ navigation }: { navigation: any }) {
   const { setUser, setIsVerified } = useAuth();
@@ -131,22 +134,33 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1 bg-slate-700"
     >
-      <View className="flex-1 items-center justify-center px-6">
         <BackButton onPress={() => navigation.goBack()} />
 
-        <Text className="text-3xl font-bold text-white mb-1">
+        <Text className="text-3xl font-bold text-white mb-1 mt-20 ml-20">
           Create an Account
         </Text>
-        <Text className="text-lg text-gray-300 mb-2">
-          Join us to get started!
+        <Text className="text-lg text-gray-300 mb-2" style={{ marginLeft: 120 }} // מרווח של 120 פיקסלים
+        >
+         Join us to get started!
         </Text>
-
         {/* Display error messages */}
         {error && <ErrorAlertComponent message={error} />}
+        <SafeAreaView className="flex-1 bg-gray-100">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+      >
         <ScrollView
-          className="flex-1"
-          contentContainerStyle={{ paddingBottom: 20 }}
+            className="flex-1 px-4 mt-5"
+            contentContainerStyle={{
+            paddingBottom: 20,
+            paddingHorizontal: 10,
+          }}
+          scrollEventThrottle={16}
+          bounces={false}
+          showsVerticalScrollIndicator={false}
         >
+          
           <CustomTextInput
             iconName="account"
             placeholder="Username"
@@ -154,8 +168,8 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
             onChangeText={setUsername}
           />
 
-          {/* First and Last Name side by side */}
-          <View className="flex-row w-full space-x-4 mb-1">
+          {/* First and Last Name Fields */}
+          <View className="flex-row w-full space-x-4 mb-4">
             <View className="flex-1">
               <CustomTextInput
                 iconName="account-outline"
@@ -173,29 +187,75 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
               />
             </View>
           </View>
+
+          {/* Gender Dropdown */}
           <GenderDropdown
             iconName="gender-male-female"
             value={gender}
             onValueChange={setGender}
           />
-          {/* Birthdate Field */}
-          <CustomTextInput
-            iconName="calendar"
-            placeholder="Select Your Birthdate"
-            value={birthdate ? birthdate.toLocaleDateString() : ""}
-            onChangeText={() => setShowDatePicker(true)} // Trigger DatePicker on touch
-            onPress={() => setShowDatePicker(true)} // Trigger DatePicker on touch
-          />
-          {showDatePicker && (
-            <DateTimePicker
-              value={birthdate || new Date()}
-              mode="date"
-              display="default"
-              onChange={onDateChange}
-              maximumDate={new Date()} // Prevent future dates
-            />
-          )}
 
+{/* Birthdate Field */}
+<TouchableOpacity
+  onPress={() => setShowDatePicker(true)}
+  className="flex-row items-center justify-between border border-gray-400 px-4 py-3 bg-white rounded-lg mb-4 shadow-sm"
+>
+  <Text
+    className={`text-base font-semibold ${
+      birthdate ? "text-gray-900" : "text-gray-500"
+    }`}
+  >
+    {birthdate
+      ? `${birthdate.getDate()}/${birthdate.getMonth() + 1}/${birthdate.getFullYear()}`
+      : "Select Your Birthdate"}
+  </Text>
+  <Icon name="calendar" size={24} color="#ff" />
+</TouchableOpacity>
+
+{/* Date Picker for Android */}
+{showDatePicker && Platform.OS === "android" && (
+  <DateTimePicker
+    value={birthdate || new Date()}
+    mode="date"
+    display="default" // Ensures default Android calendar view
+    onChange={(event, selectedDate) => {
+      if (event.type === "set") {
+        setBirthdate(selectedDate || birthdate); // Save the selected date
+      }
+      setShowDatePicker(false); // Close picker
+    }}
+    maximumDate={new Date()} // Restrict future dates
+  />
+)}
+
+
+{/* Default DateTimePicker for iOS */}
+{showDatePicker && Platform.OS === "ios" && (
+  <View className="mb-4 bg-white rounded-lg shadow-lg p-4">
+    <Text className="text-center text-lg font-bold text-gray-700 mb-2">
+      Select Your Birthdate
+    </Text>
+    <DateTimePicker
+      value={birthdate || new Date()}
+      mode="date"
+      display="spinner"
+      onChange={(event, selectedDate) => {
+        setBirthdate(selectedDate || birthdate);
+      }}
+      maximumDate={new Date()}
+    />
+    <TouchableOpacity
+      onPress={() => setShowDatePicker(false)}
+      className="bg-blue-500 rounded-md p-3 mt-3"
+    >
+      <Text className="text-center text-white font-bold">Confirm</Text>
+    </TouchableOpacity>
+  </View>
+)}
+
+
+
+          {/* Email Field */}
           <CustomTextInput
             iconName="email"
             placeholder="Email"
@@ -203,6 +263,8 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
             value={email}
             onChangeText={setEmail}
           />
+
+          {/* Password Fields */}
           <CustomTextInput
             iconName="lock"
             placeholder="Password"
@@ -219,7 +281,8 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
             onChangeText={setConfirmPassword}
           />
 
-          <View className="flex-row items-center mb-2">
+          {/* Terms & Conditions */}
+          <View className="flex-row items-center mb-4">
             <CustomCheckbox
               checked={acceptTerms}
               onChange={() => setAcceptTerms(!acceptTerms)}
@@ -232,29 +295,35 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
             </TouchableOpacity>
           </View>
 
+          {/* Terms Popup */}
           <TermsPopup
             visible={termsVisible}
             onClose={() => setTermsVisible(false)}
           />
+
+          {/* Register Button */}
           <Button
             title="Register"
             onPress={handleRegister}
             isLoading={loading}
-            color="bg-green-600"
+            color="bg-green-500"
           />
+        </ScrollView>
 
-          <TouchableOpacity
+                {/* Navigate to Login */}
+                <TouchableOpacity
             onPress={() => navigation.navigate("Login")}
-            className="mt-6"
+            className="md-10"
           >
-            <Text className="text-gray-300">
+            <Text className="text-center text-gray-500">
               Already have an account?{" "}
-              <Text className="text-green-300 font-bold">Log in here</Text>
+              <Text className="text-green-500 font-bold">Log in here</Text>
             </Text>
           </TouchableOpacity>
-        </ScrollView>
-      </View>
+
+      </KeyboardAvoidingView>
+    </SafeAreaView>
     </KeyboardAvoidingView>
     // </ScrollView>
-  );
-}
+    );
+  };
