@@ -3,11 +3,7 @@ name: Expo React Native CI with Node.js Backend
 on:
   push:
     branches:
-      - main
-      - woozai-patch-1
-  pull_request:
-    branches:
-      - main
+      - production
 
 jobs:
   build:
