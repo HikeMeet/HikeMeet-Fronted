@@ -32,7 +32,10 @@ cd &lt;repository_name&gt;</code></pre>
   <pre><code>npm install</code></pre>
   <h3>3. Configure Firebase</h3>
   <p>Update the <code>.env</code> file with your Firebase configuration:</p>
-  <pre><code># Firebase Configuration
+  <pre><code>
+
+# Firebase Configuration
+
 FIREBASE_API_KEY=&lt;your_firebase_api_key&gt;
 FIREBASE_AUTH_DOMAIN=&lt;your_firebase_auth_domain&gt;
 FIREBASE_PROJECT_ID=&lt;your_firebase_project_id&gt;
