@@ -32,10 +32,7 @@ cd &lt;repository_name&gt;</code></pre>
   <pre><code>npm install</code></pre>
   <h3>3. Configure Firebase</h3>
   <p>Update the <code>.env</code> file with your Firebase configuration:</p>
-  <pre><code>
-
-# Firebase Configuration
-
+  <pre><code># Firebase Configuration
 FIREBASE_API_KEY=&lt;your_firebase_api_key&gt;
 FIREBASE_AUTH_DOMAIN=&lt;your_firebase_auth_domain&gt;
 FIREBASE_PROJECT_ID=&lt;your_firebase_project_id&gt;
@@ -95,38 +92,36 @@ EXPO_LOCAL_SERVER=http://localhost:5000</code></pre>
         </ol>
 
   <h3>9. Backend Integration</h3>
-       <p>The frontend communicates with the backend API available at <a href="https://github.com/HikeMeet/HikeMeet-Backend.git">HikeMeet Backend Repository</a>. Ensure the backend server is running locally or deployed to a live environment.</p>
-       <p>Update the <code>EXPO_LOCAL_SERVER</code> variable in the <code>.env</code> file with the backend server URL.</p>
-   </div>
-
+  <p>The frontend communicates with the backend API available at <a href="https://github.comHikeMeetHikeMeet-Backend.git">HikeMeet Backend Repository</a>. Ensure the backend server is running locally ordeployed to a live environment.</p>
+  <p>Update the <code>EXPO_LOCAL_SERVER</code> variable in the <code>.env</code> file with the backendserver URL.</p>
+  </div>
   <hr>
-
   <div class="section">
-        <h2>Troubleshooting</h2>
-        <ul>
-            <li><strong>Expo Server Issues:</strong>
-                <ul>
-                    <li>Ensure the Expo CLI is installed globally (<code>npm install -g expo-cli</code>).</li>
-                    <li>Restart the development server.</li>
-                </ul>
-            </li>
-            <li><strong>Firebase Errors:</strong>
-                <ul>
-                    <li>Ensure the Firebase API key and other credentials are correctly set in the <code>.env</code> file.</li>
-                    <li>Verify that the Firebase project has the necessary authentication methods enabled.</li>
-                </ul>
-            </li>
-            <li><strong>Android Emulator Issues:</strong>
-                <ul>
-                    <li>Check that the emulator is running and connected to the Expo server.</li>
-                    <li>Restart the emulator if necessary.</li>
-                </ul>
-            </li>
-        </ul>
-    </div>
-
+      <h2>Troubleshooting</h2>
+      <ul>
+          <li><strong>Expo Server Issues:</strong>
+              <ul>
+                  <li>Ensure the Expo CLI is installed globally (<code>npm install -g expo-cli</code>).</li>
+                  <li>Restart the development server.</li>
+              </ul>
+          </li>
+          <li><strong>Firebase Errors:</strong>
+              <ul>
+                  <li>Ensure the Firebase API key and other credentials are correctly set in the <code>.env<code> file.</li>
+                  <li>Verify that the Firebase project has the necessary authentication methods enabled.</li>
+              </ul>
+          </li>
+          <li><strong>Android Emulator Issues:</strong>
+              <ul>
+                  <li>Check that the emulator is running and connected to the Expo server.</li>
+                  <li>Restart the emulator if necessary.</li>
+              </ul>
+          </li>
+      </ul>
+  </div>
   <hr>
 
   <p>Happy coding!</p>
+
 </body>
 </html>
