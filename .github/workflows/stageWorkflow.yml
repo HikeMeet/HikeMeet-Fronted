@@ -13,6 +13,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      backend:
+        image: wooozai/backend:latest
+        ports:
+          - 4000:4000
+        options: --health-cmd="curl -f http://localhost:4000/health || exit 1" --health-interval=10s --health-retries=3
+
     steps:
       # Checkout the React Native repository
       - uses: actions/checkout@v4
@@ -21,46 +28,24 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: 22.x
           cache: "npm"
 
       # Install dependencies for the React Native app
       - name: Install React Native dependencies
         run: npm install
 
-      # - name: Eslionter test
-      #   run: npx eslint .
+      # Wait for the backend container to be ready
+      - name: Wait for Backend to Start
+        run: |
+          echo "Waiting for backend to be ready..."
+          until curl -s http://localhost:4000/health; do
+            sleep 5
+          done
+        timeout-minutes: 2
 
-      # # Clone the Node.js backend repository
-      # - name: Clone backend repository
-      #   run: git clone https://github.com/HikeMeet/HikeMeet-Backend.git backend
-
-      # # Set up Node.js for the backend
-      # - name: Set up Node.js for backend
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: 18.x
-      #     cache: "npm"
-
-      # # Install backend dependencies
-      # - name: Install backend dependencies
-      #   working-directory: ./backend
-      #   run: npm install
-
-      # # Start the backend server
-      # - name: Start backend server
-      #   working-directory: ./backend
-      #   run: |
-      #     nohup npm start &
-      #     sleep 10
-
-      # Run tests for the React Native app
-      #- name: Run tests
-      #  run: npm test
-
-      # Ensure the React Native app builds
-
-      - name: Install Expo CLI
-        run: npm install -g expo eas-cli
-      - name: Build Android App
-        run: npx eas-cli build --platform android
+      # Run React Native tests
+      - name: Run Tests
+        env:
+          BACKEND_URL: http://localhost:4000
+        run: npm run test
