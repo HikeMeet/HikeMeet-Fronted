@@ -54,7 +54,7 @@ EXPO_LOCAL_SERVER=http://localhost:5000</code></pre>
                  <li>Ensure the Expo CLI is installed globally (<code>npm install -g expo-cli</code>).</li>
                  <li>Restart the development server.</li>
               </ul>
-           </li>
+          </li>
            <li><strong>Firebase Errors:</strong>
               <ul>
                   <li>Ensure the Firebase API key and other credentials are correctly set in the <code>.env<code>file.</li>
@@ -62,16 +62,15 @@ EXPO_LOCAL_SERVER=http://localhost:5000</code></pre>
               </ul>
            </li>
            <li><strong>Android Emulator Issues:</strong>
-               <ul>
-                   <li>Check that the emulator is running and connected to the Expo server.</li>
-                   <li>Restart the emulator if necessary.</li>
-               </ul>
-           </li>
-       </ul>
-   </div>
+                 <li>Check that the emulator is running and connected to the Expo server.</li>
+                 <li>Restart the emulator if necessary.</li>
+             </ul>
+         </li>
+      </ul>
+  </div>
 
-  <hr>
-  <p>Happy coding!</p>
+<hr>
+<p>Happy coding!</p>
 
 </body>
 </html>
