@@ -71,7 +71,7 @@ EXPO_LOCAL_SERVER=http://localhost:5000</code></pre>
   </ul>
 
   <h3>6. Directory Structure</h3>
-  <pre><code>src/
+   <pre><code>src/
   components/   # Reusable UI components
   screens/      # App screens
   navigation/   # Navigation setup
@@ -81,47 +81,43 @@ EXPO_LOCAL_SERVER=http://localhost:5000</code></pre>
   styles/       # Tailwind utility classes and global styles</code></pre>
 
   <h3>7. Tailwind CSS Configuration</h3>
-  <p>Tailwind CSS is configured using <code>tailwind.config.js</code>. You can customize the theme and add additional classes if needed. To use Tailwind in components, use the <code>className</code> attribute.</p>
-
+  <p>Tailwind CSS is configured using <code>tailwind.config.js</code>. You can customize the theme and addadditional classes if needed. To use Tailwind in components, use the <code>className</code> attribute.</p>
   <h3>8. Firebase Authentication</h3>
   <p>Firebase Authentication is already set up. To add new auth flows (e.g., Google Sign-In):</p>
   <ol>
       <li>Go to the Firebase Console.</li>
       <li>Enable the desired authentication method under <strong>Authentication &gt; Sign-in method</strong>.</li>
       <li>Update the relevant parts of the code in <code>src/services/authService.ts</code>.</li>
-        </ol>
-
+  </ol>
   <h3>9. Backend Integration</h3>
-  <p>The frontend communicates with the backend API available at <a href="https://github.comHikeMeetHikeMeet-Backend.git">HikeMeet Backend Repository</a>. Ensure the backend server is running locally ordeployed to a live environment.</p>
-  <p>Update the <code>EXPO_LOCAL_SERVER</code> variable in the <code>.env</code> file with the backendserver URL.</p>
-  </div>
-  <hr>
-  <div class="section">
-      <h2>Troubleshooting</h2>
-      <ul>
-          <li><strong>Expo Server Issues:</strong>
-              <ul>
-                  <li>Ensure the Expo CLI is installed globally (<code>npm install -g expo-cli</code>).</li>
-                  <li>Restart the development server.</li>
-              </ul>
-          </li>
-          <li><strong>Firebase Errors:</strong>
-              <ul>
-                  <li>Ensure the Firebase API key and other credentials are correctly set in the <code>.env<code> file.</li>
-                  <li>Verify that the Firebase project has the necessary authentication methods enabled.</li>
-              </ul>
-          </li>
-          <li><strong>Android Emulator Issues:</strong>
-              <ul>
-                  <li>Check that the emulator is running and connected to the Expo server.</li>
-                  <li>Restart the emulator if necessary.</li>
-              </ul>
-          </li>
-      </ul>
-  </div>
-  <hr>
-
-  <p>Happy coding!</p>
-
+  <p>The frontend communicates with the backend API available at <a href="https://github.com/HikeMeetHikeMeet-Backend.git">HikeMeet Backend Repository</a>. Ensure the backend server is running locally ordeployed to a live environment.</p>
+  <p>Update the <code>EXPO_LOCAL_SERVER</code> variable in the <code>.env</code> file with the backend serverURL.</p>
+   </div>
+   <hr>
+   <div class="section">
+       <h2>Troubleshooting</h2>
+       <ul>
+           <li><strong>Expo Server Issues:</strong>
+               <ul>
+                   <li>Ensure the Expo CLI is installed globally (<code>npm install -g expo-cli</code>).</li>
+                   <li>Restart the development server.</li>
+               </ul>
+           </li>
+           <li><strong>Firebase Errors:</strong>
+               <ul>
+                   <li>Ensure the Firebase API key and other credentials are correctly set in the <code>.env</code> file.</li>
+                   <li>Verify that the Firebase project has the necessary authentication methods enabled.</li>
+               </ul>
+           </li>
+           <li><strong>Android Emulator Issues:</strong>
+               <ul>
+                   <li>Check that the emulator is running and connected to the Expo server.</li>
+                   <li>Restart the emulator if necessary.</li>
+               </ul>
+           </li>
+       </ul>
+   </div>
+   <hr>
+   <p>Happy coding!</p>
 </body>
 </html>
