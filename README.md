@@ -67,7 +67,7 @@ EXPO_LOCAL_SERVER=http://localhost:5000</code></pre>
              </ul>
          </li>
       </ul>
-  </div>
+</div>
 
 <hr>
 <p>Happy coding!</p>
