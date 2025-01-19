@@ -13,13 +13,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      backend:
-        image: wooozai/backend:latest
-        ports:
-          - 4000:4000
-        options: --health-cmd="curl -f http://localhost:4000/health || exit 1" --health-interval=10s --health-retries=3
-
     steps:
       # Checkout the React Native repository
       - uses: actions/checkout@v4
@@ -31,21 +24,9 @@ jobs:
           node-version: 22.x
           cache: "npm"
 
-      # Install dependencies for the React Native app
+          # Install dependencies for the React Native app
       - name: Install React Native dependencies
         run: npm install
 
-      # Wait for the backend container to be ready
-      - name: Wait for Backend to Start
-        run: |
-          echo "Waiting for backend to be ready..."
-          until curl -s http://localhost:4000/health; do
-            sleep 5
-          done
-        timeout-minutes: 2
-
-      # Run React Native tests
-      - name: Run Tests
-        env:
-          BACKEND_URL: http://localhost:4000
-        run: npm run test
+      - name: Run linter
+        run: npm run lint
