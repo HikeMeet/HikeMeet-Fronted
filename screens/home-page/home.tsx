@@ -4,6 +4,7 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
+  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styled } from "nativewind";
@@ -15,11 +16,29 @@ const Home = ({ navigation }: any) => {
       {/* Top Navigation */}
       <View className="flex-row items-center justify-between p-4 border-b border-gray-300">
         <Text className="text-lg font-bold">HikeMeet</Text>
-        <Ionicons name="search" size={24} color="black" />
+        <TouchableOpacity onPress={() => navigation.navigate("SearchPage")}>
+          <Ionicons name="search" size={24} color="black" />
+        </TouchableOpacity>
       </View>
 
+      {/* Search Input */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate("SearchPage")}
+        activeOpacity={0.8}
+        className="mx-4 mt-2"
+      >
+        <View className="flex-row items-center px-4 py-3 bg-gray-200 rounded-lg shadow-sm">
+          <Ionicons name="search" size={20} color="gray" style={{ marginRight: 8 }} />
+          <TextInput
+            editable={false}
+            placeholder="Search Everything..."
+            className="flex-1 text-gray-700"
+          />
+        </View>
+      </TouchableOpacity>
+
       {/* Filters */}
-      <View className="flex-row justify-around py-2 border-b border-gray-300">
+      <View className="flex-row justify-around py-2 border-b border-gray-300 mt-4">
         <TouchableOpacity className="px-4 py-2 bg-gray-100 rounded-lg">
           <Text className="text-sm font-medium">Friends Only</Text>
         </TouchableOpacity>
