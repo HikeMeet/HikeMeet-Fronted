@@ -5,8 +5,8 @@ import { Ionicons } from "@expo/vector-icons";
 type FriendButtonProps = {
   currentUserId: string; // ID of the logged-in user
   targetUserId: string; // ID of the user to add/remove
-  initialStatus: "none" | "pending" | "friend"; // Initial friend status
-  onStatusChange?: (newStatus: "none" | "pending" | "friend") => void; // Optional callback for status changes
+  initialStatus: "none" | "pending" | "active"; // Initial active status
+  onStatusChange?: (newStatus: "none" | "pending" | "active") => void; // Optional callback for status changes
 };
 
 const FriendButton: React.FC<FriendButtonProps> = ({
@@ -15,7 +15,7 @@ const FriendButton: React.FC<FriendButtonProps> = ({
   initialStatus,
   onStatusChange,
 }) => {
-  const [friendStatus, setFriendStatus] = useState<"none" | "pending" | "friend">(initialStatus);
+  const [friendStatus, setFriendStatus] = useState<"none" | "pending" | "active">(initialStatus);
   const [loading, setLoading] = useState(false);
 
   const handleFriendAction = async () => {
@@ -29,7 +29,7 @@ const FriendButton: React.FC<FriendButtonProps> = ({
         endpoint = `${process.env.EXPO_LOCAL_SERVER}/api/friends/add-friend`;
       } else if (friendStatus === "pending") {
         endpoint = `${process.env.EXPO_LOCAL_SERVER}/api/friends/cancel-pending`;
-      } else if (friendStatus === "friend") {
+      } else if (friendStatus === "active") {
         endpoint = `${process.env.EXPO_LOCAL_SERVER}/api/friends/remove`;
       }
 
@@ -47,7 +47,7 @@ const FriendButton: React.FC<FriendButtonProps> = ({
       // Update status locally based on the current state
       if (friendStatus === "none") setFriendStatus("pending");
       else if (friendStatus === "pending") setFriendStatus("none");
-      else if (friendStatus === "friend") setFriendStatus("none");
+      else if (friendStatus === "active") setFriendStatus("none");
 
       // Trigger optional callback
       onStatusChange?.(friendStatus);
@@ -68,7 +68,7 @@ const FriendButton: React.FC<FriendButtonProps> = ({
     if (friendStatus === "pending") {
       return { text: "Cancel Request", icon: "close-circle" as const, bgColor: "bg-yellow-500" };
     }
-    if (friendStatus === "friend") {
+    if (friendStatus === "active") {
       return { text: "Remove Friend", icon: "person-remove" as const, bgColor: "bg-red-500" };
     }
     return { text: "Unknown", icon: undefined, bgColor: "bg-gray-500" };

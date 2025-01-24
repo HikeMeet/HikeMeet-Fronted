@@ -81,6 +81,41 @@ const SearchPage = ({ navigation }: any) => {
         />
       </View>
 
+
+
+
+      {/* Filters */}
+      <View className="px-10">
+        <ScrollView
+          horizontal
+          className="flex-row"
+          contentContainerStyle={{
+            alignItems: "center",
+          }}
+          showsHorizontalScrollIndicator={false}
+        >
+          {["All", "Groups", "Trip", "Hikes", "Posts"].map((item) => (
+            <TouchableOpacity
+              key={item}
+              onPress={() => setFilter(item)}
+              className={`px-3 py-2 rounded-full mx-1 mt-1 ${
+                filter === item ? "bg-blue-500" : "bg-gray-300"
+              }`}
+            >
+              <Text
+                className={`text-sm font-medium ${
+                  filter === item ? "text-white" : "text-gray-800"
+                }`}
+              >
+                {item}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+
+      
       {/* Results */}
       {loading ? (
         <View className="flex-1 justify-center items-center">

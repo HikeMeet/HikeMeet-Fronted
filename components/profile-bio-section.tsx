@@ -4,9 +4,10 @@ import { useAuth } from "../contexts/auth-context";
 
 interface BioSectionProps {
   bio: string;
+  editable?: boolean; // New prop to control editability
 }
 
-const BioSection: React.FC<BioSectionProps> = ({ bio: initialBio }) => {
+const BioSection: React.FC<BioSectionProps> = ({ bio: initialBio, editable = true }) => {
   const [bio, setBio] = useState<string>(initialBio);
   const [editingBio, setEditingBio] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
@@ -41,7 +42,7 @@ const BioSection: React.FC<BioSectionProps> = ({ bio: initialBio }) => {
   return (
     <View className="mt-4">
       <Text className="text-sm font-bold mb-2">Bio</Text>
-      {editingBio ? (
+      {editable && editingBio ? (
         <View className="relative">
           <TextInput
             className="border border-gray-300 p-2 rounded min-h-[40px] pr-16"
@@ -71,12 +72,14 @@ const BioSection: React.FC<BioSectionProps> = ({ bio: initialBio }) => {
           <Text className="text-sm text-gray-700 flex-1">
             {bio || "No bio provided."}
           </Text>
-          <TouchableOpacity
-            onPress={() => setEditingBio(true)}
-            className="ml-2 bg-blue-500 px-3 py-1 rounded"
-          >
-            <Text className="text-white">Edit</Text>
-          </TouchableOpacity>
+          {editable && (
+            <TouchableOpacity
+              onPress={() => setEditingBio(true)}
+              className="ml-2 bg-blue-500 px-3 py-1 rounded"
+            >
+              <Text className="text-white">Edit</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
     </View>

@@ -16,7 +16,7 @@ import FriendButton from "../../components/friend-button"; // Import the FriendB
 const UserProfile = ({ route, navigation }: any) => {
   const { userId } = route.params; // ID of the user to fetch
   const [user, setUser] = useState<any>(null); // User data
-  const [friendStatus, setFriendStatus] = useState<"none" | "pending" | "friend">("none"); // Friend status
+  const [friendStatus, setFriendStatus] = useState<"none" | "pending" | "active">("none"); // Friend status
   const [loading, setLoading] = useState(true); // Loading state
   const { mongoId } = useAuth(); // Get the mongoId from useAuth
 
@@ -103,8 +103,8 @@ const UserProfile = ({ route, navigation }: any) => {
           />
         )}
 
-        {/* Bio Section */}
-        <BioSection bio={user.bio} />
+        {/* Bio Section - Read-only */}
+        <BioSection bio={user.bio} editable={false} />
 
         {/* Divider */}
         <View className="h-px bg-gray-300 my-4" />
