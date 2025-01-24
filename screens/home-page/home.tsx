@@ -8,18 +8,31 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { styled } from "nativewind";
 import CreatePostButton from "../../components/create-post-buton";
+import SearchInput from "../../components/search-input";
 
 const Home = ({ navigation }: any) => {
   return (
     <View className="flex-1 bg-white">
-      {/* Top Navigation */}
-      <View className="flex-row items-center justify-between p-4 border-b border-gray-300">
-        <Text className="text-lg font-bold">HikeMeet</Text>
-        <Ionicons name="search" size={24} color="black" />
-      </View>
+            <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
+              <Text className="text-xl font-bold"></Text>
+            </View>
+
+          {/* Search Input */}
+          <TouchableOpacity
+              onPress={() => navigation.navigate("SearchPage")} // Navigate to the search page on press
+              activeOpacity={0.8} // Add feedback on press
+              className="mx-4 mt-2"
+            >
+            <View pointerEvents="none">
+              <SearchInput
+                placeholder="Search Everything..."
+                editable={false} // Prevent editing
+              />
+            </View>
+          </TouchableOpacity>
 
       {/* Filters */}
-      <View className="flex-row justify-around py-2 border-b border-gray-300">
+      <View className="flex-row justify-around py-2 border-b border-gray-300 mt-4">
         <TouchableOpacity className="px-4 py-2 bg-gray-100 rounded-lg">
           <Text className="text-sm font-medium">Friends Only</Text>
         </TouchableOpacity>
