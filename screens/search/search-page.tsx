@@ -7,11 +7,11 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
+  SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../contexts/auth-context"; // Assuming you have an Auth Context to get the current user ID
-import FriendButton from "../components/friend-button"; // Import the reusable FriendButton
-import { useFocusEffect } from "@react-navigation/native";
+import { useAuth } from "../../contexts/auth-context"; // Assuming you have an Auth Context to get the current user ID
+import FriendButton from "../../components/friend-button"; // Import the reusable FriendButton
 
 const SearchPage = ({ navigation }: any) => {
   const [users, setUsers] = useState<any[]>([]); // List of users from search results
@@ -82,28 +82,26 @@ const SearchPage = ({ navigation }: any) => {
   };
 
   return (
+
+
+    
     <View className="flex-1 bg-white">
-      {/* Top Navigation */}
-      <View className="flex-row items-center justify-between px-4 py-2 border-b border-gray-300">
-        <Text className="text-lg font-bold">Search</Text>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="close" size={24} color="black" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Search Input */}
-      <View className="px-4 pt-4 pb-1 py-3">
-        <View className="flex-row items-center bg-gray-200 rounded-full px-4 py-1">
-          <Ionicons name="search" size={20} color="gray" style={{ marginRight: 8 }} />
-          <TextInput
-            placeholder="Search Everything..."
-            onChangeText={searchFriends}
-            autoFocus={true}
-            className="flex-1 text-gray-700"
-          />
-        </View>
-      </View>
-
+            <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
+              <Text className="text-xl font-bold"></Text>
+            </View>
+      
+{/* Search Input (neet to move componnent*/}              
+<View className="px-3 pt-4 pb-3">
+  <View className="flex-row items-center bg-gray-200 rounded-full px-6 py-3 shadow-lg">
+    <Ionicons name="search" size={28} color="gray" style={{ marginRight: 12 }} />
+    <TextInput
+      placeholder="Search Everything..."
+      onChangeText={searchFriends}
+      autoFocus={true}
+      className="flex-1 text-gray-700 text-lg"
+    />
+  </View>
+</View>
       {/* Filters */}
       <View className="px-10">
         <ScrollView
@@ -185,6 +183,7 @@ const SearchPage = ({ navigation }: any) => {
         </View>
       )}
     </View>
+
   );
 };
 

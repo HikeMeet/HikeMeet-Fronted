@@ -7,7 +7,7 @@ import ResetPasswordInsidePage from "../../screens/register-login/reset-password
 import CreatePostPage from "../../screens/post-creation/post-creation-page";
 import ProfilePage from "../../screens/my-profile/my-profile";
 import UserProfile from "../../screens/my-profile/user-profile";
-import SearchPage from "../../screens/search-page";
+import SearchPage from "../../screens/search/search-page";
 
 const Stack = createNativeStackNavigator();
 
@@ -39,7 +39,7 @@ const NonTabScreensStack = () => {
         name="Home"
         component={Home}
         options={{
-          headerShown: true,
+          headerShown: false,
           title: "Home",
         }}
       />

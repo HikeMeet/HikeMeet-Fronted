@@ -13,6 +13,11 @@ import CreatePostButton from "../../components/create-post-buton";
 const Home = ({ navigation }: any) => {
   return (
     <View className="flex-1 bg-white">
+      
+                  <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
+                    <Text className="text-xl font-bold"></Text>
+                  </View>
+      
       {/* Top Navigation */}
       <View className="flex-row items-center justify-between p-4 border-b border-gray-300">
         <Text className="text-lg font-bold">HikeMeet</Text>
