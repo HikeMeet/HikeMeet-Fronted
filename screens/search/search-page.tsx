@@ -3,33 +3,27 @@ import {
   View,
   Text,
   ScrollView,
-  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   Image,
-  SafeAreaView,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../../contexts/auth-context"; // Assuming you have an Auth Context to get the current user ID
-import FriendButton from "../../components/friend-button"; // Import the reusable FriendButton
+import { useAuth } from "../../contexts/auth-context";
+import FriendButton from "../../components/friend-button";
+import SearchInput from "../../components/search-input";
 
 const SearchPage = ({ navigation }: any) => {
-  const [users, setUsers] = useState<any[]>([]); // List of users from search results
-  const [loading, setLoading] = useState(false); // Loading state
-  const [filter, setFilter] = useState("All"); // Filter for different categories (e.g., Groups, Trips, etc.)
-  const { mongoId } = useAuth(); // Current logged-in user's MongoDB ID
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState("All");
+  const { mongoId } = useAuth();
 
-  // Fetch the friend status for each user
   const fetchFriendStatuses = async (userList: any[]) => {
     const updatedUsers = await Promise.all(
       userList.map(async (user) => {
         try {
           const response = await fetch(
             `${process.env.EXPO_LOCAL_SERVER}/api/friends/status?userId=${mongoId}&friendId=${user._id}`,
-            {
-              method: "GET",
-              headers: { "Content-Type": "application/json" },
-            }
+            { method: "GET", headers: { "Content-Type": "application/json" } }
           );
           if (response.ok) {
             const data = await response.json();
@@ -38,98 +32,53 @@ const SearchPage = ({ navigation }: any) => {
         } catch (error) {
           console.error(`Error fetching friend status for user ${user._id}:`, error);
         }
-        return { ...user, friendStatus: "none" }; // Default to "none" on failure
+        return { ...user, friendStatus: "none" };
       })
     );
     setUsers(updatedUsers);
   };
 
-  // Function to search for friends based on the query
   const searchFriends = async (query: string): Promise<any[]> => {
     if (!query.trim()) {
-      setUsers([]); // Clear results if query is empty
+      setUsers([]);
       return [];
     }
-
-    setLoading(true); // Start loading
+    setLoading(true);
     try {
       const response = await fetch(
         `${process.env.EXPO_LOCAL_SERVER}/api/search/friends?query=${query}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        { method: "GET", headers: { "Content-Type": "application/json" } }
       );
-
       if (!response.ok) {
         const errorResponse = await response.json();
         throw new Error(errorResponse.error || "Failed to fetch search results");
       }
-
       const data = await response.json();
       const userList = data.friends || [];
-      fetchFriendStatuses(userList); // Fetch friend statuses for each user
+      fetchFriendStatuses(userList);
       return userList;
     } catch (error) {
       console.error("Error fetching search results:", error);
-      setUsers([]); // Clear results on error
+      setUsers([]);
       return [];
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
   return (
-
-
-    
     <View className="flex-1 bg-white">
             <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
               <Text className="text-xl font-bold"></Text>
             </View>
-      
-{/* Search Input (neet to move componnent*/}              
-<View className="px-3 pt-4 pb-3">
-  <View className="flex-row items-center bg-gray-200 rounded-full px-6 py-3 shadow-lg">
-    <Ionicons name="search" size={28} color="gray" style={{ marginRight: 12 }} />
-    <TextInput
-      placeholder="Search Everything..."
-      onChangeText={searchFriends}
-      autoFocus={true}
-      className="flex-1 text-gray-700 text-lg"
-    />
-  </View>
-</View>
-      {/* Filters */}
-      <View className="px-10">
-        <ScrollView
-          horizontal
-          className="flex-row"
-          contentContainerStyle={{
-            alignItems: "center",
-          }}
-          showsHorizontalScrollIndicator={false}
-        >
-          {["All", "Groups", "Trip", "Hikes", "Posts"].map((item) => (
-            <TouchableOpacity
-              key={item}
-              onPress={() => setFilter(item)}
-              className={`px-3 py-2 rounded-full mx-1 mt-1 ${
-                filter === item ? "bg-blue-500" : "bg-gray-300"
-              }`}
-            >
-              <Text
-                className={`text-sm font-medium ${
-                  filter === item ? "text-white" : "text-gray-800"
-                }`}
-              >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+
+      {/*search component*/}
+      <View className="px-3 pt-4 pb-3">
+        <SearchInput
+          placeholder="Search Everything..."
+          onChangeText={searchFriends}
+          autoFocus={true}
+        />
       </View>
 
       {/* Results */}
@@ -145,8 +94,8 @@ const SearchPage = ({ navigation }: any) => {
               key={user._id || index}
               onPress={() =>
                 user._id === mongoId
-                  ? navigation.navigate("ProfilePage") // Navigate to the logged-in user's profile
-                  : navigation.navigate("UserProfile", { userId: user._id }) // Navigate to the selected user's profile
+                  ? navigation.navigate("ProfilePage")
+                  : navigation.navigate("UserProfile", { userId: user._id })
               }
             >
               <View className="mb-2 p-4 bg-gray-100 rounded-lg flex-row items-center shadow-sm">
@@ -162,7 +111,6 @@ const SearchPage = ({ navigation }: any) => {
                     {`${user.first_name} ${user.last_name}`}
                   </Text>
                 </View>
-
                 {/* FriendButton Component */}
                 {user._id !== mongoId && mongoId && (
                   <FriendButton
@@ -183,7 +131,6 @@ const SearchPage = ({ navigation }: any) => {
         </View>
       )}
     </View>
-
   );
 };
 
