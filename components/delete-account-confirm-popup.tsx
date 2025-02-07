@@ -11,7 +11,7 @@ import { FIREBASE_AUTH } from "../firebaseconfig";
 import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "../contexts/auth-context";
-
+import { deleteMongoUser } from "./requests/delete-user";
 interface ConfirmPopupProps {
   visible: boolean;
   message: string;
@@ -29,35 +29,6 @@ const DeleteConfirmPopup: React.FC<ConfirmPopupProps> = ({
 }) => {
   const [password, setPassword] = useState("");
   const { mongoId } = useAuth(); // Get the mongoId from useAuth
-  const deleteMongoUser = async () => {
-    try {
-      if (!mongoId) {
-        throw new Error(`User ID ${mongoId} is not available.`);
-      }
-      const response = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoId}/delete`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to delete user:", errorData);
-        throw new Error(errorData.error || "Failed to delete user");
-      }
-
-      const result = await response.json();
-      console.log("User deleted successfully:", result);
-      return result;
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      throw error;
-    }
-  };
 
   const handleDeleteAccount = async (): Promise<boolean> => {
     try {
@@ -72,13 +43,20 @@ const DeleteConfirmPopup: React.FC<ConfirmPopupProps> = ({
       // Delete the account
       await user.delete();
       await AsyncStorage.removeItem("user");
-      try {
-        await deleteMongoUser();
-        console.log("User deletion successful");
-      } catch (error: any) {
-        console.error("Error during deletion:", error.message);
-      }
 
+      try {
+        if (!mongoId) {
+          console.error("Error: User ID is null or undefined.");
+          throw "error";
+        }
+
+        const result = await deleteMongoUser(mongoId);
+        console.log("Delete Result:", result);
+        // Handle success (e.g., update UI)
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        // Handle error (e.g., show error message to user)
+      }
       return true; // Indicate success
     } catch (error: any) {
       if (error.code === "auth/wrong-password") {
