@@ -8,6 +8,7 @@ import CreatePostPage from "../../screens/post-creation/post-creation-page";
 import ProfilePage from "../../screens/my-profile/my-profile";
 import UserProfile from "../../screens/my-profile/user-profile";
 import SearchPage from "../../screens/search/search-page";
+import AdminSettingPage from "../../screens/admin-settings/admin-page";
 
 const Stack = createNativeStackNavigator();
 
@@ -33,6 +34,14 @@ const NonTabScreensStack = () => {
         options={{
           headerShown: true,
           title: "Settings",
+        }}
+      />
+      <Stack.Screen
+        name="AdminSettings"
+        component={AdminSettingPage}
+        options={{
+          headerShown: true,
+          title: "AdminSettings",
         }}
       />
       <Stack.Screen
@@ -75,11 +84,11 @@ const NonTabScreensStack = () => {
           title: "Create Post",
         }}
       />
-        <Stack.Screen
-          name="SearchPage"
-          component={SearchPage}
-          options={{ headerShown: false }}
-        />
+      <Stack.Screen
+        name="SearchPage"
+        component={SearchPage}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 };
