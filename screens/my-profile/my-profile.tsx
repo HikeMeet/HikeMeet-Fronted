@@ -5,23 +5,21 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   SafeAreaView,
   StatusBar,
-  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { MongoUser } from "../../interfaces/user-interface";
+// import { MongoUser } from "../../interfaces/user-interface";
 import { useAuth } from "../../contexts/auth-context";
-import { useFocusEffect } from "@react-navigation/native";
+// import { useFocusEffect } from "@react-navigation/native";
 import BioSection from "../../components/profile-bio-section";
 import CreatePostButton from "../../components/create-post-buton";
 
 const ProfilePage = ({ navigation }: any) => {
   // const [user, setUser] = useState<MongoUser | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const { mongoId } = useAuth();
+  // const [loading, setLoading] = useState<boolean>(true);
+  // const { mongoId } = useAuth();
   const { mongoUser } = useAuth();
 
   // useFocusEffect(
@@ -70,7 +68,7 @@ const ProfilePage = ({ navigation }: any) => {
         <Text>Failed to load user data.</Text>
         <TouchableOpacity
           onPress={() => {
-            setLoading(true);
+            // setLoading(true);
             navigation.navigate("ProfilePage"); // Reload
           }}
           className="mt-4 bg-blue-500 px-4 py-2 rounded"
