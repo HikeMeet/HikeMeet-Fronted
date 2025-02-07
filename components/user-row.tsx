@@ -16,7 +16,7 @@ import { deleteMongoUser } from "./requests/delete-user";
 interface UserRowProps {
   user: MongoUser;
 }
-
+// add firebase admin!
 const UserRow: React.FC<UserRowProps> = ({ user }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
