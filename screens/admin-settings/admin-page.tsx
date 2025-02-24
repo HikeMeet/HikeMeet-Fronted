@@ -55,9 +55,9 @@ const AdminSettingsPage = () => {
             <UserRow
               key={user._id}
               user={user}
-              onButtonPress={() =>
-                alert(`Action for ${user.first_name} ${user.last_name}`)
-              }
+              // onButtonPress={() =>
+              //   alert(`Action for ${user.first_name} ${user.last_name}`)
+              // }
             />
           ))}
         </ScrollView>
