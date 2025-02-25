@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-} from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
+import { View, Text, TouchableOpacity } from "react-native";
 import { MongoUser } from "../../interfaces/user-interface";
-import UserRow from "../../components/user-row-admin";
+import UserSearchList from "../../components/user-search-in-admin";
 
 const AdminSettingsPage = () => {
   const [activeTab, setActiveTab] = useState("Users");
@@ -29,9 +21,7 @@ const AdminSettingsPage = () => {
       const response = await fetch(
         `${process.env.EXPO_LOCAL_SERVER}/api/user/all`
       );
-      if (!response.ok) {
-        throw new Error("Failed to fetch users");
-      }
+      if (!response.ok) throw new Error("Failed to fetch users");
       const data: MongoUser[] = await response.json();
       setUsers(data);
     } catch (error: any) {
@@ -42,25 +32,20 @@ const AdminSettingsPage = () => {
     }
   };
 
-  // Tab Content
+  // Callback function to update the user list after deletion
+  const handleUserDeleted = (mongoId: string) => {
+    setUsers((prevUsers) => prevUsers.filter((user) => user._id !== mongoId));
+  };
+
+  // Render tab content based on the active tab
   const renderContent = () => {
     if (activeTab === "Users") {
-      if (loading) {
-        return <ActivityIndicator size="large" color="#0000ff" />;
-      }
-
       return (
-        <ScrollView>
-          {users.map((user) => (
-            <UserRow
-              key={user._id}
-              user={user}
-              // onButtonPress={() =>
-              //   alert(`Action for ${user.first_name} ${user.last_name}`)
-              // }
-            />
-          ))}
-        </ScrollView>
+        <UserSearchList
+          users={users}
+          loading={loading}
+          onUserDeleted={handleUserDeleted}
+        />
       );
     } else if (activeTab === "Trips Approve") {
       return (
@@ -109,12 +94,6 @@ const AdminSettingsPage = () => {
         >
           <Text className="text-center text-sm">Button</Text>
         </TouchableOpacity>
-      </View>
-
-      {/* Search Bar */}
-      <View className="flex-row items-center bg-gray-200 rounded-lg p-3 mb-4">
-        <Icon name="search" size={20} color="gray" />
-        <TextInput placeholder="Search Everything" className="flex-1 text-sm" />
       </View>
 
       {/* Tab Content */}

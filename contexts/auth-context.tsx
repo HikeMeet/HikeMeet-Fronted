@@ -11,7 +11,7 @@ interface AuthContextProps {
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   isVerified: boolean;
   setIsVerified: React.Dispatch<React.SetStateAction<boolean>>;
-  userId: string | null; // Add userId to the context
+  userId: string | null; // firebase_id
   mongoId: string | null; // MongoDB _id
   mongoUser: MongoUser | null; // MongoDB _id
   setMongoUser: React.Dispatch<React.SetStateAction<MongoUser | null>>; // MongoDB _id

@@ -10,15 +10,15 @@ import {
 } from "react-native";
 import { MongoUser } from "../interfaces/user-interface";
 import { FIREBASE_AUTH } from "../firebaseconfig";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { deleteMongoUser } from "./requests/delete-user";
+import { deleteFirebaseUser } from "./requests/admin-delete-user";
 import tw from "twrnc";
 
 interface UserRowProps {
   user: MongoUser;
+  onUserDeleted: (mongoId: string) => void;
 }
 
-const UserRow: React.FC<UserRowProps> = ({ user }) => {
+const UserRow: React.FC<UserRowProps> = ({ user, onUserDeleted }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleDelete = async () => {
@@ -27,18 +27,14 @@ const UserRow: React.FC<UserRowProps> = ({ user }) => {
       const fireUser = FIREBASE_AUTH.currentUser;
       if (!fireUser) throw new Error("No user is signed in");
 
-      // Delete Firebase account
-      await fireUser.delete();
-      await AsyncStorage.removeItem("user");
-
-      // Delete user from MongoDB
-      if (!user._id) {
-        console.error("Error: User ID is null or undefined.");
-        throw new Error("User ID is null or undefined.");
-      }
-
-      const result = await deleteMongoUser(user._id);
+      // Delete user from Firebase & MongoDB using firebase_id
+      const result = await deleteFirebaseUser(user.firebase_id);
       console.log("Delete Result:", result);
+
+      // Notify the parent that this user was deleted so it can update the list.
+      if (user._id) {
+        onUserDeleted(user._id);
+      }
     } catch (error: any) {
       Alert.alert("Error", error.message || "Failed to delete user.");
     }
