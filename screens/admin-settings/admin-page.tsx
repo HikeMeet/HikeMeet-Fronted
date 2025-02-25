@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { MongoUser } from "../../interfaces/user-interface";
-import UserRow from "../../components/user-row";
+import UserRow from "../../components/user-row-admin";
 
 const AdminSettingsPage = () => {
   const [activeTab, setActiveTab] = useState("Users");
