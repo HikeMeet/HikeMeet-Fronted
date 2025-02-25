@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useAuth } from "../../contexts/auth-context";
+import { useFocusEffect } from "@react-navigation/native";
 import SearchInput from "../../components/search-input";
 import UserRow from "../../components/user-row-search";
 
@@ -14,13 +15,16 @@ const SearchPage = ({ navigation }: any) => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("All");
+  const [lastQuery, setLastQuery] = useState<string>(""); // store last search query
   const { mongoId } = useAuth();
 
   const searchFriends = async (query: string): Promise<any[]> => {
     if (!query.trim()) {
       setUsers([]);
+      setLastQuery("");
       return [];
     }
+    setLastQuery(query);
     setLoading(true);
     try {
       // Fetch searched users.
@@ -47,6 +51,7 @@ const SearchPage = ({ navigation }: any) => {
         const friendData = await friendResponse.json();
         friendList = friendData.friends || [];
       }
+      console.log("::::friends:", friendList);
       // Map through userList and add friendStatus based on friendList.
       const updatedUsers = userList.map((user: any) => {
         const friendEntry = friendList.find(
@@ -77,6 +82,15 @@ const SearchPage = ({ navigation }: any) => {
       )
     );
   };
+
+  // Refresh friend statuses when screen regains focus.
+  useFocusEffect(
+    useCallback(() => {
+      if (lastQuery) {
+        searchFriends(lastQuery);
+      }
+    }, [lastQuery])
+  );
 
   return (
     <View className="flex-1 bg-white">
