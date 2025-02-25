@@ -11,8 +11,10 @@ interface AuthContextProps {
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   isVerified: boolean;
   setIsVerified: React.Dispatch<React.SetStateAction<boolean>>;
-  userId: string | null; // Add userId to the context
+  userId: string | null; // firebase_id
   mongoId: string | null; // MongoDB _id
+  mongoUser: MongoUser | null; // MongoDB _id
+  setMongoUser: React.Dispatch<React.SetStateAction<MongoUser | null>>; // MongoDB _id
   setMongoId: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
@@ -23,6 +25,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isVerified, setIsVerified] = useState<boolean>(false);
   const [userId, setUserId] = useState<string | null>(null); // State for userId
   const [mongoId, setMongoId] = useState<string | null>(null); // MongoDB _id
+  const [mongoUser, setMongoUser] = useState<MongoUser | null>(null); // MongoDB _id
 
   const [loading, setLoading] = useState<boolean>(true);
   useEffect(() => {
@@ -38,6 +41,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUserId(parsedUser.uid || null); // Extract userId from the stored user
           if (storedMongoId) {
             setMongoId(storedMongoId);
+            try {
+              const response = await fetch(
+                `${process.env.EXPO_LOCAL_SERVER}/api/user/${storedMongoId}`
+              );
+              if (!response.ok) {
+                throw new Error(`Error fetching user data: ${response.status}`);
+              }
+              const data: MongoUser = await response.json();
+              setMongoUser(data);
+            } catch (error) {
+              console.log(error);
+            }
           }
         }
       } catch (error) {
@@ -68,6 +83,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               const data: MongoUser = await response.json();
               console.log("MongoDB User Data:", data); // Log MongoDB user data
               setMongoId(data._id);
+              setMongoUser(data);
               await AsyncStorage.setItem("user", JSON.stringify(currentUser));
               await AsyncStorage.setItem("mongoId", data._id);
             } catch (error) {
@@ -110,6 +126,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         userId,
         mongoId,
         setMongoId,
+        mongoUser,
+        setMongoUser,
       }}
     >
       {children}

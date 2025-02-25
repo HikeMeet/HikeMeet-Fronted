@@ -5,70 +5,70 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   SafeAreaView,
   StatusBar,
-  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { MongoUser } from "../../interfaces/user-interface";
+// import { MongoUser } from "../../interfaces/user-interface";
 import { useAuth } from "../../contexts/auth-context";
-import { useFocusEffect } from "@react-navigation/native";
+// import { useFocusEffect } from "@react-navigation/native";
 import BioSection from "../../components/profile-bio-section";
 import CreatePostButton from "../../components/create-post-buton";
 
 const ProfilePage = ({ navigation }: any) => {
-  const [user, setUser] = useState<MongoUser | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const { mongoId } = useAuth();
+  // const [user, setUser] = useState<MongoUser | null>(null);
+  // const [loading, setLoading] = useState<boolean>(true);
+  // const { mongoId } = useAuth();
+  const { mongoUser } = useAuth();
 
-  useFocusEffect(
-    useCallback(() => {
-      const fetchUser = async () => {
-        try {
-          console.log(mongoId);
-          console.log(process.env.EXPO_LOCAL_SERVER);
-          const response = await fetch(
-            `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoId}`
-          );
-          if (!response.ok) {
-            throw new Error(`Error fetching user data: ${response.status}`);
-          }
-          const data = await response.json();
-          setUser(data);
-        } catch (error) {
-          console.error("Error fetching user:", error);
-          Alert.alert("Error", "Failed to fetch user data. Please try again.");
-        } finally {
-          setLoading(false);
-        }
-      };
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     const fetchUser = async () => {
+  //       try {
+  //         console.log("::::", mongoUser);
+  //         console.log(mongoId);
+  //         console.log(process.env.EXPO_LOCAL_SERVER);
+  //         const response = await fetch(
+  //           `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoId}`
+  //         );
+  //         if (!response.ok) {
+  //           throw new Error(`Error fetching user data: ${response.status}`);
+  //         }
+  //         const data = await response.json();
+  //         setUser(data);
+  //       } catch (error) {
+  //         console.error("Error fetching user:", error);
+  //         Alert.alert("Error", "Failed to fetch user data. Please try again.");
+  //       } finally {
+  //         setLoading(false);
+  //       }
+  //     };
 
-      fetchUser();
+  //     fetchUser();
 
-      return () => {
-        console.log("Cleaning up on screen blur");
-      };
-    }, [mongoId])
-  );
+  //     return () => {
+  //       console.log("Cleaning up on screen blur");
+  //     };
+  //   }, [mongoId])
+  // );
 
-  if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text>Loading user profile...</Text>
-      </View>
-    );
-  }
-
-  if (!user) {
+  // if (loading) {
+  //   return (
+  //     <View className="flex-1 justify-center items-center bg-white">
+  //       <ActivityIndicator size="large" color="#0000ff" />
+  //       <Text>Loading user profile...</Text>
+  //     </View>
+  //   );
+  // }
+  console.log(mongoUser);
+  if (!mongoUser) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
         <Text>Failed to load user data.</Text>
         <TouchableOpacity
           onPress={() => {
-            setLoading(true);
+            // setLoading(true);
             navigation.navigate("ProfilePage"); // Reload
           }}
           className="mt-4 bg-blue-500 px-4 py-2 rounded"
@@ -107,8 +107,8 @@ const ProfilePage = ({ navigation }: any) => {
             className="w-20 h-20 rounded-full mr-4"
           />
           <View className="flex-1">
-            <Text className="text-lg font-bold">{user.username}</Text>
-            <Text className="text-lg font-bold mb-1">{`${user.first_name} ${user.last_name}`}</Text>
+            <Text className="text-lg font-bold">{mongoUser.username}</Text>
+            <Text className="text-lg font-bold mb-1">{`${mongoUser.first_name} ${mongoUser.last_name}`}</Text>
             <Text className="text-sm text-gray-500 mb-2">
               Rank: {"Adventurer"}
             </Text>
@@ -116,7 +116,7 @@ const ProfilePage = ({ navigation }: any) => {
         </View>
 
         {/* Bio Section */}
-        <BioSection bio={user.bio} />
+        <BioSection bio={mongoUser.bio} />
         <View className="h-px bg-gray-300 my-4" />
 
         <CreatePostButton
