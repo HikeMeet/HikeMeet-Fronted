@@ -16,7 +16,6 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
   onStatusChange,
 }) => {
   const [currentStatus, setCurrentStatus] = useState(status);
-
   // Update local status if prop changes.
   useEffect(() => {
     setCurrentStatus(status);

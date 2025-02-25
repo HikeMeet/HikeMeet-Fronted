@@ -5,11 +5,10 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Image,
 } from "react-native";
 import { useAuth } from "../../contexts/auth-context";
 import SearchInput from "../../components/search-input";
-import FriendActionButton from "../../components/friend-button";
+import UserRow from "../../components/user-row-search";
 
 const SearchPage = ({ navigation }: any) => {
   const [users, setUsers] = useState<any[]>([]);
@@ -48,7 +47,6 @@ const SearchPage = ({ navigation }: any) => {
         const friendData = await friendResponse.json();
         friendList = friendData.friends || [];
       }
-      console.log("::::friends:", friendList);
       // Map through userList and add friendStatus based on friendList.
       const updatedUsers = userList.map((user: any) => {
         const friendEntry = friendList.find(
@@ -69,6 +67,15 @@ const SearchPage = ({ navigation }: any) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Callback to update a user's friend status in the list.
+  const handleStatusChange = (newStatus: string, userId: string) => {
+    setUsers((prevUsers) =>
+      prevUsers.map((u) =>
+        u._id === userId ? { ...u, friendStatus: newStatus } : u
+      )
+    );
   };
 
   return (
@@ -122,49 +129,24 @@ const SearchPage = ({ navigation }: any) => {
         </View>
       ) : users.length > 0 ? (
         <ScrollView className="flex-1 px-4 mt-2">
-          {users.map((user: any, index: number) => (
-            <TouchableOpacity
-              key={user._id || index}
-              onPress={() =>
-                user._id === mongoId
-                  ? navigation.navigate("ProfilePage")
-                  : navigation.navigate("UserProfile", { userId: user._id })
-              }
-            >
-              <View className="mb-2 p-4 bg-gray-100 rounded-lg flex-row items-center shadow-sm">
-                <Image
-                  source={{
-                    uri:
-                      user.profile_picture || "https://via.placeholder.com/50",
-                  }}
-                  className="w-10 h-10 rounded-full mr-4"
+          {users
+            .filter((user) => user._id !== mongoId)
+            .map((user: any, index: number) => (
+              <TouchableOpacity
+                key={user._id || index}
+                onPress={() =>
+                  navigation.navigate("UserProfile", { userId: user._id })
+                }
+              >
+                <UserRow
+                  user={user}
+                  currentUserId={mongoId!}
+                  onStatusChange={(newStatus: string) =>
+                    handleStatusChange(newStatus, user._id)
+                  }
                 />
-                <View className="flex-1">
-                  <Text className="text-lg font-bold">{user.username}</Text>
-                  <Text className="text-sm text-gray-500">
-                    {`${user.first_name} ${user.last_name}`}
-                  </Text>
-                </View>
-                {/* Friend Action Button with onStatusChange to update the user's friendStatus in the list */}
-                {user._id !== mongoId && mongoId && (
-                  <FriendActionButton
-                    currentUserId={mongoId}
-                    targetUserId={user._id}
-                    status={user.friendStatus || "none"}
-                    onStatusChange={(newStatus: string) => {
-                      setUsers((prevUsers) =>
-                        prevUsers.map((u) =>
-                          u._id === user._id
-                            ? { ...u, friendStatus: newStatus }
-                            : u
-                        )
-                      );
-                    }}
-                  />
-                )}
-              </View>
-            </TouchableOpacity>
-          ))}
+              </TouchableOpacity>
+            ))}
         </ScrollView>
       ) : (
         <View className="flex-1 justify-center items-center mt-2">
