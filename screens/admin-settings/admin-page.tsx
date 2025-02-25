@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { MongoUser } from "../../interfaces/user-interface";
 import UserSearchList from "../../components/user-search-in-admin";
 
-const AdminSettingsPage = () => {
+const AdminSettingsPage = ({ navigation }: any) => {
   const [activeTab, setActiveTab] = useState("Users");
   const [users, setUsers] = useState<MongoUser[]>([]);
   const [loading, setLoading] = useState(false);

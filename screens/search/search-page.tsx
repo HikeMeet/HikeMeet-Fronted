@@ -146,20 +146,15 @@ const SearchPage = ({ navigation }: any) => {
           {users
             .filter((user) => user._id !== mongoId)
             .map((user: any, index: number) => (
-              <TouchableOpacity
+              <UserRow
                 key={user._id || index}
-                onPress={() =>
-                  navigation.navigate("UserProfile", { userId: user._id })
+                user={user}
+                currentUserId={mongoId!}
+                onStatusChange={(newStatus: string) =>
+                  handleStatusChange(newStatus, user._id)
                 }
-              >
-                <UserRow
-                  user={user}
-                  currentUserId={mongoId!}
-                  onStatusChange={(newStatus: string) =>
-                    handleStatusChange(newStatus, user._id)
-                  }
-                />
-              </TouchableOpacity>
+                navigation={navigation}
+              />
             ))}
         </ScrollView>
       ) : (
