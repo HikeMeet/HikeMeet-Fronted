@@ -11,40 +11,46 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import BioSection from "../../components/profile-bio-section";
 import { useAuth } from "../../contexts/auth-context";
-import FriendButton from "../../components/friend-button"; // Import the FriendButton component
+import FriendActionButton from "../../components/friend-button";
 
 const UserProfile = ({ route, navigation }: any) => {
   const { userId } = route.params; // ID of the user to fetch
   const [user, setUser] = useState<any>(null); // User data
-  const [friendStatus, setFriendStatus] = useState<"none" | "pending" | "active">("none"); // Friend status
+  const [friendStatus, setFriendStatus] = useState<string>("none"); // Friend status
   const [loading, setLoading] = useState(true); // Loading state
-  const { mongoId } = useAuth(); // Get the mongoId from useAuth
+  const [showTooltip, setShowTooltip] = useState(false); // Tooltip visibility
+  const { mongoId } = useAuth(); // Current user's ID
 
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
       try {
-        // Fetch user details
-        const response = await fetch(`${process.env.EXPO_LOCAL_SERVER}/api/user/${userId}`);
+        // Fetch user details.
+        const response = await fetch(
+          `${process.env.EXPO_LOCAL_SERVER}/api/user/${userId}`
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch user data");
         }
         const data = await response.json();
         setUser(data);
 
-        // Check friend status
-        const friendResponse = await fetch(
-          `${process.env.EXPO_LOCAL_SERVER}/api/friends/status?userId=${mongoId}&friendId=${userId}`,
-          {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
+        // Now fetch friend status by sending friendId in the query.
+        if (mongoId) {
+          const friendResponse = await fetch(
+            `${process.env.EXPO_LOCAL_SERVER}/api/friend/${mongoId}?friendId=${userId}`,
+            { method: "GET", headers: { "ContentT-ype": "application/json" } }
+          );
+
+          let status = "none";
+          if (friendResponse.ok) {
+            const friendData = await friendResponse.json();
+            if (friendData.friends && friendData.friends.length > 0) {
+              status = friendData.friends[0].status;
+            }
           }
-        );
-        if (!friendResponse.ok) {
-          throw new Error("Failed to check friend status");
+          setFriendStatus(status);
         }
-        const friendData = await friendResponse.json();
-        setFriendStatus(friendData.status || "none");
       } catch (error) {
         console.error("Error fetching user data:", error);
       } finally {
@@ -52,7 +58,54 @@ const UserProfile = ({ route, navigation }: any) => {
       }
     };
     fetchUser();
-  }, [userId]);
+  }, [userId, mongoId]);
+
+  // Handlers for tooltip options
+  const handleBlockUser = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/friend/block`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            currentUserId: mongoId,
+            targetUserId: userId,
+          }),
+        }
+      );
+      const data = await response.json();
+      console.log("Block response:", data);
+      setFriendStatus("blocked");
+    } catch (error) {
+      console.error("Error blocking user:", error);
+    } finally {
+      setShowTooltip(false);
+    }
+  };
+
+  const handleRevokeRequest = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/friend/revoke-request`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            currentUserId: mongoId,
+            targetUserId: userId,
+          }),
+        }
+      );
+      const data = await response.json();
+      console.log("Revoke response:", data);
+      setFriendStatus("none");
+    } catch (error) {
+      console.error("Error revoking friend request:", error);
+    } finally {
+      setShowTooltip(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -84,7 +137,9 @@ const UserProfile = ({ route, navigation }: any) => {
         {/* User Details */}
         <View className="flex-row items-center mb-4">
           <Image
-            source={{ uri: user.profile_picture || "https://via.placeholder.com/150" }}
+            source={{
+              uri: user.profile_picture || "https://via.placeholder.com/150",
+            }}
             className="w-24 h-24 rounded-full mr-4"
           />
           <View>
@@ -93,14 +148,45 @@ const UserProfile = ({ route, navigation }: any) => {
           </View>
         </View>
 
-        {/* Friend Button */}
+        {/* Friend Button and Tooltip Toggle */}
         {mongoId && (
-          <FriendButton
-            currentUserId={mongoId}
-            targetUserId={userId}
-            initialStatus={friendStatus}
-            onStatusChange={(newStatus) => setFriendStatus(newStatus)} // Update the local state
-          />
+          <View className="flex-row items-center">
+            <FriendActionButton
+              currentUserId={mongoId}
+              targetUserId={userId}
+              status={friendStatus}
+              onStatusChange={(newStatus: string) => setFriendStatus(newStatus)}
+            />
+            <TouchableOpacity
+              onPress={() => setShowTooltip((prev) => !prev)}
+              className="ml-2 p-2"
+            >
+              {/* Upside-down caret */}
+              <Ionicons
+                name="caret-up"
+                size={16}
+                color="black"
+                style={{ transform: [{ rotate: "180deg" }] }}
+              />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Tooltip Options */}
+        {showTooltip && (
+          <View className="mt-2 p-2 bg-white border border-gray-300 rounded shadow-md">
+            <TouchableOpacity onPress={handleBlockUser} className="py-1 px-2">
+              <Text className="text-sm text-gray-700">Block User</Text>
+            </TouchableOpacity>
+            {friendStatus === "request_received" && (
+              <TouchableOpacity
+                onPress={handleRevokeRequest}
+                className="py-1 px-2"
+              >
+                <Text className="text-sm text-gray-700">Revoke Request</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         )}
 
         {/* Bio Section - Read-only */}

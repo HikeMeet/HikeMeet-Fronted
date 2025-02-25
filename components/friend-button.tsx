@@ -1,90 +1,104 @@
-import React, { useState } from "react";
-import { TouchableOpacity, Text, ActivityIndicator } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useState, useEffect } from "react";
+import { TouchableOpacity, Text } from "react-native";
+import tw from "twrnc";
 
-type FriendButtonProps = {
-  currentUserId: string; // ID of the logged-in user
-  targetUserId: string; // ID of the user to add/remove
-  initialStatus: "none" | "pending" | "active"; // Initial active status
-  onStatusChange?: (newStatus: "none" | "pending" | "active") => void; // Optional callback for status changes
-};
+interface FriendActionButtonProps {
+  status: string; // 'accepted', 'request_sent', 'request_received', 'blocked', or "none"
+  currentUserId: string;
+  targetUserId: string;
+  onStatusChange?: (newStatus: string) => void;
+}
 
-const FriendButton: React.FC<FriendButtonProps> = ({
+const FriendActionButton: React.FC<FriendActionButtonProps> = ({
+  status,
   currentUserId,
   targetUserId,
-  initialStatus,
   onStatusChange,
 }) => {
-  const [friendStatus, setFriendStatus] = useState<"none" | "pending" | "active">(initialStatus);
-  const [loading, setLoading] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(status);
+  // Update local status if prop changes.
+  useEffect(() => {
+    setCurrentStatus(status);
+  }, [status]);
 
-  const handleFriendAction = async () => {
-    setLoading(true);
+  // Determine API endpoint, label, and style based on current status.
+  const getEndpointAndStyle = () => {
+    switch (currentStatus) {
+      case "accepted":
+        return {
+          endpoint: "/remove",
+          label: "Remove Friend",
+          color: "bg-red-500",
+        };
+      case "request_sent":
+        return {
+          endpoint: "/cancel-request",
+          label: "Cancel Request",
+          color: "bg-yellow-500",
+        };
+      case "request_received":
+        return {
+          endpoint: "/accept-request",
+          label: "Accept Request",
+          color: "bg-green-500",
+        };
+      case "blocked":
+        return {
+          endpoint: "/unblock",
+          label: "Unblock User",
+          color: "bg-gray-500",
+        };
+      default:
+        return {
+          endpoint: "/send-request",
+          label: "Send Request",
+          color: "bg-blue-500",
+        };
+    }
+  };
+
+  const { endpoint, label, color } = getEndpointAndStyle();
+
+  const handlePress = async () => {
     try {
-      let endpoint = "";
-      let method = "POST";
-      const body = JSON.stringify({ userId: currentUserId, friendId: targetUserId });
-
-      if (friendStatus === "none") {
-        endpoint = `${process.env.EXPO_LOCAL_SERVER}/api/friends/add-friend`;
-      } else if (friendStatus === "pending") {
-        endpoint = `${process.env.EXPO_LOCAL_SERVER}/api/friends/cancel-pending`;
-      } else if (friendStatus === "active") {
-        endpoint = `${process.env.EXPO_LOCAL_SERVER}/api/friends/remove`;
+      // Send API request.
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/friend${endpoint}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ currentUserId, targetUserId }),
+        }
+      );
+      const data = await response.json();
+      console.log("Response:", data);
+      // If the API call is successful, update the status.
+      let newStatus = currentStatus;
+      if (currentStatus === "none") {
+        newStatus = "request_sent";
+      } else if (currentStatus === "request_sent") {
+        newStatus = "none";
+      } else if (currentStatus === "request_received") {
+        newStatus = "accepted";
+      } else if (currentStatus === "accepted") {
+        newStatus = "none";
+      } else if (currentStatus === "blocked") {
+        newStatus = "none";
       }
-
-      const response = await fetch(endpoint, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body,
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to perform action");
+      setCurrentStatus(newStatus);
+      if (onStatusChange) {
+        onStatusChange(newStatus);
       }
-
-      // Update status locally based on the current state
-      if (friendStatus === "none") setFriendStatus("pending");
-      else if (friendStatus === "pending") setFriendStatus("none");
-      else if (friendStatus === "active") setFriendStatus("none");
-
-      // Trigger optional callback
-      onStatusChange?.(friendStatus);
     } catch (error) {
-      console.error("Error performing friend action:", error);
-    } finally {
-      setLoading(false);
+      console.error("Error in friend action:", error);
     }
   };
-
-  const getButtonProps = () => {
-    if (loading) {
-      return { text: "Processing...", icon: undefined, bgColor: "bg-gray-400" };
-    }
-    if (friendStatus === "none") {
-      return { text: "Add Friend", icon: "person-add" as const, bgColor: "bg-blue-500" };
-    }
-    if (friendStatus === "pending") {
-      return { text: "Cancel Request", icon: "close-circle" as const, bgColor: "bg-yellow-500" };
-    }
-    if (friendStatus === "active") {
-      return { text: "Remove Friend", icon: "person-remove" as const, bgColor: "bg-red-500" };
-    }
-    return { text: "Unknown", icon: undefined, bgColor: "bg-gray-500" };
-  };
-    const { text, icon, bgColor } = getButtonProps();
 
   return (
-    <TouchableOpacity
-      className={`px-4 py-2 rounded-lg flex-row items-center justify-center ${bgColor}`}
-      onPress={handleFriendAction}
-      disabled={loading}
-    >
-      {icon && <Ionicons name={icon} size={18} color="white" />}
-      <Text className="ml-2 text-white font-bold">{text}</Text>
+    <TouchableOpacity onPress={handlePress} style={tw`${color} p-4 rounded-lg`}>
+      <Text style={tw`text-white text-center`}>{label}</Text>
     </TouchableOpacity>
   );
 };
 
-export default FriendButton;
+export default FriendActionButton;
