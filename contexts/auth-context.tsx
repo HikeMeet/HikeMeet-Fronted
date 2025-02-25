@@ -59,9 +59,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (currentUser.emailVerified) {
             try {
               console.log("Fetching user from MongoDB...");
-              console.log(
-                `${process.env.EXPO_LOCAL_SERVER}/api/user/${currentUser.uid}?firebase=true`
-              );
               const response = await fetch(
                 `${process.env.EXPO_LOCAL_SERVER}/api/user/${currentUser.uid}?firebase=true`
               );

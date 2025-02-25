@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,35 +8,14 @@ import {
   Image,
 } from "react-native";
 import { useAuth } from "../../contexts/auth-context";
-import FriendButton from "../../components/friend-button";
 import SearchInput from "../../components/search-input";
+import FriendActionButton from "../../components/friend-button";
 
 const SearchPage = ({ navigation }: any) => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("All");
   const { mongoId } = useAuth();
-
-  const fetchFriendStatuses = async (userList: any[]) => {
-    const updatedUsers = await Promise.all(
-      userList.map(async (user) => {
-        try {
-          const response = await fetch(
-            `${process.env.EXPO_LOCAL_SERVER}/api/friends/status?userId=${mongoId}&friendId=${user._id}`,
-            { method: "GET", headers: { "Content-Type": "application/json" } }
-          );
-          if (response.ok) {
-            const data = await response.json();
-            return { ...user, friendStatus: data.status || "none" };
-          }
-        } catch (error) {
-          console.error(`Error fetching friend status for user ${user._id}:`, error);
-        }
-        return { ...user, friendStatus: "none" };
-      })
-    );
-    setUsers(updatedUsers);
-  };
 
   const searchFriends = async (query: string): Promise<any[]> => {
     if (!query.trim()) {
@@ -45,18 +24,44 @@ const SearchPage = ({ navigation }: any) => {
     }
     setLoading(true);
     try {
-      const response = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/search/friends?query=${query}`,
+      // Fetch searched users.
+      const userResponse = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/search/users?query=${query}`,
         { method: "GET", headers: { "Content-Type": "application/json" } }
       );
-      if (!response.ok) {
-        const errorResponse = await response.json();
-        throw new Error(errorResponse.error || "Failed to fetch search results");
+      if (!userResponse.ok) {
+        const errorResponse = await userResponse.json();
+        throw new Error(
+          errorResponse.error || "Failed to fetch search results"
+        );
       }
-      const data = await response.json();
+      const data = await userResponse.json();
       const userList = data.friends || [];
-      fetchFriendStatuses(userList);
-      return userList;
+
+      // Fetch the current user's friend list.
+      const friendResponse = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/friend/${mongoId}`,
+        { method: "GET", headers: { "Content-Type": "application/json" } }
+      );
+      let friendList: any[] = [];
+      if (friendResponse.ok) {
+        const friendData = await friendResponse.json();
+        friendList = friendData.friends || [];
+      }
+      console.log("::::friends:", friendList);
+      // Map through userList and add friendStatus based on friendList.
+      const updatedUsers = userList.map((user: any) => {
+        const friendEntry = friendList.find(
+          (f: any) => f.id === user._id || f.id === user._id.toString()
+        );
+        return {
+          ...user,
+          friendStatus: friendEntry ? friendEntry.status : "none",
+        };
+      });
+
+      setUsers(updatedUsers);
+      return updatedUsers;
     } catch (error) {
       console.error("Error fetching search results:", error);
       setUsers([]);
@@ -68,11 +73,11 @@ const SearchPage = ({ navigation }: any) => {
 
   return (
     <View className="flex-1 bg-white">
-            <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
-              <Text className="text-xl font-bold"></Text>
-            </View>
+      <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
+        <Text className="text-xl font-bold">Search</Text>
+      </View>
 
-      {/*search component*/}
+      {/* Search Input */}
       <View className="px-3 pt-4 pb-3">
         <SearchInput
           placeholder="Search Everything..."
@@ -81,17 +86,12 @@ const SearchPage = ({ navigation }: any) => {
         />
       </View>
 
-
-
-
       {/* Filters */}
       <View className="px-10">
         <ScrollView
           horizontal
           className="flex-row"
-          contentContainerStyle={{
-            alignItems: "center",
-          }}
+          contentContainerStyle={{ alignItems: "center" }}
           showsHorizontalScrollIndicator={false}
         >
           {["All", "Groups", "Trip", "Hikes", "Posts"].map((item) => (
@@ -114,8 +114,6 @@ const SearchPage = ({ navigation }: any) => {
         </ScrollView>
       </View>
 
-
-      
       {/* Results */}
       {loading ? (
         <View className="flex-1 justify-center items-center">
@@ -136,7 +134,8 @@ const SearchPage = ({ navigation }: any) => {
               <View className="mb-2 p-4 bg-gray-100 rounded-lg flex-row items-center shadow-sm">
                 <Image
                   source={{
-                    uri: user.profile_picture || "https://via.placeholder.com/50",
+                    uri:
+                      user.profile_picture || "https://via.placeholder.com/50",
                   }}
                   className="w-10 h-10 rounded-full mr-4"
                 />
@@ -146,12 +145,21 @@ const SearchPage = ({ navigation }: any) => {
                     {`${user.first_name} ${user.last_name}`}
                   </Text>
                 </View>
-                {/* FriendButton Component */}
+                {/* Friend Action Button with onStatusChange to update the user's friendStatus in the list */}
                 {user._id !== mongoId && mongoId && (
-                  <FriendButton
+                  <FriendActionButton
                     currentUserId={mongoId}
                     targetUserId={user._id}
-                    initialStatus={user.friendStatus || "none"}
+                    status={user.friendStatus || "none"}
+                    onStatusChange={(newStatus: string) => {
+                      setUsers((prevUsers) =>
+                        prevUsers.map((u) =>
+                          u._id === user._id
+                            ? { ...u, friendStatus: newStatus }
+                            : u
+                        )
+                      );
+                    }}
                   />
                 )}
               </View>
