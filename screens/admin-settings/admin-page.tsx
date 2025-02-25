@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { MongoUser } from "../../interfaces/user-interface";
 import UserSearchList from "../../components/user-search-in-admin";
+import { useAuth } from "../../contexts/auth-context";
 
 const AdminSettingsPage = ({ navigation }: any) => {
   const [activeTab, setActiveTab] = useState("Users");
   const [users, setUsers] = useState<MongoUser[]>([]);
   const [loading, setLoading] = useState(false);
+  const { mongoId } = useAuth(); // current user's mongoId
 
   // Fetch Users
   useEffect(() => {
@@ -40,11 +42,14 @@ const AdminSettingsPage = ({ navigation }: any) => {
   // Render tab content based on the active tab
   const renderContent = () => {
     if (activeTab === "Users") {
+      // Filter out the current user
+      const filteredUsers = users.filter((user) => user._id !== mongoId);
       return (
         <UserSearchList
-          users={users}
+          users={filteredUsers}
           loading={loading}
           onUserDeleted={handleUserDeleted}
+          navigation={navigation}
         />
       );
     } else if (activeTab === "Trips Approve") {

@@ -14,12 +14,14 @@ interface UserSearchListProps {
   users: MongoUser[];
   loading: boolean;
   onUserDeleted: (mongoId: string) => void;
+  navigation: any;
 }
 
 const UserSearchList: React.FC<UserSearchListProps> = ({
   users,
   loading,
   onUserDeleted,
+  navigation,
 }) => {
   const [searchText, setSearchText] = useState("");
 
@@ -57,7 +59,12 @@ const UserSearchList: React.FC<UserSearchListProps> = ({
       {/* Users List */}
       <ScrollView>
         {filteredUsers.map((user) => (
-          <UserRow key={user._id} user={user} onUserDeleted={onUserDeleted} />
+          <UserRow
+            key={user._id}
+            user={user}
+            onUserDeleted={onUserDeleted}
+            navigation={navigation}
+          />
         ))}
         {filteredUsers.length === 0 && (
           <Text className="text-center text-gray-500 mt-4">
