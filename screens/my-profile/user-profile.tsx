@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -12,14 +12,26 @@ import { Ionicons } from "@expo/vector-icons";
 import BioSection from "../../components/profile-bio-section";
 import { useAuth } from "../../contexts/auth-context";
 import FriendActionButton from "../../components/friend-button";
+import HikersList from "../../components/hikers-list-in-profile";
+import HikerButton from "../../components/profile-hikers-button";
 
-const UserProfile = ({ route, navigation }: any) => {
+interface UserProfileProps {
+  route: any;
+  navigation: any;
+}
+
+const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   const { userId } = route.params; // ID of the user to fetch
   const [user, setUser] = useState<any>(null); // User data
   const [friendStatus, setFriendStatus] = useState<string>("none"); // Friend status
-  const [loading, setLoading] = useState(true); // Loading state
-  const [showTooltip, setShowTooltip] = useState(false); // Tooltip visibility
+  const [loading, setLoading] = useState<boolean>(true); // Loading state
+  const [showTooltip, setShowTooltip] = useState<boolean>(false); // Tooltip visibility
+  const [showHikers, setShowHikers] = useState<boolean>(false); // Toggle for hikers list
   const { mongoId } = useAuth(); // Current user's ID
+
+  const toggleHikers = useCallback(() => {
+    setShowHikers((prev) => !prev);
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -39,7 +51,7 @@ const UserProfile = ({ route, navigation }: any) => {
         if (mongoId) {
           const friendResponse = await fetch(
             `${process.env.EXPO_LOCAL_SERVER}/api/friend/${mongoId}?friendId=${userId}`,
-            { method: "GET", headers: { "ContentT-ype": "application/json" } }
+            { method: "GET", headers: { "Content-Type": "application/json" } }
           );
 
           let status = "none";
@@ -126,6 +138,7 @@ const UserProfile = ({ route, navigation }: any) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
+      {/* Header */}
       <View className="flex-row items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="black" />
@@ -145,10 +158,12 @@ const UserProfile = ({ route, navigation }: any) => {
           <View>
             <Text className="text-xl font-bold">{`${user.first_name} ${user.last_name}`}</Text>
             <Text className="text-sm text-gray-500">Rank: Adventurer</Text>
+            {/* Hiker Button moved under the name and rank */}
+            <HikerButton showHikers={showHikers} toggleHikers={toggleHikers} />
           </View>
         </View>
 
-        {/* Friend Button and Tooltip Toggle */}
+        {/* Friend Action Button and Tooltip */}
         {mongoId && (
           <View className="flex-row items-center">
             <FriendActionButton
@@ -161,7 +176,6 @@ const UserProfile = ({ route, navigation }: any) => {
               onPress={() => setShowTooltip((prev) => !prev)}
               className="ml-2 p-2"
             >
-              {/* Upside-down caret */}
               <Ionicons
                 name="caret-up"
                 size={16}
@@ -189,22 +203,33 @@ const UserProfile = ({ route, navigation }: any) => {
           </View>
         )}
 
-        {/* Bio Section - Read-only */}
-        <BioSection bio={user.bio} editable={false} />
+        {/* Conditional Rendering: Hikers List vs. Bio and Posts */}
+        {showHikers ? (
+          <HikersList
+            isMyProfile={false}
+            navigation={navigation}
+            profileId={userId}
+          />
+        ) : (
+          <>
+            {/* Bio Section - Read-only */}
+            <BioSection bio={user.bio} editable={false} />
 
-        {/* Divider */}
-        <View className="h-px bg-gray-300 my-4" />
+            {/* Divider */}
+            <View className="h-px bg-gray-300 my-4" />
 
-        {/* Example Posts */}
-        <Text className="text-lg font-bold mb-2">Posts</Text>
-        {[1, 2, 3].map((post, index) => (
-          <View
-            key={index}
-            className="mb-4 p-4 bg-gray-100 rounded-lg shadow-sm"
-          >
-            <Text className="text-sm text-gray-800">Post {index + 1}</Text>
-          </View>
-        ))}
+            {/* Example Posts */}
+            <Text className="text-lg font-bold mb-2">Posts</Text>
+            {[1, 2, 3].map((post, index) => (
+              <View
+                key={index}
+                className="mb-4 p-4 bg-gray-100 rounded-lg shadow-sm"
+              >
+                <Text className="text-sm text-gray-800">Post {index + 1}</Text>
+              </View>
+            ))}
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

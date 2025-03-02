@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { MongoUser } from "../../interfaces/user-interface";
 import UserSearchList from "../../components/user-search-in-admin";
+import { useAuth } from "../../contexts/auth-context";
 
-const AdminSettingsPage = () => {
+const AdminSettingsPage = ({ navigation }: any) => {
   const [activeTab, setActiveTab] = useState("Users");
   const [users, setUsers] = useState<MongoUser[]>([]);
   const [loading, setLoading] = useState(false);
+  const { mongoId } = useAuth(); // current user's mongoId
 
   // Fetch Users
   useEffect(() => {
@@ -23,6 +25,18 @@ const AdminSettingsPage = () => {
       );
       if (!response.ok) throw new Error("Failed to fetch users");
       const data: MongoUser[] = await response.json();
+
+      // If mongoId exists, sort the users so that the user with that ID comes first.
+      if (mongoId) {
+        data.sort((a, b) => {
+          const aIsCurrent = String(a._id) === String(mongoId);
+          const bIsCurrent = String(b._id) === String(mongoId);
+          if (aIsCurrent && !bIsCurrent) return -1;
+          if (!aIsCurrent && bIsCurrent) return 1;
+          return 0;
+        });
+      }
+
       setUsers(data);
     } catch (error: any) {
       console.log(error.message);
@@ -45,6 +59,7 @@ const AdminSettingsPage = () => {
           users={users}
           loading={loading}
           onUserDeleted={handleUserDeleted}
+          navigation={navigation}
         />
       );
     } else if (activeTab === "Trips Approve") {
