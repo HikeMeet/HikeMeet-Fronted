@@ -25,6 +25,18 @@ const AdminSettingsPage = ({ navigation }: any) => {
       );
       if (!response.ok) throw new Error("Failed to fetch users");
       const data: MongoUser[] = await response.json();
+
+      // If mongoId exists, sort the users so that the user with that ID comes first.
+      if (mongoId) {
+        data.sort((a, b) => {
+          const aIsCurrent = String(a._id) === String(mongoId);
+          const bIsCurrent = String(b._id) === String(mongoId);
+          if (aIsCurrent && !bIsCurrent) return -1;
+          if (!aIsCurrent && bIsCurrent) return 1;
+          return 0;
+        });
+      }
+
       setUsers(data);
     } catch (error: any) {
       console.log(error.message);
@@ -42,11 +54,9 @@ const AdminSettingsPage = ({ navigation }: any) => {
   // Render tab content based on the active tab
   const renderContent = () => {
     if (activeTab === "Users") {
-      // Filter out the current user
-      const filteredUsers = users.filter((user) => user._id !== mongoId);
       return (
         <UserSearchList
-          users={filteredUsers}
+          users={users}
           loading={loading}
           onUserDeleted={handleUserDeleted}
           navigation={navigation}

@@ -8,10 +8,11 @@ import {
   Button,
   Alert,
 } from "react-native";
+import tw from "twrnc";
+import { useAuth } from "../contexts/auth-context";
 import { MongoUser } from "../interfaces/user-interface";
 import { FIREBASE_AUTH } from "../firebaseconfig";
 import { deleteFirebaseUser } from "./requests/admin-delete-user";
-import tw from "twrnc";
 
 interface UserRowProps {
   user: MongoUser;
@@ -25,6 +26,7 @@ const UserRow: React.FC<UserRowProps> = ({
   navigation,
 }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const { mongoId } = useAuth(); // Current user's ID
 
   const handleDelete = async () => {
     setIsModalVisible(false);
@@ -45,9 +47,15 @@ const UserRow: React.FC<UserRowProps> = ({
     }
   };
 
-  // When pressed, navigate to the UserProfile screen
+  // When pressed, navigate accordingly.
   const handlePress = () => {
-    navigation.navigate("UserProfile", { userId: user._id });
+    if (user._id === mongoId) {
+      // Navigate to the Profile tab if it's the current user.
+      navigation.navigate("Tabs", { screen: "Profile" });
+    } else {
+      // Otherwise, navigate to the UserProfile screen.
+      navigation.navigate("UserProfile", { userId: user._id });
+    }
   };
 
   return (
@@ -71,13 +79,15 @@ const UserRow: React.FC<UserRowProps> = ({
           <Text style={tw`text-sm text-gray-500`}>@{user.username}</Text>
         </View>
 
-        {/* Delete Button */}
-        <TouchableOpacity
-          onPress={() => setIsModalVisible(true)}
-          style={tw`bg-red-500 p-2 rounded-lg`}
-        >
-          <Text style={tw`text-white text-sm`}>Delete</Text>
-        </TouchableOpacity>
+        {/* Only render the Delete button if this is not the current user */}
+        {user._id !== mongoId && (
+          <TouchableOpacity
+            onPress={() => setIsModalVisible(true)}
+            style={tw`bg-red-500 p-2 rounded-lg`}
+          >
+            <Text style={tw`text-white text-sm`}>Delete</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Confirmation Modal */}
         <Modal
