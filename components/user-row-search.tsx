@@ -18,7 +18,7 @@ const UserRow: React.FC<UserRowProps> = ({
   navigation,
 }) => {
   const { mongoId } = useAuth(); // Current user's ID
-
+  console.log(":::::", user.friendStatus, "\n:::::::", currentUserId);
   const handlePress = () => {
     if (user._id === mongoId) {
       // If the tapped row is the current user, navigate to the Profile tab

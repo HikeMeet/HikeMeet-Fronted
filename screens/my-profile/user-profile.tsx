@@ -158,6 +158,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
           <View>
             <Text className="text-xl font-bold">{`${user.first_name} ${user.last_name}`}</Text>
             <Text className="text-sm text-gray-500">Rank: Adventurer</Text>
+            {/* Hiker Button moved under the name and rank */}
+            <HikerButton showHikers={showHikers} toggleHikers={toggleHikers} />
           </View>
         </View>
 
@@ -201,12 +203,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
           </View>
         )}
 
-        {/* Hiker Button Toggle */}
-        <HikerButton showHikers={showHikers} toggleHikers={toggleHikers} />
-
         {/* Conditional Rendering: Hikers List vs. Bio and Posts */}
         {showHikers ? (
-          // In UserProfile.tsx, pass the userId from route params
           <HikersList
             isMyProfile={false}
             navigation={navigation}
