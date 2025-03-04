@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { TouchableOpacity, Text } from "react-native";
 import tw from "twrnc";
+import { useAuth } from "../contexts/auth-context";
 
 interface FriendActionButtonProps {
   status: string; // 'accepted', 'request_sent', 'request_received', 'blocked', or "none"
@@ -15,7 +16,9 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
   targetUserId,
   onStatusChange,
 }) => {
+  const { mongoUser, setMongoUser } = useAuth();
   const [currentStatus, setCurrentStatus] = useState(status);
+
   // Update local status if prop changes.
   useEffect(() => {
     setCurrentStatus(status);
@@ -72,7 +75,8 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
       );
       const data = await response.json();
       console.log("Response:", data);
-      // If the API call is successful, update the status.
+
+      // Determine new status.
       let newStatus = currentStatus;
       if (currentStatus === "none") {
         newStatus = "request_sent";
@@ -85,10 +89,44 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
       } else if (currentStatus === "blocked") {
         newStatus = "none";
       }
+
+      // Update local state and invoke callback.
       setCurrentStatus(newStatus);
       if (onStatusChange) {
         onStatusChange(newStatus);
       }
+
+      // Update mongoUser in context.
+      setMongoUser((prevUser: any) => {
+        if (!prevUser) return prevUser;
+        // Copy the current friends list.
+        let updatedFriends = [...(prevUser.friends || [])];
+
+        // Locate the friend using targetUserId.
+        const friendIndex = updatedFriends.findIndex((friend: any) => {
+          // friend.id can be an object (with $oid) or a string.
+          if (typeof friend.id === "object" && friend.id.$oid) {
+            return friend.id.$oid === targetUserId;
+          }
+          return friend.id === targetUserId;
+        });
+
+        if (newStatus === "none") {
+          // Remove friend if found.
+          if (friendIndex !== -1) {
+            updatedFriends.splice(friendIndex, 1);
+          }
+        } else {
+          // Update existing friend entry or add a new one.
+          const friendEntry = { status: newStatus, id: targetUserId };
+          if (friendIndex !== -1) {
+            updatedFriends[friendIndex] = friendEntry;
+          } else {
+            updatedFriends.push(friendEntry);
+          }
+        }
+        return { ...prevUser, friends: updatedFriends };
+      });
     } catch (error) {
       console.error("Error in friend action:", error);
     }

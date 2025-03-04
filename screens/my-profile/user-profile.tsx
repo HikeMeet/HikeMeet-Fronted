@@ -197,7 +197,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
                 onPress={handleRevokeRequest}
                 className="py-1 px-2"
               >
-                <Text className="text-sm text-gray-700">Revoke Request</Text>
+                <Text className="text-sm text-gray-700">Decline Request</Text>
               </TouchableOpacity>
             )}
           </View>
