@@ -73,7 +73,11 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
           <Text className="text-lg font-bold">{mongoUser.username}</Text>
           <Text className="text-lg font-bold">{`${mongoUser.first_name} ${mongoUser.last_name}`}</Text>
           <Text className="text-sm text-gray-500">Rank: Adventurer</Text>
-          <HikerButton showHikers={showHikers} toggleHikers={toggleHikers} />
+          <HikerButton
+            showHikers={showHikers}
+            toggleHikers={toggleHikers}
+            user={mongoUser}
+          />
         </View>
       </View>
 
