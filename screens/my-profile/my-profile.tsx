@@ -51,7 +51,11 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
         <Text className="text-xl font-bold">Profile</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("AccountStack", { screen: "Settings" })
+          }
+        >
           <Image
             source={{
               uri: "https://cdn-icons-png.flaticon.com/512/2099/2099058.png",
