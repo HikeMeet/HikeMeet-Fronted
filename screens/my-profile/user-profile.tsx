@@ -47,20 +47,27 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
         const data = await response.json();
         setUser(data);
 
-        // Now fetch friend status by sending friendId in the query.
-        if (mongoId) {
-          const friendResponse = await fetch(
-            `${process.env.EXPO_LOCAL_SERVER}/api/friend/${mongoId}?friendId=${userId}`,
-            { method: "GET", headers: { "Content-Type": "application/json" } }
-          );
-
-          let status = "none";
-          if (friendResponse.ok) {
-            const friendData = await friendResponse.json();
-            if (friendData.friends && friendData.friends.length > 0) {
-              status = friendData.friends[0].status;
-            }
+        // Now fetch friend status by
+        if (mongoUser) {
+          interface FriendObject {
+            id: string;
+            status: string;
           }
+
+          type Friend = FriendObject | string;
+
+          const friendData = mongoUser.friends as Friend[];
+
+          const friend = friendData.find((f: Friend) => {
+            if (typeof f === "object") {
+              return f.id === userId;
+            }
+            return false;
+          });
+
+          const status =
+            friend && typeof friend === "object" ? friend.status : "none";
+
           setFriendStatus(status);
         }
       } catch (error) {
