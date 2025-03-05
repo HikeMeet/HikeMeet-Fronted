@@ -8,8 +8,11 @@ import {
   Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const TripsPage = () => {
+interface UserTripProps {
+  route: any;
+  navigation: any;
+}
+const TripsPage: React.FC<UserTripProps> = ({ route, navigation }) => {
   return (
     <SafeAreaView className="flex-1 bg-white p-4">
       {/* Top row: Search and filter */}
@@ -30,7 +33,10 @@ const TripsPage = () => {
           <Text className="text-white font-semibold">Trip History</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity className="bg-green-500 px-4 py-2 rounded">
+        <TouchableOpacity
+          className="bg-green-500 px-4 py-2 rounded"
+          onPress={() => navigation.navigate("CreateTripPage")}
+        >
           <Text className="text-white font-semibold">+ Add trip</Text>
         </TouchableOpacity>
       </View>

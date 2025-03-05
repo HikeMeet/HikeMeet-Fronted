@@ -39,6 +39,7 @@ const NonTabScreensStack = () => {
         component={TripsStack}
         options={{ headerShown: false }}
       />
+
       {/* Other Screens */}
       <Stack.Screen
         name="Home"
