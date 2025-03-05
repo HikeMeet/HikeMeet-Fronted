@@ -27,7 +27,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   const [loading, setLoading] = useState<boolean>(true); // Loading state
   const [showTooltip, setShowTooltip] = useState<boolean>(false); // Tooltip visibility
   const [showHikers, setShowHikers] = useState<boolean>(false); // Toggle for hikers list
-  const { mongoId } = useAuth(); // Current user's ID
+  const { mongoId, mongoUser } = useAuth(); // Current user's ID
 
   const toggleHikers = useCallback(() => {
     setShowHikers((prev) => !prev);
@@ -159,7 +159,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
             <Text className="text-xl font-bold">{`${user.first_name} ${user.last_name}`}</Text>
             <Text className="text-sm text-gray-500">Rank: Adventurer</Text>
             {/* Hiker Button moved under the name and rank */}
-            <HikerButton showHikers={showHikers} toggleHikers={toggleHikers} />
+            <HikerButton
+              showHikers={showHikers}
+              toggleHikers={toggleHikers}
+              user={user}
+            />
           </View>
         </View>
 

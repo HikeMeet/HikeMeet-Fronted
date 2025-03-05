@@ -1,22 +1,21 @@
 import React from "react";
 import { TouchableOpacity, Text } from "react-native";
-import { useAuth } from "../contexts/auth-context";
+import { MongoUser } from "../interfaces/user-interface";
 
 interface HikerButtonProps {
   showHikers: boolean;
   toggleHikers: () => void;
+  user: MongoUser | null;
 }
 
 const HikerButton: React.FC<HikerButtonProps> = ({
   showHikers,
   toggleHikers,
+  user,
 }) => {
-  const { mongoUser } = useAuth();
-
-  // Calculate the number of accepted friends directly from mongoUser.
-  const acceptedCount = mongoUser?.friends
-    ? mongoUser.friends.filter((friend: any) => friend.status === "accepted")
-        .length
+  // Calculate the number of accepted friends from the passed in user.
+  const acceptedCount = user?.friends
+    ? user.friends.filter((friend: any) => friend.status === "accepted").length
     : 0;
 
   return (
