@@ -8,9 +8,13 @@ interface CustomTabBarProps {
   navigation: any;
 }
 
-const CustomTabBar: React.FC<CustomTabBarProps> = ({ state, descriptors, navigation }) => {
+const CustomTabBar: React.FC<CustomTabBarProps> = ({
+  state,
+  descriptors,
+  navigation,
+}) => {
   return (
-    <View className="flex-row justify-around items-center absolute bottom-3 left-5 right-5 bg-white rounded-xl shadow-md py-2">
+    <View className="flex-row justify-around items-center bg-white border-t border-gray-300 py-2">
       {state.routes.map((route: any, index: number) => {
         const isFocused = state.index === index;
         const iconName = getIconName(route.name);
@@ -31,22 +35,17 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({ state, descriptors, navigat
           <TouchableOpacity
             key={route.key}
             onPress={onPress}
-            className="flex items-center w-16" 
+            className="flex items-center w-16"
           >
-            <View
-              className={`items-center justify-center w-12 h-8 rounded-full
-              }`}
-            >
+            <View className="items-center justify-center w-12 h-8 rounded-full">
               <Icon
                 name={iconName}
-                size={28} 
+                size={28}
                 color={isFocused ? "#16a34a" : "#aaa"}
               />
             </View>
             <Text
-              className={`text-xs mt-1 ${
-                isFocused ? "text-green-600 font-bold" : "text-gray-400"
-              }`}
+              className={`text-xs mt-1 ${isFocused ? "text-green-600 font-bold" : "text-gray-400"}`}
             >
               {route.name}
             </Text>
