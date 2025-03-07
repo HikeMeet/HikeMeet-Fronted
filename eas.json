@@ -1,0 +1,34 @@
+{
+  "cli": {
+    "version": ">= 15.0.14",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "FIREBASE_API_KEY": "AIzaSyDEaZ1g62ZbD-m4c5tPOpUpyuWV-cn1QF4",
+        "FIREBASE_AUTH_DOMAIN": "hikemeet-a918c.firebaseapp.com",
+        "FIREBASE_PROJECT_ID": "hikemeet-a918c",
+        "FIREBASE_STORAGE_BUCKET": "hikemeet-a918c.firebasestorage.app",
+        "FIREBASE_MESSAGING_SENDER_ID": "887562416024",
+        "FIREBASE_APP_ID": "1:887562416024:web:22ca1d6acb12ea7b0f05ed",
+        "FIREBASE_MEASUREMENT_ID": "G-FL074B78P0",
+        "EXPO_LOCAL_SERVER": "http://10.100.102.172:3000",
+        "MAPBOX_TOKEN": "sk.eyJ1Ijoid29vb3phaSIsImEiOiJjbTd5cTJjamcwY3RtMmxzYWdzZzByOXZ2In0.saTmmCTvOKuKAEf9aMSsWg",
+        "MAPBOX_TOKEN_PUBLIC": "pk.eyJ1Ijoid29vb3phaSIsImEiOiJjbTd3N2VuZDIwMjhjMmpzZW91OGJjaWkxIn0.7cSf7i4RvoT-9IiiaMuaUw",
+        "GOOGLEMAP_API_KEKY": "AIzaSyDtSaHpkzeq1SSji6kQt2YWNB3KHrA1xCs"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
