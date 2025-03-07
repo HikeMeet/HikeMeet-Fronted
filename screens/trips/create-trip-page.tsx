@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from "react";
 import {
-  ScrollView,
+  View,
   Text,
   TextInput,
-  View,
   TouchableOpacity,
-  StyleSheet,
+  ScrollView,
 } from "react-native";
 import Mapbox from "@rnmapbox/maps";
 import * as Location from "expo-location";
+import { styled } from "nativewind";
+
+const StyledMapView = styled(Mapbox.MapView);
+const StyledCamera = styled(Mapbox.Camera);
 
 const TRIP_TAGS = [
   "Water",
@@ -32,21 +35,11 @@ const CreateTripPage: React.FC = () => {
   const [tripName, setTripName] = useState<string>("");
   const [tripLocation, setTripLocation] = useState<string>("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  // userLocation holds [longitude, latitude]
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null
   );
 
-  // Toggle the selection state of a tag
-  const handleTagPress = (tag: string) => {
-    if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter((t) => t !== tag));
-    } else {
-      setSelectedTags([...selectedTags, tag]);
-    }
-  };
-
-  // Request location permission and get current position
+  // Request location permissions and get current location.
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -60,20 +53,28 @@ const CreateTripPage: React.FC = () => {
     })();
   }, []);
 
+  // Toggle tag selection.
+  const handleTagPress = (tag: string) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter((t) => t !== tag));
+    } else {
+      setSelectedTags([...selectedTags, tag]);
+    }
+  };
+
+  // Split tags into two rows.
+  const row1 = TRIP_TAGS.filter((_, i) => i % 2 === 0);
+  const row2 = TRIP_TAGS.filter((_, i) => i % 2 !== 0);
+
   return (
-    <ScrollView
-      className="p-5 bg-white"
-      contentContainerStyle={{ alignItems: "center", paddingBottom: 120 }}
-    >
-      {/* Name Input */}
+    <View className="flex-1 bg-white p-5">
+      {/* Name and Location Inputs */}
       <TextInput
         className="w-full h-10 border border-gray-300 rounded mb-2 px-2"
         placeholder="Name"
         value={tripName}
         onChangeText={setTripName}
       />
-
-      {/* Location Input */}
       <TextInput
         className="w-full h-10 border border-gray-300 rounded mb-2 px-2"
         placeholder="Location"
@@ -81,51 +82,61 @@ const CreateTripPage: React.FC = () => {
         onChangeText={setTripLocation}
       />
 
-      {/* Map with user location */}
-      <View style={styles.page}>
-        <View style={styles.container}>
-          <Mapbox.MapView style={styles.map}>
-            {userLocation && (
-              <Mapbox.Camera centerCoordinate={userLocation} zoomLevel={14} />
-            )}
-          </Mapbox.MapView>
-        </View>
+      {/* Map View */}
+      <View className="h-72 w-72 self-center mb-2">
+        <StyledMapView className="flex-1">
+          {userLocation && (
+            <StyledCamera centerCoordinate={userLocation} zoomLevel={14} />
+          )}
+        </StyledMapView>
       </View>
 
       {/* Image Upload Placeholder */}
-      <View className="w-full h-24 bg-gray-200 justify-center items-center my-2">
+      <View className="w-full h-16 bg-gray-200 justify-center items-center my-2">
         <Text className="text-gray-500">[ Upload Images Placeholder ]</Text>
       </View>
 
-      {/* Scrollable Tags Section */}
-      <Text className="text-base font-semibold my-2 self-start">
-        Select Tags:
-      </Text>
-      <ScrollView
-        className="w-full mb-4"
-        contentContainerStyle={{ flexDirection: "row", flexWrap: "wrap" }}
-      >
-        {TRIP_TAGS.map((tag) => {
-          const isSelected = selectedTags.includes(tag);
-          return (
-            <TouchableOpacity
-              key={tag}
-              onPress={() => handleTagPress(tag)}
-              className="flex-row items-center m-1"
-            >
-              <View
-                className={`w-5 h-5 border border-gray-400 mr-2 ${
-                  isSelected ? "bg-blue-500" : "bg-white"
-                }`}
-              />
-              <Text className="text-sm">{tag}</Text>
-            </TouchableOpacity>
-          );
-        })}
+      {/* Tags Section: horizontally scrollable with two rows */}
+      <Text className="text-base font-semibold my-2">Select Tags:</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View className="flex-col px-2">
+          <View className="flex-row mb-2">
+            {row1.map((tag) => {
+              const isSelected = selectedTags.includes(tag);
+              return (
+                <TouchableOpacity
+                  key={tag}
+                  onPress={() => handleTagPress(tag)}
+                  className={`flex-row items-center mr-2 p-1 border border-gray-400 rounded ${
+                    isSelected ? "bg-blue-500" : "bg-white"
+                  }`}
+                >
+                  <Text className="text-sm">{tag}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          <View className="flex-row">
+            {row2.map((tag) => {
+              const isSelected = selectedTags.includes(tag);
+              return (
+                <TouchableOpacity
+                  key={tag}
+                  onPress={() => handleTagPress(tag)}
+                  className={`flex-row items-center mr-2 p-1 border border-gray-400 rounded ${
+                    isSelected ? "bg-blue-500" : "bg-white"
+                  }`}
+                >
+                  <Text className="text-sm">{tag}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
       </ScrollView>
 
       {/* Buttons */}
-      <View className="flex-row mt-5 justify-between w-full">
+      <View className="flex-row justify-between mt-5">
         <TouchableOpacity className="flex-1 bg-green-500 py-3 mr-2 rounded items-center">
           <Text className="text-white font-semibold">Create Trip</Text>
         </TouchableOpacity>
@@ -133,23 +144,8 @@ const CreateTripPage: React.FC = () => {
           <Text className="text-white font-semibold">Cancel</Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
 export default CreateTripPage;
-
-const styles = StyleSheet.create({
-  page: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  container: {
-    height: 300,
-    width: 300,
-  },
-  map: {
-    flex: 1,
-  },
-});
