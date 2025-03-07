@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ScrollView,
   Text,
@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from "react-native";
 import Mapbox from "@rnmapbox/maps";
+import * as Location from "expo-location";
 
 const TRIP_TAGS = [
   "Water",
@@ -31,6 +32,10 @@ const CreateTripPage: React.FC = () => {
   const [tripName, setTripName] = useState<string>("");
   const [tripLocation, setTripLocation] = useState<string>("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  // userLocation holds [longitude, latitude]
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(
+    null
+  );
 
   // Toggle the selection state of a tag
   const handleTagPress = (tag: string) => {
@@ -41,14 +46,25 @@ const CreateTripPage: React.FC = () => {
     }
   };
 
+  // Request location permission and get current position
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission to access location was denied");
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = loc.coords;
+      setUserLocation([longitude, latitude]);
+    })();
+  }, []);
+
   return (
     <ScrollView
       className="p-5 bg-white"
       contentContainerStyle={{ alignItems: "center", paddingBottom: 120 }}
     >
-      {/* Header */}
-      <Text className="text-xl font-bold my-2">Create Trip Page</Text>
-
       {/* Name Input */}
       <TextInput
         className="w-full h-10 border border-gray-300 rounded mb-2 px-2"
@@ -65,10 +81,14 @@ const CreateTripPage: React.FC = () => {
         onChangeText={setTripLocation}
       />
 
-      {/* Map Placeholder */}
+      {/* Map with user location */}
       <View style={styles.page}>
         <View style={styles.container}>
-          <Mapbox.MapView style={styles.map} />
+          <Mapbox.MapView style={styles.map}>
+            {userLocation && (
+              <Mapbox.Camera centerCoordinate={userLocation} zoomLevel={14} />
+            )}
+          </Mapbox.MapView>
         </View>
       </View>
 
@@ -118,6 +138,7 @@ const CreateTripPage: React.FC = () => {
 };
 
 export default CreateTripPage;
+
 const styles = StyleSheet.create({
   page: {
     flex: 1,
