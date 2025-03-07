@@ -25,7 +25,10 @@ const UserRow: React.FC<UserRowProps> = ({
       navigation.navigate("Tabs", { screen: "Profile" });
     } else {
       // Otherwise navigate to the UserProfile screen
-      navigation.navigate("UserProfile", { userId: user._id });
+      navigation.navigate("AccountStack", {
+        screen: "UserProfile",
+        params: { userId: user._id },
+      });
     }
   };
 
