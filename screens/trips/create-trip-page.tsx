@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
+  ScrollView,
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
 } from "react-native";
 import Mapbox from "@rnmapbox/maps";
 import * as Location from "expo-location";
@@ -38,6 +38,8 @@ const CreateTripPage: React.FC = () => {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null
   );
+  const [scrollEnabled, setScrollEnabled] = useState(true);
+  const cameraRef = useRef<Mapbox.Camera>(null);
 
   // Request location permissions and get current location.
   useEffect(() => {
@@ -62,12 +64,23 @@ const CreateTripPage: React.FC = () => {
     }
   };
 
+  // Function to recenter the map to the user's location.
+  const handleRecenter = () => {
+    if (userLocation && cameraRef.current) {
+      cameraRef.current.flyTo(userLocation, 1000); // 1000ms animation duration
+    }
+  };
+
   // Split tags into two rows.
   const row1 = TRIP_TAGS.filter((_, i) => i % 2 === 0);
   const row2 = TRIP_TAGS.filter((_, i) => i % 2 !== 0);
 
   return (
-    <View className="flex-1 bg-white p-5">
+    <ScrollView
+      scrollEnabled={scrollEnabled}
+      className="flex-1 bg-white p-5"
+      contentContainerStyle={{ paddingBottom: 40 }}
+    >
       {/* Name and Location Inputs */}
       <TextInput
         className="w-full h-10 border border-gray-300 rounded mb-2 px-2"
@@ -82,13 +95,28 @@ const CreateTripPage: React.FC = () => {
         onChangeText={setTripLocation}
       />
 
-      {/* Map View */}
-      <View className="h-72 w-72 self-center mb-2">
+      {/* Map View with recenter button */}
+      <View
+        className="h-72 w-72 self-center mb-2 relative"
+        onTouchStart={() => setScrollEnabled(false)}
+        onTouchEnd={() => setScrollEnabled(true)}
+        onTouchCancel={() => setScrollEnabled(true)}
+      >
         <StyledMapView className="flex-1">
           {userLocation && (
-            <StyledCamera centerCoordinate={userLocation} zoomLevel={14} />
+            <StyledCamera
+              ref={cameraRef}
+              centerCoordinate={userLocation}
+              zoomLevel={14}
+            />
           )}
         </StyledMapView>
+        <TouchableOpacity
+          onPress={handleRecenter}
+          className="absolute bottom-2 right-2 bg-white p-2 rounded-full shadow"
+        >
+          <Text className="text-black text-xs">My Location</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Image Upload Placeholder */}
@@ -144,7 +172,8 @@ const CreateTripPage: React.FC = () => {
           <Text className="text-white font-semibold">Cancel</Text>
         </TouchableOpacity>
       </View>
-    </View>
+      <View className="h-20" />
+    </ScrollView>
   );
 };
 
