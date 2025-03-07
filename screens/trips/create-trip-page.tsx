@@ -172,7 +172,6 @@ const CreateTripPage: React.FC = () => {
           <Text className="text-white font-semibold">Cancel</Text>
         </TouchableOpacity>
       </View>
-      <View className="h-20" />
     </ScrollView>
   );
 };
