@@ -1,3 +1,4 @@
+import Mapbox from "@rnmapbox/maps";
 import React, { useState } from "react";
 import {
   ScrollView,
@@ -5,6 +6,7 @@ import {
   TextInput,
   View,
   TouchableOpacity,
+  StyleSheet,
 } from "react-native";
 
 const TRIP_TAGS = [
@@ -64,8 +66,10 @@ const CreateTripPage: React.FC = () => {
       />
 
       {/* Map Placeholder */}
-      <View className="w-full h-40 bg-gray-200 justify-center items-center my-2">
-        <Text className="text-gray-500">[ Map Placeholder ]</Text>
+      <View style={styles.page}>
+        <View style={styles.container}>
+          <Mapbox.MapView style={styles.map} />
+        </View>
       </View>
 
       {/* Image Upload Placeholder */}
@@ -114,3 +118,17 @@ const CreateTripPage: React.FC = () => {
 };
 
 export default CreateTripPage;
+const styles = StyleSheet.create({
+  page: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  container: {
+    height: 300,
+    width: 300,
+  },
+  map: {
+    flex: 1,
+  },
+});
