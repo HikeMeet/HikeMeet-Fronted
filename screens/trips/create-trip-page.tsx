@@ -5,9 +5,12 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import * as Location from "expo-location";
 import MapSearch from "../../components/map-search-creaete-trip";
+import ImageUploadPhotos from "../../components/insert-images-create-trip";
+import { useAuth } from "../../contexts/auth-context";
 
 const TRIP_TAGS = [
   "Water",
@@ -27,15 +30,21 @@ const TRIP_TAGS = [
   "Museum",
 ];
 
-const CreateTripPage: React.FC = () => {
+const CreateTripPage: React.FC = ({ navigation }: any) => {
   const [tripName, setTripName] = useState<string>("");
-  // The location field is now integrated in MapSearch.
   const [tripLocation, setTripLocation] = useState<string>("");
+  const [description, setDescription] = useState<string>(""); // New description field
+  // State to hold the chosen trip coordinates from MapSearch.
+  const [tripCoordinates, setTripCoordinates] = useState<
+    [number, number] | null
+  >(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null
   );
   const [scrollEnabled, setScrollEnabled] = useState(true);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const { mongoId } = useAuth(); // current user's mongoId
 
   // Get user's current location.
   useEffect(() => {
@@ -52,9 +61,16 @@ const CreateTripPage: React.FC = () => {
   }, []);
 
   // Callback to update location info from MapSearch.
+  // Updates both the address and the chosen coordinates.
   const handleLocationSelect = (coords: [number, number], address: string) => {
     setTripLocation(address);
+    setTripCoordinates(coords);
     console.log("Location selected:", coords, address);
+  };
+
+  // Callback from ImageUploadPhotos to get the list of image URLs.
+  const handleImagesChange = (images: string[]) => {
+    setUploadedImages(images);
   };
 
   // Toggle tag selection.
@@ -70,26 +86,82 @@ const CreateTripPage: React.FC = () => {
   const row1 = TRIP_TAGS.filter((_, i) => i % 2 === 0);
   const row2 = TRIP_TAGS.filter((_, i) => i % 2 !== 0);
 
+  // Function to send trip data to backend.
+  const handleCreateTrip = async () => {
+    if (!tripName || !tripLocation || !tripCoordinates) {
+      Alert.alert("Please provide a trip name and choose a location.");
+      return;
+    }
+
+    const tripData = {
+      name: tripName,
+      location: {
+        address: tripLocation,
+        coordinates: tripCoordinates, // Use the chosen coordinates
+      },
+      description, // Send description (can be empty)
+      images: uploadedImages,
+      tags: selectedTags,
+      createdBy: mongoId,
+    };
+
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/trips/create`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(tripData),
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        Alert.alert(
+          "Trip created successfully!",
+          "",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                console.log("Created Trip ID:", data._id);
+                navigation.navigate("TripPage", { tripId: data._id });
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+      } else {
+        Alert.alert("Failed to create trip.");
+      }
+    } catch (error) {
+      console.error("Error creating trip:", error);
+      Alert.alert("Error creating trip.");
+    }
+  };
+
   return (
     <ScrollView
       scrollEnabled={scrollEnabled}
-      style={{ flex: 1, backgroundColor: "white", padding: 20 }}
+      className="flex-1 bg-white p-5"
       contentContainerStyle={{ paddingBottom: 40 }}
     >
       {/* Trip Name Input */}
       <TextInput
-        style={{
-          width: "100%",
-          height: 40,
-          borderColor: "#ccc",
-          borderWidth: 1,
-          borderRadius: 5,
-          marginBottom: 10,
-          paddingHorizontal: 10,
-        }}
+        className="w-full h-10 border border-gray-300 rounded mb-2 px-2"
         placeholder="Name"
         value={tripName}
         onChangeText={setTripName}
+      />
+
+      {/* Description Input */}
+      <TextInput
+        className="w-full h-20 border border-gray-300 rounded mb-2 px-2 py-2 text-left"
+        placeholder="Description (optional)"
+        value={description}
+        onChangeText={setDescription}
+        multiline
       />
 
       {/* MapSearch Component (integrated search field and map) */}
@@ -100,120 +172,58 @@ const CreateTripPage: React.FC = () => {
         onMapTouchEnd={() => setScrollEnabled(true)}
       />
 
-      {/* Image Upload Placeholder */}
-      <View
-        style={{
-          width: "100%",
-          height: 64,
-          backgroundColor: "#e5e5e5",
-          justifyContent: "center",
-          alignItems: "center",
-          marginVertical: 10,
-        }}
-      >
-        <Text style={{ color: "#777" }}>[ Upload Images Placeholder ]</Text>
-      </View>
+      {/* Image Upload Photos Component */}
+      <ImageUploadPhotos onImagesChange={handleImagesChange} />
 
       {/* Tags Section */}
-      <Text style={{ fontSize: 16, fontWeight: "600", marginVertical: 10 }}>
-        Select Tags:
-      </Text>
+      <Text className="text-base font-semibold my-2.5">Select Tags:</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={{ flexDirection: "column", paddingHorizontal: 10 }}>
-          <View style={{ flexDirection: "row", marginBottom: 10 }}>
-            {row1.map((tag) => {
-              const isSelected = selectedTags.includes(tag);
-              return (
-                <TouchableOpacity
-                  key={tag}
-                  onPress={() => handleTagPress(tag)}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginRight: 10,
-                    padding: 5,
-                    borderWidth: 1,
-                    borderColor: "#ccc",
-                    borderRadius: 5,
-                    backgroundColor: isSelected ? "#3b82f6" : "#fff",
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: isSelected ? "#fff" : "#000",
-                    }}
-                  >
-                    {tag}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-          <View style={{ flexDirection: "row" }}>
-            {row2.map((tag) => {
-              const isSelected = selectedTags.includes(tag);
-              return (
-                <TouchableOpacity
-                  key={tag}
-                  onPress={() => handleTagPress(tag)}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginRight: 10,
-                    padding: 5,
-                    borderWidth: 1,
-                    borderColor: "#ccc",
-                    borderRadius: 5,
-                    backgroundColor: isSelected ? "#3b82f6" : "#fff",
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: isSelected ? "#fff" : "#000",
-                    }}
-                  >
-                    {tag}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+        <View className="flex-col px-[10px]">
+          <View className="flex-col">
+            {[row1, row2].map((row, rowIndex) => (
+              <View
+                key={rowIndex}
+                className={`flex-row ${rowIndex === 0 ? "mb-[10px]" : ""}`}
+              >
+                {row.map((tag) => {
+                  const isSelected = selectedTags.includes(tag);
+                  return (
+                    <TouchableOpacity
+                      key={tag}
+                      onPress={() => handleTagPress(tag)}
+                      className={`flex-row items-center mr-2.5 p-[5px] border border-gray-300 rounded-[5px] ${
+                        isSelected ? "bg-blue-500" : "bg-white"
+                      }`}
+                    >
+                      <Text
+                        className={`text-sm ${
+                          isSelected ? "text-white" : "text-black"
+                        }`}
+                      >
+                        {tag}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            ))}
           </View>
         </View>
       </ScrollView>
 
       {/* Create Trip / Cancel Buttons */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          marginTop: 20,
-        }}
-      >
+      <View className="flex-row justify-between mt-5">
         <TouchableOpacity
-          style={{
-            flex: 1,
-            backgroundColor: "#10b981",
-            paddingVertical: 10,
-            marginRight: 5,
-            borderRadius: 5,
-            alignItems: "center",
-          }}
+          onPress={handleCreateTrip}
+          className="flex-1 bg-green-500 py-[10px] mr-[5px] rounded items-center"
         >
-          <Text style={{ color: "#fff", fontWeight: "600" }}>Create Trip</Text>
+          <Text className="text-white font-semibold">Create Trip</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={{
-            flex: 1,
-            backgroundColor: "#ef4444",
-            paddingVertical: 10,
-            marginLeft: 5,
-            borderRadius: 5,
-            alignItems: "center",
-          }}
+          onPress={() => navigation.goBack()}
+          className="flex-1 bg-red-500 py-[10px] ml-[5px] rounded-[5px] items-center"
         >
-          <Text style={{ color: "#fff", fontWeight: "600" }}>Cancel</Text>
+          <Text className="text-white font-semibold">Cancel</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

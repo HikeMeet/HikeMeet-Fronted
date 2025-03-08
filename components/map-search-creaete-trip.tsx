@@ -106,37 +106,37 @@ const MapSearch: React.FC<MapSearchProps> = ({
   };
 
   return (
-    <View style={{ padding: 10 }}>
-      {/* Combined Search/Text Field */}
-      <TextInput
-        placeholder="Search for a location"
-        value={query}
-        onFocus={() => {
-          if (query !== "") setClearOnEdit(true);
-        }}
-        onChangeText={(text) => {
-          searchMapbox(text);
-        }}
-        style={{
-          padding: 10,
-          borderColor: "gray",
-          borderWidth: 1,
-          borderRadius: 5,
-          marginBottom: 10,
-          textAlign: "left",
-        }}
-      />
+    <View className="p-[10px]">
+      {/* Combined Search/Text Field with Clear Button */}
+      <View className="relative mb-2">
+        <TextInput
+          placeholder="Search for a location"
+          value={query}
+          onFocus={() => {
+            if (query !== "") setClearOnEdit(true);
+          }}
+          onChangeText={(text) => {
+            searchMapbox(text);
+          }}
+          className="w-full h-10 p-2 pr-10 border border-gray-400 rounded text-left"
+        />
+        {query.length > 0 && (
+          <TouchableOpacity
+            onPress={() => setQuery("")}
+            className="absolute right-2 inset-y-2 flex items-center bg-gray-200 rounded-full w-6 h-6"
+          >
+            <Text className="text-xs inset-y-1 text-gray-600">×</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
       {/* List of Search Results */}
       {results.length > 0 &&
         results.map((item) => (
           <TouchableOpacity
             key={item.id}
             onPress={() => handleSearchSelect(item)}
-            style={{
-              padding: 10,
-              borderBottomWidth: 1,
-              borderColor: "#ccc",
-            }}
+            className="p-[10px] border-b border-gray-300"
           >
             <View>
               <Text>{item.place_name}</Text>
@@ -145,12 +145,12 @@ const MapSearch: React.FC<MapSearchProps> = ({
         ))}
       {/* Map View */}
       <View
-        style={{ height: 300, marginTop: 10, position: "relative" }}
+        className="h-[300px] mt-[10px] relative"
         onTouchStart={() => onMapTouchStart && onMapTouchStart()}
         onTouchEnd={() => onMapTouchEnd && onMapTouchEnd()}
         onTouchCancel={() => onMapTouchEnd && onMapTouchEnd()}
       >
-        <StyledMapView style={{ flex: 1 }} onPress={handleMapPress}>
+        <StyledMapView className="flex-1" onPress={handleMapPress}>
           <StyledCamera
             ref={cameraRef}
             centerCoordinate={selectedCoords || initialLocation || [0, 0]}
@@ -169,21 +169,9 @@ const MapSearch: React.FC<MapSearchProps> = ({
         </StyledMapView>
         <TouchableOpacity
           onPress={handleRecenter}
-          style={{
-            position: "absolute",
-            bottom: 10,
-            right: 10,
-            backgroundColor: "white",
-            padding: 8,
-            borderRadius: 20,
-            shadowColor: "#000",
-            shadowOpacity: 0.3,
-            shadowRadius: 3,
-            zIndex: 10,
-            elevation: 10,
-          }}
+          className="absolute bottom-[10px] right-[10px] bg-white p-2 rounded-[20px] shadow-md z-10"
         >
-          <Text style={{ fontSize: 12, color: "black" }}>My Location</Text>
+          <Text className="text-[12px] text-black">My Location</Text>
         </TouchableOpacity>
       </View>
     </View>
