@@ -44,7 +44,7 @@ const UserSearchList: React.FC<UserSearchListProps> = ({
   }
 
   return (
-    <View>
+    <View className="flex-1 bg-gray-100 rounded-lg p-4">
       {/* Search Bar */}
       <View className="flex-row items-center bg-gray-200 rounded-lg p-3 mb-4">
         <Icon name="search" size={20} color="gray" />

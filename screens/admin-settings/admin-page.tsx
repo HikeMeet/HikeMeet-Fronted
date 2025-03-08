@@ -112,9 +112,7 @@ const AdminSettingsPage = ({ navigation }: any) => {
       </View>
 
       {/* Tab Content */}
-      <View className="flex-1 bg-gray-100 rounded-lg p-4">
-        {renderContent()}
-      </View>
+      {renderContent()}
     </View>
   );
 };
