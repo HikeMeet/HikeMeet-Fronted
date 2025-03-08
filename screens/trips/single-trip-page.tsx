@@ -80,19 +80,6 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   }, [navigation]);
 
   // Handle hardware back button on Android
-  useEffect(() => {
-    const backAction = () => {
-      navigation.navigate("TripsPage");
-      return true;
-    };
-
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
-
-    return () => backHandler.remove();
-  }, [navigation]);
 
   const renderStars = () => {
     const stars = [];
