@@ -30,6 +30,8 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   const [coordinates, setCoordinates] = useState<[number, number]>([0, 0]);
   const [tags, setTags] = useState<string[]>([]);
   const [bio, setBio] = useState<string>("");
+  // State to control ScrollView scrolling
+  const [scrollEnabled, setScrollEnabled] = useState<boolean>(true);
 
   // Fetch trip data from the backend using the tripId parameter.
   useEffect(() => {
@@ -123,21 +125,29 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   };
 
   return (
-    <ScrollView className="flex-1 bg-white p-4">
-      {/* Trip Name & Rating */}
-      <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-lg font-bold">{tripName}</Text>
-        <View className="flex-row items-center">
-          {renderStars()}
-          <Text className="ml-1 text-sm">{rating.toFixed(1)}</Text>
-        </View>
+    <ScrollView
+      scrollEnabled={scrollEnabled}
+      className="flex-1 bg-white p-4"
+      contentContainerStyle={{ paddingBottom: 40 }}
+    >
+      {/* Title */}
+      <Text className="text-lg font-bold">{tripName}</Text>
+      {/* Star Rating below title */}
+      <View className="flex-row items-center mb-4">
+        {renderStars()}
+        <Text className="ml-1 text-sm">{rating.toFixed(1)}</Text>
       </View>
 
       {/* Location */}
       <Text className="mb-2">{locationText}</Text>
 
       {/* Map snippet showing the trip's location */}
-      <View className="w-full h-48 bg-gray-200 mb-2 relative">
+      <View
+        className="w-full h-48 bg-gray-200 mb-2 relative"
+        onTouchStart={() => setScrollEnabled(false)}
+        onTouchEnd={() => setScrollEnabled(true)}
+        onTouchCancel={() => setScrollEnabled(true)}
+      >
         <StyledMapView className="flex-1">
           <StyledCamera centerCoordinate={coordinates} zoomLevel={12} />
         </StyledMapView>
@@ -161,9 +171,9 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
         ))}
       </View>
 
-      {/* Bio / Description */}
+      {/* Description */}
       <Text className="font-bold mb-1">Description:</Text>
-      <Text className="mb-4">{bio}</Text>
+      <Text className="mb-4">{bio ? bio : "No description provided."}</Text>
 
       {/* "Upload your own images" */}
       <Text className="text-base font-semibold mb-2">
