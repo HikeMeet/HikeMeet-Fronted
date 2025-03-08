@@ -23,7 +23,7 @@ const TripsStack = () => {
       />
       <Stack.Screen
         name="TripPage"
-        component={TripDetailPage}
+        component={TripDetailPage as React.ComponentType<any>}
         options={{ title: "Trip Page" }}
       />
     </Stack.Navigator>

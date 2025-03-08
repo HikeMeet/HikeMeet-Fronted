@@ -3,16 +3,17 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { MongoUser } from "../../interfaces/user-interface";
 import UserSearchList from "../../components/user-search-in-admin";
 import { useAuth } from "../../contexts/auth-context";
+import TripsManage from "../../components/trip-manage-admin";
 
 const AdminSettingsPage = ({ navigation }: any) => {
-  const [activeTab, setActiveTab] = useState("Users");
+  const [activeTab, setActiveTab] = useState("User manage");
   const [users, setUsers] = useState<MongoUser[]>([]);
   const [loading, setLoading] = useState(false);
   const { mongoId } = useAuth(); // current user's mongoId
 
   // Fetch Users
   useEffect(() => {
-    if (activeTab === "Users") {
+    if (activeTab === "User manage") {
       fetchUsers();
     }
   }, [activeTab]);
@@ -53,7 +54,7 @@ const AdminSettingsPage = ({ navigation }: any) => {
 
   // Render tab content based on the active tab
   const renderContent = () => {
-    if (activeTab === "Users") {
+    if (activeTab === "User manage") {
       return (
         <UserSearchList
           users={users}
@@ -62,12 +63,8 @@ const AdminSettingsPage = ({ navigation }: any) => {
           navigation={navigation}
         />
       );
-    } else if (activeTab === "Trips Approve") {
-      return (
-        <Text className="text-center text-gray-700">
-          Trips Approval Content
-        </Text>
-      );
+    } else if (activeTab === "Trips Manage") {
+      return <TripsManage navigation={navigation} />;
     } else if (activeTab === "Button") {
       return (
         <Text className="text-center text-gray-700">
@@ -86,20 +83,20 @@ const AdminSettingsPage = ({ navigation }: any) => {
       {/* Tab Buttons */}
       <View className="flex-row justify-between mb-4">
         <TouchableOpacity
-          onPress={() => setActiveTab("Users")}
+          onPress={() => setActiveTab("User manage")}
           className={`p-3 rounded-lg flex-1 mx-1 ${
-            activeTab === "Users" ? "bg-blue-200" : "bg-gray-200"
+            activeTab === "User manage" ? "bg-blue-200" : "bg-gray-200"
           }`}
         >
-          <Text className="text-center text-sm">Users</Text>
+          <Text className="text-center text-sm">User manage</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => setActiveTab("Trips Approve")}
+          onPress={() => setActiveTab("Trips Manage")}
           className={`p-3 rounded-lg flex-1 mx-1 ${
-            activeTab === "Trips Approve" ? "bg-blue-200" : "bg-gray-200"
+            activeTab === "Trips Manage" ? "bg-blue-200" : "bg-gray-200"
           }`}
         >
-          <Text className="text-center text-sm">Trips Approve</Text>
+          <Text className="text-center text-sm">Trips Manage</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setActiveTab("Button")}
