@@ -2,31 +2,20 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
+  TextInput,
   Image,
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Trip } from "../interfaces/trip-interface";
 
-interface Trip {
-  _id: string;
-  name: string;
-  location: {
-    address: string;
-    coordinates: [number, number];
-  };
-  images?: string[];
-  // additional fields as needed
-}
-
-interface UserTripProps {
-  route: any;
+interface TripsManageProps {
   navigation: any;
 }
 
-const TripsPage: React.FC<UserTripProps> = ({ navigation }) => {
+const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
@@ -40,7 +29,6 @@ const TripsPage: React.FC<UserTripProps> = ({ navigation }) => {
         if (!response.ok) {
           throw new Error("Failed to fetch trips");
         }
-
         const data: Trip[] = await response.json();
         setTrips(data);
       } catch (error) {
@@ -49,55 +37,43 @@ const TripsPage: React.FC<UserTripProps> = ({ navigation }) => {
         setLoading(false);
       }
     };
+
     fetchTrips();
   }, []);
 
-  // Optionally filter trips by search text
+  // Filter trips based on search text
   const filteredTrips = trips.filter((trip) =>
     trip.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
   return (
     <SafeAreaView className="flex-1 bg-white p-4">
-      {/* Top row: Search and Filter */}
+      {/* Search bar */}
       <View className="flex-row items-center mb-4">
         <View className="flex-1 mr-2 bg-gray-100 rounded-full px-3 py-2">
           <TextInput
-            placeholder="Search trip"
+            placeholder="Search trips"
             className="text-base"
             value={searchText}
             onChangeText={setSearchText}
           />
         </View>
-        <TouchableOpacity className="p-2 bg-gray-200 rounded-full">
-          {/* Replace with an icon if needed */}
-          <Text className="text-sm">Filter</Text>
-        </TouchableOpacity>
       </View>
-
-      {/* Buttons row: Trip History and + Add Trip */}
-      <View className="flex-row justify-between mb-4">
-        <TouchableOpacity className="bg-blue-500 px-4 py-2 rounded">
-          <Text className="text-white font-semibold">Trip History</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("CreateTripPage")}
-          className="bg-green-500 px-4 py-2 rounded"
-        >
-          <Text className="text-white font-semibold">+ Add trip</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Trip List */}
-      <ScrollView>
-        {loading ? (
-          <ActivityIndicator size="large" color="#0000ff" />
-        ) : (
-          filteredTrips.map((trip) => (
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <ScrollView>
+          {filteredTrips.map((trip) => (
             <TouchableOpacity
               key={trip._id}
               onPress={() =>
-                navigation.navigate("TripPage", { tripId: trip._id })
+                navigation.navigate("Tabs", {
+                  screen: "Trips",
+                  params: {
+                    screen: "TripPage",
+                    params: { tripId: trip._id },
+                  },
+                })
               }
               className="flex-row items-center bg-gray-100 mb-4 p-4 rounded-lg"
             >
@@ -126,11 +102,11 @@ const TripsPage: React.FC<UserTripProps> = ({ navigation }) => {
                 </Text>
               </View>
             </TouchableOpacity>
-          ))
-        )}
-      </ScrollView>
+          ))}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 };
 
-export default TripsPage;
+export default TripsManage;

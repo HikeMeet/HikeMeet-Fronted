@@ -1,11 +1,13 @@
 import React, { useState, useRef } from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { View, TextInput, TouchableOpacity, Text } from "react-native";
 import Mapbox from "@rnmapbox/maps";
 import * as Location from "expo-location";
 import { styled } from "nativewind";
+import { Ionicons } from "@expo/vector-icons"; // Import Ionicons
 
 const StyledMapView = styled(Mapbox.MapView);
 const StyledCamera = styled(Mapbox.Camera);
+const StyledIonicons = styled(Ionicons); // Wrap Ionicons with NativeWind's styled
 
 type MapSearchProps = {
   onLocationSelect: (coords: [number, number], address: string) => void;
@@ -20,28 +22,21 @@ const MapSearch: React.FC<MapSearchProps> = ({
   onMapTouchStart,
   onMapTouchEnd,
 }) => {
-  // Holds the text for the combined search field.
   const [query, setQuery] = useState<string>("");
-  // Holds the autocomplete results from Mapbox.
   const [results, setResults] = useState<any[]>([]);
-  // Coordinates of the selected/tapped location.
   const [selectedCoords, setSelectedCoords] = useState<[number, number] | null>(
     null
   );
-  // Flag to determine if the field should be cleared on first letter typed.
   const [clearOnEdit, setClearOnEdit] = useState<boolean>(false);
   const cameraRef = useRef<Mapbox.Camera>(null);
 
-  // Searches the Mapbox Geocoding API when the user types.
   const searchMapbox = async (text: string) => {
-    // If the field should be cleared, we let the new text come through
-    // and then disable the flag.
     if (clearOnEdit) {
       setQuery(text);
       setClearOnEdit(false);
+    } else {
+      setQuery(text);
     }
-    // Update query value (searchMapbox will also update it below).
-    setQuery(text);
     if (text.length < 3) {
       setResults([]);
       return;
@@ -63,7 +58,6 @@ const MapSearch: React.FC<MapSearchProps> = ({
     }
   };
 
-  // When a user selects a search result.
   const handleSearchSelect = (item: any) => {
     const [longitude, latitude] = item.geometry.coordinates;
     setSelectedCoords([longitude, latitude]);
@@ -75,7 +69,6 @@ const MapSearch: React.FC<MapSearchProps> = ({
     onLocationSelect([longitude, latitude], item.place_name);
   };
 
-  // When the user taps on the map.
   const handleMapPress = async (e: any) => {
     const { geometry } = e;
     const [longitude, latitude] = geometry.coordinates;
@@ -91,13 +84,12 @@ const MapSearch: React.FC<MapSearchProps> = ({
       let addressStr: string;
       if (addresses.length > 0) {
         const addr = addresses[0];
-        // Build an address string from available fields.
         addressStr =
           `${addr.name || ""} ${addr.street || ""} ${addr.city || ""} ${addr.region || ""} ${addr.country || ""}`.trim();
       } else {
         addressStr = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
       }
-      setQuery(addressStr); // Update the search field with the tapped location.
+      setQuery(addressStr);
       onLocationSelect([longitude, latitude], addressStr);
     } catch (error) {
       console.error("Reverse geocode error:", error);
@@ -107,7 +99,6 @@ const MapSearch: React.FC<MapSearchProps> = ({
     }
   };
 
-  // Recenter the map to the initial location (user's location).
   const handleRecenter = () => {
     if (initialLocation && cameraRef.current) {
       cameraRef.current.flyTo(initialLocation, 1000);
@@ -115,50 +106,51 @@ const MapSearch: React.FC<MapSearchProps> = ({
   };
 
   return (
-    <View style={{ padding: 10 }}>
-      {/* Combined Search/Text Field */}
-      <TextInput
-        placeholder="Search for a location"
-        value={query}
-        // When the field is focused and has text, enable clearing on edit.
-        onFocus={() => {
-          if (query !== "") setClearOnEdit(true);
-        }}
-        onChangeText={(text) => {
-          searchMapbox(text);
-        }}
-        style={{
-          padding: 10,
-          borderColor: "gray",
-          borderWidth: 1,
-          borderRadius: 5,
-          marginBottom: 10,
-          textAlign: "left",
-        }}
-      />
+    <View className="p-[10px]">
+      {/* Combined Search/Text Field with Clear Button */}
+      <View className="relative mb-2">
+        <TextInput
+          placeholder="Search for a location"
+          value={query}
+          onFocus={() => {
+            if (query !== "") setClearOnEdit(true);
+          }}
+          onChangeText={(text) => {
+            searchMapbox(text);
+          }}
+          className="w-full h-10 p-2 pr-10 border border-gray-400 rounded text-left"
+        />
+        {query.length > 0 && (
+          <TouchableOpacity
+            onPress={() => setQuery("")}
+            className="absolute right-2 inset-y-2 flex items-center bg-gray-200 rounded-full w-6 h-6"
+          >
+            <Text className="text-xs inset-y-1 text-gray-600">×</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
       {/* List of Search Results */}
       {results.length > 0 &&
         results.map((item) => (
           <TouchableOpacity
             key={item.id}
             onPress={() => handleSearchSelect(item)}
-            style={{
-              padding: 10,
-              borderBottomWidth: 1,
-              borderColor: "#ccc",
-            }}
+            className="p-[10px] border-b border-gray-300"
           >
-            <Text>{item.place_name}</Text>
+            <View>
+              <Text>{item.place_name}</Text>
+            </View>
           </TouchableOpacity>
         ))}
       {/* Map View */}
       <View
-        style={{ height: 300, marginTop: 10, position: "relative" }}
+        className="h-[300px] mt-[10px] relative"
         onTouchStart={() => onMapTouchStart && onMapTouchStart()}
         onTouchEnd={() => onMapTouchEnd && onMapTouchEnd()}
         onTouchCancel={() => onMapTouchEnd && onMapTouchEnd()}
       >
-        <StyledMapView style={{ flex: 1 }} onPress={handleMapPress}>
+        <StyledMapView className="flex-1" onPress={handleMapPress}>
           <StyledCamera
             ref={cameraRef}
             centerCoordinate={selectedCoords || initialLocation || [0, 0]}
@@ -166,31 +158,20 @@ const MapSearch: React.FC<MapSearchProps> = ({
           />
           {selectedCoords && (
             <Mapbox.PointAnnotation id="selected" coordinate={selectedCoords}>
-              <View
-                style={{ backgroundColor: "red", padding: 5, borderRadius: 5 }}
-              >
-                <Text style={{ color: "white" }}>Selected</Text>
-              </View>
+              {/* Use Ionicons as a location icon styled via NativeWind */}
+              <StyledIonicons
+                name="location-sharp"
+                size={30}
+                className="text-red-500"
+              />
             </Mapbox.PointAnnotation>
           )}
         </StyledMapView>
         <TouchableOpacity
           onPress={handleRecenter}
-          style={{
-            position: "absolute",
-            bottom: 10,
-            right: 10,
-            backgroundColor: "white",
-            padding: 8,
-            borderRadius: 20,
-            shadowColor: "#000",
-            shadowOpacity: 0.3,
-            shadowRadius: 3,
-            zIndex: 10,
-            elevation: 10,
-          }}
+          className="absolute bottom-[10px] right-[10px] bg-white p-2 rounded-[20px] shadow-md z-10"
         >
-          <Text style={{ fontSize: 12, color: "black" }}>My Location</Text>
+          <Text className="text-[12px] text-black">My Location</Text>
         </TouchableOpacity>
       </View>
     </View>
