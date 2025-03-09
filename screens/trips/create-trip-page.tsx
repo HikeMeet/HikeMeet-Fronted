@@ -150,6 +150,10 @@ const CreateTripPage: React.FC = ({ navigation }: any) => {
       className="flex-1 bg-white p-5"
       contentContainerStyle={{ paddingBottom: 40 }}
     >
+      <View className="p-4 mb-4 border-b border-gray-300 items-center">
+        <Text className="text-3xl font-bold text-center">Create Trip</Text>
+      </View>
+
       {/* Trip Name Input */}
       <TextInput
         className="w-full h-10 border border-gray-300 rounded mb-2 px-2"
