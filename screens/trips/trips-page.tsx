@@ -81,7 +81,7 @@ const TripsPage: React.FC<UserTripProps> = ({ navigation }) => {
           <Text className="text-white font-semibold">Trip History</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => navigation.navigate("CreateTripPage")}
+          onPress={() => navigation.navigate("TripsStack")}
           className="bg-green-500 px-4 py-2 rounded"
         >
           <Text className="text-white font-semibold">+ Add trip</Text>
@@ -97,7 +97,12 @@ const TripsPage: React.FC<UserTripProps> = ({ navigation }) => {
             <TouchableOpacity
               key={trip._id}
               onPress={() =>
-                navigation.navigate("TripPage", { tripId: trip._id })
+                navigation.navigate("TripsStack", {
+                  screen: "TripPage",
+                  params: {
+                    tripId: trip._id,
+                  },
+                })
               }
               className="flex-row items-center bg-gray-100 mb-4 p-4 rounded-lg"
             >

@@ -65,18 +65,18 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   }, [route.params.tripId]);
 
   // Override header back button to always go to TripsPage
-  useEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity
-          onPress={() => navigation.navigate("TripsPage")}
-          style={{ marginLeft: 10 }}
-        >
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
+  // useEffect(() => {
+  //   navigation.setOptions({
+  //     headerLeft: () => (
+  //       <TouchableOpacity
+  //       style={{ marginLeft: 10 }}
+  //       onPress={() => navigation.navigate("TripsPage")}
+  //       >
+  //         <Ionicons name="arrow-back" size={24} color="black" />
+  //       </TouchableOpacity>
+  //     ),
+  //   });
+  // }, [navigation]);
 
   // Handle hardware back button on Android
 

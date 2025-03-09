@@ -172,11 +172,10 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
               >
                 <TouchableOpacity
                   onPress={() =>
-                    navigation.navigate("Tabs", {
-                      screen: "Trips",
+                    navigation.navigate("TripsStack", {
+                      screen: "TripPage",
                       params: {
-                        screen: "TripPage",
-                        params: { tripId: trip._id },
+                        tripId: trip._id,
                       },
                     })
                   }
