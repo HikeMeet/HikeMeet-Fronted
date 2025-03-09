@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Linking,
   Alert,
-  BackHandler,
 } from "react-native";
 import Mapbox from "@rnmapbox/maps";
 import { styled } from "nativewind";
