@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   ScrollView,
   Text,
@@ -24,20 +24,30 @@ const UserSearchList: React.FC<UserSearchListProps> = ({
   navigation,
 }) => {
   const [searchText, setSearchText] = useState("");
+  const [localUsers, setLocalUsers] = useState<MongoUser[]>(users);
 
-  // Filter users based on search text
-  const getFilteredUsers = () => {
-    if (!searchText.trim()) return users;
-    return users.filter((user) => {
+  // Update local state if parent users list changes
+  useEffect(() => {
+    setLocalUsers(users);
+  }, [users]);
+
+  // Update user role in local list
+  const handleUserRoleUpdate = (updatedUser: MongoUser) => {
+    setLocalUsers((prevUsers) =>
+      prevUsers.map((u) => (u._id === updatedUser._id ? updatedUser : u))
+    );
+  };
+
+  const filteredUsers = useMemo(() => {
+    if (!searchText.trim()) return localUsers;
+    return localUsers.filter((user) => {
       const fullName = `${user.first_name} ${user.last_name}`.toLowerCase();
       return (
         fullName.includes(searchText.toLowerCase()) ||
         user.username.toLowerCase().includes(searchText.toLowerCase())
       );
     });
-  };
-
-  const filteredUsers = getFilteredUsers();
+  }, [searchText, localUsers]);
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
@@ -64,6 +74,7 @@ const UserSearchList: React.FC<UserSearchListProps> = ({
             user={user}
             onUserDeleted={onUserDeleted}
             navigation={navigation}
+            onUserRoleUpdate={handleUserRoleUpdate}
           />
         ))}
         {filteredUsers.length === 0 && (

@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Trip } from "../interfaces/trip-interface";
 import { Ionicons } from "@expo/vector-icons";
+import TripRow from "./trip-row-manage-admin";
 
 interface TripsManageProps {
   navigation: any;
@@ -22,7 +23,7 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"all" | "archived">("all");
-  // State to control the visibility of extra options (unarchive & delete) per archived trip
+  // State to control the visibility of extra options (for both active and archived trips)
   const [visibleSettings, setVisibleSettings] = useState<
     Record<string, boolean>
   >({});
@@ -91,8 +92,6 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
       }
       const data = await response.json();
       console.log("Trip archived successfully:", data);
-
-      // Remove trip from active trips list and add to archivedTrips list
       setTrips((prevTrips) => prevTrips.filter((trip) => trip._id !== tripId));
       setArchivedTrips((prev) => [data.archivedTrip, ...prev]);
     } catch (error) {
@@ -134,6 +133,22 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
     } catch (error) {
       console.error("Error unarchiving trip:", error);
     }
+  };
+
+  // NEW: Handler for navigation
+  const handleNavigate = (tripId: string, isArchived: boolean) => {
+    navigation.navigate("TripsStack", {
+      screen: "TripPage",
+      params: { tripId, isArchived },
+    });
+  };
+
+  // NEW: Handler to toggle visible settings
+  const toggleSettings = (tripId: string) => {
+    setVisibleSettings((prev) => ({
+      ...prev,
+      [tripId]: !prev[tripId],
+    }));
   };
 
   return (
@@ -186,88 +201,33 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
           <ActivityIndicator size="large" color="#0000ff" />
         ) : (
           <ScrollView>
-            {filteredTrips.map((trip) => (
-              <View
-                key={trip._id}
-                className="flex-row items-center bg-white mb-4 p-4 rounded-lg"
-              >
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate("TripsStack", {
-                      screen: "TripPage",
-                      params: {
-                        tripId: trip._id,
-                        isArchived: activeTab === "archived",
-                      },
-                    })
-                  }
-                  className="flex-row flex-1 items-center"
-                >
-                  {trip.images && trip.images.length > 0 ? (
-                    <Image
-                      source={{ uri: trip.images[0] }}
-                      className="w-16 h-16 mr-4 rounded"
-                    />
-                  ) : (
-                    <View className="w-16 h-16 bg-gray-300 mr-4 rounded" />
-                  )}
-                  <View className="flex-1">
-                    <Text
-                      className="text-lg font-bold"
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
-                    >
-                      {trip.name}
-                    </Text>
-                    <Text
-                      className="text-sm text-gray-500 break-words"
-                      numberOfLines={2}
-                      ellipsizeMode="tail"
-                    >
-                      {trip.location.address}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-                {activeTab === "all" ? (
-                  <TouchableOpacity
-                    onPress={() => handleArchive(trip._id)}
-                    className="ml-4 p-2 bg-red-500 rounded"
-                  >
-                    <Text className="text-white">Archive</Text>
-                  </TouchableOpacity>
-                ) : (
-                  // For archived trips, show a settings icon; tapping it toggles unarchive and delete buttons.
-                  <View className="flex-row items-center">
-                    {visibleSettings[trip._id] && (
-                      <View className="flex-row mr-2">
-                        <TouchableOpacity
-                          onPress={() => handleUnarchive(trip._id)}
-                          className="p-2 bg-green-500 rounded"
-                        >
-                          <Text className="text-white">Unarchive</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          onPress={() => handleDeleteArchived(trip._id)}
-                          className="ml-2 p-2 bg-red-500 rounded"
-                        >
-                          <Text className="text-white">Delete</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                    <TouchableOpacity
-                      onPress={() =>
-                        setVisibleSettings((prev) => ({
-                          ...prev,
-                          [trip._id]: !prev[trip._id],
-                        }))
-                      }
-                    >
-                      <Ionicons name="settings" size={24} color="black" />
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-            ))}
+            {activeTab === "all"
+              ? trips.map((trip) => (
+                  <TripRow
+                    key={trip._id}
+                    trip={trip}
+                    activeTab="all"
+                    onNavigate={handleNavigate}
+                    onArchive={handleArchive}
+                    onUnarchive={handleUnarchive}
+                    onDeleteArchived={handleDeleteArchived}
+                    visibleSettings={visibleSettings}
+                    toggleSettings={toggleSettings}
+                  />
+                ))
+              : archivedTrips.map((trip) => (
+                  <TripRow
+                    key={trip._id}
+                    trip={trip}
+                    activeTab="archived"
+                    onNavigate={handleNavigate}
+                    onArchive={handleArchive}
+                    onUnarchive={handleUnarchive}
+                    onDeleteArchived={handleDeleteArchived}
+                    visibleSettings={visibleSettings}
+                    toggleSettings={toggleSettings}
+                  />
+                ))}
           </ScrollView>
         )}
       </View>
