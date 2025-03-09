@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Trip } from "../interfaces/trip-interface";
+import { Ionicons } from "@expo/vector-icons";
 
 interface TripsManageProps {
   navigation: any;
@@ -21,6 +22,10 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"all" | "archived">("all");
+  // State to control the visibility of extra options (unarchive & delete) per archived trip
+  const [visibleSettings, setVisibleSettings] = useState<
+    Record<string, boolean>
+  >({});
 
   // Fetch active trips
   const fetchTrips = async () => {
@@ -87,10 +92,8 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
       const data = await response.json();
       console.log("Trip archived successfully:", data);
 
-      // Remove trip from active trips list
+      // Remove trip from active trips list and add to archivedTrips list
       setTrips((prevTrips) => prevTrips.filter((trip) => trip._id !== tripId));
-      // Add archived trip to the archivedTrips list
-      // Adjust based on your endpoint response; assumed data.archivedTrip
       setArchivedTrips((prev) => [data.archivedTrip, ...prev]);
     } catch (error) {
       console.error("Error archiving trip:", error);
@@ -108,10 +111,28 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
         throw new Error("Failed to delete archived trip");
       }
       console.log("Archived trip deleted successfully");
-      // Remove trip from archivedTrips list
       setArchivedTrips((prev) => prev.filter((trip) => trip._id !== tripId));
     } catch (error) {
       console.error("Error deleting archived trip:", error);
+    }
+  };
+
+  // Handler for unarchiving a trip (move it back to active trips)
+  const handleUnarchive = async (tripId: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/trips/unarchive/${tripId}`,
+        { method: "POST" }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to unarchive trip");
+      }
+      const data = await response.json();
+      console.log("Trip unarchived successfully:", data);
+      setArchivedTrips((prev) => prev.filter((trip) => trip._id !== tripId));
+      setTrips((prev) => [data.trip, ...prev]);
+    } catch (error) {
+      console.error("Error unarchiving trip:", error);
     }
   };
 
@@ -176,6 +197,7 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
                       screen: "TripPage",
                       params: {
                         tripId: trip._id,
+                        isArchived: activeTab === "archived",
                       },
                     })
                   }
@@ -214,12 +236,35 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
                     <Text className="text-white">Archive</Text>
                   </TouchableOpacity>
                 ) : (
-                  <TouchableOpacity
-                    onPress={() => handleDeleteArchived(trip._id)}
-                    className="ml-4 p-2 bg-red-500 rounded"
-                  >
-                    <Text className="text-white">Delete</Text>
-                  </TouchableOpacity>
+                  // For archived trips, show a settings icon; tapping it toggles unarchive and delete buttons.
+                  <View className="flex-row items-center">
+                    {visibleSettings[trip._id] && (
+                      <View className="flex-row mr-2">
+                        <TouchableOpacity
+                          onPress={() => handleUnarchive(trip._id)}
+                          className="p-2 bg-green-500 rounded"
+                        >
+                          <Text className="text-white">Unarchive</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => handleDeleteArchived(trip._id)}
+                          className="ml-2 p-2 bg-red-500 rounded"
+                        >
+                          <Text className="text-white">Delete</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                    <TouchableOpacity
+                      onPress={() =>
+                        setVisibleSettings((prev) => ({
+                          ...prev,
+                          [trip._id]: !prev[trip._id],
+                        }))
+                      }
+                    >
+                      <Ionicons name="settings" size={24} color="black" />
+                    </TouchableOpacity>
+                  </View>
                 )}
               </View>
             ))}

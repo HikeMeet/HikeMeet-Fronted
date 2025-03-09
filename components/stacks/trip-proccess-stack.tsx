@@ -19,7 +19,7 @@ const TripsStack = () => {
       <Stack.Screen
         name="CreateTripPage"
         component={CreateTripPage}
-        options={{ title: "Create Trip" }}
+        options={{ title: "Create Trip", headerShown: false }}
       />
       <Stack.Screen
         name="TripPage"

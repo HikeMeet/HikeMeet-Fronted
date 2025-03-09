@@ -126,7 +126,10 @@ const CreateTripPage: React.FC = ({ navigation }: any) => {
               text: "OK",
               onPress: () => {
                 console.log("Created Trip ID:", data._id);
-                navigation.navigate("TripPage", { tripId: data._id });
+                navigation.navigate("TripPage", {
+                  tripId: data._id,
+                  fromCreate: true,
+                });
               },
             },
           ],

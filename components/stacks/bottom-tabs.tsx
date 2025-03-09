@@ -6,7 +6,6 @@ import GroupsPage from "../../screens/groups/groups-page";
 import ChatListPage from "../../screens/chats/caht-list";
 import CustomTabBar from "../custom-tab-bar";
 import { Provider } from "react-native-paper";
-import TripsStack from "./trip-proccess-stack";
 import TripsPage from "../../screens/trips/trips-page";
 
 const Tab = createBottomTabNavigator();
