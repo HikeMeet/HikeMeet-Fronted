@@ -5,6 +5,7 @@ import {
   TextInput,
   View,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import UserRow from "./user-row-admin";
@@ -64,6 +65,11 @@ const UserSearchList: React.FC<UserSearchListProps> = ({
           value={searchText}
           onChangeText={setSearchText}
         />
+        {searchText.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchText("")} className="ml-2">
+            <Icon name="close" size={20} color="gray" />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Users List */}

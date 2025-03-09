@@ -1,17 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
   TextInput,
-  Image,
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Trip } from "../interfaces/trip-interface";
-import { Ionicons } from "@expo/vector-icons";
 import TripRow from "./trip-row-manage-admin";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 interface TripsManageProps {
   navigation: any;
@@ -71,14 +70,15 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
   }, [activeTab]);
 
   // Filter trips based on search text for current tab
-  const filteredTrips =
-    activeTab === "all"
-      ? trips.filter((trip) =>
-          trip.name.toLowerCase().includes(searchText.toLowerCase())
-        )
-      : archivedTrips.filter((trip) =>
-          trip.name.toLowerCase().includes(searchText.toLowerCase())
-        );
+  const filteredTrips = useMemo(() => {
+    const list = activeTab === "all" ? trips : archivedTrips;
+    if (!searchText.trim()) return list;
+    return list.filter(
+      (trip) =>
+        trip.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        trip.location.address.toLowerCase().includes(searchText.toLowerCase())
+    );
+  }, [activeTab, searchText, trips, archivedTrips]);
 
   // Handler for moving a trip to archive
   const handleArchive = async (tripId: string) => {
@@ -188,46 +188,37 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
       {/* Search bar */}
       <View className="bg-gray-100 rounded-lg p-4 flex-1">
         <View className="flex-row items-center mb-4">
-          <View className="flex-1 mr-2 bg-gray-200 rounded-full px-3 py-2">
+          <View className="flex-row items-center bg-gray-200 rounded-full px-3 py-2 mr-2">
             <TextInput
               placeholder="Search trips"
-              className="text-base"
+              className="text-base flex-1"
               value={searchText}
               onChangeText={setSearchText}
             />
+            {searchText.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchText("")}>
+                <Ionicons name="close" size={20} color="gray" />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
         {loading ? (
           <ActivityIndicator size="large" color="#0000ff" />
         ) : (
           <ScrollView>
-            {activeTab === "all"
-              ? trips.map((trip) => (
-                  <TripRow
-                    key={trip._id}
-                    trip={trip}
-                    activeTab="all"
-                    onNavigate={handleNavigate}
-                    onArchive={handleArchive}
-                    onUnarchive={handleUnarchive}
-                    onDeleteArchived={handleDeleteArchived}
-                    visibleSettings={visibleSettings}
-                    toggleSettings={toggleSettings}
-                  />
-                ))
-              : archivedTrips.map((trip) => (
-                  <TripRow
-                    key={trip._id}
-                    trip={trip}
-                    activeTab="archived"
-                    onNavigate={handleNavigate}
-                    onArchive={handleArchive}
-                    onUnarchive={handleUnarchive}
-                    onDeleteArchived={handleDeleteArchived}
-                    visibleSettings={visibleSettings}
-                    toggleSettings={toggleSettings}
-                  />
-                ))}
+            {filteredTrips.map((trip) => (
+              <TripRow
+                key={trip._id}
+                trip={trip}
+                activeTab={activeTab}
+                onNavigate={handleNavigate}
+                onArchive={handleArchive}
+                onUnarchive={handleUnarchive}
+                onDeleteArchived={handleDeleteArchived}
+                visibleSettings={visibleSettings}
+                toggleSettings={toggleSettings}
+              />
+            ))}
           </ScrollView>
         )}
       </View>
