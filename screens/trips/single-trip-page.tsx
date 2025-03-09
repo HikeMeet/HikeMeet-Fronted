@@ -16,7 +16,9 @@ const StyledMapView = styled(Mapbox.MapView);
 const StyledCamera = styled(Mapbox.Camera);
 
 type TripDetailProps = {
-  route: { params: { tripId: string } };
+  route: {
+    params: { tripId: string; fromCreate?: boolean; isArchived?: boolean };
+  };
   navigation: any;
 };
 
@@ -31,16 +33,17 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   const [bio, setBio] = useState<string>("");
   // State to control ScrollView scrolling
   const [scrollEnabled, setScrollEnabled] = useState<boolean>(true);
+  const { tripId, fromCreate = false, isArchived = false } = route.params;
 
   // Fetch trip data from the backend using the tripId parameter.
   useEffect(() => {
     const fetchTripData = async () => {
       try {
-        const tripId = route.params.tripId;
         console.log("Trip ID:", tripId);
-        const response = await fetch(
-          `${process.env.EXPO_LOCAL_SERVER}/api/trips/${tripId}`
-        );
+        const endpoint = isArchived
+          ? `${process.env.EXPO_LOCAL_SERVER}/api/trips/archive/${tripId}`
+          : `${process.env.EXPO_LOCAL_SERVER}/api/trips/${tripId}`;
+        const response = await fetch(endpoint);
         if (!response.ok) {
           throw new Error("Failed to fetch trip data");
         }
@@ -59,26 +62,24 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
       }
     };
 
-    if (route?.params?.tripId) {
+    if (tripId) {
       fetchTripData();
     }
-  }, [route.params.tripId]);
+  }, [tripId]);
 
-  // Override header back button to always go to TripsPage
   useEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity
-          onPress={() => navigation.navigate("TripsPage")}
-          style={{ marginLeft: 10 }}
-        >
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-      ),
+    const unsubscribe = navigation.addListener("beforeRemove", (e: any) => {
+      if (fromCreate) {
+        // Prevent the default behavior of leaving the screen
+        e.preventDefault();
+        // Navigate to the Trips page instead
+        navigation.navigate("Tabs", { screen: "Trips" });
+      }
+      // Otherwise, let the default behavior happen
     });
-  }, [navigation]);
 
-  // Handle hardware back button on Android
+    return unsubscribe;
+  }, [navigation, fromCreate]);
 
   const renderStars = () => {
     const stars = [];
@@ -166,6 +167,16 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
         Upload your own images:
       </Text>
       <ImageUploadPhotos />
+
+      {/* Back to Trips Button */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate("Tabs", { screen: "Trips" })}
+        className="mt-4 bg-blue-500 px-4 py-2 rounded"
+      >
+        <Text className="text-white text-center font-semibold">
+          Back to Trips
+        </Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };

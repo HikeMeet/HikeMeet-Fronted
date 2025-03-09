@@ -1,9 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MongoUser } from "../../interfaces/user-interface";
 import UserSearchList from "../../components/user-search-in-admin";
 import { useAuth } from "../../contexts/auth-context";
 import TripsManage from "../../components/trip-manage-admin";
+import { useFocusEffect } from "@react-navigation/native";
 
 interface Tab {
   key: string;
@@ -23,9 +34,7 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, activeTab, onTabPress }) => {
         <TouchableOpacity
           key={tab.key}
           onPress={() => onTabPress(tab.key)}
-          className={`p-2 rounded-lg flex-1 mx-1 ${
-            activeTab === tab.key ? "bg-blue-200" : "bg-gray-200"
-          }`}
+          className={`p-2 rounded-lg flex-1 mx-1 ${activeTab === tab.key ? "bg-blue-200" : "bg-gray-200"}`}
         >
           <Text className="text-center text-xs">{tab.label}</Text>
         </TouchableOpacity>
@@ -41,18 +50,12 @@ const AdminSettingsPage = ({ navigation }: any) => {
   const { mongoId } = useAuth(); // current user's mongoId
 
   const tabs: Tab[] = [
-    { key: "users", label: "User Manage" },
+    { key: "user", label: "User Manage" },
     { key: "trips", label: "Trips Manage" },
     { key: "reports", label: "Reports" },
   ];
 
   // Fetch Users when user tab is active
-  useEffect(() => {
-    if (activeTab === "user") {
-      fetchUsers();
-    }
-  }, [activeTab]);
-
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -62,7 +65,7 @@ const AdminSettingsPage = ({ navigation }: any) => {
       if (!response.ok) throw new Error("Failed to fetch users");
       const data: MongoUser[] = await response.json();
 
-      // If mongoId exists, sort the users so that the user with that ID comes first.
+      // Sort so that current user is first, if available
       if (mongoId) {
         data.sort((a, b) => {
           const aIsCurrent = String(a._id) === String(mongoId);
@@ -82,10 +85,14 @@ const AdminSettingsPage = ({ navigation }: any) => {
     }
   };
 
-  // Callback function to update the user list after deletion
-  const handleUserDeleted = (mongoId: string) => {
-    setUsers((prevUsers) => prevUsers.filter((user) => user._id !== mongoId));
-  };
+  // Use useFocusEffect to re-fetch users when the screen comes into focus and the user tab is active
+  useFocusEffect(
+    useCallback(() => {
+      if (activeTab === "user") {
+        fetchUsers();
+      }
+    }, [activeTab])
+  );
 
   // Render tab content based on the active tab
   const renderContent = () => {
@@ -95,7 +102,11 @@ const AdminSettingsPage = ({ navigation }: any) => {
           <UserSearchList
             users={users}
             loading={loading}
-            onUserDeleted={handleUserDeleted}
+            onUserDeleted={(mongoId: string) =>
+              setUsers((prevUsers) =>
+                prevUsers.filter((user) => user._id !== mongoId)
+              )
+            }
             navigation={navigation}
           />
         );
@@ -113,16 +124,29 @@ const AdminSettingsPage = ({ navigation }: any) => {
   };
 
   return (
-    <View className="flex-1 bg-white p-4">
-      {/* Header */}
-      <Text className="text-xl font-bold text-center mb-4">Admin Settings</Text>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+    >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View className="flex-1 bg-white p-4">
+          {/* Header */}
+          <Text className="text-xl font-bold text-center mb-4">
+            Admin Settings
+          </Text>
 
-      {/* Modular Tab Bar */}
-      <TabBar tabs={tabs} activeTab={activeTab} onTabPress={setActiveTab} />
+          {/* Modular Tab Bar */}
+          <TabBar tabs={tabs} activeTab={activeTab} onTabPress={setActiveTab} />
 
-      {/* Tab Content */}
-      {renderContent()}
-    </View>
+          {/* Tab Content */}
+          {renderContent()}
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

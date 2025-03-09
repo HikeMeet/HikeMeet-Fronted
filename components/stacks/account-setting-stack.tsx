@@ -6,6 +6,7 @@ import SettingsScreen from "../../screens/my-profile/setting-page";
 import AdminSettingPage from "../../screens/admin-settings/admin-page";
 import ResetPasswordInsidePage from "../../screens/register-login/reset-password-inside-page";
 import UserProfile from "../../screens/my-profile/user-profile";
+import CommunityGuidelines from "../../screens/my-profile/comunity-guid-page";
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +32,11 @@ const AccountStack = () => {
         name="UserProfile"
         component={UserProfile}
         options={{ headerShown: false, title: "User Profile" }}
+      />
+      <Stack.Screen
+        name="ComunitiyGuidlined"
+        component={CommunityGuidelines}
+        options={{ headerShown: false, title: "Comunitiy Guidlined" }}
       />
     </Stack.Navigator>
   );

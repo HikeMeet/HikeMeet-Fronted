@@ -1,31 +1,28 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  Modal,
-  Button,
-  Alert,
-} from "react-native";
-import tw from "twrnc";
+import { View, Text, Image, TouchableOpacity, Alert } from "react-native";
 import { useAuth } from "../contexts/auth-context";
 import { MongoUser } from "../interfaces/user-interface";
 import { FIREBASE_AUTH } from "../firebaseconfig";
 import { deleteFirebaseUser } from "./requests/admin-delete-user";
+import { Ionicons } from "@expo/vector-icons";
+import RoleToggleButton from "./role-set-admin-button";
+import ConfirmationModal from "./confirmation-modal";
 
 interface UserRowProps {
   user: MongoUser;
   onUserDeleted: (mongoId: string) => void;
+  onUserRoleUpdate: (updatedUser: MongoUser) => void;
   navigation: any; // navigation prop from React Navigation
 }
 
 const UserRow: React.FC<UserRowProps> = ({
   user,
   onUserDeleted,
+  onUserRoleUpdate,
   navigation,
 }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
   const { mongoId } = useAuth(); // Current user's ID
 
   const handleDelete = async () => {
@@ -50,70 +47,73 @@ const UserRow: React.FC<UserRowProps> = ({
   // When pressed, navigate accordingly.
   const handlePress = () => {
     if (user._id === mongoId) {
-      // Navigate to the Profile tab if it's the current user.
       navigation.navigate("Tabs", { screen: "Profile" });
     } else {
-      // Otherwise, navigate to the UserProfile screen.
       navigation.navigate("UserProfile", { userId: user._id });
     }
   };
 
   return (
     <TouchableOpacity onPress={handlePress}>
-      <View
-        style={tw`flex-row items-center bg-white p-4 rounded-lg mb-2 shadow`}
-      >
+      <View className="flex-row items-center bg-white p-4 rounded-lg mb-2 shadow">
         {/* User Picture */}
         <Image
           source={{
             uri: user.profile_picture || "https://via.placeholder.com/150",
           }}
-          style={tw`w-12 h-12 rounded-full mr-4`}
+          className="w-12 h-12 rounded-full mr-4"
         />
 
-        {/* User Info */}
-        <View style={tw`flex-1`}>
-          <Text style={tw`text-lg font-bold`}>
-            {`${user.first_name} ${user.last_name}`}
-          </Text>
-          <Text style={tw`text-sm text-gray-500`}>@{user.username}</Text>
+        {/* User Info or options */}
+        <View className="flex-1">
+          {showOptions ? (
+            // Replace name/username with Edit and Role Toggle buttons.
+            <View className="flex-row justify">
+              <RoleToggleButton
+                user={{ _id: user._id, role: user.role as "user" | "admin" }}
+                onUpdate={(updatedUser) => {
+                  setShowOptions(false);
+                  onUserRoleUpdate(updatedUser);
+                  Alert.alert(
+                    "Success",
+                    `User role is now ${updatedUser.role}`
+                  );
+                }}
+              />
+              <TouchableOpacity
+                className="ml-2 p-3 rounded-lg bg-red-500"
+                onPress={() => setIsModalVisible(true)}
+              >
+                <Text className="text-white text-sm">Delete</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <>
+              <Text className="text-lg font-bold">
+                {`${user.first_name} ${user.last_name}`}
+              </Text>
+              <Text className="text-sm text-gray-500">@{user.username}</Text>
+            </>
+          )}
         </View>
 
-        {/* Only render the Delete button if this is not the current user */}
+        {/* Settings Icon (only for non-current users) */}
         {user._id !== mongoId && (
           <TouchableOpacity
-            onPress={() => setIsModalVisible(true)}
-            style={tw`bg-red-500 p-2 rounded-lg`}
+            onPress={() => setShowOptions(!showOptions)}
+            className="ml-2"
           >
-            <Text style={tw`text-white text-sm`}>Delete</Text>
+            <Ionicons name="settings" size={24} color="black" />
           </TouchableOpacity>
         )}
 
-        {/* Confirmation Modal */}
-        <Modal
+        {/* Confirmation Modal for Delete using reusable component */}
+        <ConfirmationModal
           visible={isModalVisible}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => setIsModalVisible(false)}
-        >
-          <View
-            style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`}
-          >
-            <View style={tw`bg-white rounded-lg p-6 w-3/4`}>
-              <Text style={tw`text-lg font-bold mb-4`}>
-                Are you sure you want to remove {user.first_name} from the
-                platform?
-              </Text>
-              <View style={tw`flex-row justify-between`}>
-                <Button
-                  title="Cancel"
-                  onPress={() => setIsModalVisible(false)}
-                />
-                <Button title="Delete" color="red" onPress={handleDelete} />
-              </View>
-            </View>
-          </View>
-        </Modal>
+          message={`Are you sure you want to remove ${user.first_name} from the platform?`}
+          onConfirm={handleDelete}
+          onCancel={() => setIsModalVisible(false)}
+        />
       </View>
     </TouchableOpacity>
   );

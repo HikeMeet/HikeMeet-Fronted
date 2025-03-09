@@ -33,6 +33,10 @@ const SettingsScreen = ({ navigation }: any) => {
             title="Reset password"
             onPress={() => navigation.navigate("ResetPasswordInside")}
           />
+          <SettingsButton
+            title="Comunity guidlines"
+            onPress={() => navigation.navigate("ComunitiyGuidlined")}
+          />
         </View>
 
         {/* Logout Button at the Bottom */}

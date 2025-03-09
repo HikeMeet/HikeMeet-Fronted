@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
   TextInput,
-  Image,
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Trip } from "../interfaces/trip-interface";
+import TripRow from "./trip-row-manage-admin";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 interface TripsManageProps {
   navigation: any;
@@ -21,6 +22,10 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"all" | "archived">("all");
+  // State to control the visibility of extra options (for both active and archived trips)
+  const [visibleSettings, setVisibleSettings] = useState<
+    Record<string, boolean>
+  >({});
 
   // Fetch active trips
   const fetchTrips = async () => {
@@ -65,14 +70,15 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
   }, [activeTab]);
 
   // Filter trips based on search text for current tab
-  const filteredTrips =
-    activeTab === "all"
-      ? trips.filter((trip) =>
-          trip.name.toLowerCase().includes(searchText.toLowerCase())
-        )
-      : archivedTrips.filter((trip) =>
-          trip.name.toLowerCase().includes(searchText.toLowerCase())
-        );
+  const filteredTrips = useMemo(() => {
+    const list = activeTab === "all" ? trips : archivedTrips;
+    if (!searchText.trim()) return list;
+    return list.filter(
+      (trip) =>
+        trip.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        trip.location.address.toLowerCase().includes(searchText.toLowerCase())
+    );
+  }, [activeTab, searchText, trips, archivedTrips]);
 
   // Handler for moving a trip to archive
   const handleArchive = async (tripId: string) => {
@@ -86,11 +92,7 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
       }
       const data = await response.json();
       console.log("Trip archived successfully:", data);
-
-      // Remove trip from active trips list
       setTrips((prevTrips) => prevTrips.filter((trip) => trip._id !== tripId));
-      // Add archived trip to the archivedTrips list
-      // Adjust based on your endpoint response; assumed data.archivedTrip
       setArchivedTrips((prev) => [data.archivedTrip, ...prev]);
     } catch (error) {
       console.error("Error archiving trip:", error);
@@ -108,15 +110,49 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
         throw new Error("Failed to delete archived trip");
       }
       console.log("Archived trip deleted successfully");
-      // Remove trip from archivedTrips list
       setArchivedTrips((prev) => prev.filter((trip) => trip._id !== tripId));
     } catch (error) {
       console.error("Error deleting archived trip:", error);
     }
   };
 
+  // Handler for unarchiving a trip (move it back to active trips)
+  const handleUnarchive = async (tripId: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/trips/unarchive/${tripId}`,
+        { method: "POST" }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to unarchive trip");
+      }
+      const data = await response.json();
+      console.log("Trip unarchived successfully:", data);
+      setArchivedTrips((prev) => prev.filter((trip) => trip._id !== tripId));
+      setTrips((prev) => [data.trip, ...prev]);
+    } catch (error) {
+      console.error("Error unarchiving trip:", error);
+    }
+  };
+
+  // NEW: Handler for navigation
+  const handleNavigate = (tripId: string, isArchived: boolean) => {
+    navigation.navigate("TripsStack", {
+      screen: "TripPage",
+      params: { tripId, isArchived },
+    });
+  };
+
+  // NEW: Handler to toggle visible settings
+  const toggleSettings = (tripId: string) => {
+    setVisibleSettings((prev) => ({
+      ...prev,
+      [tripId]: !prev[tripId],
+    }));
+  };
+
   return (
-    <SafeAreaView className="flex-1 bg-white p-4">
+    <SafeAreaView className="flex-1 bg-white p-4 px-1">
       {/* Tabs for All Trips and Archived Trips */}
       <View className="flex-row mb-4">
         <TouchableOpacity
@@ -152,13 +188,18 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
       {/* Search bar */}
       <View className="bg-gray-100 rounded-lg p-4 flex-1">
         <View className="flex-row items-center mb-4">
-          <View className="flex-1 mr-2 bg-gray-200 rounded-full px-3 py-2">
+          <View className="flex-row items-center bg-gray-200 rounded-full px-3 py-2 mr-2">
             <TextInput
               placeholder="Search trips"
-              className="text-base"
+              className="text-base flex-1"
               value={searchText}
               onChangeText={setSearchText}
             />
+            {searchText.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchText("")}>
+                <Ionicons name="close" size={20} color="gray" />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
         {loading ? (
@@ -166,63 +207,17 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
         ) : (
           <ScrollView>
             {filteredTrips.map((trip) => (
-              <View
+              <TripRow
                 key={trip._id}
-                className="flex-row items-center bg-white mb-4 p-4 rounded-lg"
-              >
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate("Tabs", {
-                      screen: "Trips",
-                      params: {
-                        screen: "TripPage",
-                        params: { tripId: trip._id },
-                      },
-                    })
-                  }
-                  className="flex-row flex-1 items-center"
-                >
-                  {trip.images && trip.images.length > 0 ? (
-                    <Image
-                      source={{ uri: trip.images[0] }}
-                      className="w-16 h-16 mr-4 rounded"
-                    />
-                  ) : (
-                    <View className="w-16 h-16 bg-gray-300 mr-4 rounded" />
-                  )}
-                  <View className="flex-1">
-                    <Text
-                      className="text-lg font-bold"
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
-                    >
-                      {trip.name}
-                    </Text>
-                    <Text
-                      className="text-sm text-gray-500 break-words"
-                      numberOfLines={2}
-                      ellipsizeMode="tail"
-                    >
-                      {trip.location.address}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-                {activeTab === "all" ? (
-                  <TouchableOpacity
-                    onPress={() => handleArchive(trip._id)}
-                    className="ml-4 p-2 bg-red-500 rounded"
-                  >
-                    <Text className="text-white">Archive</Text>
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    onPress={() => handleDeleteArchived(trip._id)}
-                    className="ml-4 p-2 bg-red-500 rounded"
-                  >
-                    <Text className="text-white">Delete</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
+                trip={trip}
+                activeTab={activeTab}
+                onNavigate={handleNavigate}
+                onArchive={handleArchive}
+                onUnarchive={handleUnarchive}
+                onDeleteArchived={handleDeleteArchived}
+                visibleSettings={visibleSettings}
+                toggleSettings={toggleSettings}
+              />
             ))}
           </ScrollView>
         )}
