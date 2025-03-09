@@ -137,7 +137,7 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white p-4">
+    <SafeAreaView className="flex-1 bg-white px-1 py-4">
       {/* Tabs for All Trips and Archived Trips */}
       <View className="flex-row mb-4">
         <TouchableOpacity
