@@ -27,7 +27,6 @@ const HikersList: React.FC<HikersListProps> = ({
 
   useEffect(() => {
     fetchFriends();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, profileId]);
 
   const fetchFriends = async () => {
