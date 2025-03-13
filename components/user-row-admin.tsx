@@ -49,7 +49,7 @@ const UserRow: React.FC<UserRowProps> = ({
     if (user._id === mongoId) {
       navigation.navigate("Tabs", { screen: "Profile" });
     } else {
-      navigation.navigate("UserProfile", { userId: user._id });
+      navigation.push("UserProfile", { userId: user._id });
     }
   };
 

@@ -163,6 +163,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
             className="w-24 h-24 rounded-full mr-4"
           />
           <View>
+            <Text className="text-xl font-bold">{`${user.username} ${user.last_name}`}</Text>
             <Text className="text-xl font-bold">{`${user.first_name} ${user.last_name}`}</Text>
             <Text className="text-sm text-gray-500">Rank: Adventurer</Text>
             {/* Hiker Button moved under the name and rank */}
@@ -178,7 +179,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
         {mongoId && (
           <View className="flex-row items-center">
             <FriendActionButton
-              currentUserId={mongoId}
               targetUserId={userId}
               status={friendStatus}
               onStatusChange={(newStatus: string) => setFriendStatus(newStatus)}

@@ -5,27 +5,26 @@ import FriendActionButton from "./friend-button";
 import { useAuth } from "../contexts/auth-context";
 
 interface UserRowProps {
+  isMyProfile?: boolean;
   user: any;
-  currentUserId: string;
   onStatusChange: (newStatus: string) => void;
   navigation: any; // navigation prop to allow navigating to the UserProfile screen
 }
 
 const UserRow: React.FC<UserRowProps> = ({
-  user,
-  currentUserId,
+  user, // the actual user in the row
   onStatusChange,
   navigation,
 }) => {
   const { mongoId } = useAuth(); // Current user's ID
-  console.log(":::::", user.friendStatus, "\n:::::::", currentUserId);
+
   const handlePress = () => {
     if (user._id === mongoId) {
       // If the tapped row is the current user, navigate to the Profile tab
       navigation.navigate("Tabs", { screen: "Profile" });
     } else {
       // Otherwise navigate to the UserProfile screen
-      navigation.navigate("AccountStack", {
+      navigation.push("AccountStack", {
         screen: "UserProfile",
         params: { userId: user._id },
       });
@@ -52,7 +51,6 @@ const UserRow: React.FC<UserRowProps> = ({
         {/* Only render the FriendActionButton if this is not the current user */}
         {mongoId !== user._id && (
           <FriendActionButton
-            currentUserId={currentUserId}
             targetUserId={user._id}
             status={user.friendStatus || "none"}
             onStatusChange={onStatusChange}
