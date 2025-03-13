@@ -149,7 +149,6 @@ const SearchPage = ({ navigation }: any) => {
               <UserRow
                 key={user._id || index}
                 user={user}
-                currentUserId={mongoId!}
                 onStatusChange={(newStatus: string) =>
                   handleStatusChange(newStatus, user._id)
                 }

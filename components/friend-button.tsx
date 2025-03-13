@@ -5,24 +5,25 @@ import { useAuth } from "../contexts/auth-context";
 
 interface FriendActionButtonProps {
   status: string; // 'accepted', 'request_sent', 'request_received', 'blocked', or "none"
-  currentUserId: string;
   targetUserId: string;
   onStatusChange?: (newStatus: string) => void;
 }
 
 const FriendActionButton: React.FC<FriendActionButtonProps> = ({
   status,
-  currentUserId,
   targetUserId,
   onStatusChange,
 }) => {
-  const { mongoUser, setMongoUser } = useAuth();
+  const { mongoUser, mongoId, setMongoUser } = useAuth();
   const [currentStatus, setCurrentStatus] = useState(status);
 
   // Update local status if prop changes.
   useEffect(() => {
-    setCurrentStatus(status);
-  }, [status]);
+    const friendStatus = mongoUser?.friends?.find(
+      (friend) => String(friend.id) === String(targetUserId)
+    )?.status;
+    setCurrentStatus(friendStatus || "none"); // fallback if friendStatus is undefined
+  }, [mongoUser, targetUserId]);
 
   // Determine API endpoint, label, and style based on current status.
   const getEndpointAndStyle = () => {
@@ -70,7 +71,7 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ currentUserId, targetUserId }),
+          body: JSON.stringify({ mongoId, targetUserId }),
         }
       );
       const data = await response.json();

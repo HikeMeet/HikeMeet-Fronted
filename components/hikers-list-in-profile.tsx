@@ -28,7 +28,6 @@ const HikersList: React.FC<HikersListProps> = ({
   useEffect(() => {
     fetchFriends();
   }, [activeTab, profileId]);
-
   const fetchFriends = async () => {
     if (!profileId) return;
     setLoading(true);
@@ -84,24 +83,6 @@ const HikersList: React.FC<HikersListProps> = ({
       }
 
       // If isMyProfile is false, update statuses using the additional friend list.
-      if (!isMyProfile) {
-        const additionalResponse = await fetch(
-          `${process.env.EXPO_LOCAL_SERVER}/api/friend/${mongoId}`
-        );
-        if (additionalResponse.ok) {
-          const additionalData = await additionalResponse.json();
-          const additionalFriends = additionalData.friends || [];
-          // For each friend in our list, if a matching id is found in the additional data, update friendStatus.
-          fetchedFriends = fetchedFriends.map((friend) => {
-            const match = additionalFriends.find(
-              (f: any) => String(f.id) === String(friend._id)
-            );
-            return match ? { ...friend, friendStatus: match.status } : friend;
-          });
-        } else {
-          console.error("Failed to fetch additional friend list");
-        }
-      }
 
       setFriends(fetchedFriends);
     } catch (error) {
@@ -147,10 +128,10 @@ const HikersList: React.FC<HikersListProps> = ({
             <UserRow
               key={friend._id || index}
               user={friend}
-              currentUserId={profileId}
               onStatusChange={(newStatus: string) =>
                 console.log("Status changed:", newStatus)
               }
+              isMyProfile={isMyProfile}
               navigation={navigation}
             />
           ))}
