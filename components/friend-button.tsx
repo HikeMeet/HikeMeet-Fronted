@@ -71,7 +71,7 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mongoId, targetUserId }),
+          body: JSON.stringify({ currentUserId: mongoId, targetUserId }),
         }
       );
       const data = await response.json();
