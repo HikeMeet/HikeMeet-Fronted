@@ -15,6 +15,7 @@ import BioSection from "../../components/profile-bio-section";
 import CreatePostButton from "../../components/create-post-buton";
 import HikerButton from "../../components/profile-hikers-button";
 import HikersList from "../../components/hikers-list-in-profile";
+// import ProfileImage from "../../components/profile-image";
 
 const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { mongoUser } = useAuth();
@@ -67,9 +68,10 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
 
       {/* Profile Info */}
       <View className="flex-row items-center p-4">
+        {/* <ProfileImage initialImageUrl={mongoUser.profile_picture} size={80} /> */}
         <Image
           source={{
-            uri: "https://cdn-icons-png.flaticon.com/512/147/147144.png",
+            uri: mongoUser.profile_picture,
           }}
           className="w-20 h-20 rounded-full mr-4"
         />
