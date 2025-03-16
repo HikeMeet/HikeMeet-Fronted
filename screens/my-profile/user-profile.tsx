@@ -14,6 +14,7 @@ import { useAuth } from "../../contexts/auth-context";
 import FriendActionButton from "../../components/friend-button";
 import HikersList from "../../components/hikers-list-in-profile";
 import HikerButton from "../../components/profile-hikers-button";
+import { MongoUser } from "../../interfaces/user-interface";
 
 interface UserProfileProps {
   route: any;
@@ -22,7 +23,7 @@ interface UserProfileProps {
 
 const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   const { userId } = route.params; // ID of the user to fetch
-  const [user, setUser] = useState<any>(null); // User data
+  const [user, setUser] = useState<MongoUser | null>(null); // User data
   const [friendStatus, setFriendStatus] = useState<string>("none"); // Friend status
   const [loading, setLoading] = useState<boolean>(true); // Loading state
   const [showTooltip, setShowTooltip] = useState<boolean>(false); // Tooltip visibility
@@ -158,7 +159,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
         <View className="flex-row items-center mb-4">
           <Image
             source={{
-              uri: user.profile_picture || "https://via.placeholder.com/150",
+              uri:
+                user.profile_picture.url || "https://via.placeholder.com/150",
             }}
             className="w-24 h-24 rounded-full mr-4"
           />

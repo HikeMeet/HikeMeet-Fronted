@@ -38,7 +38,7 @@ const UserRow: React.FC<UserRowProps> = ({
       >
         <Image
           source={{
-            uri: user.profile_picture || "https://via.placeholder.com/50",
+            uri: user.profile_picture.url || "https://via.placeholder.com/50",
           }}
           style={tw`w-10 h-10 rounded-full mr-4`}
         />
