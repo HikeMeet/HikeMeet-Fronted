@@ -1,122 +1,108 @@
-// // components/ProfileImage.tsx
-// import React, { useState } from "react";
-// import {
-//   Image,
-//   Pressable,
-//   ActivityIndicator,
-//   Alert,
-//   StyleSheet,
-// } from "react-native";
-// import * as ImagePicker from "expo-image-picker";
-// import {
-//   getStorage,
-//   ref,
-//   uploadBytesResumable,
-//   getDownloadURL,
-// } from "firebase/storage";
+// components/ProfileImage.tsx
+import React, { useState } from "react";
+import { Image, Pressable, Alert } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { useAuth } from "../contexts/auth-context";
 
-// interface ProfileImageProps {
-//   initialImageUrl: string;
-//   size?: number;
-// }
+interface ProfileImageProps {
+  initialImageUrl: string;
+  size?: number;
+  userId: string; // User ID to update the profile on the backend
+}
 
-// const ProfileImage: React.FC<ProfileImageProps> = ({
-//   initialImageUrl,
-//   size = 100,
-// }) => {
-//   const [imageUri, setImageUri] = useState<string>(initialImageUrl);
-//   const [uploading, setUploading] = useState<boolean>(false);
+const ProfileImage: React.FC<ProfileImageProps> = ({
+  initialImageUrl,
+  size = 100,
+  userId,
+}) => {
+  const [imageUri, setImageUri] = useState<string>(initialImageUrl);
+  const { setMongoUser } = useAuth();
 
-//   const handlePress = async () => {
-//     // Request media library permissions
-//     const permissionResult =
-//       await ImagePicker.requestMediaLibraryPermissionsAsync();
-//     if (!permissionResult.granted) {
-//       Alert.alert(
-//         "Permission Required",
-//         "Media library permissions are required to pick an image."
-//       );
-//       return;
-//     }
+  // Upload the image to your backend endpoint.
+  const uploadImageToBackend = async (uri: string) => {
+    const formData = new FormData();
+    console.log("Uploading file with URI:", uri);
+    // Append the image file to the form data.
+    formData.append("image", {
+      uri,
+      type: "image/jpeg", // adjust if necessary based on file type
+      name: "upload.jpg",
+    } as any);
 
-//     // Launch the image picker
-//     const result = await ImagePicker.launchImageLibraryAsync({
-//       mediaTypes: ImagePicker.MediaTypeOptions.Images, // Using Images here even if deprecated warnings appear; alternatively, check the latest docs.
-//       quality: 1,
-//     });
+    try {
+      const backendUrl =
+        (process.env.EXPO_LOCAL_SERVER as string) ||
+        "http://192.168.1.100:3000";
+      const requestUrl = `${backendUrl}/api/user/${userId}/upload-profile-picture`;
+      console.log("Sending request to:", requestUrl);
 
-//     // Check if the picker was not canceled and assets are returned
-//     if (!result.canceled && result.assets && result.assets.length > 0) {
-//       const asset = result.assets[0];
-//       setImageUri(asset.uri);
-//       await uploadImage(asset.uri);
-//     }
-//   };
+      const response = await fetch(requestUrl, {
+        method: "POST",
+        body: formData,
+      });
 
-//   const uploadImage = async (uri: string) => {
-//     try {
-//       setUploading(true);
-//       const response = await fetch(uri);
-//       const blob = await response.blob();
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server error (${response.status}): ${errorText}`);
+      }
 
-//       const storage = getStorage();
-//       const filename = `profile_images/${Date.now()}_profile.jpg`;
-//       const storageRef = ref(storage, filename);
+      const updatedUser = await response.json();
+      console.log("Upload successful:");
+      setMongoUser(updatedUser);
+      setImageUri(updatedUser.profile_picture.url);
+      // Optionally update state or notify user.
+    } catch (error: any) {
+      console.error("Backend upload error:", error);
+      Alert.alert("Upload Error", "Failed to upload image to server.");
+    }
+  };
 
-//       const uploadTask = uploadBytesResumable(storageRef, blob);
+  const handlePress = async () => {
+    // Request media library permissions.
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert(
+        "Permission Required",
+        "Media library permissions are required to pick an image."
+      );
+      return;
+    }
 
-//       uploadTask.on(
-//         "state_changed",
-//         (snapshot) => {
-//           // Optionally track progress here
-//         },
-//         (error) => {
-//           setUploading(false);
-//           Alert.alert("Upload Failed", error.message);
-//         },
-//         async () => {
-//           const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-//           setImageUri(downloadUrl);
-//           setUploading(false);
-//           // Optionally, update your backend with the new URL.
-//         }
-//       );
-//     } catch (error: any) {
-//       setUploading(false);
-//       Alert.alert("Error", error.message);
-//     }
-//   };
+    // Launch the image picker.
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      quality: 1,
+    });
 
-//   return (
-//     <Pressable
-//       onPress={handlePress}
-//       style={[
-//         styles.pressable,
-//         { width: size, height: size, borderRadius: size / 2 },
-//       ]}
-//     >
-//       {uploading ? (
-//         <ActivityIndicator size="small" />
-//       ) : (
-//         <Image
-//           source={
-//             imageUri
-//               ? { uri: imageUri }
-//               : require("../assets/default-profile.png")
-//           }
-//           style={{ width: size, height: size, borderRadius: size / 2 }}
-//         />
-//       )}
-//     </Pressable>
-//   );
-// };
+    // If the picker wasn't canceled and an asset is returned.
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const asset = result.assets[0];
+      console.log("Image selected:", asset.uri);
+      // Update UI with the chosen image.
+      // Send the image to the backend.
+      await uploadImageToBackend(asset.uri);
+    } else {
+      console.log("No image selected.");
+    }
+  };
 
-// const styles = StyleSheet.create({
-//   pressable: {
-//     alignItems: "center",
-//     justifyContent: "center",
-//     overflow: "hidden",
-//   },
-// });
+  return (
+    <Pressable
+      onPress={handlePress}
+      className="items-center justify-center overflow-hidden"
+      style={{ width: size, height: size, borderRadius: size / 2 }}
+    >
+      <Image
+        source={
+          imageUri
+            ? { uri: imageUri }
+            : require("../assets/default-profile.png")
+        }
+        className="w-full h-full rounded-full"
+      />
+    </Pressable>
+  );
+};
 
-// export default ProfileImage;
+export default ProfileImage;
