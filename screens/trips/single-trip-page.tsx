@@ -1,3 +1,4 @@
+// TripDetailPage.tsx
 import React, { useState, useEffect } from "react";
 import {
   ScrollView,
@@ -7,13 +8,41 @@ import {
   Linking,
   Alert,
 } from "react-native";
-import Mapbox from "@rnmapbox/maps";
+import Constants from "expo-constants";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import ImageUploadPhotos from "../../components/insert-images-create-trip";
 
-const StyledMapView = styled(Mapbox.MapView);
-const StyledCamera = styled(Mapbox.Camera);
+// Determine if native Mapbox code is available (i.e. not running in Expo Go)
+const MapboxAvailable = Constants.appOwnership !== "expo";
+
+let Mapbox: any;
+let StyledMapView: any;
+let StyledCamera: any;
+
+if (MapboxAvailable) {
+  // Import and configure Mapbox if available
+  Mapbox = require("@rnmapbox/maps").default;
+  StyledMapView = styled(Mapbox.MapView as any);
+  StyledCamera = styled(Mapbox.Camera as any);
+} else {
+  // Fallback components for when Mapbox is unavailable (Expo Go)
+  StyledMapView = (props: any) => (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#f0f0f0",
+      }}
+    >
+      <Text style={{ fontSize: 14, color: "#666" }}>
+        Map is not available in Expo Go.
+      </Text>
+    </View>
+  );
+  StyledCamera = () => null;
+}
 
 type TripDetailProps = {
   route: {
@@ -65,7 +94,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
     if (tripId) {
       fetchTripData();
     }
-  }, [tripId]);
+  }, [tripId, isArchived]);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e: any) => {
@@ -99,7 +128,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
         );
       }
     }
-    return <View className="flex-row">{stars}</View>;
+    return <View style={{ flexDirection: "row" }}>{stars}</View>;
   };
 
   const handleGetDirection = () => {
@@ -114,56 +143,84 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   return (
     <ScrollView
       scrollEnabled={scrollEnabled}
-      className="flex-1 bg-white p-4"
+      style={{ flex: 1, backgroundColor: "white", padding: 16 }}
       contentContainerStyle={{ paddingBottom: 40 }}
     >
       {/* Title */}
-      <Text className="text-lg font-bold">{tripName}</Text>
-      {/* Star Rating below title */}
-      <View className="flex-row items-center mb-4">
+      <Text style={{ fontSize: 18, fontWeight: "bold" }}>{tripName}</Text>
+      {/* Star Rating */}
+      <View
+        style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}
+      >
         {renderStars()}
-        <Text className="ml-1 text-sm">{rating.toFixed(1)}</Text>
+        <Text style={{ marginLeft: 4, fontSize: 14 }}>{rating.toFixed(1)}</Text>
       </View>
 
       {/* Location */}
-      <Text className="mb-2">{locationText}</Text>
+      <Text style={{ marginBottom: 8 }}>{locationText}</Text>
 
       {/* Map snippet showing the trip's location */}
       <View
-        className="w-full h-48 bg-gray-200 mb-2 relative"
+        style={{
+          width: "100%",
+          height: 192,
+          backgroundColor: "#e5e5e5",
+          marginBottom: 8,
+          position: "relative",
+        }}
         onTouchStart={() => setScrollEnabled(false)}
         onTouchEnd={() => setScrollEnabled(true)}
         onTouchCancel={() => setScrollEnabled(true)}
       >
-        <StyledMapView className="flex-1">
+        <StyledMapView style={{ flex: 1 }} onPress={() => {}}>
           <StyledCamera centerCoordinate={coordinates} zoomLevel={12} />
         </StyledMapView>
         <TouchableOpacity
-          className="absolute bottom-2 right-2 bg-blue-600 p-2 rounded items-center"
+          style={{
+            position: "absolute",
+            bottom: 8,
+            right: 8,
+            backgroundColor: "#2563eb",
+            padding: 8,
+            borderRadius: 4,
+            alignItems: "center",
+          }}
           onPress={handleGetDirection}
         >
-          <Text className="text-white text-xs">Get Direction</Text>
+          <Text style={{ color: "white", fontSize: 10 }}>Get Direction</Text>
         </TouchableOpacity>
       </View>
 
       {/* Tags */}
-      <View className="flex-row flex-wrap mb-4">
+      <View
+        style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 16 }}
+      >
         {tags.map((tag, index) => (
           <View
             key={index}
-            className="border border-blue-500 rounded-full px-3 py-1 mr-2 mb-2"
+            style={{
+              borderWidth: 1,
+              borderColor: "#3b82f6",
+              borderRadius: 20,
+              paddingHorizontal: 12,
+              paddingVertical: 4,
+              marginRight: 8,
+              marginBottom: 8,
+            }}
           >
-            <Text className="text-blue-500 text-sm">{tag}</Text>
+            <Text style={{ color: "#3b82f6", fontSize: 14 }}>{tag}</Text>
           </View>
         ))}
       </View>
 
       {/* Description */}
-      <Text className="font-bold mb-1">Description:</Text>
-      <Text className="mb-4">{bio ? bio : "No description provided."}</Text>
+      <Text style={{ fontWeight: "bold", marginBottom: 4 }}>Description:</Text>
+      <Text style={{ marginBottom: 16 }}>
+        {bio ? bio : "No description provided."}
+      </Text>
 
       {/* "Upload your own images" */}
-      <Text className="text-base font-semibold mb-2">
+      <Text style={{ fontSize: 16, fontWeight: "600", marginBottom: 8 }}>
         Upload your own images:
       </Text>
       <ImageUploadPhotos />
@@ -171,11 +228,16 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
       {/* Back to Trips Button */}
       <TouchableOpacity
         onPress={() => navigation.navigate("Tabs", { screen: "Trips" })}
-        className="mt-4 bg-blue-500 px-4 py-2 rounded"
+        style={{
+          marginTop: 16,
+          backgroundColor: "#2563eb",
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderRadius: 8,
+          alignItems: "center",
+        }}
       >
-        <Text className="text-white text-center font-semibold">
-          Back to Trips
-        </Text>
+        <Text style={{ color: "white", fontWeight: "600" }}>Back to Trips</Text>
       </TouchableOpacity>
     </ScrollView>
   );
