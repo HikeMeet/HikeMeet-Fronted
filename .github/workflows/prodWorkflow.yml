@@ -37,7 +37,7 @@ jobs:
         run: npm install -g expo eas-cli
 
       # Step 6: Build the Android app
-      - name: Build Android App
-        env:
-          EXPO_TOKEN: ${{ secrets.CI_CD_TOKEN }}
-        run: npx eas build --platform android --non-interactive
+      # - name: Build Android App
+      #   env:
+      #     EXPO_TOKEN: ${{ secrets.CI_CD_TOKEN }}
+      #   run: npx eas build --platform android --non-interactive
