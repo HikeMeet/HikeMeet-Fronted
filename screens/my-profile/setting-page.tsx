@@ -3,11 +3,14 @@ import { View, SafeAreaView } from "react-native";
 import SettingsButton from "../../components/settings-buttons";
 import LogoutConfirmPopup from "../../components/logout-confirm-popup";
 import DeleteConfirmPopup from "../../components/delete-account-confirm-popup";
+import { useAuth } from "../../contexts/auth-context";
 
 const SettingsScreen = ({ navigation }: any) => {
   const [logoutPopupVisible, setLogoutPopupVisible] = useState(false);
   const [deletePopupVisible, setDeleteLogoutPopupVisible] = useState(false);
-
+  const { mongoUser } = useAuth();
+  const isAdmin = mongoUser?.role === "admin" ? true : false;
+  console.log(isAdmin);
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 bg-white p-4">
@@ -20,9 +23,19 @@ const SettingsScreen = ({ navigation }: any) => {
             title="Button 1"
             onPress={() => console.log("Button 1 clicked")}
           />
+          {isAdmin ? (
+            <SettingsButton
+              title="Admin settings"
+              onPress={() => navigation.navigate("AdminSettings")}
+            />
+          ) : null}
           <SettingsButton
             title="Reset password"
             onPress={() => navigation.navigate("ResetPasswordInside")}
+          />
+          <SettingsButton
+            title="Comunity guidlines"
+            onPress={() => navigation.navigate("ComunitiyGuidlined")}
           />
         </View>
 

@@ -1,3 +1,8 @@
+export interface Friend {
+  id: string;
+  status: string;
+}
+
 export interface MongoUser {
   username: string;
   email: string;
@@ -18,6 +23,6 @@ export interface MongoUser {
   created_on: string;
   updated_on: string;
   _id: string;
-  friends: string[];
+  friends: Friend[]; // Now each friend has an id and a status.
   __v: number;
 }

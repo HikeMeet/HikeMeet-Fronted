@@ -2,8 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FIREBASE_AUTH } from "../firebaseconfig";
-import { ActivityIndicator } from "react-native-paper";
-import { View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { MongoUser } from "../interfaces/user-interface";
 
 interface AuthContextProps {
@@ -11,8 +10,10 @@ interface AuthContextProps {
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   isVerified: boolean;
   setIsVerified: React.Dispatch<React.SetStateAction<boolean>>;
-  userId: string | null; // Add userId to the context
+  userId: string | null; // firebase_id
   mongoId: string | null; // MongoDB _id
+  mongoUser: MongoUser | null;
+  setMongoUser: React.Dispatch<React.SetStateAction<MongoUser | null>>;
   setMongoId: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
@@ -21,10 +22,30 @@ const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isVerified, setIsVerified] = useState<boolean>(false);
-  const [userId, setUserId] = useState<string | null>(null); // State for userId
-  const [mongoId, setMongoId] = useState<string | null>(null); // MongoDB _id
-
+  const [userId, setUserId] = useState<string | null>(null);
+  const [mongoId, setMongoId] = useState<string | null>(null);
+  const [mongoUser, setMongoUser] = useState<MongoUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // Function to fetch Mongo user by mongoId or firebase id if necessary.
+  const fetchMongoUser = async (mongoIdToFetch: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoIdToFetch}`
+      );
+      if (!response.ok) {
+        throw new Error(`Error fetching user data: ${response.status}`);
+      }
+      const data: MongoUser = await response.json();
+      setMongoUser(data);
+      // Optionally update mongoId if needed.
+      setMongoId(data._id);
+      await AsyncStorage.setItem("mongoId", data._id);
+    } catch (error) {
+      console.log("Error updating Mongo user:", error);
+    }
+  };
+
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -35,9 +56,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
           setIsVerified(parsedUser.emailVerified || false);
-          setUserId(parsedUser.uid || null); // Extract userId from the stored user
+          setUserId(parsedUser.uid || null);
           if (storedMongoId) {
             setMongoId(storedMongoId);
+            fetchMongoUser(storedMongoId);
           }
         }
       } catch (error) {
@@ -54,14 +76,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (currentUser) {
           setUser(currentUser);
           setIsVerified(currentUser.emailVerified);
-          setUserId(currentUser.uid); // Set userId from Firebase user object
+          setUserId(currentUser.uid);
 
           if (currentUser.emailVerified) {
             try {
               console.log("Fetching user from MongoDB...");
-              console.log(
-                `${process.env.EXPO_LOCAL_SERVER}/api/user/${currentUser.uid}?firebase=true`
-              );
+              // This endpoint fetches Mongo user using the firebase_id
               const response = await fetch(
                 `${process.env.EXPO_LOCAL_SERVER}/api/user/${currentUser.uid}?firebase=true`
               );
@@ -69,8 +89,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 throw new Error(`Error fetching user data: ${response.status}`);
               }
               const data: MongoUser = await response.json();
-              console.log("MongoDB User Data:", data); // Log MongoDB user data
+              console.log("MongoDB User Data:", data);
               setMongoId(data._id);
+              setMongoUser(data);
               await AsyncStorage.setItem("user", JSON.stringify(currentUser));
               await AsyncStorage.setItem("mongoId", data._id);
             } catch (error) {
@@ -78,14 +99,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
           }
 
-          // Save to AsyncStorage
           await AsyncStorage.setItem("user", JSON.stringify(currentUser));
-          await AsyncStorage.setItem("mongoId", "");
         } else {
           console.log("No user is logged in");
           setUser(null);
           setIsVerified(false);
-          setUserId(null); // Clear userId when logged out
+          setUserId(null);
+          setMongoId(null);
+          setMongoUser(null);
           await AsyncStorage.removeItem("user");
           await AsyncStorage.removeItem("mongoId");
         }
@@ -94,6 +115,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => unsubscribe();
   }, []);
+
+  // Polling effect to update the Mongo user every 10 seconds if the user is verified and a mongoId exists.
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isVerified && mongoId) {
+      interval = setInterval(() => {
+        fetchMongoUser(mongoId);
+      }, 30000); // every 10 seconds
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isVerified, mongoId]);
 
   if (loading) {
     return (
@@ -113,6 +147,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         userId,
         mongoId,
         setMongoId,
+        mongoUser,
+        setMongoUser,
       }}
     >
       {children}

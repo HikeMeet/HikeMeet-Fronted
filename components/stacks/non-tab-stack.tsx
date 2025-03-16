@@ -1,71 +1,72 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import BottomTabs from "./bottom-tabs";
-import SettingsScreen from "../../screens/my-profile/setting-page";
 import Home from "../../screens/home-page/home";
-import ResetPasswordInsidePage from "../../screens/register-login/reset-password-inside-page";
 import CreatePostPage from "../../screens/post-creation/post-creation-page";
-import ProfilePage from "../../screens/my-profile/my-profile";
+import SearchPage from "../../screens/search/search-page";
+import AccountStack from "./account-setting-stack";
+import TripsStack from "./trip-proccess-stack";
+import { Provider } from "react-native-paper";
+
+// Import the new AccountStack
 
 const Stack = createNativeStackNavigator();
 
 const NonTabScreensStack = () => {
   return (
-    <Stack.Navigator
-      initialRouteName="Tabs"
-      screenOptions={{ headerShown: false }}
-    >
-      {/* Tab Navigator */}
-      <Stack.Screen
-        name="Tabs"
-        component={BottomTabs}
-        options={{
-          headerShown: false,
-        }}
-      />
+    <Provider>
+      <Stack.Navigator
+        initialRouteName="Tabs"
+        screenOptions={{ headerShown: false }}
+      >
+        {/* Tab Navigator */}
+        <Stack.Screen
+          name="Tabs"
+          component={BottomTabs}
+          options={{
+            headerShown: false,
+          }}
+        />
 
-      {/* Settings Screen */}
-      <Stack.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          headerShown: true,
-          title: "Settings",
-        }}
-      />
-      <Stack.Screen
-        name="Home"
-        component={Home}
-        options={{
-          headerShown: true,
-          title: "Home",
-        }}
-      />
-      <Stack.Screen
-        name="ResetPasswordInside"
-        component={ResetPasswordInsidePage}
-        options={{
-          headerShown: true,
-          title: "Reset Password",
-        }}
-      />
-      <Stack.Screen
-        name="CreatePost"
-        component={CreatePostPage}
-        options={{
-          headerShown: true,
-          title: "Create Post",
-        }}
-      />
-      <Stack.Screen
-        name="ProfilePage"
-        component={ProfilePage}
-        options={{
-          headerShown: true,
-          title: "Create Post",
-        }}
-      />
-    </Stack.Navigator>
+        {/* Account Stack (Settings, AdminSettings, ResetPasswordInside, UserProfile) */}
+        <Stack.Screen
+          name="AccountStack"
+          component={AccountStack}
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="TripsStack"
+          component={TripsStack}
+          options={{ headerShown: false }}
+        />
+
+        {/* Other Screens */}
+        <Stack.Screen
+          name="Home"
+          component={Home}
+          options={{
+            headerShown: false,
+            title: "Home",
+          }}
+        />
+        <Stack.Screen
+          name="CreatePost"
+          component={CreatePostPage}
+          options={{
+            headerShown: true,
+            title: "Create Post",
+          }}
+        />
+        <Stack.Screen
+          name="SearchPage"
+          component={SearchPage}
+          options={{ headerShown: false }}
+        />
+      </Stack.Navigator>
+    </Provider>
   );
 };
 
