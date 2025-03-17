@@ -33,7 +33,7 @@ const ProfileImage: React.FC<ProfileImageProps> = ({
   const { setMongoUser } = useAuth();
   useFocusEffect(
     useCallback(() => {
-      setErrorMessage(null);
+      setErrorMessage("Upload failed.");
     }, [])
   );
   const uploadImageToBackend = async (uri: string) => {
@@ -69,7 +69,7 @@ const ProfileImage: React.FC<ProfileImageProps> = ({
       setErrorMessage(null); // reset error message on success
     } catch (error: any) {
       //   console.error("Backend upload error:", error);
-      setErrorMessage("Upload failed.\nPlease try again.");
+      setErrorMessage("Upload failed.");
     } finally {
       setUploading(false);
     }
