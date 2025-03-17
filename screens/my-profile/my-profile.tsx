@@ -73,13 +73,7 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
           size={80}
           userId={mongoUser._id}
         />
-        {/* <Image
-          source={{
-            uri: mongoUser.profile_picture,
-          }}
-          className="w-20 h-20 rounded-full mr-4"
-        /> */}
-        <View className="flex-1">
+        <View className="flex-1 ml-5">
           <Text className="text-lg font-bold">{mongoUser.username}</Text>
           <Text className="text-lg font-bold">{`${mongoUser.first_name} ${mongoUser.last_name}`}</Text>
           <Text className="text-sm text-gray-500">Rank: Adventurer</Text>
