@@ -33,9 +33,10 @@ const ProfileImage: React.FC<ProfileImageProps> = ({
   const { setMongoUser } = useAuth();
   useFocusEffect(
     useCallback(() => {
-      setErrorMessage("Upload failed.");
+      setErrorMessage(null);
     }, [])
   );
+
   const uploadImageToBackend = async (uri: string) => {
     const formData = new FormData();
     console.log("Uploading file with URI:", uri);

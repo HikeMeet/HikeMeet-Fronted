@@ -28,7 +28,7 @@ const DeleteConfirmPopup: React.FC<ConfirmPopupProps> = ({
   navigation,
 }) => {
   const [password, setPassword] = useState("");
-  const { userId } = useAuth(); // Get the mongoId from useAuth
+  const { mongoId } = useAuth(); // Get the mongoId from useAuth
 
   const handleDeleteAccount = async (): Promise<boolean> => {
     try {
@@ -45,12 +45,12 @@ const DeleteConfirmPopup: React.FC<ConfirmPopupProps> = ({
       await AsyncStorage.removeItem("user");
 
       try {
-        if (!userId) {
+        if (!mongoId) {
           console.error("Error: User ID is null or undefined.");
           throw "error";
         }
 
-        const result = await deleteMongoUser(userId);
+        const result = await deleteMongoUser(mongoId);
         console.log("Delete Result:", result);
         // Handle success (e.g., update UI)
       } catch (error) {

@@ -4,6 +4,7 @@ export const deleteMongoUser = async (mongoId: string): Promise<any> => {
       throw new Error(`User ID ${mongoId} is not available.`);
     }
 
+
     const response = await fetch(
       `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoId}/delete`,
       {

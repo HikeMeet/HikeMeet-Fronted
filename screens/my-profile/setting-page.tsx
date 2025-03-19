@@ -34,7 +34,7 @@ const SettingsScreen = ({ navigation }: any) => {
             onPress={() => navigation.navigate("ResetPasswordInside")}
           />
           <SettingsButton
-            title="Comunity guidlines"
+            title="Community guidlines"
             onPress={() => navigation.navigate("ComunitiyGuidlined")}
           />
         </View>
