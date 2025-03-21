@@ -6,5 +6,6 @@ export interface Trip {
     coordinates: [number, number];
   };
   images?: string[];
+  tags?: string[];
   description?: string;
 }
