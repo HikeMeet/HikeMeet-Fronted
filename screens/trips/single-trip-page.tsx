@@ -11,10 +11,11 @@ import {
 import Constants from "expo-constants";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
-import ImageUploadPhotos from "../../components/insert-images-create-trip";
+import ImageUploadPhotos from "../../components/trip-image-gallery";
 import ProfileImage from "../../components/profile-image";
 import { Trip } from "../../interfaces/trip-interface";
 import { useAuth } from "../../contexts/auth-context";
+import TripImagesUploader from "../../components/trip-image-gallery";
 
 // Determine if native Mapbox code is available (i.e. not running in Expo Go)
 const MapboxAvailable = Constants.appOwnership !== "expo";
@@ -228,8 +229,18 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
       <Text style={{ fontSize: 16, fontWeight: "600", marginBottom: 8 }}>
         Upload your own images:
       </Text>
-      <ImageUploadPhotos />
-
+      {tripData && (
+        <TripImagesUploader
+          tripId={tripId}
+          initialImages={tripData.images ?? []}
+          onImagesUpdated={(imgs) =>
+            setTripData((prevTripData) => {
+              if (!prevTripData) return { images: imgs } as any;
+              return { ...prevTripData, images: imgs };
+            })
+          }
+        />
+      )}
       {/* Back to Trips Button */}
       <TouchableOpacity
         onPress={() => navigation.navigate("Tabs", { screen: "Trips" })}

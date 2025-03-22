@@ -13,7 +13,13 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons"; // Import Ionicons for the pencil icon
+import { Ionicons } from "@expo/vector-icons";
+
+// Default image URLs for profile and trip (adjust as needed)
+const DEFAULT_PROFILE_IMAGE_URL =
+  "https://res.cloudinary.com/dyebkjnoc/image/upload/v1742156351/profile_images/tpyngwygeoykeur0hgre.jpg";
+const DEFAULT_TRIP_IMAGE_URL =
+  "https://res.cloudinary.com/dyebkjnoc/image/upload/v1742664563/trip_images/pxn2u29twifmjcjq7whv.png";
 
 interface MainImageProps {
   initialImageUrl: string;
@@ -135,6 +141,45 @@ const ProfileImage: React.FC<MainImageProps> = ({
     }
   };
 
+  // Remove the current photo via DELETE endpoint.
+  const handleRemovePhoto = async () => {
+    try {
+      setUploading(true);
+      const backendUrl =
+        (process.env.EXPO_LOCAL_SERVER as string) ||
+        "http://192.168.1.100:3000";
+      let requestUrl: string;
+      if (uploadType === "trip") {
+        requestUrl = `${backendUrl}/api/trips/${id}/delete-profile-picture`;
+      } else {
+        requestUrl = `${backendUrl}/api/user/${id}/delete-profile-picture`;
+      }
+      console.log("Calling DELETE on:", requestUrl);
+      const response = await fetch(requestUrl, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server error (${response.status}): ${errorText}`);
+      }
+      const updatedUser = await response.json();
+      console.log("Photo removal successful:", updatedUser);
+      // Update the image URI based on type.
+      if (uploadType === "trip") {
+        setImageUri(updatedUser.main_image.url);
+      } else {
+        setImageUri(updatedUser.profile_picture.url);
+        setMongoUser(updatedUser);
+      }
+      setTooltipVisible(false);
+    } catch (error: any) {
+      console.error("Error removing photo:", error);
+      setErrorMessage("Failed to remove photo.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // Only allow press if we're not uploading.
   // If editable is true, show tooltip; if false, go directly to view mode.
   const onImagePress = () => {
@@ -145,6 +190,10 @@ const ProfileImage: React.FC<MainImageProps> = ({
       setViewImageVisible(true);
     }
   };
+
+  // Determine the default URL based on uploadType.
+  const defaultUrl =
+    uploadType === "trip" ? DEFAULT_TRIP_IMAGE_URL : DEFAULT_PROFILE_IMAGE_URL;
 
   return (
     <>
@@ -233,6 +282,14 @@ const ProfileImage: React.FC<MainImageProps> = ({
                   View Current Image
                 </Text>
               </TouchableOpacity>
+              {/* Show "Remove Photo" option if current image is not the default */}
+              {imageUri !== defaultUrl && (
+                <TouchableOpacity className="py-2" onPress={handleRemovePhoto}>
+                  <Text className="text-lg text-blue-500 text-center">
+                    Remove Photo
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </TouchableOpacity>
         </Modal>
