@@ -97,9 +97,9 @@ const TripSelector: React.FC<TripSelectorProps> = ({
               }`}
             >
               <View className="flex-row items-center">
-                {trip.images && trip.images.length > 0 ? (
+                {trip.main_image ? (
                   <Image
-                    source={{ uri: trip.images[0] }}
+                    source={{ uri: trip.main_image.url }}
                     className="w-16 h-16 rounded mr-4"
                   />
                 ) : (
@@ -146,7 +146,7 @@ const TripSelector: React.FC<TripSelectorProps> = ({
                 {selectedTripForModal.images &&
                 selectedTripForModal.images.length > 0 ? (
                   <Image
-                    source={{ uri: selectedTripForModal.images[0] }}
+                    source={{ uri: selectedTripForModal.main_image?.url }}
                     className="w-full h-40 rounded mb-2"
                   />
                 ) : (
