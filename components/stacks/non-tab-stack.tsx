@@ -6,6 +6,7 @@ import CreatePostPage from "../../screens/post-creation/post-creation-page";
 import SearchPage from "../../screens/search/search-page";
 import AccountStack from "./account-setting-stack";
 import TripsStack from "./trip-proccess-stack";
+import GroupsStack from "./group-proccess-stack";
 import { Provider } from "react-native-paper";
 
 // Import the new AccountStack
@@ -40,6 +41,11 @@ const NonTabScreensStack = () => {
         <Stack.Screen
           name="TripsStack"
           component={TripsStack}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="GroupsStack"
+          component={GroupsStack}
           options={{ headerShown: false }}
         />
 

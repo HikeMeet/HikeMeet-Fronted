@@ -11,7 +11,11 @@ import {
 import Constants from "expo-constants";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
-import ImageUploadPhotos from "../../components/insert-images-create-trip";
+import ImageUploadPhotos from "../../components/trip-image-gallery";
+import ProfileImage from "../../components/profile-image";
+import { Trip } from "../../interfaces/trip-interface";
+import { useAuth } from "../../contexts/auth-context";
+import TripImagesUploader from "../../components/trip-image-gallery";
 
 // Determine if native Mapbox code is available (i.e. not running in Expo Go)
 const MapboxAvailable = Constants.appOwnership !== "expo";
@@ -54,6 +58,7 @@ type TripDetailProps = {
 const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   // States for trip details
   const [tripName, setTripName] = useState<string>("");
+  const [tripData, setTripData] = useState<Trip>();
   const [rating, setRating] = useState<number>(0);
   const [locationText, setLocationText] = useState<string>("");
   // Use trip coordinates from backend, not the user's location.
@@ -63,6 +68,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   // State to control ScrollView scrolling
   const [scrollEnabled, setScrollEnabled] = useState<boolean>(true);
   const { tripId, fromCreate = false, isArchived = false } = route.params;
+  const { mongoId } = useAuth(); // current user's mongoId
 
   // Fetch trip data from the backend using the tripId parameter.
   useEffect(() => {
@@ -77,6 +83,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
           throw new Error("Failed to fetch trip data");
         }
         const data = await response.json();
+        setTripData(data);
         // Update state with the fetched data
         setTripName(data.name);
         setLocationText(data.location.address);
@@ -146,14 +153,25 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
       style={{ flex: 1, backgroundColor: "white", padding: 16 }}
       contentContainerStyle={{ paddingBottom: 40 }}
     >
-      {/* Title */}
-      <Text style={{ fontSize: 18, fontWeight: "bold" }}>{tripName}</Text>
-      {/* Star Rating */}
-      <View
-        style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}
-      >
-        {renderStars()}
-        <Text style={{ marginLeft: 4, fontSize: 14 }}>{rating.toFixed(1)}</Text>
+      <View className="flex-row items-center p-4">
+        {tripData && tripData.main_image && (
+          <ProfileImage
+            initialImageUrl={tripData.main_image.url}
+            size={60}
+            id={tripId}
+            uploadType="trip"
+            editable={mongoId === tripData.createdBy} // Only editable if the current user is the creator
+          />
+        )}
+        <View className="ml-2">
+          {/* Title */}
+          <Text className="text-lg font-bold">{tripName}</Text>
+          {/* Star Rating */}
+          <View className="flex-row items-center mb-4">
+            {renderStars()}
+            <Text className="ml-1 text-sm">{rating.toFixed(1)}</Text>
+          </View>
+        </View>
       </View>
 
       {/* Location */}
@@ -192,52 +210,43 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
       </View>
 
       {/* Tags */}
-      <View
-        style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 16 }}
-      >
+      <View className="flex-row flex-wrap mb-4">
         {tags.map((tag, index) => (
           <View
             key={index}
-            style={{
-              borderWidth: 1,
-              borderColor: "#3b82f6",
-              borderRadius: 20,
-              paddingHorizontal: 12,
-              paddingVertical: 4,
-              marginRight: 8,
-              marginBottom: 8,
-            }}
+            className="border border-blue-500 rounded-[20px] px-3 py-1 mr-2 mb-2"
           >
-            <Text style={{ color: "#3b82f6", fontSize: 14 }}>{tag}</Text>
+            <Text className="text-blue-500 text-sm">{tag}</Text>
           </View>
         ))}
       </View>
 
       {/* Description */}
-      <Text style={{ fontWeight: "bold", marginBottom: 4 }}>Description:</Text>
-      <Text style={{ marginBottom: 16 }}>
-        {bio ? bio : "No description provided."}
-      </Text>
+      <Text className="font-bold mb-1">Description:</Text>
+      <Text className="mb-4">{bio ? bio : "No description provided."}</Text>
 
       {/* "Upload your own images" */}
       <Text style={{ fontSize: 16, fontWeight: "600", marginBottom: 8 }}>
         Upload your own images:
       </Text>
-      <ImageUploadPhotos />
-
+      {tripData && (
+        <TripImagesUploader
+          tripId={tripId}
+          initialImages={tripData.images ?? []}
+          onImagesUpdated={(imgs) =>
+            setTripData((prevTripData) => {
+              if (!prevTripData) return { images: imgs } as any;
+              return { ...prevTripData, images: imgs };
+            })
+          }
+        />
+      )}
       {/* Back to Trips Button */}
       <TouchableOpacity
         onPress={() => navigation.navigate("Tabs", { screen: "Trips" })}
-        style={{
-          marginTop: 16,
-          backgroundColor: "#2563eb",
-          paddingHorizontal: 16,
-          paddingVertical: 12,
-          borderRadius: 8,
-          alignItems: "center",
-        }}
+        className="mt-4 bg-blue-600 px-4 py-3 rounded-lg items-center"
       >
-        <Text style={{ color: "white", fontWeight: "600" }}>Back to Trips</Text>
+        <Text className="text-white font-semibold">Back to Trips</Text>
       </TouchableOpacity>
     </ScrollView>
   );

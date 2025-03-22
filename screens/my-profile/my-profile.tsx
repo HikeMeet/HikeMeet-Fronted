@@ -71,7 +71,8 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
         <ProfileImage
           initialImageUrl={mongoUser.profile_picture.url}
           size={80}
-          userId={mongoUser._id}
+          id={mongoUser._id}
+          uploadType={"profile"}
         />
         <View className="flex-1 ml-5">
           <Text className="text-lg font-bold">{mongoUser.username}</Text>
