@@ -75,7 +75,7 @@ const GroupsPage: React.FC<GroupsPageProps> = ({ navigation }) => {
           <Text className="text-white font-semibold">My Groups</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => navigation.navigate("GroupsStack")}
+          onPress={() => navigation.push("GroupsStack")}
           className="bg-green-500 px-4 py-2 rounded"
         >
           <Text className="text-white font-semibold">Create Group</Text>
@@ -94,7 +94,14 @@ const GroupsPage: React.FC<GroupsPageProps> = ({ navigation }) => {
           filteredGroups.map((group) => (
             <TouchableOpacity
               key={group._id}
-              onPress={() => console.log(group._id)}
+              onPress={() =>
+                navigation.navigate("GroupsStack", {
+                  screen: "GroupPage",
+                  params: {
+                    groupId: group._id,
+                  },
+                })
+              }
               className="flex-row items-center bg-gray-100 mb-4 p-4 rounded-lg"
             >
               <View className="flex-1">

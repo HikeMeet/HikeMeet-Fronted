@@ -21,7 +21,7 @@ const UserRow: React.FC<UserRowProps> = ({
   const handlePress = () => {
     if (user._id === mongoId) {
       // If the tapped row is the current user, navigate to the Profile tab
-      navigation.navigate("Tabs", { screen: "Profile" });
+      navigation.push("Tabs", { screen: "Profile" });
     } else {
       // Otherwise navigate to the UserProfile screen
       navigation.push("AccountStack", {

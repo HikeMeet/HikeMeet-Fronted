@@ -50,8 +50,7 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
           ? formatDateForBackend(scheduledStart)
           : null,
         scheduled_end: scheduledEnd ? formatDateForBackend(scheduledEnd) : null,
-        embarked_at: embarkedAt, // already a string in "HH:MM" format
-        // Replace with the actual logged-in user's ID
+        embarked_at: embarkedAt,
         created_by: mongoId,
       };
       const response = await fetch(
@@ -249,6 +248,7 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
             visible={showTimePicker}
             initialTime={embarkedAt}
             onConfirm={(time: string) => {
+              console.log("Selected time:", time);
               setEmbarkedAt(time);
               setShowTimePicker(false);
             }}

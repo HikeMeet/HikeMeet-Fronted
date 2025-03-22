@@ -15,6 +15,7 @@ import ProfileImage from "../../components/profile-image";
 import { Trip } from "../../interfaces/trip-interface";
 import { useAuth } from "../../contexts/auth-context";
 import TripImagesUploader from "../../components/trip-image-gallery";
+import MapDirectionButton from "../../components/get-direction";
 
 // Determine if native Mapbox code is available (i.e. not running in Expo Go)
 const MapboxAvailable = Constants.appOwnership !== "expo";
@@ -137,15 +138,6 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
     return <View style={{ flexDirection: "row" }}>{stars}</View>;
   };
 
-  const handleGetDirection = () => {
-    const [longitude, latitude] = coordinates;
-    console.log("Coordinates:", coordinates);
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
-    Linking.openURL(url).catch(() =>
-      Alert.alert("Error", "Could not open the map.")
-    );
-  };
-
   return (
     <ScrollView
       scrollEnabled={scrollEnabled}
@@ -192,20 +184,10 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
         <StyledMapView style={{ flex: 1 }} onPress={() => {}}>
           <StyledCamera centerCoordinate={coordinates} zoomLevel={12} />
         </StyledMapView>
-        <TouchableOpacity
-          style={{
-            position: "absolute",
-            bottom: 8,
-            right: 8,
-            backgroundColor: "#2563eb",
-            padding: 8,
-            borderRadius: 4,
-            alignItems: "center",
-          }}
-          onPress={handleGetDirection}
-        >
-          <Text style={{ color: "white", fontSize: 10 }}>Get Direction</Text>
-        </TouchableOpacity>
+        <MapDirectionButton
+          latitude={coordinates[1]}
+          longitude={coordinates[0]}
+        />
       </View>
 
       {/* Tags */}
