@@ -11,7 +11,6 @@ import {
 import Constants from "expo-constants";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
-import ImageUploadPhotos from "../../components/trip-image-gallery";
 import ProfileImage from "../../components/profile-image";
 import { Trip } from "../../interfaces/trip-interface";
 import { useAuth } from "../../contexts/auth-context";
@@ -232,6 +231,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
       {tripData && (
         <TripImagesUploader
           tripId={tripId}
+          enabled={mongoId === tripData.createdBy}
           initialImages={tripData.images ?? []}
           onImagesUpdated={(imgs) =>
             setTripData((prevTripData) => {

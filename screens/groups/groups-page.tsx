@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import { Group } from "../../interfaces/group-interface";
 
 interface GroupsPageProps {
@@ -19,25 +20,29 @@ const GroupsPage: React.FC<GroupsPageProps> = ({ navigation }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
 
-  useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.EXPO_LOCAL_SERVER}/api/group/list`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch groups");
-        }
-        const data: Group[] = await response.json();
-        setGroups(data);
-      } catch (error) {
-        console.error("Error fetching groups:", error);
-      } finally {
-        setLoading(false);
+  const fetchGroups = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/group/list`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch groups");
       }
-    };
-    fetchGroups();
+      const data: Group[] = await response.json();
+      setGroups(data);
+    } catch (error) {
+      console.error("Error fetching groups:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchGroups();
+    }, [fetchGroups])
+  );
 
   // Filter groups by search text
   const filteredGroups = groups.filter((group) =>
@@ -57,7 +62,6 @@ const GroupsPage: React.FC<GroupsPageProps> = ({ navigation }) => {
           />
         </View>
         <TouchableOpacity className="p-2 bg-gray-200 rounded-full">
-          {/* Replace with an icon if needed */}
           <Text className="text-sm">Filter</Text>
         </TouchableOpacity>
       </View>
