@@ -15,6 +15,7 @@ import FriendActionButton from "../../components/friend-button";
 import HikersList from "../../components/hikers-list-in-profile";
 import HikerButton from "../../components/profile-hikers-button";
 import { MongoUser } from "../../interfaces/user-interface";
+import ProfileImage from "../../components/profile-image";
 
 interface UserProfileProps {
   route: any;
@@ -157,12 +158,19 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
       <ScrollView className="p-4">
         {/* User Details */}
         <View className="flex-row items-center mb-4">
-          <Image
+          {/* <Image
             source={{
               uri:
                 user.profile_picture.url || "https://via.placeholder.com/150",
             }}
             className="w-24 h-24 rounded-full mr-4"
+          /> */}
+          <ProfileImage
+            initialImageUrl={user.profile_picture.url}
+            size={80}
+            id={user._id}
+            uploadType={"profile"}
+            editable={false} // Only editable if the current user is the creator
           />
           <View>
             <Text className="text-xl font-bold">{`${user.username} ${user.last_name}`}</Text>

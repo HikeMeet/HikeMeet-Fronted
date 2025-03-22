@@ -13,6 +13,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons"; // Import Ionicons for the pencil icon
 
 interface MainImageProps {
   initialImageUrl: string;
@@ -134,10 +135,14 @@ const ProfileImage: React.FC<MainImageProps> = ({
     }
   };
 
-  // Only allow press if editable is true and we're not uploading.
+  // Only allow press if we're not uploading.
+  // If editable is true, show tooltip; if false, go directly to view mode.
   const onImagePress = () => {
-    if (editable && !uploading) {
+    if (uploading) return;
+    if (editable) {
       setTooltipVisible(true);
+    } else {
+      setViewImageVisible(true);
     }
   };
 
@@ -146,8 +151,8 @@ const ProfileImage: React.FC<MainImageProps> = ({
       <View className="items-center ml-2">
         <View className="relative">
           <Pressable
-            onPress={editable ? onImagePress : undefined}
-            disabled={!editable || uploading}
+            onPress={onImagePress}
+            disabled={uploading}
             className="items-center justify-center overflow-hidden"
             style={{
               width: size * 1.2,
@@ -169,6 +174,12 @@ const ProfileImage: React.FC<MainImageProps> = ({
                 className="w-full h-full rounded-full"
               />
             )}
+            {/* Show pencil icon overlay if editable */}
+            {editable && !uploading && (
+              <View className="absolute bottom-1 right-1 bg-black/60 rounded-full p-1">
+                <Ionicons name="pencil" size={16} color="white" />
+              </View>
+            )}
           </Pressable>
 
           {errorMessage && (
@@ -186,7 +197,7 @@ const ProfileImage: React.FC<MainImageProps> = ({
         </View>
       </View>
 
-      {/* Tooltip Modal */}
+      {/* Tooltip Modal (only for editable images) */}
       {editable && (
         <Modal
           transparent
