@@ -9,17 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-interface Trip {
-  _id: string;
-  name: string;
-  location: {
-    address: string;
-    coordinates: [number, number];
-  };
-  images?: string[];
-  // additional fields as needed
-}
+import { Trip } from "../../interfaces/trip-interface";
 
 interface UserTripProps {
   route: any;
@@ -106,9 +96,9 @@ const TripsPage: React.FC<UserTripProps> = ({ navigation }) => {
               }
               className="flex-row items-center bg-gray-100 mb-4 p-4 rounded-lg"
             >
-              {trip.images && trip.images.length > 0 ? (
+              {trip.main_image ? (
                 <Image
-                  source={{ uri: trip.images[0] }}
+                  source={{ uri: trip.main_image.url }}
                   className="w-16 h-16 mr-4 rounded"
                 />
               ) : (

@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import * as Location from "expo-location";
 import MapSearch from "../../components/map-search-creaete-trip";
-import ImageUploadPhotos from "../../components/insert-images-create-trip";
+// import ImageUploadPhotos from "../../components/insert-images-create-trip";
 import { useAuth } from "../../contexts/auth-context";
 
 const TRIP_TAGS = [
@@ -32,12 +32,12 @@ const TRIP_TAGS = [
 
 const CreateTripPage: React.FC = ({ navigation }: any) => {
   const [tripName, setTripName] = useState<string>("");
-  const [tripLocation, setTripLocation] = useState<string>("");
   const [description, setDescription] = useState<string>(""); // New description field
   // State to hold the chosen trip coordinates from MapSearch.
+  const [tripLocation, setTripLocation] = useState<string>("debug location");
   const [tripCoordinates, setTripCoordinates] = useState<
     [number, number] | null
-  >(null);
+  >([135.617964, 34.325275]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null
@@ -180,7 +180,7 @@ const CreateTripPage: React.FC = ({ navigation }: any) => {
       />
 
       {/* Image Upload Photos Component */}
-      <ImageUploadPhotos onImagesChange={handleImagesChange} />
+      {/* <ImageUploadPhotos onImagesChange={handleImagesChange} /> */}
 
       {/* Tags Section */}
       <Text className="text-base font-semibold my-2.5">Select Tags:</Text>
