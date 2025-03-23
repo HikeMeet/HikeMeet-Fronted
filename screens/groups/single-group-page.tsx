@@ -14,9 +14,9 @@ import TripRow from "../../components/trip-row";
 import MapDirectionButton from "../../components/get-direction";
 import { useAuth } from "../../contexts/auth-context";
 import HikersSwitcher from "../../components/hiker-button-list-group-combined";
-import InviteFriendsModal from "../../components/search-friend-to-invite";
 import { useFocusEffect } from "@react-navigation/native";
 import tw from "twrnc";
+import JoinGroupActionButton from "../../components/group-join-action-button";
 
 interface SingleGroupProps {
   navigation: any;
@@ -97,8 +97,21 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         {/* Group Header */}
-        <Text className="text-3xl font-bold mb-4">{group.name}</Text>
-
+        {/* Group Header with Name and Action Button */}
+        <View className="flex-row items-center justify-between mb-4">
+          <Text
+            className="text-3xl font-bold flex-1"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {group.name}
+          </Text>
+          <JoinGroupActionButton
+            group={group}
+            navigation={navigation}
+            isInGroupPage={true}
+          />
+        </View>
         {/* Description */}
         <View className="p-4 border-b border-gray-200">
           <Text className="font-semibold text-gray-600">Description</Text>
@@ -262,16 +275,15 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
         </View>
 
         {/* Bottom Button to go to Group List */}
-        {fromCreate && (
-          <TouchableOpacity
-            onPress={() => navigation.navigate("Tabs", { screen: "Groups" })}
-            style={tw`bg-purple-500 px-4 py-3 rounded mt-6`}
-          >
-            <Text style={tw`text-white text-center font-semibold`}>
-              Back to Group List
-            </Text>
-          </TouchableOpacity>
-        )}
+
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Tabs", { screen: "Groups" })}
+          style={tw`bg-purple-500 px-4 py-3 rounded mt-6`}
+        >
+          <Text style={tw`text-white text-center font-semibold`}>
+            Back to Group List
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
 
       {/* {showInviteModal && (
