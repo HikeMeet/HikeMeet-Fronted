@@ -1,18 +1,26 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  ActivityIndicator,
+  BackHandler,
+  TouchableOpacity,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Group } from "../../interfaces/group-interface";
 import { Trip } from "../../interfaces/trip-interface";
 import TripRow from "../../components/trip-row";
 import MapDirectionButton from "../../components/get-direction";
-import HikersButton from "../../components/hiker-button-list-group-members";
-import PendingButton from "../../components/hiker-button-list-group-pendings";
 import { useAuth } from "../../contexts/auth-context";
+import HikersSwitcher from "../../components/hiker-button-list-group-combined";
+import { useFocusEffect } from "@react-navigation/native";
+import tw from "twrnc";
 
 interface SingleGroupProps {
   navigation: any;
   route: {
-    params: { groupId: string };
+    params: { groupId: string; fromCreate?: boolean };
   };
 }
 
@@ -20,12 +28,29 @@ interface GroupTrip {
   group: Group;
   trip: Trip;
 }
+
 const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
-  const { groupId } = route.params;
+  const { groupId, fromCreate } = route.params;
   const { mongoId } = useAuth();
   const [group, setGroup] = useState<Group | null>(null);
   const [trip, setTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // Override hardware back button if coming from CreateGroupPage.
+  useFocusEffect(
+    useCallback(() => {
+      if (fromCreate) {
+        const onBackPress = () => {
+          navigation.navigate("Tabs", { screen: "Groups" });
+          return true;
+        };
+        BackHandler.addEventListener("hardwareBackPress", onBackPress);
+        return () =>
+          BackHandler.removeEventListener("hardwareBackPress", onBackPress);
+      }
+      return undefined;
+    }, [fromCreate, navigation])
+  );
 
   useEffect(() => {
     const fetchGroup = async () => {
@@ -62,10 +87,11 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
       </SafeAreaView>
     );
   }
-  // Determine if the current user is an admin
+
   const isAdmin = group.members.some(
     (member) => member.user === mongoId && member.role === "admin"
   );
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView contentContainerStyle={{ padding: 16 }}>
@@ -80,40 +106,35 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
           </Text>
         </View>
 
-        {/* Trip Row - Clickable using TripRow component */}
+        {/* Trip Row */}
         {trip && (
           <TripRow
             trip={trip}
             onPress={() =>
               navigation.push("TripsStack", {
                 screen: "TripPage",
-                params: {
-                  tripId: trip._id,
-                },
+                params: { tripId: trip._id },
               })
             }
           />
         )}
 
-        {/* Members List */}
+        {/* Hikers/Pending List */}
         {group.members && (
-          <HikersButton members={group.members} navigation={navigation} />
-        )}
-
-        {/* Pending Button, rendered only if current user is an admin */}
-        {isAdmin && group.pending && (
-          <PendingButton pending={group.pending} navigation={navigation} />
+          <HikersSwitcher
+            members={group.members}
+            pending={group.pending || []}
+            navigation={navigation}
+            isAdmin={isAdmin}
+          />
         )}
 
         {/* Row with two boxes */}
         <View className="flex-row justify-between mb-4 mt-6">
-          {/* Max Members Box */}
           <View className="flex-1 p-4 mr-2 border border-gray-200 rounded">
             <Text className="font-semibold text-gray-600">Max Members</Text>
             <Text className="text-gray-800">{group.max_members}</Text>
           </View>
-
-          {/* Difficulty Box */}
           <View className="flex-1 p-4 ml-2 border border-gray-200 rounded">
             <Text className="font-semibold text-gray-600">Difficulty</Text>
             <Text className="text-gray-800">
@@ -157,6 +178,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             <Text className="text-gray-800">Not set</Text>
           )}
         </View>
+
         {/* Scheduled Start */}
         <View className="p-4 border-b border-gray-200 flex-row items-center justify-between">
           <Text className="font-semibold text-gray-600">Scheduled Start</Text>
@@ -238,6 +260,16 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             {new Date(group.updated_at).toLocaleString()}
           </Text>
         </View>
+
+        {/* Bottom Button to go to Group List */}
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Tabs", { screen: "Groups" })}
+          style={tw`bg-purple-500 px-4 py-3 rounded mt-6`}
+        >
+          <Text style={tw`text-white text-center font-semibold`}>
+            Back to Group List
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );

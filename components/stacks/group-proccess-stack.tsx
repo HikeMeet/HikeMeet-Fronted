@@ -18,7 +18,7 @@ const GroupStack = () => {
       <Stack.Screen
         name="GroupPage"
         component={SingleGroupPage as React.ComponentType<any>}
-        options={{ title: "Group Page" }}
+        options={{ title: "Group Page", headerShown: false }}
       />
     </Stack.Navigator>
   );
