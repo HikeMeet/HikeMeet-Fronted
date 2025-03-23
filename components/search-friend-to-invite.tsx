@@ -50,9 +50,22 @@ const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
         throw new Error("Failed to fetch friends");
       }
       const data = await response.json();
-      const friendsArray = Array.isArray(data.friends) ? data.friends : [];
-      setFriends(friendsArray);
-      setFilteredFriends(friendsArray);
+      const friendsArray: MongoUser[] = Array.isArray(data.friends)
+        ? data.friends
+        : [];
+
+      // Filter out users that are already in group.members or group.pending
+      const invitableFriends = friendsArray.filter((friend) => {
+        const isMember = group.members.some(
+          (member) => member.user === friend._id
+        );
+        const isPending = group.pending.some(
+          (pending) => pending.user === friend._id
+        );
+        return !isMember && !isPending;
+      });
+      setFriends(invitableFriends);
+      setFilteredFriends(invitableFriends);
     } catch (error) {
       console.error("Error fetching friends:", error);
       Alert.alert("Error", "Failed to load friend list.");
@@ -85,12 +98,12 @@ const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
       <View
         style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`}
       >
-        <View style={tw`bg-white w-11/12 max-h-4/5 rounded-lg p-4`}>
-          <Text style={tw`text-xl font-bold mb-4 text-center`}>
+        <View className="bg-white w-11/12 max-h-4/5 rounded-lg p-4">
+          <Text className="text-xl font-bold mb-4 text-center">
             Invite Friends to Group
           </Text>
           <TextInput
-            style={tw`w-full h-10 border border-gray-300 rounded px-2 mb-4`}
+            className="w-full h-10 border border-gray-300 rounded px-2 mb-4"
             placeholder="Search friends"
             value={searchText}
             onChangeText={handleSearch}
@@ -98,7 +111,7 @@ const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
           {loading ? (
             <ActivityIndicator size="large" color="#0000ff" />
           ) : filteredFriends.length === 0 ? (
-            <Text style={tw`text-gray-600 text-center`}>No friends found.</Text>
+            <Text className="text-gray-600 text-center">No friends found.</Text>
           ) : (
             <ScrollView>
               {filteredFriends.map((friend) => (
@@ -113,9 +126,9 @@ const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
           )}
           <TouchableOpacity
             onPress={onClose}
-            style={tw`bg-red-500 px-4 py-2 rounded mt-4 self-center`}
+            className="bg-red-500 px-4 py-2 rounded mt-4 self-center"
           >
-            <Text style={tw`text-white text-sm font-semibold`}>Close</Text>
+            <Text className="text-white text-sm font-semibold">Close</Text>
           </TouchableOpacity>
         </View>
       </View>
