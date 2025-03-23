@@ -19,11 +19,13 @@ interface InviteFriendsModalProps {
   visible: boolean;
   onClose: () => void;
   group: Group;
+  navigation: any;
 }
 
 const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
   visible,
   onClose,
+  navigation,
   group,
 }) => {
   const [friends, setFriends] = useState<MongoUser[]>([]);
@@ -100,7 +102,12 @@ const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
           ) : (
             <ScrollView>
               {filteredFriends.map((friend) => (
-                <InviteUserRow key={friend._id} friend={friend} group={group} />
+                <InviteUserRow
+                  key={friend._id}
+                  friend={friend}
+                  group={group}
+                  navigation={navigation}
+                />
               ))}
             </ScrollView>
           )}

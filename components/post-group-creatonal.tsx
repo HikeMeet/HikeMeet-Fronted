@@ -8,10 +8,12 @@ interface GroupCreatedModalProps {
   visible: boolean;
   onOk: () => void;
   group: Group | null;
+  navigation: any;
 }
 
 const GroupCreatedModal: React.FC<GroupCreatedModalProps> = ({
   visible,
+  navigation,
   onOk,
   group,
 }) => {
@@ -61,6 +63,7 @@ const GroupCreatedModal: React.FC<GroupCreatedModalProps> = ({
           visible={inviteVisible}
           onClose={() => setInviteVisible(false)}
           group={group}
+          navigation={navigation}
         />
       )}
     </>

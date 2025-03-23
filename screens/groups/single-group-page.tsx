@@ -14,6 +14,7 @@ import TripRow from "../../components/trip-row";
 import MapDirectionButton from "../../components/get-direction";
 import { useAuth } from "../../contexts/auth-context";
 import HikersSwitcher from "../../components/hiker-button-list-group-combined";
+import InviteFriendsModal from "../../components/search-friend-to-invite";
 import { useFocusEffect } from "@react-navigation/native";
 import tw from "twrnc";
 
@@ -119,11 +120,10 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
           />
         )}
 
-        {/* Hikers/Pending List */}
+        {/* Hikers and Invite Friends Buttons */}
         {group.members && (
           <HikersSwitcher
-            members={group.members}
-            pending={group.pending || []}
+            group={group}
             navigation={navigation}
             isAdmin={isAdmin}
           />
@@ -262,15 +262,26 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
         </View>
 
         {/* Bottom Button to go to Group List */}
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Tabs", { screen: "Groups" })}
-          style={tw`bg-purple-500 px-4 py-3 rounded mt-6`}
-        >
-          <Text style={tw`text-white text-center font-semibold`}>
-            Back to Group List
-          </Text>
-        </TouchableOpacity>
+        {fromCreate && (
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Tabs", { screen: "Groups" })}
+            style={tw`bg-purple-500 px-4 py-3 rounded mt-6`}
+          >
+            <Text style={tw`text-white text-center font-semibold`}>
+              Back to Group List
+            </Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
+
+      {/* {showInviteModal && (
+        <InviteFriendsModal
+          visible={showInviteModal}
+          onClose={() => setShowInviteModal(false)}
+          group={group}
+          navigation={navigation}
+        />
+      )} */}
     </SafeAreaView>
   );
 };

@@ -310,8 +310,7 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
         <GroupCreatedModal
           visible={showCreatedModal}
           onOk={handleModalOk}
-          group={group}
-        />
+          group={group} navigation={navigation}        />
       )}
     </SafeAreaView>
   );
