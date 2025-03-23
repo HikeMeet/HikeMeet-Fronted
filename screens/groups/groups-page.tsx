@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,41 +8,56 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import { Group } from "../../interfaces/group-interface";
+import GroupRow from "../../components/group-row";
+import { useAuth } from "../../contexts/auth-context";
 
-interface GroupsPageProps {
-  navigation: any;
-}
-
-const GroupsPage: React.FC<GroupsPageProps> = ({ navigation }) => {
+const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
+  const [showMyGroups, setShowMyGroups] = useState<boolean>(false);
+  const { mongoId } = useAuth();
 
-  useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.EXPO_LOCAL_SERVER}/api/group/list`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch groups");
-        }
-        const data: Group[] = await response.json();
-        setGroups(data);
-      } catch (error) {
-        console.error("Error fetching groups:", error);
-      } finally {
-        setLoading(false);
+  const fetchGroups = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/group/list`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch groups");
       }
-    };
-    fetchGroups();
+      const data: Group[] = await response.json();
+      setGroups(data);
+    } catch (error) {
+      console.error("Error fetching groups:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // Filter groups by search text
-  const filteredGroups = groups.filter((group) =>
+  useFocusEffect(
+    useCallback(() => {
+      fetchGroups();
+    }, [fetchGroups])
+  );
+
+  // First, filter groups by search text.
+  let filteredGroups = groups.filter((group) =>
     group.name.toLowerCase().includes(searchText.toLowerCase())
   );
+
+  // If "My Groups" is toggled, further filter groups by created_by.
+  // Assume that the current user's mongoId is available somehow.
+  // For this example, we simply hard-code a value or you can get it via context.
+
+  if (showMyGroups) {
+    filteredGroups = filteredGroups.filter(
+      (group) => group.created_by === mongoId
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white p-4">
@@ -57,24 +72,41 @@ const GroupsPage: React.FC<GroupsPageProps> = ({ navigation }) => {
           />
         </View>
         <TouchableOpacity className="p-2 bg-gray-200 rounded-full">
-          {/* Replace with an icon if needed */}
           <Text className="text-sm">Filter</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Buttons row: Create Group and My Groups */}
+      {/* Buttons row: My Groups and Create Group */}
       <View className="flex-row justify-between mb-4">
         <TouchableOpacity
-          onPress={() => console.log("My Groups")}
-          className="bg-blue-500 px-4 py-2 rounded"
+          onPress={() => setShowMyGroups((prev) => !prev)}
+          className="bg-blue-500 px-4 py-2 rounded relative"
         >
-          <Text className="text-white font-semibold">My Groups</Text>
+          {showMyGroups && (
+            <View
+              pointerEvents="none"
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                borderWidth: 2,
+                borderColor: "#1E40AF", // blue-900 color
+                borderRadius: 8, // match the parent's rounded value
+              }}
+            />
+          )}
+          <Text className="text-white text-sm font-semibold text-center">
+            My Groups
+          </Text>
         </TouchableOpacity>
+
         <TouchableOpacity
-          onPress={() => navigation.navigate("GroupsStack")}
+          onPress={() => navigation.push("GroupsStack")}
           className="bg-green-500 px-4 py-2 rounded"
         >
-          <Text className="text-white font-semibold">Create Group</Text>
+          <Text className="text-white font-semibold">+ Create Group</Text>
         </TouchableOpacity>
       </View>
 
@@ -88,24 +120,7 @@ const GroupsPage: React.FC<GroupsPageProps> = ({ navigation }) => {
           </View>
         ) : (
           filteredGroups.map((group) => (
-            <TouchableOpacity
-              key={group._id}
-              onPress={() => console.log(group._id)}
-              className="flex-row items-center bg-gray-100 mb-4 p-4 rounded-lg"
-            >
-              <View className="flex-1">
-                <Text
-                  className="text-lg font-bold"
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  {group.name}
-                </Text>
-                <Text className="text-sm text-gray-500">
-                  Status: {group.status}
-                </Text>
-              </View>
-            </TouchableOpacity>
+            <GroupRow key={group._id} group={group} navigation={navigation} />
           ))
         )}
       </ScrollView>

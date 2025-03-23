@@ -1,3 +1,4 @@
+// TripsPage.tsx
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -5,11 +6,11 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Image,
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Trip } from "../../interfaces/trip-interface";
+import TripRow from "../../components/trip-row";
 
 interface UserTripProps {
   route: any;
@@ -30,7 +31,6 @@ const TripsPage: React.FC<UserTripProps> = ({ navigation }) => {
         if (!response.ok) {
           throw new Error("Failed to fetch trips");
         }
-
         const data: Trip[] = await response.json();
         setTrips(data);
       } catch (error) {
@@ -42,7 +42,6 @@ const TripsPage: React.FC<UserTripProps> = ({ navigation }) => {
     fetchTrips();
   }, []);
 
-  // Optionally filter trips by search text
   const filteredTrips = trips.filter((trip) =>
     trip.name.toLowerCase().includes(searchText.toLowerCase())
   );
@@ -60,7 +59,6 @@ const TripsPage: React.FC<UserTripProps> = ({ navigation }) => {
           />
         </View>
         <TouchableOpacity className="p-2 bg-gray-200 rounded-full">
-          {/* Replace with an icon if needed */}
           <Text className="text-sm">Filter</Text>
         </TouchableOpacity>
       </View>
@@ -84,43 +82,16 @@ const TripsPage: React.FC<UserTripProps> = ({ navigation }) => {
           <ActivityIndicator size="large" color="#0000ff" />
         ) : (
           filteredTrips.map((trip) => (
-            <TouchableOpacity
+            <TripRow
               key={trip._id}
+              trip={trip}
               onPress={() =>
                 navigation.navigate("TripsStack", {
                   screen: "TripPage",
-                  params: {
-                    tripId: trip._id,
-                  },
+                  params: { tripId: trip._id },
                 })
               }
-              className="flex-row items-center bg-gray-100 mb-4 p-4 rounded-lg"
-            >
-              {trip.main_image ? (
-                <Image
-                  source={{ uri: trip.main_image.url }}
-                  className="w-16 h-16 mr-4 rounded"
-                />
-              ) : (
-                <View className="w-16 h-16 bg-gray-300 mr-4 rounded" />
-              )}
-              <View className="flex-1">
-                <Text
-                  className="text-lg font-bold"
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  {trip.name}
-                </Text>
-                <Text
-                  className="text-sm text-gray-500 break-words"
-                  numberOfLines={2}
-                  ellipsizeMode="tail"
-                >
-                  {trip.location.address}
-                </Text>
-              </View>
-            </TouchableOpacity>
+            />
           ))
         )}
       </ScrollView>

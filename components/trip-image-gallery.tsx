@@ -20,6 +20,7 @@ interface ImageItem {
 
 interface TripImagesUploaderProps {
   tripId: string;
+  enabled?: boolean;
   initialImages?: ImageItem[];
   /** Callback when images are updated, if needed */
   onImagesUpdated?: (images: ImageItem[]) => void;
@@ -31,6 +32,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const TripImagesUploader: React.FC<TripImagesUploaderProps> = ({
   tripId,
   initialImages = [],
+  enabled = true,
   onImagesUpdated,
 }) => {
   const [images, setImages] = useState<ImageItem[]>(initialImages);
@@ -170,14 +172,20 @@ const TripImagesUploader: React.FC<TripImagesUploaderProps> = ({
           <ActivityIndicator size="large" color="#0000ff" />
         </View>
       ) : images.length === 0 ? (
-        <TouchableOpacity
-          onPress={pickImages}
-          className="bg-gray-300 w-40 h-40 justify-center items-center"
-        >
-          <Text className="text-gray-700 text-center">
-            Click to upload images
-          </Text>
-        </TouchableOpacity>
+        enabled ? (
+          <TouchableOpacity
+            onPress={pickImages}
+            className="bg-gray-300 w-40 h-40 justify-center items-center"
+          >
+            <Text className="text-gray-700 text-center">
+              Click to upload images
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <View className="bg-gray-300 w-40 h-40 justify-center items-center">
+            <Text className="text-gray-700 text-center">No Images</Text>
+          </View>
+        )
       ) : (
         <View className="flex-row items-center">
           <ScrollView
@@ -213,28 +221,31 @@ const TripImagesUploader: React.FC<TripImagesUploaderProps> = ({
               </TouchableOpacity>
             ))}
           </ScrollView>
-          <View className="flex-col ml-2">
-            <TouchableOpacity
-              onPress={pickImages}
-              className="bg-blue-500 w-6 h-6 rounded-full mb-2 justify-center items-center"
-            >
-              <Text className="text-white text-xl">+</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={toggleDeleteMode}
-              className="bg-yellow-500 w-6 h-6 rounded-full justify-center items-center"
-            >
-              <Text className="text-white text-xl">-</Text>
-            </TouchableOpacity>
-            {isDeleting && selectedForDeletion.length > 0 && (
+
+          {enabled && (
+            <View className="flex-col ml-2">
               <TouchableOpacity
-                onPress={handleDeleteSelectedImages}
-                className="bg-red-500 w-6 h-6 rounded-full mt-2 justify-center items-center"
+                onPress={pickImages}
+                className="bg-blue-500 w-6 h-6 rounded-full mb-2 justify-center items-center"
               >
-                <Ionicons name="trash" size={20} color="white" />
+                <Text className="text-white text-xl">+</Text>
               </TouchableOpacity>
-            )}
-          </View>
+              <TouchableOpacity
+                onPress={toggleDeleteMode}
+                className="bg-yellow-500 w-6 h-6 rounded-full justify-center items-center"
+              >
+                <Text className="text-white text-xl">-</Text>
+              </TouchableOpacity>
+              {isDeleting && selectedForDeletion.length > 0 && (
+                <TouchableOpacity
+                  onPress={handleDeleteSelectedImages}
+                  className="bg-red-500 w-6 h-6 rounded-full mt-2 justify-center items-center"
+                >
+                  <Ionicons name="trash" size={20} color="white" />
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
         </View>
       )}
 

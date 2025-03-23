@@ -12,6 +12,8 @@ import TripSelector from "../../components/trip-selector-for-group";
 import DateRangePicker from "../../components/schedual-time-group";
 import TimePickerPopup from "../../components/time-picker";
 import { useAuth } from "../../contexts/auth-context";
+import { Group } from "../../interfaces/group-interface";
+import GroupCreatedModal from "../../components/post-group-creatonal";
 
 const CreateGroupPage: React.FC<any> = ({ navigation }) => {
   // Form states
@@ -23,15 +25,18 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
   const [difficulty, setDifficulty] = useState<string>("");
   const [scheduledStart, setScheduledStart] = useState<Date | null>(null);
   const [scheduledEnd, setScheduledEnd] = useState<Date | null>(null);
-  // EmbarkedAt is stored as a string in "HH:MM" format.
   const [embarkedAt, setEmbarkedAt] = useState<string>("");
   const [showTimePicker, setShowTimePicker] = useState<boolean>(false);
   const [creating, setCreating] = useState<boolean>(false);
-  const { mongoId } = useAuth(); // current user's mongoId
+  const [group, setGroup] = useState<Group | null>(null);
+  const [showCreatedModal, setShowCreatedModal] = useState<boolean>(false);
+
+  const { mongoId } = useAuth(); // current user's data
 
   // Helper function to format date for backend (ISO string)
   const formatDateForBackend = (date: Date) => date.toISOString();
 
+  // Handler for creating group
   const handleCreateGroup = async () => {
     if (!groupName || !selectedTrip || !maxMembers) {
       Alert.alert("Missing Fields", "Please fill in all required fields.");
@@ -50,8 +55,7 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
           ? formatDateForBackend(scheduledStart)
           : null,
         scheduled_end: scheduledEnd ? formatDateForBackend(scheduledEnd) : null,
-        embarked_at: embarkedAt, // already a string in "HH:MM" format
-        // Replace with the actual logged-in user's ID
+        embarked_at: embarkedAt,
         created_by: mongoId,
       };
       const response = await fetch(
@@ -67,14 +71,25 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
         Alert.alert("Error", errorData.error || "Failed to create group.");
         return;
       }
-      Alert.alert("Success", "Group created successfully!", [
-        { text: "OK", onPress: () => navigation.goBack() },
-      ]);
+      const data = await response.json();
+      setGroup(data);
+      // Show the modal after successful creation.
+      setShowCreatedModal(true);
     } catch (error) {
       console.error("Error creating group:", error);
       Alert.alert("Error", "Something went wrong while creating the group.");
     } finally {
       setCreating(false);
+    }
+  };
+  // Handler for "Not Now" button in modal – navigate to Group Page
+  const handleModalOk = () => {
+    setShowCreatedModal(false);
+    if (group) {
+      navigation.navigate("GroupPage", {
+        groupId: group._id,
+        fromCreate: true,
+      });
     }
   };
 
@@ -146,7 +161,9 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
                 }`}
               >
                 <Text
-                  className={`${privacy === "public" ? "text-white" : "text-black"} font-semibold`}
+                  className={`${
+                    privacy === "public" ? "text-white" : "text-black"
+                  } font-semibold`}
                 >
                   Public
                 </Text>
@@ -158,7 +175,9 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
                 }`}
               >
                 <Text
-                  className={`${privacy === "private" ? "text-white" : "text-black"} font-semibold`}
+                  className={`${
+                    privacy === "private" ? "text-white" : "text-black"
+                  } font-semibold`}
                 >
                   Private
                 </Text>
@@ -178,7 +197,9 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
               }`}
             >
               <Text
-                className={`text-center font-semibold ${difficulty === "beginner" ? "text-white" : "text-black"}`}
+                className={`text-center font-semibold ${
+                  difficulty === "beginner" ? "text-white" : "text-black"
+                }`}
               >
                 Beginner
               </Text>
@@ -190,7 +211,9 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
               }`}
             >
               <Text
-                className={`text-center font-semibold ${difficulty === "intermediate" ? "text-white" : "text-black"}`}
+                className={`text-center font-semibold ${
+                  difficulty === "intermediate" ? "text-white" : "text-black"
+                }`}
               >
                 Intermediate
               </Text>
@@ -202,7 +225,9 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
               }`}
             >
               <Text
-                className={`text-center font-semibold ${difficulty === "advanced" ? "text-white" : "text-black"}`}
+                className={`text-center font-semibold ${
+                  difficulty === "advanced" ? "text-white" : "text-black"
+                }`}
               >
                 Advanced
               </Text>
@@ -214,13 +239,25 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
               }`}
             >
               <Text
-                className={`text-center font-semibold ${difficulty === "hardcore" ? "text-white" : "text-black"}`}
+                className={`text-center font-semibold ${
+                  difficulty === "hardcore" ? "text-white" : "text-black"
+                }`}
               >
                 Hardcore
               </Text>
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Invite Friends to Group Button
+        <TouchableOpacity
+          onPress={() => setShowInviteModal(true)}
+          className="bg-purple-500 px-4 py-2 rounded mt-4 self-start"
+        >
+          <Text className="text-white text-sm font-semibold">
+            Invite Friends to Group
+          </Text>
+        </TouchableOpacity> */}
 
         {/* Date Range Picker for Scheduled Start & End */}
         <View className="mb-4">
@@ -249,6 +286,7 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
             visible={showTimePicker}
             initialTime={embarkedAt}
             onConfirm={(time: string) => {
+              console.log("Selected time:", time);
               setEmbarkedAt(time);
               setShowTimePicker(false);
             }}
@@ -267,6 +305,13 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+      {/* Show modal after group creation */}
+      {showCreatedModal && (
+        <GroupCreatedModal
+          visible={showCreatedModal}
+          onOk={handleModalOk}
+          group={group} navigation={navigation}        />
+      )}
     </SafeAreaView>
   );
 };

@@ -28,7 +28,7 @@ const DeleteConfirmPopup: React.FC<ConfirmPopupProps> = ({
   navigation,
 }) => {
   const [password, setPassword] = useState("");
-  const { mongoId } = useAuth(); // Get the mongoId from useAuth
+  const { mongoId } = useAuth(); 
 
   const handleDeleteAccount = async (): Promise<boolean> => {
     try {
