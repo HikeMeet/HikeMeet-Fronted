@@ -10,8 +10,6 @@ interface InviteUserRowProps {
   group: Group;
   navigation: any;
   onRefreshGroup: any;
-
-  onAction?: (actionType: "accept" | "decline" | "remove" | "invite") => void;
 }
 
 const InviteUserRow: React.FC<InviteUserRowProps> = ({
