@@ -11,11 +11,13 @@ type StatusType = "none" | "invited" | "member" | "requested";
 interface GroupActionButtonProps {
   friend: MongoUser;
   group: Group;
+  onRefreshGroup: any;
 }
 
 const GroupActionButton: React.FC<GroupActionButtonProps> = ({
   friend,
   group,
+  onRefreshGroup,
 }) => {
   const { mongoId } = useAuth();
   const groupId = group._id;
@@ -65,6 +67,7 @@ const GroupActionButton: React.FC<GroupActionButtonProps> = ({
       }
       Alert.alert("Success", "Invitation sent!");
       setStatus("invited");
+      onRefreshGroup();
     } catch (error) {
       console.error("Error inviting friend:", error);
       Alert.alert("Error", "Failed to invite friend");
@@ -88,6 +91,7 @@ const GroupActionButton: React.FC<GroupActionButtonProps> = ({
       }
       Alert.alert("Success", "Invitation cancelled!");
       setStatus("none");
+      onRefreshGroup();
     } catch (error) {
       console.error("Error cancelling invitation:", error);
       Alert.alert("Error", "Failed to cancel invitation");
@@ -111,9 +115,12 @@ const GroupActionButton: React.FC<GroupActionButtonProps> = ({
       }
       Alert.alert("Success", "Member removed!");
       setStatus("none");
+      onRefreshGroup();
     } catch (error) {
       console.error("Error removing member:", error);
       Alert.alert("Error", "Failed to remove member");
+    } finally {
+      setShowRemoveConfirmModal(false);
     }
   };
 
@@ -137,6 +144,7 @@ const GroupActionButton: React.FC<GroupActionButtonProps> = ({
       }
       Alert.alert("Success", "Join request approved!");
       setStatus("member");
+      onRefreshGroup();
     } catch (error) {
       console.error("Error accepting join request:", error);
       Alert.alert("Error", "Failed to accept join request");
@@ -163,9 +171,12 @@ const GroupActionButton: React.FC<GroupActionButtonProps> = ({
       }
       Alert.alert("Success", "Join request declined!");
       setStatus("none");
+      onRefreshGroup();
     } catch (error) {
       console.error("Error declining join request:", error);
       Alert.alert("Error", "Failed to decline join request");
+    } finally {
+      setShowDeclineConfirmModal(false);
     }
   };
 

@@ -20,6 +20,7 @@ interface InviteFriendsModalProps {
   onClose: () => void;
   group: Group;
   navigation: any;
+  onRefreshGroup: any;
 }
 
 const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
@@ -27,6 +28,7 @@ const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
   onClose,
   navigation,
   group,
+  onRefreshGroup,
 }) => {
   const [friends, setFriends] = useState<MongoUser[]>([]);
   const [filteredFriends, setFilteredFriends] = useState<MongoUser[]>([]);
@@ -120,6 +122,7 @@ const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
                   friend={friend}
                   group={group}
                   navigation={navigation}
+                  onRefreshGroup={onRefreshGroup}
                 />
               ))}
             </ScrollView>

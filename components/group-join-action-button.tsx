@@ -130,6 +130,7 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
       Alert.alert("Error", "Failed to leave group");
     } finally {
       setLoading(false);
+      setShowLeaveConfirmModal(false);
     }
   };
 
