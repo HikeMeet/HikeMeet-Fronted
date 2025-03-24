@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Modal,
   View,
@@ -18,6 +18,7 @@ import { useAuth } from "../contexts/auth-context";
 import UserRow from "./user-row-search"; // Regular user row
 import InviteUserRow from "./user-row-group-invite";
 import tw from "tailwind-react-native-classnames";
+import { useFocusEffect } from "@react-navigation/native";
 
 interface MembersModalProps {
   visible: boolean;
@@ -46,6 +47,8 @@ const MembersModal: React.FC<MembersModalProps> = ({
   const [pendingData, setPendingData] = useState<any[]>([]);
   const [searchText, setSearchText] = useState<string>("");
   const { mongoId } = useAuth();
+
+
 
   // Generic function to fetch full user data given an array of IDs.
   const fetchUsersData = async (ids: string[]): Promise<any[]> => {

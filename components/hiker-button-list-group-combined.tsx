@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, TouchableOpacity, Text } from "react-native";
 import { Group } from "../interfaces/group-interface";
 import InviteFriendsModal from "./search-friend-to-invite";
 import MembersModal from "./membes-list-in-group-modal";
+import { useFocusEffect } from "@react-navigation/native";
 
 interface HikersSwitcherProps {
   navigation: any;
@@ -18,8 +19,12 @@ const HikersSwitcher: React.FC<HikersSwitcherProps> = ({
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showMembersModal, setShowMembersModal] = useState(false);
 
-  // Generic function to fetch user data given an array of IDs.
-
+  useFocusEffect(
+    useCallback(() => {
+      setShowMembersModal(false);
+      setShowInviteModal(false);
+    }, [])
+  );
   return (
     <View>
       {/* Main "Hikers" Toggle Button */}
