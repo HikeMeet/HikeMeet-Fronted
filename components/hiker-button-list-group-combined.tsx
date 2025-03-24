@@ -9,14 +9,12 @@ interface HikersSwitcherProps {
   navigation: any;
   isAdmin: boolean;
   group: Group;
-  onRefreshGroup: any;
 }
 
 const HikersSwitcher: React.FC<HikersSwitcherProps> = ({
   group,
   navigation,
   isAdmin,
-  onRefreshGroup,
 }) => {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showMembersModal, setShowMembersModal] = useState(false);
@@ -57,7 +55,6 @@ const HikersSwitcher: React.FC<HikersSwitcherProps> = ({
           onClose={() => setShowMembersModal(false)}
           isAdmin={isAdmin}
           navigation={navigation}
-          onRefreshGroup={onRefreshGroup}
           groupId={group._id}
         />
       )}
@@ -66,7 +63,6 @@ const HikersSwitcher: React.FC<HikersSwitcherProps> = ({
           visible={showInviteModal}
           onClose={() => setShowInviteModal(false)}
           navigation={navigation}
-          onRefreshGroup={onRefreshGroup}
           groupId={group._id}
         />
       )}

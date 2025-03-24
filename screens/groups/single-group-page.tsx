@@ -140,8 +140,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             group={group}
             navigation={navigation}
             isAdmin={isAdmin}
-            onRefreshGroup={() => console.log("nothing")}
-            // onRefreshGroup={() => refreshGroup()}
           />
         )}
 

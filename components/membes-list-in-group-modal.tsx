@@ -26,7 +26,6 @@ interface MembersModalProps {
   onClose: () => void;
   navigation: any;
   groupId: string;
-  onRefreshGroup: any;
 }
 
 const MembersModal: React.FC<MembersModalProps> = ({
@@ -35,7 +34,6 @@ const MembersModal: React.FC<MembersModalProps> = ({
   onClose,
   groupId,
   navigation,
-  onRefreshGroup,
 }) => {
   const [selectedTab, setSelectedTab] = useState<"members" | "pending">(
     "members"
@@ -228,7 +226,6 @@ const MembersModal: React.FC<MembersModalProps> = ({
                     friend={user}
                     group={group!}
                     navigation={navigation}
-                    onRefreshGroup={onRefreshGroup}
                   />
                 ) : (
                   <UserRow

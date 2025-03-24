@@ -9,13 +9,12 @@ interface InviteUserRowProps {
   friend: MongoUser;
   group: Group;
   navigation: any;
-  onRefreshGroup: any;
 }
 
 const InviteUserRow: React.FC<InviteUserRowProps> = ({
   navigation,
   friend,
-  onRefreshGroup,
+
   group,
 }) => {
   const { mongoId } = useAuth(); // current user's mongoId
@@ -35,11 +34,7 @@ const InviteUserRow: React.FC<InviteUserRowProps> = ({
         </Text>
       </View>
       {mongoId !== friend._id && (
-        <GroupActionButton
-          friend={friend}
-          group={group}
-          onRefreshGroup={onRefreshGroup}
-        />
+        <GroupActionButton friend={friend} group={group} />
       )}
     </View>
   );
