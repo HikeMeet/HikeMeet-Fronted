@@ -3,18 +3,23 @@ import { View, Text, Image } from "react-native";
 import { MongoUser } from "../interfaces/user-interface";
 import { Group } from "../interfaces/group-interface";
 import GroupActionButton from "./group-membership-action-button";
+import { useAuth } from "../contexts/auth-context";
 
 interface InviteUserRowProps {
   friend: MongoUser;
   group: Group;
   navigation: any;
+  onRefreshGroup: any;
 }
 
 const InviteUserRow: React.FC<InviteUserRowProps> = ({
   navigation,
   friend,
+  onRefreshGroup,
   group,
 }) => {
+  const { mongoId } = useAuth(); // current user's mongoId
+
   return (
     <View className="flex-row items-center justify-between mb-4 p-2 border border-gray-200 rounded">
       <Image
@@ -29,7 +34,13 @@ const InviteUserRow: React.FC<InviteUserRowProps> = ({
           {friend.first_name} {friend.last_name}
         </Text>
       </View>
-      <GroupActionButton friend={friend} group={group} />
+      {mongoId !== friend._id && (
+        <GroupActionButton
+          friend={friend}
+          group={group}
+          onRefreshGroup={onRefreshGroup}
+        />
+      )}
     </View>
   );
 };

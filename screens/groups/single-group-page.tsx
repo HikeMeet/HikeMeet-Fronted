@@ -53,26 +53,30 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
     }, [fromCreate, navigation])
   );
 
-  useEffect(() => {
-    const fetchGroup = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(
-          `${process.env.EXPO_LOCAL_SERVER}/api/group/${groupId}?getTrip=true`
-        );
-        if (!response.ok) throw new Error("Failed to fetch group");
-        const data: GroupTrip = await response.json();
-        setGroup(data.group);
-        setTrip(data.trip);
-      } catch (error) {
-        console.error("Error fetching group:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchGroup();
-  }, [groupId]);
+  const fetchGroup = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/group/${groupId}?getTrip=true`
+      );
+      if (!response.ok) throw new Error("Failed to fetch group");
+      const data: GroupTrip = await response.json();
+      setGroup(data.group);
+      setTrip(data.trip);
+    } catch (error) {
+      console.error("Error fetching group:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
+  useEffect(() => {
+    fetchGroup();
+  }, [fetchGroup]);
+
+  const refreshGroup = useCallback(() => {
+    fetchGroup();
+  }, [fetchGroup]);
   if (loading) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center">
@@ -139,6 +143,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             group={group}
             navigation={navigation}
             isAdmin={isAdmin}
+            onRefreshGroup={() => refreshGroup()}
           />
         )}
 

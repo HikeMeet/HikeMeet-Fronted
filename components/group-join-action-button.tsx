@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
-import tw from "twrnc";
-import { useNavigation } from "@react-navigation/native";
 import { Group } from "../interfaces/group-interface";
 import { useAuth } from "../contexts/auth-context";
+import ConfirmationModal from "./confirmation-modal";
 
 type JoinStatus = "none" | "member" | "requested" | "invited";
 
@@ -20,9 +19,12 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [joinStatus, setJoinStatus] = useState<JoinStatus>("none");
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [showDeclineConfirmModal, setShowDeclineConfirmModal] = useState(false);
+  const [showLeaveConfirmModal, setShowLeaveConfirmModal] = useState(false);
   const { mongoId } = useAuth();
 
-  // Compute initial join status (simplified example)
+  // Compute initial join status (simplified)
   useEffect(() => {
     if (group.members.some((m) => m.user === mongoId)) {
       setJoinStatus("member");
@@ -45,47 +47,32 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
     }
   }, [group, mongoId]);
 
-  // Handler for deleting the group (if creator)
-  const handleDeleteGroup = async () => {
-    Alert.alert(
-      "Confirm Deletion",
-      "Are you sure you want to delete this group?",
-      [
-        { text: "Cancel", style: "cancel" },
+  // Actual deletion function that calls the endpoint
+  const performDeleteGroup = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/group/${group._id}/delete`,
         {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            setLoading(true);
-            try {
-              const response = await fetch(
-                `${process.env.EXPO_LOCAL_SERVER}/api/group/${group._id}/delete`,
-                {
-                  method: "DELETE",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ deleted_by: mongoId }),
-                }
-              );
-              if (!response.ok) {
-                const errorData = await response.json();
-                Alert.alert(
-                  "Error",
-                  errorData.error || "Failed to delete group"
-                );
-                return;
-              }
-              Alert.alert("Success", "Group deleted successfully");
-              navigation.navigate("Tabs", { screen: "Groups" });
-            } catch (error) {
-              console.error("Error deleting group:", error);
-              Alert.alert("Error", "Failed to delete group");
-            } finally {
-              setLoading(false);
-            }
-          },
-        },
-      ]
-    );
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ deleted_by: mongoId }),
+        }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        Alert.alert("Error", errorData.error || "Failed to delete group");
+        return;
+      }
+      setJoinStatus("none");
+      navigation.navigate("Tabs", { screen: "Groups" });
+    } catch (error) {
+      console.error("Error deleting group:", error);
+      Alert.alert("Error", "Failed to delete group");
+    } finally {
+      setLoading(false);
+      setShowDeleteConfirmModal(false);
+    }
   };
 
   // Handler for joining the group (for non-creators)
@@ -143,20 +130,74 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
       Alert.alert("Error", "Failed to leave group");
     } finally {
       setLoading(false);
+      setShowLeaveConfirmModal(false);
     }
   };
 
-  // Render the appropriate button based on status
+  // Handler for accepting an invitation
+  const handleAcceptInvite = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/group/${group._id}/accept-invite/${mongoId}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        Alert.alert("Error", errorData.error || "Failed to accept invite");
+        return;
+      }
+      Alert.alert("Success", "Invitation accepted!");
+      setJoinStatus("member");
+    } catch (error) {
+      console.error("Error accepting invite:", error);
+      Alert.alert("Error", "Failed to accept invite");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handler for declining an invitation (with confirmation)
+  const handleDeclineInvite = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/group/${group._id}/cancel-invite/${mongoId}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cancelled_by: mongoId }),
+        }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        Alert.alert("Error", errorData.error || "Failed to decline invite");
+        return;
+      }
+      Alert.alert("Success", "Invitation declined.");
+      setJoinStatus("none");
+    } catch (error) {
+      console.error("Error declining invite:", error);
+      Alert.alert("Error", "Failed to decline invite");
+    } finally {
+      setLoading(false);
+      setShowDeclineConfirmModal(false);
+    }
+  };
+
+  // Render UI based on joinStatus.
   const renderButton = () => {
-    // If current user is the group creator
+    // If current user is the group creator, render delete button (only if on group page)
     if (group.created_by === mongoId) {
-      // If on the group page, don't show any button
       if (!isInGroupPage) {
         return null;
       } else {
         return (
           <TouchableOpacity
-            onPress={handleDeleteGroup}
+            onPress={() => setShowDeleteConfirmModal(true)}
             className="bg-red-500 px-4 py-2 rounded"
             disabled={loading}
           >
@@ -168,7 +209,6 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
       }
     }
 
-    // For non-creators, render join/leave logic.
     if (loading) {
       return <Text className="text-sm text-gray-600">Please wait...</Text>;
     }
@@ -196,7 +236,7 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
       case "member":
         return (
           <TouchableOpacity
-            onPress={handleLeaveGroup}
+            onPress={() => setShowLeaveConfirmModal(true)}
             className="bg-red-500 px-4 py-2 rounded"
           >
             <Text className="text-white text-sm font-semibold">
@@ -207,7 +247,7 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
       case "requested":
         return (
           <TouchableOpacity
-            onPress={handleJoinGroup} // In a real app, you might have a cancel request endpoint here.
+            onPress={handleJoinGroup} // Ideally, use a cancel request endpoint
             className="bg-orange-500 px-4 py-2 rounded"
           >
             <Text className="text-white text-sm font-semibold">
@@ -219,13 +259,13 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
         return (
           <View className="flex-row space-x-2">
             <TouchableOpacity
-              onPress={handleJoinGroup} // Accept invite endpoint
+              onPress={handleAcceptInvite}
               className="bg-green-500 px-4 py-2 rounded"
             >
               <Text className="text-white text-sm font-semibold">Accept</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={handleJoinGroup} // Decline invite endpoint (for demo, using same handler)
+              onPress={() => setShowDeclineConfirmModal(true)}
               className="bg-red-500 px-4 py-2 rounded"
             >
               <Text className="text-white text-sm font-semibold">Decline</Text>
@@ -237,7 +277,35 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
     }
   };
 
-  return <View>{renderButton()}</View>;
+  return (
+    <View>
+      {renderButton()}
+      {showDeleteConfirmModal && (
+        <ConfirmationModal
+          visible={showDeleteConfirmModal}
+          message="Are you sure you want to delete this group?"
+          onConfirm={performDeleteGroup}
+          onCancel={() => setShowDeleteConfirmModal(false)}
+        />
+      )}
+      {showDeclineConfirmModal && (
+        <ConfirmationModal
+          visible={showDeclineConfirmModal}
+          message="Are you sure you want to decline the invitation?"
+          onConfirm={handleDeclineInvite}
+          onCancel={() => setShowDeclineConfirmModal(false)}
+        />
+      )}
+      {showLeaveConfirmModal && (
+        <ConfirmationModal
+          visible={showLeaveConfirmModal}
+          message="Are you sure you want to leave the group?"
+          onConfirm={handleLeaveGroup}
+          onCancel={() => setShowLeaveConfirmModal(false)}
+        />
+      )}
+    </View>
+  );
 };
 
 export default JoinGroupActionButton;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Modal,
   View,
@@ -18,6 +18,8 @@ import { useAuth } from "../contexts/auth-context";
 import UserRow from "./user-row-search"; // Regular user row
 import InviteUserRow from "./user-row-group-invite";
 import tw from "tailwind-react-native-classnames";
+import { useFocusEffect } from "@react-navigation/native";
+import { updateUserStatusUnified } from "./updating-localy-status-invite-for-admin";
 
 interface MembersModalProps {
   visible: boolean;
@@ -27,6 +29,7 @@ interface MembersModalProps {
   pending: GroupPending[];
   group: Group;
   navigation: any;
+  onRefreshGroup: any;
 }
 
 const MembersModal: React.FC<MembersModalProps> = ({
@@ -37,6 +40,7 @@ const MembersModal: React.FC<MembersModalProps> = ({
   pending,
   group,
   navigation,
+  onRefreshGroup,
 }) => {
   const [selectedTab, setSelectedTab] = useState<"members" | "pending">(
     "members"
@@ -45,7 +49,14 @@ const MembersModal: React.FC<MembersModalProps> = ({
   const [membersData, setMembersData] = useState<any[]>([]);
   const [pendingData, setPendingData] = useState<any[]>([]);
   const [searchText, setSearchText] = useState<string>("");
-  const { mongoId } = useAuth();
+
+  useFocusEffect(
+    useCallback(() => {
+      // Reset loading when returning so buttons can be pressed again.
+      setLoading(false);
+      // Optionally, recalculate joinStatus here if needed.
+    }, [])
+  );
 
   // Generic function to fetch full user data given an array of IDs.
   const fetchUsersData = async (ids: string[]): Promise<any[]> => {
@@ -61,6 +72,8 @@ const MembersModal: React.FC<MembersModalProps> = ({
       throw error;
     }
   };
+
+  
 
   // Load members data (merging additional fields from GroupMember)
   const loadMembersData = async () => {
@@ -216,6 +229,8 @@ const MembersModal: React.FC<MembersModalProps> = ({
                     friend={user}
                     group={group}
                     navigation={navigation}
+                    onRefreshGroup={onRefreshGroup}
+                 
                   />
                 ) : (
                   <UserRow

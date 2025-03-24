@@ -1,25 +1,32 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, TouchableOpacity, Text } from "react-native";
 import { Group } from "../interfaces/group-interface";
-import InviteFriendsModal from "./search-friend-to-invite";
+import InviteFriendsModal from "./invite-list-in-group-modal";
 import MembersModal from "./membes-list-in-group-modal";
+import { useFocusEffect } from "@react-navigation/native";
 
 interface HikersSwitcherProps {
   navigation: any;
   isAdmin: boolean;
   group: Group;
+  onRefreshGroup: any;
 }
 
 const HikersSwitcher: React.FC<HikersSwitcherProps> = ({
   group,
   navigation,
   isAdmin,
+  onRefreshGroup,
 }) => {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showMembersModal, setShowMembersModal] = useState(false);
 
-  // Generic function to fetch user data given an array of IDs.
-
+  useFocusEffect(
+    useCallback(() => {
+      setShowMembersModal(false);
+      setShowInviteModal(false);
+    }, [])
+  );
   return (
     <View>
       {/* Main "Hikers" Toggle Button */}
@@ -53,6 +60,7 @@ const HikersSwitcher: React.FC<HikersSwitcherProps> = ({
           group={group}
           isAdmin={isAdmin}
           navigation={navigation}
+          onRefreshGroup={onRefreshGroup}
         />
       )}
       {showInviteModal && (
@@ -61,10 +69,11 @@ const HikersSwitcher: React.FC<HikersSwitcherProps> = ({
           onClose={() => setShowInviteModal(false)}
           group={group}
           navigation={navigation}
+          onRefreshGroup={onRefreshGroup}
         />
       )}
     </View>
   );
 };
 
-export default HikersSwitcher;
+export default React.memo(HikersSwitcher);
