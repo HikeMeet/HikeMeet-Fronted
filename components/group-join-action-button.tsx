@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
-import tw from "twrnc";
 import { Group } from "../interfaces/group-interface";
-import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../contexts/auth-context";
 import ConfirmationModal from "./confirmation-modal";
 
@@ -22,6 +20,8 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
   const [loading, setLoading] = useState(false);
   const [joinStatus, setJoinStatus] = useState<JoinStatus>("none");
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [showDeclineConfirmModal, setShowDeclineConfirmModal] = useState(false);
+  const [showLeaveConfirmModal, setShowLeaveConfirmModal] = useState(false);
   const { mongoId } = useAuth();
 
   // Compute initial join status (simplified)
@@ -47,7 +47,7 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
     }
   }, [group, mongoId]);
 
-  // Delete group handler (for creator)
+  // Actual deletion function that calls the endpoint
   const performDeleteGroup = async () => {
     setLoading(true);
     try {
@@ -159,7 +159,7 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
     }
   };
 
-  // Handler for declining an invitation
+  // Handler for declining an invitation (with confirmation)
   const handleDeclineInvite = async () => {
     setLoading(true);
     try {
@@ -183,12 +183,13 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
       Alert.alert("Error", "Failed to decline invite");
     } finally {
       setLoading(false);
+      setShowDeclineConfirmModal(false);
     }
   };
 
   // Render UI based on joinStatus.
   const renderButton = () => {
-    // If current user is the group creator, render delete button (only on group page)
+    // If current user is the group creator, render delete button (only if on group page)
     if (group.created_by === mongoId) {
       if (!isInGroupPage) {
         return null;
@@ -234,7 +235,7 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
       case "member":
         return (
           <TouchableOpacity
-            onPress={handleLeaveGroup}
+            onPress={() => setShowLeaveConfirmModal(true)}
             className="bg-red-500 px-4 py-2 rounded"
           >
             <Text className="text-white text-sm font-semibold">
@@ -263,7 +264,7 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
               <Text className="text-white text-sm font-semibold">Accept</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={handleDeclineInvite}
+              onPress={() => setShowDeclineConfirmModal(true)}
               className="bg-red-500 px-4 py-2 rounded"
             >
               <Text className="text-white text-sm font-semibold">Decline</Text>
@@ -284,6 +285,22 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
           message="Are you sure you want to delete this group?"
           onConfirm={performDeleteGroup}
           onCancel={() => setShowDeleteConfirmModal(false)}
+        />
+      )}
+      {showDeclineConfirmModal && (
+        <ConfirmationModal
+          visible={showDeclineConfirmModal}
+          message="Are you sure you want to decline the invitation?"
+          onConfirm={handleDeclineInvite}
+          onCancel={() => setShowDeclineConfirmModal(false)}
+        />
+      )}
+      {showLeaveConfirmModal && (
+        <ConfirmationModal
+          visible={showLeaveConfirmModal}
+          message="Are you sure you want to leave the group?"
+          onConfirm={handleLeaveGroup}
+          onCancel={() => setShowLeaveConfirmModal(false)}
         />
       )}
     </View>
