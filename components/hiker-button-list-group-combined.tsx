@@ -55,21 +55,19 @@ const HikersSwitcher: React.FC<HikersSwitcherProps> = ({
         <MembersModal
           visible={showMembersModal}
           onClose={() => setShowMembersModal(false)}
-          members={group.members}
-          pending={group.pending || []}
-          group={group}
           isAdmin={isAdmin}
           navigation={navigation}
           onRefreshGroup={onRefreshGroup}
+          groupId={group._id}
         />
       )}
       {showInviteModal && (
         <InviteFriendsModal
           visible={showInviteModal}
           onClose={() => setShowInviteModal(false)}
-          group={group}
           navigation={navigation}
           onRefreshGroup={onRefreshGroup}
+          groupId={group._id}
         />
       )}
     </View>

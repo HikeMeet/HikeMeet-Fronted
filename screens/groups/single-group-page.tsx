@@ -17,6 +17,7 @@ import HikersSwitcher from "../../components/hiker-button-list-group-combined";
 import { useFocusEffect } from "@react-navigation/native";
 import tw from "twrnc";
 import JoinGroupActionButton from "../../components/group-join-action-button";
+import { fetchGroupDetails } from "../../components/requests/fetch-group-and-users-data";
 
 interface SingleGroupProps {
   navigation: any;
@@ -56,19 +57,15 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
   const fetchGroup = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/group/${groupId}?getTrip=true`
-      );
-      if (!response.ok) throw new Error("Failed to fetch group");
-      const data: GroupTrip = await response.json();
+      const data = await fetchGroupDetails(groupId, true);
       setGroup(data.group);
-      setTrip(data.trip);
+      setTrip(data.trip!);
     } catch (error) {
       console.error("Error fetching group:", error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [groupId]);
 
   useEffect(() => {
     fetchGroup();
@@ -143,7 +140,8 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             group={group}
             navigation={navigation}
             isAdmin={isAdmin}
-            onRefreshGroup={() => refreshGroup()}
+            onRefreshGroup={() => console.log("nothing")}
+            // onRefreshGroup={() => refreshGroup()}
           />
         )}
 

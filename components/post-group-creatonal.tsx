@@ -62,8 +62,9 @@ const GroupCreatedModal: React.FC<GroupCreatedModalProps> = ({
         <InviteFriendsModal
           visible={inviteVisible}
           onClose={() => setInviteVisible(false)}
-          group={group}
+          groupId={group._id}
           navigation={navigation}
+          onRefreshGroup={undefined}
         />
       )}
     </>
