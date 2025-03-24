@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Modal,
   View,
@@ -14,33 +14,51 @@ import { MongoUser } from "../interfaces/user-interface";
 import { useAuth } from "../contexts/auth-context";
 import { Group } from "../interfaces/group-interface";
 import InviteUserRow from "./user-row-group-invite";
+import { fetchGroupDetails } from "./requests/fetch-group-and-users-data";
 
 interface InviteFriendsModalProps {
   visible: boolean;
   onClose: () => void;
-  group: Group;
   navigation: any;
-  onRefreshGroup: any;
+
+  groupId: any;
 }
 
 const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
   visible,
   onClose,
   navigation,
-  group,
-  onRefreshGroup,
+  groupId,
 }) => {
   const [friends, setFriends] = useState<MongoUser[]>([]);
   const [filteredFriends, setFilteredFriends] = useState<MongoUser[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
+  const [group, setGroup] = useState<Group | null>(null);
   const { mongoId } = useAuth();
 
   useEffect(() => {
-    if (visible) {
+    if (visible && group) {
       fetchFriends();
     }
-  }, [visible]);
+  }, [visible, group]);
+
+  const fetchGroup = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await fetchGroupDetails(groupId, false);
+      console.log("::::::", data.group);
+      setGroup(data.group);
+    } catch (error) {
+      console.error("Error fetching group:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchGroup();
+  }, [fetchGroup]);
 
   const fetchFriends = async () => {
     setLoading(true);
@@ -55,19 +73,20 @@ const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
       const friendsArray: MongoUser[] = Array.isArray(data.friends)
         ? data.friends
         : [];
-
-      // Filter out users that are already in group.members or group.pending
-      const invitableFriends = friendsArray.filter((friend) => {
-        const isMember = group.members.some(
-          (member) => member.user === friend._id
-        );
-        const isPending = group.pending.some(
-          (pending) => pending.user === friend._id
-        );
-        return !isMember && !isPending;
-      });
-      setFriends(invitableFriends);
-      setFilteredFriends(invitableFriends);
+      if (group) {
+        // Filter out users that are already in group.members or group.pending
+        const invitableFriends = friendsArray.filter((friend) => {
+          const isMember = group.members.some(
+            (member) => member.user === friend._id
+          );
+          const isPending = group.pending.some(
+            (pending) => pending.user === friend._id
+          );
+          return !isMember && !isPending;
+        });
+        setFriends(invitableFriends);
+        setFilteredFriends(invitableFriends);
+      }
     } catch (error) {
       console.error("Error fetching friends:", error);
       Alert.alert("Error", "Failed to load friend list.");
@@ -120,9 +139,8 @@ const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
                 <InviteUserRow
                   key={friend._id}
                   friend={friend}
-                  group={group}
+                  group={group!}
                   navigation={navigation}
-                  onRefreshGroup={onRefreshGroup}
                 />
               ))}
             </ScrollView>

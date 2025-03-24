@@ -55,10 +55,11 @@ const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   if (showMyGroups) {
     filteredGroups = filteredGroups.filter(
-      (group) => group.created_by === mongoId
+      (group) =>
+        group.created_by === mongoId ||
+        group.members.some((member) => member.user === mongoId)
     );
   }
-
   return (
     <SafeAreaView className="flex-1 bg-white p-4">
       {/* Top row: Search and Filter */}

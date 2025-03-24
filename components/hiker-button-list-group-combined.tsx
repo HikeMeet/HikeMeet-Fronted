@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useState, useCallback } from "react";
 import { View, TouchableOpacity, Text } from "react-native";
 import { Group } from "../interfaces/group-interface";
 import InviteFriendsModal from "./invite-list-in-group-modal";
@@ -9,14 +9,12 @@ interface HikersSwitcherProps {
   navigation: any;
   isAdmin: boolean;
   group: Group;
-  onRefreshGroup: any;
 }
 
 const HikersSwitcher: React.FC<HikersSwitcherProps> = ({
   group,
   navigation,
   isAdmin,
-  onRefreshGroup,
 }) => {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showMembersModal, setShowMembersModal] = useState(false);
@@ -27,9 +25,14 @@ const HikersSwitcher: React.FC<HikersSwitcherProps> = ({
       setShowInviteModal(false);
     }, [])
   );
+
+  // Calculate if the group is full.
+  const isFull =
+    group.members.length + group.pending.length >= group.max_members;
+
   return (
     <View>
-      {/* Main "Hikers" Toggle Button */}
+      {/* Main "Hikers" Toggle Buttons */}
       <View className="flex-row items-center mb-4">
         <TouchableOpacity
           onPress={() => setShowMembersModal(true)}
@@ -41,11 +44,18 @@ const HikersSwitcher: React.FC<HikersSwitcherProps> = ({
         </TouchableOpacity>
         {isAdmin && (
           <TouchableOpacity
-            onPress={() => setShowInviteModal(true)}
-            className="flex-1 bg-purple-500 px-4 py-2 rounded mt-4 mx-1"
+            onPress={() => {
+              if (!isFull) {
+                setShowInviteModal(true);
+              }
+            }}
+            disabled={isFull}
+            className={`flex-1 px-4 py-2 rounded mt-4 mx-1 ${
+              isFull ? "bg-gray-500" : "bg-purple-500"
+            }`}
           >
             <Text className="text-white text-sm font-semibold text-center">
-              Invite Friends
+              {isFull ? "Group is full" : "Invite Friends"}
             </Text>
           </TouchableOpacity>
         )}
@@ -55,21 +65,17 @@ const HikersSwitcher: React.FC<HikersSwitcherProps> = ({
         <MembersModal
           visible={showMembersModal}
           onClose={() => setShowMembersModal(false)}
-          members={group.members}
-          pending={group.pending || []}
-          group={group}
           isAdmin={isAdmin}
           navigation={navigation}
-          onRefreshGroup={onRefreshGroup}
+          groupId={group._id}
         />
       )}
       {showInviteModal && (
         <InviteFriendsModal
           visible={showInviteModal}
           onClose={() => setShowInviteModal(false)}
-          group={group}
           navigation={navigation}
-          onRefreshGroup={onRefreshGroup}
+          groupId={group._id}
         />
       )}
     </View>

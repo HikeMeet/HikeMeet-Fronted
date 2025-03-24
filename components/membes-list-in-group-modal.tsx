@@ -9,38 +9,31 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import {
-  Group,
-  GroupMember,
-  GroupPending,
-} from "../interfaces/group-interface";
-import { useAuth } from "../contexts/auth-context";
+import tw from "tailwind-react-native-classnames";
+import { Group } from "../interfaces/group-interface";
 import UserRow from "./user-row-search"; // Regular user row
 import InviteUserRow from "./user-row-group-invite";
-import tw from "tailwind-react-native-classnames";
 import { useFocusEffect } from "@react-navigation/native";
-import { updateUserStatusUnified } from "./updating-localy-status-invite-for-admin";
+import {
+  fetchGroupDetails,
+  fetchUsersData,
+} from "./requests/fetch-group-and-users-data";
+import { MongoUser } from "../interfaces/user-interface";
 
 interface MembersModalProps {
   visible: boolean;
   isAdmin: boolean;
   onClose: () => void;
-  members: GroupMember[];
-  pending: GroupPending[];
-  group: Group;
   navigation: any;
-  onRefreshGroup: any;
+  groupId: string;
 }
 
 const MembersModal: React.FC<MembersModalProps> = ({
   visible,
   isAdmin,
   onClose,
-  members,
-  pending,
-  group,
+  groupId,
   navigation,
-  onRefreshGroup,
 }) => {
   const [selectedTab, setSelectedTab] = useState<"members" | "pending">(
     "members"
@@ -48,48 +41,53 @@ const MembersModal: React.FC<MembersModalProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [membersData, setMembersData] = useState<any[]>([]);
   const [pendingData, setPendingData] = useState<any[]>([]);
+  const [members, setMembers] = useState<MongoUser[]>([]);
+  const [pending, setPending] = useState<MongoUser[]>([]);
   const [searchText, setSearchText] = useState<string>("");
+  const [group, setGroup] = useState<Group | null>(null);
 
   useFocusEffect(
     useCallback(() => {
-      // Reset loading when returning so buttons can be pressed again.
       setLoading(false);
-      // Optionally, recalculate joinStatus here if needed.
     }, [])
   );
 
-  // Generic function to fetch full user data given an array of IDs.
-  const fetchUsersData = async (ids: string[]): Promise<any[]> => {
+  const fetchGroup = useCallback(async () => {
+    setLoading(true);
     try {
-      const idsString = ids.join(",");
-      const res = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/user/list-by-ids?ids=${idsString}`
-      );
-      if (!res.ok) throw new Error("Failed to fetch users");
-      return await res.json();
+      const data = await fetchGroupDetails(groupId, false);
+      console.log("::::::", data.group);
+      setGroup(data.group);
+      // Optionally update members and pending lists from the group:
+      setMembersData(data.group.members);
+      setPendingData(data.group.pending);
     } catch (error) {
-      console.error("Error fetching users data:", error);
-      throw error;
+      console.error("Error fetching group:", error);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [groupId]);
 
-  
+  useEffect(() => {
+    fetchGroup();
+  }, [fetchGroup]);
 
   // Load members data (merging additional fields from GroupMember)
   const loadMembersData = async () => {
-    if (members.length === 0) {
-      setMembersData([]);
+    if (!group || group.members.length === 0) {
+      setMembers([]);
       return;
     }
     setLoading(true);
     try {
-      const ids = members.map((m) => m.user);
+      const ids = group.members.map((m) => m.user);
       const users = await fetchUsersData(ids);
+      console.log("::::ss::::", users);
       const merged = users.map((user: any) => {
-        const info = members.find((m) => m.user === user._id);
+        const info = group.members.find((m) => m.user === user._id);
         return { ...user, role: info?.role, joined_at: info?.joined_at };
       });
-      setMembersData(merged);
+      setMembers(merged);
     } catch (error) {
       Alert.alert("Error", "Failed to load members");
     } finally {
@@ -99,16 +97,16 @@ const MembersModal: React.FC<MembersModalProps> = ({
 
   // Load pending data (merging additional fields from GroupPending)
   const loadPendingData = async () => {
-    if (pending.length === 0) {
-      setPendingData([]);
+    if (!group || group.pending.length === 0) {
+      setPending([]);
       return;
     }
     setLoading(true);
     try {
-      const ids = pending.map((p) => p.user);
+      const ids = group.pending.map((p) => p.user);
       const users = await fetchUsersData(ids);
       const merged = users.map((user: any) => {
-        const info = pending.find((p) => p.user === user._id);
+        const info = group.pending.find((p) => p.user === user._id);
         return {
           ...user,
           origin: info?.origin,
@@ -116,7 +114,7 @@ const MembersModal: React.FC<MembersModalProps> = ({
           created_at: info?.created_at,
         };
       });
-      setPendingData(merged);
+      setPending(merged);
     } catch (error) {
       Alert.alert("Error", "Failed to load pending invites");
     } finally {
@@ -124,34 +122,33 @@ const MembersModal: React.FC<MembersModalProps> = ({
     }
   };
 
-  // When modal opens, load members data and reset search.
+  // When modal opens and group is loaded, load members data and reset search.
   useEffect(() => {
-    if (visible) {
+    if (visible && group) {
       setSearchText("");
       if (!isAdmin) setSelectedTab("members");
-      if (members.length > 0) {
+      if (group.members.length > 0) {
         loadMembersData();
       } else {
         setMembersData([]);
       }
     }
-  }, [visible, isAdmin]);
+  }, [visible, isAdmin, group]);
 
   // Handle switching tabs (only available for admin users).
   const switchTab = (tab: "members" | "pending") => {
     setSelectedTab(tab);
-    if (tab === "members" && membersData.length === 0) {
+    if (tab === "members") {
       loadMembersData();
     }
-    if (tab === "pending" && pendingData.length === 0) {
+    if (tab === "pending") {
       loadPendingData();
     }
   };
 
   // Filter the data based on searchText.
   const filteredData = () => {
-    const data =
-      isAdmin && selectedTab === "pending" ? pendingData : membersData;
+    const data = isAdmin && selectedTab === "pending" ? pending : members;
     if (!searchText) return data;
     return data.filter((user) => {
       const fullName =
@@ -203,7 +200,7 @@ const MembersModal: React.FC<MembersModalProps> = ({
                 }`}
               >
                 <Text className="text-white text-sm font-semibold">
-                  Pending ({pending.length})
+                  Pending ({group ? group.pending.length : 0})
                 </Text>
               </TouchableOpacity>
             </View>
@@ -227,10 +224,8 @@ const MembersModal: React.FC<MembersModalProps> = ({
                   <InviteUserRow
                     key={user._id || index}
                     friend={user}
-                    group={group}
+                    group={group!}
                     navigation={navigation}
-                    onRefreshGroup={onRefreshGroup}
-                 
                   />
                 ) : (
                   <UserRow
