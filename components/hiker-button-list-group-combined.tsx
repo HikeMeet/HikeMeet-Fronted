@@ -4,6 +4,7 @@ import { Group } from "../interfaces/group-interface";
 import InviteFriendsModal from "./invite-list-in-group-modal";
 import MembersModal from "./membes-list-in-group-modal";
 import { useFocusEffect } from "@react-navigation/native";
+import { useAuth } from "../contexts/auth-context";
 
 interface HikersSwitcherProps {
   navigation: any;
@@ -18,6 +19,7 @@ const HikersSwitcher: React.FC<HikersSwitcherProps> = ({
 }) => {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showMembersModal, setShowMembersModal] = useState(false);
+  const { mongoId } = useAuth();
 
   useFocusEffect(
     useCallback(() => {
@@ -26,6 +28,14 @@ const HikersSwitcher: React.FC<HikersSwitcherProps> = ({
     }, [])
   );
 
+  const showInviteCondition = () => {
+    if (isAdmin) return true;
+    else
+      return (
+        group.privacy === "public" &&
+        group.members.some((member) => member.user === mongoId)
+      );
+  };
   // Calculate if the group is full.
   const isFull =
     group.members.length + group.pending.length >= group.max_members;
@@ -42,7 +52,7 @@ const HikersSwitcher: React.FC<HikersSwitcherProps> = ({
             View Members
           </Text>
         </TouchableOpacity>
-        {isAdmin && (
+        {showInviteCondition() && (
           <TouchableOpacity
             onPress={() => {
               if (!isFull) {

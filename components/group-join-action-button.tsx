@@ -10,12 +10,14 @@ interface JoinGroupActionButtonProps {
   group: Group;
   navigation: any;
   isInGroupPage: boolean;
+  onAction?: () => void;
 }
 
 const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
   group,
   navigation,
   isInGroupPage,
+  onAction = () => {},
 }) => {
   const [loading, setLoading] = useState(false);
   const [joinStatus, setJoinStatus] = useState<JoinStatus>("none");
@@ -94,6 +96,7 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
       if (group.privacy === "public") {
         Alert.alert("Success", "You have joined the group!");
         setJoinStatus("member");
+        onAction();
       } else {
         Alert.alert("Success", "Join request sent!");
         setJoinStatus("requested");
@@ -125,6 +128,7 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
       }
       Alert.alert("Success", "You have left the group.");
       setJoinStatus("none");
+      onAction();
     } catch (error) {
       console.error("Error leaving group:", error);
       Alert.alert("Error", "Failed to leave group");
