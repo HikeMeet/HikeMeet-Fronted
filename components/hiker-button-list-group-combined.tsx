@@ -35,7 +35,6 @@ const HikersSwitcher: React.FC<HikersSwitcherProps> = ({
         group.privacy === "public" &&
         group.members.some((member) => member.user === mongoId)
       );
-
   };
   console.log("showInviteCondition", showInviteCondition());
   // Calculate if the group is full.
