@@ -26,11 +26,6 @@ interface SingleGroupProps {
   };
 }
 
-interface GroupTrip {
-  group: Group;
-  trip: Trip;
-}
-
 const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
   const { groupId, fromCreate } = route.params;
   const { mongoId } = useAuth();
@@ -71,9 +66,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
     fetchGroup();
   }, [fetchGroup]);
 
-  const refreshGroup = useCallback(() => {
-    fetchGroup();
-  }, [fetchGroup]);
   if (loading) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center">
@@ -276,7 +268,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
         </View>
 
         {/* Bottom Button to go to Group List */}
-
         <TouchableOpacity
           onPress={() => navigation.navigate("Tabs", { screen: "Groups" })}
           style={tw`bg-purple-500 px-4 py-3 rounded mt-6`}
@@ -286,15 +277,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
           </Text>
         </TouchableOpacity>
       </ScrollView>
-
-      {/* {showInviteModal && (
-        <InviteFriendsModal
-          visible={showInviteModal}
-          onClose={() => setShowInviteModal(false)}
-          group={group}
-          navigation={navigation}
-        />
-      )} */}
     </SafeAreaView>
   );
 };
