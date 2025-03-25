@@ -1,19 +1,18 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-} from "react-native";
+import { ScrollView, TouchableOpacity, Text, Alert, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import TripSelector from "../../components/trip-selector-for-group";
-import DateRangePicker from "../../components/schedual-time-group";
-import TimePickerPopup from "../../components/time-picker";
 import { useAuth } from "../../contexts/auth-context";
 import { Group } from "../../interfaces/group-interface";
 import GroupCreatedModal from "../../components/post-group-creatonal";
+import {
+  LabeledTextInput,
+  TripSelectorField,
+  MaxMembersField,
+  PrivacyField,
+  DifficultyField,
+  DateRangePickerField,
+  EmbarkedAtField,
+} from "./components/edit-page-components";
 
 interface EditGroupPageProps {
   navigation: any;
@@ -145,194 +144,45 @@ const EditGroupPage: React.FC<EditGroupPageProps> = ({ navigation, route }) => {
     <SafeAreaView className="flex-1 bg-white p-4">
       <ScrollView>
         <Text className="text-2xl font-bold mb-4">Edit Group</Text>
-
-        {/* Group Name */}
-        <View className="mb-4">
-          <Text className="mb-2">Group Name</Text>
-          <TextInput
-            placeholder="Enter group name"
-            className="bg-gray-100 p-3 rounded"
-            value={groupName}
-            onChangeText={setGroupName}
-          />
+        <LabeledTextInput
+          label="Group Name"
+          placeholder="Enter group name"
+          value={groupName}
+          onChangeText={setGroupName}
+        />
+        <LabeledTextInput
+          label="Description"
+          placeholder="Enter group description"
+          value={description}
+          onChangeText={setDescription}
+          multiline
+          numberOfLines={3}
+        />
+        <TripSelectorField
+          label="Select Trip"
+          selectedTrip={selectedTrip}
+          onSelectTrip={setSelectedTrip}
+        />
+        <View className="flex-row justify-between">
+          <MaxMembersField value={maxMembers} onChangeText={setMaxMembers} />
+          <PrivacyField privacy={privacy} setPrivacy={setPrivacy} />
         </View>
-
-        {/* Description */}
-        <View className="mb-4">
-          <Text className="mb-2">Description</Text>
-          <TextInput
-            placeholder="Enter group description"
-            className="bg-gray-100 p-3 rounded"
-            value={description}
-            onChangeText={setDescription}
-            multiline
-            numberOfLines={3}
-          />
-        </View>
-
-        {/* Trip Selector */}
-        <View className="mb-4">
-          <Text className="mb-2">Select Trip</Text>
-          <TripSelector
-            onSelectTrip={(tripId) => setSelectedTrip(tripId)}
-            selectedTripId={selectedTrip}
-          />
-        </View>
-
-        {/* Maximum Members & Privacy */}
-        <View className="flex-row justify-between mb-4">
-          <View className="flex-1 mr-2">
-            <Text className="mb-2">Maximum Members</Text>
-            <TextInput
-              placeholder="Max"
-              maxLength={2}
-              keyboardType="numeric"
-              value={maxMembers}
-              onChangeText={(text) => {
-                const numericText = text.replace(/[^0-9]/g, "");
-                if (numericText && parseInt(numericText, 10) > 99) {
-                  setMaxMembers("99");
-                } else {
-                  setMaxMembers(numericText);
-                }
-              }}
-              className="bg-gray-100 p-3 rounded w-16"
-            />
-          </View>
-          <View className="flex-1 ml-2">
-            <Text className="mb-2">Privacy</Text>
-            <View className="flex-row">
-              <TouchableOpacity
-                onPress={() => setPrivacy("public")}
-                className={`px-4 py-2 mr-2 rounded ${
-                  privacy === "public" ? "bg-green-500" : "bg-gray-200"
-                }`}
-              >
-                <Text
-                  className={`${
-                    privacy === "public" ? "text-white" : "text-black"
-                  } font-semibold`}
-                >
-                  Public
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setPrivacy("private")}
-                className={`px-4 py-2 rounded ${
-                  privacy === "private" ? "bg-green-500" : "bg-gray-200"
-                }`}
-              >
-                <Text
-                  className={`${
-                    privacy === "private" ? "text-white" : "text-black"
-                  } font-semibold`}
-                >
-                  Private
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-
-        {/* Difficulty */}
-        <View className="mb-4">
-          <Text className="mb-2">Difficulty</Text>
-          <View className="flex-row flex-wrap justify-between">
-            <TouchableOpacity
-              onPress={() => setDifficulty("beginner")}
-              className={`w-[48%] px-3 py-2 mb-2 rounded ${
-                difficulty === "beginner" ? "bg-blue-500" : "bg-gray-200"
-              }`}
-            >
-              <Text
-                className={`text-center font-semibold ${
-                  difficulty === "beginner" ? "text-white" : "text-black"
-                }`}
-              >
-                Beginner
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setDifficulty("intermediate")}
-              className={`w-[48%] px-3 py-2 mb-2 rounded ${
-                difficulty === "intermediate" ? "bg-blue-500" : "bg-gray-200"
-              }`}
-            >
-              <Text
-                className={`text-center font-semibold ${
-                  difficulty === "intermediate" ? "text-white" : "text-black"
-                }`}
-              >
-                Intermediate
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setDifficulty("advanced")}
-              className={`w-[48%] px-3 py-2 mb-2 rounded ${
-                difficulty === "advanced" ? "bg-blue-500" : "bg-gray-200"
-              }`}
-            >
-              <Text
-                className={`text-center font-semibold ${
-                  difficulty === "advanced" ? "text-white" : "text-black"
-                }`}
-              >
-                Advanced
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setDifficulty("hardcore")}
-              className={`w-[48%] px-3 py-2 mb-2 rounded ${
-                difficulty === "hardcore" ? "bg-blue-500" : "bg-gray-200"
-              }`}
-            >
-              <Text
-                className={`text-center font-semibold ${
-                  difficulty === "hardcore" ? "text-white" : "text-black"
-                }`}
-              >
-                Hardcore
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Date Range Picker for Scheduled Start & End */}
-        <View className="mb-4">
-          <DateRangePicker
-            startDate={scheduledStart}
-            endDate={scheduledEnd}
-            onStartDateChange={setScheduledStart}
-            onEndDateChange={setScheduledEnd}
-          />
-        </View>
-
-        {/* Embarked At */}
-        <View className="mb-4">
-          <Text className="mb-2">Embarked At (HH:MM)</Text>
-          <TouchableOpacity
-            onPress={() => setShowTimePicker(true)}
-            className="bg-gray-100 p-3 rounded"
-          >
-            <Text className="text-center">
-              {embarkedAt ? embarkedAt : "Select time (HH:MM)"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        {showTimePicker && (
-          <TimePickerPopup
-            visible={showTimePicker}
-            initialTime={embarkedAt}
-            onConfirm={(time: string) => {
-              console.log("Selected time:", time);
-              setEmbarkedAt(time);
-              setShowTimePicker(false);
-            }}
-            onCancel={() => setShowTimePicker(false)}
-          />
-        )}
-
-        {/* Update Button */}
+        <DifficultyField
+          difficulty={difficulty}
+          setDifficulty={setDifficulty}
+        />
+        <DateRangePickerField
+          startDate={scheduledStart}
+          endDate={scheduledEnd}
+          onStartDateChange={setScheduledStart}
+          onEndDateChange={setScheduledEnd}
+        />
+        <EmbarkedAtField
+          embarkedAt={embarkedAt}
+          setEmbarkedAt={setEmbarkedAt}
+          showTimePicker={showTimePicker}
+          setShowTimePicker={setShowTimePicker}
+        />
         <TouchableOpacity
           onPress={updateHandle}
           className="bg-blue-500 px-4 py-3 rounded"
@@ -343,7 +193,6 @@ const EditGroupPage: React.FC<EditGroupPageProps> = ({ navigation, route }) => {
           </Text>
         </TouchableOpacity>
       </ScrollView>
-      {/* Show modal after group creation/update */}
       {showCreatedModal && (
         <GroupCreatedModal
           visible={showCreatedModal}
