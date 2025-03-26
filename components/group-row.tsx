@@ -1,18 +1,16 @@
 import React from "react";
 import { TouchableOpacity, View, Text } from "react-native";
-import tw from "twrnc";
 import { Group } from "../interfaces/group-interface";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { useAuth } from "../contexts/auth-context";
 import JoinGroupActionButton from "./group-join-action-button";
 
 interface GroupRowProps {
   group: Group;
   navigation: any;
+  onAction?: () => void;
 }
 
-const GroupRow: React.FC<GroupRowProps> = ({ group, navigation }) => {
-  const { mongoId } = useAuth();
+const GroupRow: React.FC<GroupRowProps> = ({ group, navigation, onAction }) => {
   const currentMembers = group.members ? group.members.length : 0;
 
   return (
@@ -52,6 +50,7 @@ const GroupRow: React.FC<GroupRowProps> = ({ group, navigation }) => {
               group={group}
               navigation={navigation}
               isInGroupPage={false}
+              onAction={onAction}
             />
           </View>
         </View>

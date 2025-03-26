@@ -17,17 +17,14 @@ import HikersSwitcher from "../../components/hiker-button-list-group-combined";
 import { useFocusEffect } from "@react-navigation/native";
 import tw from "twrnc";
 import JoinGroupActionButton from "../../components/group-join-action-button";
+import { fetchGroupDetails } from "../../components/requests/fetch-group-and-users-data";
+import { DateDisplay } from "../../components/date-present";
 
 interface SingleGroupProps {
   navigation: any;
   route: {
     params: { groupId: string; fromCreate?: boolean };
   };
-}
-
-interface GroupTrip {
-  group: Group;
-  trip: Trip;
 }
 
 const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
@@ -53,25 +50,22 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
     }, [fromCreate, navigation])
   );
 
-  useEffect(() => {
-    const fetchGroup = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(
-          `${process.env.EXPO_LOCAL_SERVER}/api/group/${groupId}?getTrip=true`
-        );
-        if (!response.ok) throw new Error("Failed to fetch group");
-        const data: GroupTrip = await response.json();
-        setGroup(data.group);
-        setTrip(data.trip);
-      } catch (error) {
-        console.error("Error fetching group:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchGroup();
+  const fetchGroup = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await fetchGroupDetails(groupId, true);
+      setGroup(data.group);
+      setTrip(data.trip!);
+    } catch (error) {
+      console.error("Error fetching group:", error);
+    } finally {
+      setLoading(false);
+    }
   }, [groupId]);
+
+  useEffect(() => {
+    fetchGroup();
+  }, [fetchGroup]);
 
   if (loading) {
     return (
@@ -96,8 +90,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView contentContainerStyle={{ padding: 16 }}>
-        {/* Group Header */}
-        {/* Group Header with Name and Action Button */}
+        {/* Header: Group Name, Join, Edit, Delete */}
         <View className="flex-row items-center justify-between mb-4">
           <Text
             className="text-3xl font-bold flex-1"
@@ -111,7 +104,20 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             navigation={navigation}
             isInGroupPage={true}
           />
+          {/* Edit button navigates to the EditGroupPage */}
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("GroupsStack", {
+                screen: "EditGroupPage",
+                params: { group },
+              })
+            }
+            className="ml-2 p-2 bg-blue-500 rounded"
+          >
+            <Text className="text-white font-semibold">Edit</Text>
+          </TouchableOpacity>
         </View>
+
         {/* Description */}
         <View className="p-4 border-b border-gray-200">
           <Text className="font-semibold text-gray-600">Description</Text>
@@ -201,21 +207,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
               const year = d.getFullYear().toString().slice(-2);
               const month = ("0" + (d.getMonth() + 1)).slice(-2);
               const day = ("0" + d.getDate()).slice(-2);
-              return (
-                <View className="flex-row items-center space-x-1">
-                  <View className="px-2 py-1 border border-gray-200 rounded">
-                    <Text className="text-gray-800">{year}</Text>
-                  </View>
-                  <Text className="text-gray-800 font-semibold">/</Text>
-                  <View className="px-2 py-1 border border-gray-200 rounded">
-                    <Text className="text-gray-800">{month}</Text>
-                  </View>
-                  <Text className="text-gray-800 font-semibold">/</Text>
-                  <View className="px-2 py-1 border border-gray-200 rounded">
-                    <Text className="text-gray-800">{day}</Text>
-                  </View>
-                </View>
-              );
+              return <DateDisplay dateParts={[year, month, day]} />;
             })()
           ) : (
             <Text className="text-gray-800">Not set</Text>
@@ -231,31 +223,11 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
               const year = d.getFullYear().toString().slice(-2);
               const month = ("0" + (d.getMonth() + 1)).slice(-2);
               const day = ("0" + d.getDate()).slice(-2);
-              return (
-                <View className="flex-row items-center space-x-1">
-                  <View className="px-2 py-1 border border-gray-200 rounded">
-                    <Text className="text-gray-800">{year}</Text>
-                  </View>
-                  <Text className="text-gray-800 font-semibold">/</Text>
-                  <View className="px-2 py-1 border border-gray-200 rounded">
-                    <Text className="text-gray-800">{month}</Text>
-                  </View>
-                  <Text className="text-gray-800 font-semibold">/</Text>
-                  <View className="px-2 py-1 border border-gray-200 rounded">
-                    <Text className="text-gray-800">{day}</Text>
-                  </View>
-                </View>
-              );
+              return <DateDisplay dateParts={[year, month, day]} />;
             })()
           ) : (
             <Text className="text-gray-800">Not set</Text>
           )}
-        </View>
-
-        {/* Created By */}
-        <View className="p-4 border-b border-gray-200">
-          <Text className="font-semibold text-gray-600">Created By</Text>
-          <Text className="text-gray-800">{group.created_by}</Text>
         </View>
 
         {/* Created At */}
@@ -275,7 +247,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
         </View>
 
         {/* Bottom Button to go to Group List */}
-
         <TouchableOpacity
           onPress={() => navigation.navigate("Tabs", { screen: "Groups" })}
           style={tw`bg-purple-500 px-4 py-3 rounded mt-6`}
@@ -285,15 +256,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
           </Text>
         </TouchableOpacity>
       </ScrollView>
-
-      {/* {showInviteModal && (
-        <InviteFriendsModal
-          visible={showInviteModal}
-          onClose={() => setShowInviteModal(false)}
-          group={group}
-          navigation={navigation}
-        />
-      )} */}
     </SafeAreaView>
   );
 };

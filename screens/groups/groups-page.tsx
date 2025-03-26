@@ -41,8 +41,22 @@ const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       fetchGroups();
+      // Set up an interval to call fetchGroup every 10 seconds (10,000ms)
+
+      //   const intervalId = setInterval(() => {
+      //     fetchGroups();
+      //   }, 10000);
+
+      //   // Clean up the interval on unmount
+      //   return () => clearInterval(intervalId);
     }, [fetchGroups])
   );
+
+  const handleAction = useCallback(() => {
+    // This callback is triggered when a group is joined.
+    // You can choose to re-fetch groups or update local state here.
+    fetchGroups();
+  }, [fetchGroups]);
 
   // First, filter groups by search text.
   let filteredGroups = groups.filter((group) =>
@@ -55,10 +69,11 @@ const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   if (showMyGroups) {
     filteredGroups = filteredGroups.filter(
-      (group) => group.created_by === mongoId
+      (group) =>
+        group.created_by === mongoId ||
+        group.members.some((member) => member.user === mongoId)
     );
   }
-
   return (
     <SafeAreaView className="flex-1 bg-white p-4">
       {/* Top row: Search and Filter */}
@@ -120,7 +135,12 @@ const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
           </View>
         ) : (
           filteredGroups.map((group) => (
-            <GroupRow key={group._id} group={group} navigation={navigation} />
+            <GroupRow
+              key={group._id}
+              group={group}
+              navigation={navigation}
+              onAction={handleAction}
+            />
           ))
         )}
       </ScrollView>

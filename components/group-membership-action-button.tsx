@@ -4,6 +4,7 @@ import tw from "twrnc";
 import { MongoUser } from "../interfaces/user-interface";
 import { Group } from "../interfaces/group-interface";
 import { useAuth } from "../contexts/auth-context";
+import ConfirmationModal from "./confirmation-modal";
 
 type StatusType = "none" | "invited" | "member" | "requested";
 
@@ -19,7 +20,8 @@ const GroupActionButton: React.FC<GroupActionButtonProps> = ({
   const { mongoId } = useAuth();
   const groupId = group._id;
   const [status, setStatus] = useState<StatusType>("none");
-
+  const [showRemoveConfirmModal, setShowRemoveConfirmModal] = useState(false);
+  const [showDeclineConfirmModal, setShowDeclineConfirmModal] = useState(false);
   // Determine initial status based on group.members and group.pending
   useEffect(() => {
     const isMember = group.members.some((m) => m.user === friend._id);
@@ -112,6 +114,8 @@ const GroupActionButton: React.FC<GroupActionButtonProps> = ({
     } catch (error) {
       console.error("Error removing member:", error);
       Alert.alert("Error", "Failed to remove member");
+    } finally {
+      setShowRemoveConfirmModal(false);
     }
   };
 
@@ -164,6 +168,8 @@ const GroupActionButton: React.FC<GroupActionButtonProps> = ({
     } catch (error) {
       console.error("Error declining join request:", error);
       Alert.alert("Error", "Failed to decline join request");
+    } finally {
+      setShowDeclineConfirmModal(false);
     }
   };
 
@@ -191,7 +197,7 @@ const GroupActionButton: React.FC<GroupActionButtonProps> = ({
       case "member":
         return (
           <TouchableOpacity
-            onPress={handleRemoveMember}
+            onPress={() => setShowRemoveConfirmModal(true)}
             style={tw`bg-red-500 px-3 py-2 rounded`}
           >
             <Text style={tw`text-white text-sm`}>Remove</Text>
@@ -207,7 +213,7 @@ const GroupActionButton: React.FC<GroupActionButtonProps> = ({
               <Text style={tw`text-white text-sm`}>Accept</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={handleDeclineRequest}
+              onPress={() => setShowDeclineConfirmModal(true)}
               style={tw`bg-red-500 px-3 py-2 rounded`}
             >
               <Text style={tw`text-white text-sm`}>Decline</Text>
@@ -219,7 +225,27 @@ const GroupActionButton: React.FC<GroupActionButtonProps> = ({
     }
   };
 
-  return <>{renderButton()}</>;
+  return (
+    <>
+      {renderButton()}
+      {showRemoveConfirmModal && (
+        <ConfirmationModal
+          visible={showRemoveConfirmModal}
+          message={`Are you sure you want to remove ${friend.username} from this group?`}
+          onConfirm={handleRemoveMember}
+          onCancel={() => setShowRemoveConfirmModal(false)}
+        />
+      )}
+      {showDeclineConfirmModal && (
+        <ConfirmationModal
+          visible={showDeclineConfirmModal}
+          message={`Are you sure you want to decline ${friend.username} request?`}
+          onConfirm={handleDeclineRequest}
+          onCancel={() => setShowDeclineConfirmModal(false)}
+        />
+      )}
+    </>
+  );
 };
 
 export default GroupActionButton;

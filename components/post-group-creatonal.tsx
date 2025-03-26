@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Modal, View, Text, TouchableOpacity } from "react-native";
 import tw from "twrnc";
-import InviteFriendsModal from "./search-friend-to-invite";
+import InviteFriendsModal from "./invite-list-in-group-modal";
 import { Group } from "../interfaces/group-interface";
 
 interface GroupCreatedModalProps {
@@ -62,7 +62,7 @@ const GroupCreatedModal: React.FC<GroupCreatedModalProps> = ({
         <InviteFriendsModal
           visible={inviteVisible}
           onClose={() => setInviteVisible(false)}
-          group={group}
+          groupId={group._id}
           navigation={navigation}
         />
       )}
