@@ -93,13 +93,16 @@ export default function LoginPage({
           keyboardType="email-address"
           value={email}
           onChangeText={setEmail}
+          testID="email_text_field_in_login"
         />
+
         <CustomTextInput
           iconName="lock"
           placeholder="Password"
           secureTextEntry
           value={password}
           onChangeText={setPassword}
+          testID="Password_text_field_in_login"
         />
 
         <Button title="Login" onPress={handleLogin} isLoading={loading} />
