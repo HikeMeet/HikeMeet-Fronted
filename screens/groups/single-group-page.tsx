@@ -105,17 +105,19 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             isInGroupPage={true}
           />
           {/* Edit button navigates to the EditGroupPage */}
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("GroupsStack", {
-                screen: "EditGroupPage",
-                params: { group },
-              })
-            }
-            className="ml-2 p-2 bg-blue-500 rounded"
-          >
-            <Text className="text-white font-semibold">Edit</Text>
-          </TouchableOpacity>
+          {mongoId === group.created_by && (
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("GroupsStack", {
+                  screen: "EditGroupPage",
+                  params: { group },
+                })
+              }
+              className="ml-2 p-2 bg-blue-500 rounded"
+            >
+              <Text className="text-white font-semibold">Edit</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Description */}
