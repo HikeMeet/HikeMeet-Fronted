@@ -19,6 +19,7 @@ import tw from "twrnc";
 import JoinGroupActionButton from "../../components/group-join-action-button";
 import { fetchGroupDetails } from "../../components/requests/fetch-group-and-users-data";
 import { DateDisplay } from "../../components/date-present";
+import { formatDateToHHMM } from "./components/edit-page-components";
 
 interface SingleGroupProps {
   navigation: any;
@@ -105,17 +106,19 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             isInGroupPage={true}
           />
           {/* Edit button navigates to the EditGroupPage */}
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("GroupsStack", {
-                screen: "EditGroupPage",
-                params: { group },
-              })
-            }
-            className="ml-2 p-2 bg-blue-500 rounded"
-          >
-            <Text className="text-white font-semibold">Edit</Text>
-          </TouchableOpacity>
+          {mongoId === group.created_by && (
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("GroupsStack", {
+                  screen: "EditGroupPage",
+                  params: { group },
+                })
+              }
+              className="ml-2 p-2 bg-blue-500 rounded"
+            >
+              <Text className="text-white font-semibold">Edit</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Description */}
@@ -178,9 +181,11 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
         {/* Embarked At */}
         <View className="p-4 border-b border-gray-200 flex-row items-center justify-between">
           <Text className="font-semibold text-gray-600">Embarked At</Text>
-          {group.embarked_at ? (
+          {group.scheduled_start ? (
             (() => {
-              const [hours, minutes] = group.embarked_at.split(":");
+              const [hours, minutes] = formatDateToHHMM(
+                new Date(group.scheduled_start)
+              ).split(":");
               return (
                 <View className="flex-row items-center space-x-2">
                   <View className="px-3 py-2 border border-gray-200 rounded">

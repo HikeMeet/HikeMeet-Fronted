@@ -8,10 +8,10 @@ import { Group } from "../../interfaces/group-interface";
 import {
   DateRangePickerField,
   DifficultyField,
-  EmbarkedAtField,
   LabeledTextInput,
   MaxMembersField,
   PrivacyField,
+  TimeFields,
   TripSelectorField,
 } from "./components/edit-page-components";
 
@@ -25,12 +25,14 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
   const [difficulty, setDifficulty] = useState<string>("");
   const [scheduledStart, setScheduledStart] = useState<Date | null>(null);
   const [scheduledEnd, setScheduledEnd] = useState<Date | null>(null);
-  const [embarkedAt, setEmbarkedAt] = useState<string>("");
-  const [showTimePicker, setShowTimePicker] = useState<boolean>(false);
   const [creating, setCreating] = useState<boolean>(false);
   const [group, setGroup] = useState<Group | null>(null);
   const [showCreatedModal, setShowCreatedModal] = useState<boolean>(false);
-
+  const [showStartTimePicker, setShowStartTimePicker] =
+    useState<boolean>(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState<boolean>(false);
+  const [startTime, setStartTime] = useState<string>("");
+  const [finishTime, setFinishTime] = useState<string>("");
   const { mongoId } = useAuth(); // current user's data
 
   // Helper function to format date for backend (ISO string)
@@ -55,7 +57,8 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
           ? formatDateForBackend(scheduledStart)
           : null,
         scheduled_end: scheduledEnd ? formatDateForBackend(scheduledEnd) : null,
-        embarked_at: embarkedAt,
+        embarked_at: startTime,
+        finish_time: finishTime,
         created_by: mongoId,
       };
       const response = await fetch(
@@ -130,11 +133,21 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
           onStartDateChange={setScheduledStart}
           onEndDateChange={setScheduledEnd}
         />
-        <EmbarkedAtField
+        {/* <EmbarkedAtField
           embarkedAt={embarkedAt}
           setEmbarkedAt={setEmbarkedAt}
           showTimePicker={showTimePicker}
           setShowTimePicker={setShowTimePicker}
+        /> */}
+        <TimeFields
+          startTime={startTime}
+          setStartTime={setStartTime}
+          finishTime={finishTime}
+          setFinishTime={setFinishTime}
+          showStartPicker={showStartTimePicker}
+          setShowStartPicker={setShowStartTimePicker}
+          showFinishPicker={showEndTimePicker}
+          setShowFinishPicker={setShowEndTimePicker}
         />
         <TouchableOpacity
           onPress={handleCreateGroup}
