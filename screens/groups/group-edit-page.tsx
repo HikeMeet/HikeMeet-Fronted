@@ -11,7 +11,7 @@ import {
   PrivacyField,
   DifficultyField,
   DateRangePickerField,
-  EmbarkedAtField,
+  TimeFields,
   formatDateToHHMM,
 } from "./components/edit-page-components";
 
@@ -45,13 +45,18 @@ const EditGroupPage: React.FC<EditGroupPageProps> = ({ navigation, route }) => {
   const [scheduledEnd, setScheduledEnd] = useState<Date | null>(
     group.scheduled_end ? new Date(group.scheduled_end) : null
   );
-  const [embarkedAt, setEmbarkedAt] = useState<string>(
+  const [startTime, setStartTime] = useState<string>(
+    group.scheduled_end ? formatDateToHHMM(new Date(group.scheduled_end)) : ""
+  );
+  const [finishTime, setFinishTime] = useState<string>(
     group.scheduled_start
       ? formatDateToHHMM(new Date(group.scheduled_start))
       : ""
   );
 
-  const [showTimePicker, setShowTimePicker] = useState<boolean>(false);
+  const [showStartTimePicker, setShowStartTimePicker] =
+    useState<boolean>(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState<boolean>(false);
   const [editing, setEditing] = useState<boolean>(false);
   const [showCreatedModal, setShowCreatedModal] = useState<boolean>(false);
 
@@ -92,8 +97,12 @@ const EditGroupPage: React.FC<EditGroupPageProps> = ({ navigation, route }) => {
         updateData.scheduled_end = formatDateForBackend(scheduledEnd);
       }
     }
-    if (embarkedAt !== (group.embarked_at || ""))
-      updateData.embarked_at = embarkedAt;
+    if (
+      startTime !== (formatDateToHHMM(new Date(group.scheduled_start!)) || "")
+    )
+      updateData.embarked_at = startTime;
+    if (finishTime !== (formatDateToHHMM(new Date(group.scheduled_end!)) || ""))
+      updateData.finish_time = finishTime;
 
     // If no changes were made, alert the user and exit.
     if (Object.keys(updateData).length === 0) {
@@ -183,11 +192,16 @@ const EditGroupPage: React.FC<EditGroupPageProps> = ({ navigation, route }) => {
           onStartDateChange={setScheduledStart}
           onEndDateChange={setScheduledEnd}
         />
-        <EmbarkedAtField
-          embarkedAt={embarkedAt}
-          setEmbarkedAt={setEmbarkedAt}
-          showTimePicker={showTimePicker}
-          setShowTimePicker={setShowTimePicker}
+
+        <TimeFields
+          startTime={startTime}
+          setStartTime={setStartTime}
+          finishTime={finishTime}
+          setFinishTime={setFinishTime}
+          showStartPicker={showStartTimePicker}
+          setShowStartPicker={setShowStartTimePicker}
+          showFinishPicker={showEndTimePicker}
+          setShowFinishPicker={setShowEndTimePicker}
         />
         <TouchableOpacity
           onPress={updateHandle}

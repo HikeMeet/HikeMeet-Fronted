@@ -183,38 +183,69 @@ export function formatDateToHHMM(date: Date): string {
   const minutesStr = minutes.toString().padStart(2, "0");
   return `${hoursStr}:${minutesStr}`;
 }
-interface EmbarkedAtFieldProps {
-  embarkedAt: string;
-  setEmbarkedAt: (time: string) => void;
-  showTimePicker: boolean;
-  setShowTimePicker: (show: boolean) => void;
+interface TimeFieldProps {
+  startTime: string;
+  setStartTime: (time: string) => void;
+  finishTime: string;
+  setFinishTime: (time: string) => void;
+  showStartPicker: boolean;
+  setShowStartPicker: (show: boolean) => void;
+  showFinishPicker: boolean;
+  setShowFinishPicker: (show: boolean) => void;
 }
 
-export const EmbarkedAtField: React.FC<EmbarkedAtFieldProps> = ({
-  embarkedAt,
-  setEmbarkedAt,
-  showTimePicker,
-  setShowTimePicker,
+export const TimeFields: React.FC<TimeFieldProps> = ({
+  startTime,
+  setStartTime,
+  finishTime,
+  setFinishTime,
+  showStartPicker,
+  setShowStartPicker,
+  showFinishPicker,
+  setShowFinishPicker,
 }) => (
   <View className="mb-4">
-    <Text className="mb-2">Embarked At (HH:MM)</Text>
+    {/* Start Time Section */}
+    <Text className="mb-2">Start Time (HH:MM)</Text>
     <TouchableOpacity
-      onPress={() => setShowTimePicker(true)}
+      onPress={() => setShowStartPicker(true)}
+      className="bg-gray-100 p-3 rounded mb-4"
+    >
+      <Text className="text-center">
+        {startTime ? startTime : "Select time (HH:MM)"}
+      </Text>
+    </TouchableOpacity>
+    {showStartPicker && (
+      <TimePickerPopup
+        visible={showStartPicker}
+        initialTime={startTime}
+        onConfirm={(time: string) => {
+          setStartTime(time);
+          setShowStartPicker(false);
+        }}
+        onCancel={() => setShowStartPicker(false)}
+      />
+    )}
+
+    {/* Finish Time Section */}
+    <Text className="mb-2">Finish Time (HH:MM)</Text>
+    <TouchableOpacity
+      onPress={() => setShowFinishPicker(true)}
       className="bg-gray-100 p-3 rounded"
     >
       <Text className="text-center">
-        {embarkedAt ? embarkedAt : "Select time (HH:MM)"}
+        {finishTime ? finishTime : "Select time (HH:MM)"}
       </Text>
     </TouchableOpacity>
-    {showTimePicker && (
+    {showFinishPicker && (
       <TimePickerPopup
-        visible={showTimePicker}
-        initialTime={embarkedAt}
+        visible={showFinishPicker}
+        initialTime={finishTime}
         onConfirm={(time: string) => {
-          setEmbarkedAt(time);
-          setShowTimePicker(false);
+          setFinishTime(time);
+          setShowFinishPicker(false);
         }}
-        onCancel={() => setShowTimePicker(false)}
+        onCancel={() => setShowFinishPicker(false)}
       />
     )}
   </View>
