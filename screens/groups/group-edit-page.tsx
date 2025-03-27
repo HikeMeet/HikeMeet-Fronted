@@ -12,6 +12,7 @@ import {
   DifficultyField,
   DateRangePickerField,
   EmbarkedAtField,
+  formatDateToHHMM,
 } from "./components/edit-page-components";
 
 interface EditGroupPageProps {
@@ -44,7 +45,12 @@ const EditGroupPage: React.FC<EditGroupPageProps> = ({ navigation, route }) => {
   const [scheduledEnd, setScheduledEnd] = useState<Date | null>(
     group.scheduled_end ? new Date(group.scheduled_end) : null
   );
-  const [embarkedAt, setEmbarkedAt] = useState<string>(group.embarked_at || "");
+  const [embarkedAt, setEmbarkedAt] = useState<string>(
+    group.scheduled_start
+      ? formatDateToHHMM(new Date(group.scheduled_start))
+      : ""
+  );
+
   const [showTimePicker, setShowTimePicker] = useState<boolean>(false);
   const [editing, setEditing] = useState<boolean>(false);
   const [showCreatedModal, setShowCreatedModal] = useState<boolean>(false);

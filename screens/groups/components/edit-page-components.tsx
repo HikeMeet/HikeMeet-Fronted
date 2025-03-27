@@ -1,8 +1,9 @@
 // GroupFormFields.tsx
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import TripSelector from "../../../components/trip-selector-for-group";
 import DateRangePicker from "../../../components/schedual-time-group";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import TimePickerPopup from "../../../components/time-picker";
 
 interface LabeledTextInputProps {
@@ -175,6 +176,13 @@ export const DateRangePickerField: React.FC<DateRangePickerFieldProps> = ({
   </View>
 );
 
+export function formatDateToHHMM(date: Date): string {
+  const hours = date.getUTCHours();
+  const minutes = date.getUTCMinutes();
+  const hoursStr = hours.toString().padStart(2, "0");
+  const minutesStr = minutes.toString().padStart(2, "0");
+  return `${hoursStr}:${minutesStr}`;
+}
 interface EmbarkedAtFieldProps {
   embarkedAt: string;
   setEmbarkedAt: (time: string) => void;

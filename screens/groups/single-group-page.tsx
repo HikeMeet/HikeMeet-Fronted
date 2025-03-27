@@ -19,6 +19,7 @@ import tw from "twrnc";
 import JoinGroupActionButton from "../../components/group-join-action-button";
 import { fetchGroupDetails } from "../../components/requests/fetch-group-and-users-data";
 import { DateDisplay } from "../../components/date-present";
+import { formatDateToHHMM } from "./components/edit-page-components";
 
 interface SingleGroupProps {
   navigation: any;
@@ -180,9 +181,11 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
         {/* Embarked At */}
         <View className="p-4 border-b border-gray-200 flex-row items-center justify-between">
           <Text className="font-semibold text-gray-600">Embarked At</Text>
-          {group.embarked_at ? (
+          {group.scheduled_start ? (
             (() => {
-              const [hours, minutes] = group.embarked_at.split(":");
+              const [hours, minutes] = formatDateToHHMM(
+                new Date(group.scheduled_start)
+              ).split(":");
               return (
                 <View className="flex-row items-center space-x-2">
                   <View className="px-3 py-2 border border-gray-200 rounded">
