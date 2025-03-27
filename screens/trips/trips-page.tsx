@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Trip } from "../../interfaces/trip-interface";
 import TripRow from "../../components/trip-row";
 import { useAuth } from "../../contexts/auth-context";
+import { ITripHistoryEntry } from "../../interfaces/user-interface";
 
 interface UserTripProps {
   route: any;
@@ -20,6 +21,7 @@ interface UserTripProps {
 
 const TripsPage: React.FC<UserTripProps> = ({ navigation }) => {
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [tripsHistory, setTripsHistory] = useState<ITripHistoryEntry[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
   const [showHistory, setShowHistory] = useState(false);
@@ -51,6 +53,8 @@ const TripsPage: React.FC<UserTripProps> = ({ navigation }) => {
       setLoading(true);
       // Extract trip IDs from the user's trip_history.
       const tripIds = mongoUser!.trip_history.map((entry) => entry.trip);
+
+      setTripsHistory(mongoUser!.trip_history);
       if (tripIds.length === 0) {
         setTrips([]); // No history entries.
         return;
@@ -128,18 +132,23 @@ const TripsPage: React.FC<UserTripProps> = ({ navigation }) => {
         {loading ? (
           <ActivityIndicator size="large" color="#0000ff" />
         ) : (
-          filteredTrips.map((trip, index) => (
-            <TripRow
-              key={`${trip._id}-${index}`}
-              trip={trip}
-              onPress={() =>
-                navigation.navigate("TripsStack", {
-                  screen: "TripPage",
-                  params: { tripId: trip._id },
-                })
-              }
-            />
-          ))
+          filteredTrips.map((trip, index) => {
+            // Use the index to access the corresponding trip history entry
+            const completedAt = tripsHistory[index]?.completed_at;
+            return (
+              <TripRow
+                key={`${trip._id}-${index}`}
+                trip={trip}
+                completedAt={completedAt} // Pass the completed_at field as a prop
+                onPress={() =>
+                  navigation.navigate("TripsStack", {
+                    screen: "TripPage",
+                    params: { tripId: trip._id },
+                  })
+                }
+              />
+            );
+          })
         )}
       </ScrollView>
     </SafeAreaView>

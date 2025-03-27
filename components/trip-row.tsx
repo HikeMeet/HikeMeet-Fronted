@@ -6,13 +6,14 @@ import { Trip } from "../interfaces/trip-interface";
 interface TripRowProps {
   trip: Trip;
   onPress: () => void;
+  completedAt?: Date | null;
 }
 
-const TripRow: React.FC<TripRowProps> = ({ trip, onPress }) => {
+const TripRow: React.FC<TripRowProps> = ({ trip, onPress, completedAt }) => {
   return (
     <TouchableOpacity
       onPress={onPress}
-      className="flex-row items-center bg-gray-100 mb-4 p-4 rounded-lg"
+      className="relative flex-row items-center bg-gray-100 mb-4 p-4 rounded-lg"
     >
       {trip.main_image ? (
         <Image
@@ -38,6 +39,11 @@ const TripRow: React.FC<TripRowProps> = ({ trip, onPress }) => {
           {trip.location.address}
         </Text>
       </View>
+      {completedAt && (
+        <Text className="absolute top-2 right-2 text-xs text-gray-600">
+          {new Date(completedAt).toLocaleDateString()}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 };
