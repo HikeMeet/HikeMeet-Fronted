@@ -202,6 +202,30 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             <Text className="text-gray-800">Not set</Text>
           )}
         </View>
+        {/* Embarked At */}
+        <View className="p-4 border-b border-gray-200 flex-row items-center justify-between">
+          <Text className="font-semibold text-gray-600">Finish time</Text>
+          {group.scheduled_end ? (
+            (() => {
+              const [hours, minutes] = formatDateToHHMM(
+                new Date(group.scheduled_end)
+              ).split(":");
+              return (
+                <View className="flex-row items-center space-x-2">
+                  <View className="px-3 py-2 border border-gray-200 rounded">
+                    <Text className="text-gray-800">{hours}</Text>
+                  </View>
+                  <Text className="text-gray-800 font-semibold">:</Text>
+                  <View className="px-3 py-2 border border-gray-200 rounded">
+                    <Text className="text-gray-800">{minutes}</Text>
+                  </View>
+                </View>
+              );
+            })()
+          ) : (
+            <Text className="text-gray-800">Not set</Text>
+          )}
+        </View>
 
         {/* Scheduled Start */}
         <View className="p-4 border-b border-gray-200 flex-row items-center justify-between">
