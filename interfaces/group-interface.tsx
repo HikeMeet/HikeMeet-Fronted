@@ -1,3 +1,5 @@
+import { IImageModel } from "./trip-interface";
+
 export interface GroupMember {
   user: string;
   role: "admin" | "companion";
@@ -27,6 +29,8 @@ export interface Group {
   scheduled_end?: string; // ISO date string (or convert to Date)
   meeting_point?: string;
   embarked_at?: string; // HH:mm format if applicable
+  images?: IImageModel[];
+  main_image?: IImageModel;
   chat_room_id?: string;
   created_at: string; // ISO date string
   updated_at: string; // ISO date string

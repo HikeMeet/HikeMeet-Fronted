@@ -20,12 +20,13 @@ const DEFAULT_PROFILE_IMAGE_URL =
   "https://res.cloudinary.com/dyebkjnoc/image/upload/v1742156351/profile_images/tpyngwygeoykeur0hgre.jpg";
 const DEFAULT_TRIP_IMAGE_URL =
   "https://res.cloudinary.com/dyebkjnoc/image/upload/v1742664563/trip_images/pxn2u29twifmjcjq7whv.png";
-
+const DEFAULT_GROUP_IMAGE_URL =
+  "https://res.cloudinary.com/dyebkjnoc/image/upload/v1743157838/group_images/o1onsa093hqedz3ti7fo.webp";
 interface MainImageProps {
   initialImageUrl: string;
   size?: number;
   id: string;
-  uploadType?: "profile" | "trip";
+  uploadType?: "profile" | "trip" | "group";
   /** When false, disables clicking/upload functionality */
   editable?: boolean;
 }
@@ -67,6 +68,8 @@ const ProfileImage: React.FC<MainImageProps> = ({
 
       if (uploadType === "trip") {
         requestUrl = `${backendUrl}/api/trips/${id}/upload-profile-picture`;
+      } else if (uploadType === "group") {
+        requestUrl = `${backendUrl}/api/group/${id}/upload-profile-picture`;
       } else {
         requestUrl = `${backendUrl}/api/user/${id}/upload-profile-picture`;
       }
@@ -87,7 +90,7 @@ const ProfileImage: React.FC<MainImageProps> = ({
       console.log("Upload successful:", updatedResponse);
 
       // Use the appropriate property based on the upload type.
-      if (uploadType === "trip") {
+      if (uploadType === "trip" || uploadType === "group") {
         if (updatedResponse.main_image && updatedResponse.main_image.url) {
           setImageUri(updatedResponse.main_image.url);
         } else {
@@ -151,6 +154,8 @@ const ProfileImage: React.FC<MainImageProps> = ({
       let requestUrl: string;
       if (uploadType === "trip") {
         requestUrl = `${backendUrl}/api/trips/${id}/delete-profile-picture`;
+      } else if (uploadType === "group") {
+        requestUrl = `${backendUrl}/api/group/${id}/delete-profile-picture`;
       } else {
         requestUrl = `${backendUrl}/api/user/${id}/delete-profile-picture`;
       }
@@ -162,14 +167,14 @@ const ProfileImage: React.FC<MainImageProps> = ({
         const errorText = await response.text();
         throw new Error(`Server error (${response.status}): ${errorText}`);
       }
-      const updatedUser = await response.json();
-      console.log("Photo removal successful:", updatedUser);
+      const updatedModel = await response.json();
+      console.log("Photo removal successful:", updatedModel);
       // Update the image URI based on type.
-      if (uploadType === "trip") {
-        setImageUri(updatedUser.main_image.url);
+      if (uploadType === "trip" || uploadType === "group") {
+        setImageUri(updatedModel.main_image.url);
       } else {
-        setImageUri(updatedUser.profile_picture.url);
-        setMongoUser(updatedUser);
+        setImageUri(updatedModel.profile_picture.url);
+        setMongoUser(updatedModel);
       }
       setTooltipVisible(false);
     } catch (error: any) {
@@ -193,7 +198,11 @@ const ProfileImage: React.FC<MainImageProps> = ({
 
   // Determine the default URL based on uploadType.
   const defaultUrl =
-    uploadType === "trip" ? DEFAULT_TRIP_IMAGE_URL : DEFAULT_PROFILE_IMAGE_URL;
+    uploadType === "trip"
+      ? DEFAULT_TRIP_IMAGE_URL
+      : uploadType === "group"
+        ? DEFAULT_GROUP_IMAGE_URL
+        : DEFAULT_PROFILE_IMAGE_URL;
 
   return (
     <>
@@ -268,7 +277,13 @@ const ProfileImage: React.FC<MainImageProps> = ({
                 }}
               >
                 <Text className="text-lg text-blue-500 text-center">
-                  Change {uploadType === "trip" ? "Trip" : "Profile"} Pic
+                  Change{" "}
+                  {uploadType === "trip"
+                    ? "Trip"
+                    : uploadType === "group"
+                      ? "Group"
+                      : "Profile"}{" "}
+                  Pic
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
