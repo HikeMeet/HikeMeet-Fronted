@@ -211,31 +211,40 @@ const ProfileImage: React.FC<MainImageProps> = ({
           <Pressable
             onPress={onImagePress}
             disabled={uploading}
-            className="items-center justify-center overflow-hidden"
-            style={{
-              width: size * 1.2,
-              height: size * 1.2,
-              borderRadius: (size * 1.2) / 2,
-            }}
+            className="items-center justify-center"
+            style={{ width: size * 1.2, height: size * 1.2 }}
           >
-            {uploading ? (
-              <View className="flex-1 justify-center items-center">
-                <ActivityIndicator />
-              </View>
-            ) : (
-              <Image
-                source={
-                  imageUri
-                    ? { uri: imageUri }
-                    : require("../assets/default-profile.png")
-                }
-                className="w-full h-full rounded-full"
-              />
-            )}
-            {/* Show pencil icon overlay if editable */}
+            {/* Image container with circular clipping */}
+            <View
+              className="overflow-hidden"
+              style={{
+                width: size * 1.2,
+                height: size * 1.2,
+                borderRadius: (size * 1.2) / 2,
+              }}
+            >
+              {uploading ? (
+                <View className="flex-1 justify-center items-center">
+                  <ActivityIndicator />
+                </View>
+              ) : (
+                <Image
+                  source={
+                    imageUri
+                      ? { uri: imageUri }
+                      : require("../assets/default-profile.png")
+                  }
+                  className="w-full h-full rounded-full"
+                />
+              )}
+            </View>
+
+            {/* Pencil icon positioned outside the clipped container */}
             {editable && !uploading && (
-              <View className="absolute bottom-1 right-1 bg-black/60 rounded-full p-1">
-                <Ionicons name="pencil" size={16} color="white" />
+              <View className="absolute bottom-0 right-0">
+                <View className="bg-black/60 rounded-full p-1">
+                  <Ionicons name="pencil" size={16} color="white" />
+                </View>
               </View>
             )}
           </Pressable>
