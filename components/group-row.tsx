@@ -1,5 +1,5 @@
 import React from "react";
-import { TouchableOpacity, View, Text } from "react-native";
+import { TouchableOpacity, View, Text, Image } from "react-native";
 import { Group } from "../interfaces/group-interface";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import JoinGroupActionButton from "./group-join-action-button";
@@ -23,6 +23,14 @@ const GroupRow: React.FC<GroupRowProps> = ({ group, navigation, onAction }) => {
       }
       className="flex-row items-center bg-gray-100 mb-4 p-4 rounded-lg"
     >
+      {group.main_image ? (
+        <Image
+          source={{ uri: group.main_image.url }}
+          className="w-16 h-16 mr-4 rounded"
+        />
+      ) : (
+        <View className="w-16 h-16 bg-gray-300 mr-4 rounded" />
+      )}
       <View className="flex-1">
         <View className="flex-row items-center justify-between">
           <Text

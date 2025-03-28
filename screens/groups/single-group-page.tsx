@@ -20,6 +20,7 @@ import JoinGroupActionButton from "../../components/group-join-action-button";
 import { fetchGroupDetails } from "../../components/requests/fetch-group-and-users-data";
 import { DateDisplay } from "../../components/date-present";
 import { formatDateToHHMM } from "./components/edit-page-components";
+import ProfileImage from "../../components/profile-image";
 
 interface SingleGroupProps {
   navigation: any;
@@ -93,6 +94,15 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         {/* Header: Group Name, Join, Edit, Delete */}
         <View className="flex-row items-center justify-between mb-4">
+          {group && group.main_image && (
+            <ProfileImage
+              initialImageUrl={group.main_image.url}
+              size={60}
+              id={group._id}
+              uploadType="group"
+              editable={mongoId === group.created_by} // Only editable if the current user is the creator
+            />
+          )}
           <Text
             className="text-3xl font-bold flex-1"
             numberOfLines={1}
@@ -120,7 +130,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             </TouchableOpacity>
           )}
         </View>
-
         {/* Description */}
         <View className="p-4 border-b border-gray-200">
           <Text className="font-semibold text-gray-600">Description</Text>
@@ -128,7 +137,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             {group.description || "No description"}
           </Text>
         </View>
-
         {/* Trip Row */}
         {trip && (
           <TripRow
@@ -141,7 +149,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             }
           />
         )}
-
         {/* Hikers and Invite Friends Buttons */}
         {group.members && (
           <HikersSwitcher
@@ -150,7 +157,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             isAdmin={isAdmin}
           />
         )}
-
         {/* Row with two boxes */}
         <View className="flex-row justify-between mb-4 mt-6">
           <View className="flex-1 p-4 mr-2 border border-gray-200 rounded">
@@ -164,7 +170,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             </Text>
           </View>
         </View>
-
         {/* Meeting Point with Get Directions */}
         <View className="p-4 border-b border-gray-200 flex-row items-center justify-between">
           <View className="flex-1">
@@ -177,7 +182,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             <MapDirectionButton destination={group.meeting_point} />
           )}
         </View>
-
         {/* Embarked At */}
         <View className="p-4 border-b border-gray-200 flex-row items-center justify-between">
           <Text className="font-semibold text-gray-600">Embarked At</Text>
@@ -226,7 +230,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             <Text className="text-gray-800">Not set</Text>
           )}
         </View>
-
         {/* Scheduled Start */}
         <View className="p-4 border-b border-gray-200 flex-row items-center justify-between">
           <Text className="font-semibold text-gray-600">Scheduled Start</Text>
@@ -242,7 +245,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             <Text className="text-gray-800">Not set</Text>
           )}
         </View>
-
         {/* Scheduled End */}
         <View className="p-4 border-b border-gray-200 flex-row items-center justify-between">
           <Text className="font-semibold text-gray-600">Scheduled End</Text>
@@ -258,7 +260,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             <Text className="text-gray-800">Not set</Text>
           )}
         </View>
-
         {/* Created At */}
         <View className="p-4 border-b border-gray-200">
           <Text className="font-semibold text-gray-600">Created At</Text>
@@ -266,7 +267,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             {new Date(group.created_at).toLocaleString()}
           </Text>
         </View>
-
         {/* Updated At */}
         <View className="p-4">
           <Text className="font-semibold text-gray-600">Updated At</Text>
@@ -274,7 +274,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             {new Date(group.updated_at).toLocaleString()}
           </Text>
         </View>
-
         {/* Bottom Button to go to Group List */}
         <TouchableOpacity
           onPress={() => navigation.navigate("Tabs", { screen: "Groups" })}
