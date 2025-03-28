@@ -49,9 +49,9 @@ const TripRow: React.FC<TripRowProps> = ({
         onPress={() => onNavigate(trip._id, activeTab === "archived")}
         className="flex-row flex-1 items-center"
       >
-        {trip.images && trip.images.length > 0 ? (
+        {trip.main_image ? (
           <Image
-            source={{ uri: trip.images[0] }}
+            source={{ uri: trip.main_image?.url }}
             className="w-16 h-16 mr-4 rounded"
           />
         ) : (
