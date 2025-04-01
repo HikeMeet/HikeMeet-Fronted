@@ -19,6 +19,7 @@ interface IComment {
 export interface IPost {
   _id: string;
   author: IUser | string;
+  in_group?: string | Group;
   content?: string;
   images?: IImageModel[];
   attached_trip?: string | Trip;
@@ -28,8 +29,9 @@ export interface IPost {
   saves: string[];
   comments: IComment[];
   is_shared: boolean;
-  original_post?: string;
-  type: "regular" | "group" | "share";
+  privacy: "public" | "private";
+  original_post?: string | IPost;
+  type: "regular" | "share_trip" | "share_group";
   created_at: string;
   updated_at: string;
 }

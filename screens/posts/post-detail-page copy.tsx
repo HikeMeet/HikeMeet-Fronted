@@ -83,6 +83,7 @@ const PostDetailPage: React.FC = () => {
     typeof post.author === "object" ? post.author.profile_picture.url : ""
   );
 
+  // Convert post.images into an array of IImageModel
   const mediaItems: IImageModel[] = post.images!.map((item) => ({
     url: getUri(item.url),
     image_id: item.image_id,
@@ -128,6 +129,11 @@ const PostDetailPage: React.FC = () => {
               Posted on: {new Date(post.created_at).toLocaleString()}
             </Text>
 
+            {/* Privacy Text */}
+            <Text className="text-xs text-gray-500 mb-2">
+              Privacy: {post.privacy === "private" ? "Private" : "Public"}
+            </Text>
+
             {/* Post Actions */}
             <PostActions
               likes={post.likes.length}
@@ -158,7 +164,7 @@ const PostDetailPage: React.FC = () => {
         </ScrollView>
       </SafeAreaView>
 
-      {/* Fullscreen Modal */}
+      {/* Fullscreen Modal for Media Preview */}
       <Modal
         visible={modalVisible}
         animationType="slide"

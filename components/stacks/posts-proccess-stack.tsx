@@ -11,7 +11,7 @@ const PostStack = () => {
     <Stack.Navigator initialRouteName="CreatePostPage">
       <Stack.Screen
         name="CreatePostPage"
-        component={CreatePostPage}
+        component={CreatePostPage as React.ComponentType<any>}
         options={{ title: "Create Post", headerShown: false }}
       />
       <Stack.Screen

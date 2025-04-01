@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import {
+  Alert,
   ScrollView,
   Text,
   TextInput,
-  Alert,
   TouchableOpacity,
+  View,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,37 +15,47 @@ import { IImageModel } from "../../interfaces/image-interface";
 import SelectedMediaList, {
   ILocalMedia,
 } from "../../components/media-list-in-before-uploading";
+import ConfirmationModal from "../../components/confirmation-modal";
 
-const CreatePostPage: React.FC<any> = ({ navigation }) => {
+interface CreatePostPageProps {
+  navigation: any;
+  route: {
+    params: {
+      in_group?: boolean;
+      groupId?: string;
+    };
+  };
+}
+
+const CreatePostPage: React.FC<CreatePostPageProps> = ({
+  navigation,
+  route,
+}) => {
+  const { in_group, groupId } = route.params || {};
   const [content, setContent] = useState("");
-  // Store locally selected media (not yet uploaded)
   const [selectedMedia, setSelectedMedia] = useState<ILocalMedia[]>([]);
-  // State for uploaded media (IMediaItem)
   const [uploadedMedia, setUploadedMedia] = useState<IImageModel[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [privacy, setPrivacy] = useState<"public" | "private">("public");
   const { mongoId } = useAuth();
+  const [confirmationVisible, setConfirmationVisible] = useState(false);
+  const [postId, setPostId] = useState<String>("");
 
-  // Allow multiple selection from gallery
+  // Allow multiple selection from gallery.
   const pickMedia = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
-      Alert.alert(
-        "Permission required",
-        "Permission to access media is required!"
-      );
+      // You can show an alert or handle permission denial here.
       return;
     }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: false,
       quality: 1,
-      allowsMultipleSelection: true, // enable multiple selection
+      allowsMultipleSelection: true,
     });
-
     if (!result.canceled) {
-      // result.assets is an array when multiple selection is enabled
       const newMedia = result.assets.map((asset) => ({
         uri: asset.uri,
         type: asset.type === "video" ? "video" : "image",
@@ -53,12 +64,12 @@ const CreatePostPage: React.FC<any> = ({ navigation }) => {
     }
   };
 
-  // Remove a selected media item
+  // Remove a selected media item.
   const removeSelectedMedia = (index: number) => {
     setSelectedMedia((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Submit the post and upload media
+  // Submit the post and upload media.
   const submitPost = async () => {
     setUploading(true);
     let uploadedItems: IImageModel[] = [];
@@ -82,6 +93,8 @@ const CreatePostPage: React.FC<any> = ({ navigation }) => {
         attached_trip: null,
         attached_group: null,
         is_shared: false,
+        privacy, // include privacy option in the postData
+        in_group: in_group ? groupId : undefined,
       };
 
       const response = await fetch(
@@ -95,9 +108,11 @@ const CreatePostPage: React.FC<any> = ({ navigation }) => {
       const result = await response.json();
       if (response.ok) {
         console.log("Post created successfully:", result.post._id);
-        Alert.alert("Success", "Post created successfully.");
-        navigation.replace("PostPage", { postId: result.post._id });
+        // Instead of using an alert, show the confirmation modal.
+        setPostId(result.post._id);
+        setConfirmationVisible(true);
       } else {
+        // You may still want to alert on error.
         Alert.alert("Error", result.error || "Failed to create post.");
       }
     } catch (error) {
@@ -125,6 +140,38 @@ const CreatePostPage: React.FC<any> = ({ navigation }) => {
           media={selectedMedia}
           onRemove={removeSelectedMedia}
         />
+        {/* Privacy Option */}
+        <Text className="text-lg font-semibold mb-2">Privacy:</Text>
+        <View className="flex-row mb-4">
+          <TouchableOpacity
+            className={`p-3 rounded border ${
+              privacy === "public"
+                ? "bg-blue-500 border-blue-500"
+                : "bg-white border-gray-300"
+            }`}
+            onPress={() => setPrivacy("public")}
+          >
+            <Text
+              className={`${privacy === "public" ? "text-white" : "text-black"}`}
+            >
+              Public
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className={`p-3 rounded ml-4 border ${
+              privacy === "private"
+                ? "bg-blue-500 border-blue-500"
+                : "bg-white border-gray-300"
+            }`}
+            onPress={() => setPrivacy("private")}
+          >
+            <Text
+              className={`${privacy === "private" ? "text-white" : "text-black"}`}
+            >
+              Private
+            </Text>
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity
           className="bg-blue-500 p-3 rounded items-center mb-4"
           onPress={pickMedia}
@@ -142,6 +189,19 @@ const CreatePostPage: React.FC<any> = ({ navigation }) => {
           <Text className="text-white">Submit Post</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        visible={confirmationVisible}
+        message="Post created successfully!"
+        onConfirm={() => {
+          setConfirmationVisible(false);
+          // Navigate to the PostPage using the created post's ID
+          // (Assuming you have stored it or retrieved it as needed.)
+          navigation.replace("PostPage", { postId: postId });
+        }}
+        onCancel={() => setConfirmationVisible(false)}
+      />
     </SafeAreaView>
   );
 };
