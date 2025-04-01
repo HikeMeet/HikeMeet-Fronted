@@ -1,7 +1,5 @@
-export interface IImageModel {
-  url: string;
-  image_id: string;
-}
+import { IImageModel } from "./image-interface";
+
 export interface Trip {
   _id: string;
   name: string;

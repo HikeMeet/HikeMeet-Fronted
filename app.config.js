@@ -42,6 +42,13 @@ export default ({ config }) => ({
           RNMapboxMapsDownloadToken: process.env.MAPBOX_TOKEN,
         },
       ],
+      [
+        "expo-video",
+        {
+          supportsBackgroundPlayback: true,
+          supportsPictureInPicture: true,
+        },
+      ],
     ],
     extra: {
       router: {
