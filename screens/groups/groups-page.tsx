@@ -94,26 +94,14 @@ const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
       {/* Buttons row: My Groups and Create Group */}
       <View className="flex-row justify-between mb-4">
         <TouchableOpacity
-          onPress={() => setShowMyGroups((prev) => !prev)}
+          onPress={() => {
+            handleAction();
+            setShowMyGroups((prev) => !prev);
+          }}
           className="bg-blue-500 px-4 py-2 rounded relative"
         >
-          {showMyGroups && (
-            <View
-              pointerEvents="none"
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                borderWidth: 2,
-                borderColor: "#1E40AF", // blue-900 color
-                borderRadius: 8, // match the parent's rounded value
-              }}
-            />
-          )}
           <Text className="text-white text-sm font-semibold text-center">
-            My Groups
+            {showMyGroups ? "All Groups" : "All GroupsMy Groups"}
           </Text>
         </TouchableOpacity>
 

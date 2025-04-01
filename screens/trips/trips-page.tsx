@@ -11,6 +11,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Trip } from "../../interfaces/trip-interface";
 import TripRow from "../../components/trip-row";
+import { useAuth } from "../../contexts/auth-context";
+import { ITripHistoryEntry } from "../../interfaces/user-interface";
 
 interface UserTripProps {
   route: any;
@@ -19,28 +21,72 @@ interface UserTripProps {
 
 const TripsPage: React.FC<UserTripProps> = ({ navigation }) => {
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [tripsHistory, setTripsHistory] = useState<ITripHistoryEntry[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
+  const [showHistory, setShowHistory] = useState(false);
+  const { mongoUser } = useAuth();
+  const fetchTrips = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/trips/all`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch trips");
+      }
+      const data: Trip[] = await response.json();
+      setTrips(data);
+    } catch (error) {
+      console.error("Error fetching trips:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchTrips = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.EXPO_LOCAL_SERVER}/api/trips/all`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch trips");
-        }
-        const data: Trip[] = await response.json();
-        setTrips(data);
-      } catch (error) {
-        console.error("Error fetching trips:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTrips();
   }, []);
+
+  // Function to fetch trips from the user's trip history.
+  const fetchTripHistory = async () => {
+    try {
+      setLoading(true);
+      // Extract trip IDs from the user's trip_history.
+      const tripIds = mongoUser!.trip_history.map((entry) => entry.trip);
+
+      setTripsHistory(mongoUser!.trip_history);
+      if (tripIds.length === 0) {
+        setTrips([]); // No history entries.
+        return;
+      }
+      // Build a comma-separated string of IDs.
+      const idsString = tripIds.join(",");
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/trips/list-by-ids?ids=${idsString}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch trip history");
+      }
+      const data: Trip[] = await response.json();
+      setTrips(data);
+    } catch (error) {
+      console.error("Error fetching trip history:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Toggle between all trips and trip history.
+  const toggleTrips = () => {
+    if (!showHistory) {
+      // Show trip history.
+      fetchTripHistory();
+    } else {
+      // Show all trips.
+      fetchTrips();
+    }
+    setShowHistory(!showHistory);
+  };
 
   const filteredTrips = trips.filter((trip) =>
     trip.name.toLowerCase().includes(searchText.toLowerCase())
@@ -65,8 +111,13 @@ const TripsPage: React.FC<UserTripProps> = ({ navigation }) => {
 
       {/* Buttons row: Trip History and + Add Trip */}
       <View className="flex-row justify-between mb-4">
-        <TouchableOpacity className="bg-blue-500 px-4 py-2 rounded">
-          <Text className="text-white font-semibold">Trip History</Text>
+        <TouchableOpacity
+          className="bg-blue-500 px-4 py-2 rounded"
+          onPress={toggleTrips}
+        >
+          <Text className="text-white font-semibold">
+            {showHistory ? "All Trips" : "Trip History"}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => navigation.navigate("TripsStack")}
@@ -81,18 +132,23 @@ const TripsPage: React.FC<UserTripProps> = ({ navigation }) => {
         {loading ? (
           <ActivityIndicator size="large" color="#0000ff" />
         ) : (
-          filteredTrips.map((trip) => (
-            <TripRow
-              key={trip._id}
-              trip={trip}
-              onPress={() =>
-                navigation.navigate("TripsStack", {
-                  screen: "TripPage",
-                  params: { tripId: trip._id },
-                })
-              }
-            />
-          ))
+          filteredTrips.map((trip, index) => {
+            // Use the index to access the corresponding trip history entry
+            const completedAt = tripsHistory[index]?.completed_at;
+            return (
+              <TripRow
+                key={`${trip._id}-${index}`}
+                trip={trip}
+                completedAt={completedAt} // Pass the completed_at field as a prop
+                onPress={() =>
+                  navigation.navigate("TripsStack", {
+                    screen: "TripPage",
+                    params: { tripId: trip._id },
+                  })
+                }
+              />
+            );
+          })
         )}
       </ScrollView>
     </SafeAreaView>

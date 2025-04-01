@@ -6,7 +6,10 @@ export interface IProfilePicture {
   url: string;
   image_id: string;
 }
-
+export interface ITripHistoryEntry {
+  trip: string;
+  completed_at: Date;
+}
 export interface MongoUser {
   username: string;
   email: string;
@@ -23,6 +26,7 @@ export interface MongoUser {
     posts_saved: string[];
     posts_liked: string[];
   };
+  trip_history: ITripHistoryEntry[];
   firebase_id: string;
   created_on: string;
   updated_on: string;
