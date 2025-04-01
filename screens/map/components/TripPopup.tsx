@@ -1,11 +1,11 @@
 import React from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Image } from "react-native";
 import { Trip } from "../map-page";
 
 type TripPopupProps = {
   trip: Trip;
   onClose: () => void;
-  onGroupPress: (groupId: string) => void;
+  onGroupPress: (groupId: string, action: "join" | "details") => void;
   onAddGroup: () => void;
 };
 
@@ -16,71 +16,107 @@ export default function TripPopup({
   onAddGroup,
 }: TripPopupProps) {
   return (
-    <View className="absolute bottom-0 left-0 right-0 bg-white p-5 rounded-t-3xl shadow-xl max-h-[50%] border-t-[1px] border-gray-200">
-      <View className="mb-4">
-        <Text className="text-2xl font-extrabold text-gray-900">
-          {trip.name}
-        </Text>
-        <Text className="text-sm text-gray-500 mt-1">
-          Join one of the available groups
-        </Text>
+    <View className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl max-h-[60%] px-5 pt-4 pb-6 border-t border-gray-200">
+      {/* Handle בראש */}
+      <View className="w-12 h-1.5 bg-gray-300 rounded-full self-center mb-4" />
+
+      {/* כותרת עם תמונה */}
+      <View className="flex-row items-center mb-4">
+        {trip.main_image?.url && (
+          <Image
+            source={{ uri: trip.main_image.url }}
+            className="w-14 h-14 rounded-xl mr-4"
+            resizeMode="cover"
+          />
+        )}
+        <View className="flex-1">
+          <Text className="text-xl font-semibold text-gray-900">
+            {trip.name}
+          </Text>
+          <Text className="text-sm text-gray-500">
+            {trip.location?.address ?? "No address"}
+          </Text>
+        </View>
       </View>
 
-      <ScrollView className="max-h-40 mb-4">
+      {/* רשימת קבוצות */}
+      <Text className="text-base font-medium text-gray-700 mb-2">
+        Available Groups
+      </Text>
+
+      <ScrollView
+        className="max-h-48 mb-4"
+        showsVerticalScrollIndicator={false}
+      >
         {!trip.groups || trip.groups.length === 0 ? (
-          <Text className="text-gray-400 text-center italic">
-            No groups available for this trip.
-          </Text>
+          <Text className="text-gray-400 italic mt-2">No groups yet.</Text>
         ) : (
           trip.groups.map((group) => {
             const spotsLeft = group.max_members - group.membersCount;
             const isFull = spotsLeft <= 0;
 
             return (
-              <TouchableOpacity
+              <View
                 key={group._id}
-                onPress={() => onGroupPress(group._id)}
-                className={`mb-3 p-4 rounded-xl ${
-                  isFull ? "bg-gray-100" : "bg-blue-50"
-                } border border-gray-200`}
+                className="mb-3 border border-gray-200 rounded-2xl p-4 bg-gray-50 shadow-sm"
               >
-                <View className="flex-row justify-between items-center mb-1">
-                  <Text className="text-lg font-semibold text-gray-800">
-                    {group.name}
-                  </Text>
-                  <Text
-                    className={`text-xs font-medium ${isFull ? "text-red-500" : "text-green-600"}`}
-                  >
-                    {isFull ? "Full" : `${spotsLeft} Spots Left`}
-                  </Text>
-                </View>
+                <Text className="text-lg font-semibold text-gray-800">
+                  {group.name}
+                </Text>
                 <Text className="text-sm text-gray-600 mb-1">
                   Leader: {group.leaderName}
                 </Text>
-                <Text className="text-sm text-gray-700">
-                  {group.membersCount} / {group.max_members} Joined
+                <Text className="text-sm text-gray-600 mb-2">
+                  {group.membersCount}/{group.max_members} joined{" "}
+                  {isFull ? (
+                    <Text className="text-red-500 font-semibold">• Full</Text>
+                  ) : (
+                    <Text className="text-green-500 font-semibold">
+                      • {spotsLeft} left
+                    </Text>
+                  )}
                 </Text>
-              </TouchableOpacity>
+
+                <View className="flex-row space-x-2">
+                  {!isFull && (
+                    <TouchableOpacity
+                      onPress={() => onGroupPress(group._id, "join")}
+                      className="flex-1 bg-green-500 px-4 py-2 rounded-xl"
+                    >
+                      <Text className="text-center text-white font-semibold">
+                        Join
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity
+                    onPress={() => onGroupPress(group._id, "details")}
+                    className="flex-1 bg-blue-500 px-4 py-2 rounded-xl"
+                  >
+                    <Text className="text-center text-white font-semibold">
+                      Details
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             );
           })
         )}
       </ScrollView>
 
-      <View className="flex-row justify-between items-center">
-        <TouchableOpacity
-          onPress={onAddGroup}
-          className="bg-blue-600 px-5 py-2 rounded-full shadow-sm"
-        >
-          <Text className="text-white font-semibold text-sm">+ Add Group</Text>
-        </TouchableOpacity>
+      {/* כפתור הוספה */}
+      <TouchableOpacity
+        onPress={onAddGroup}
+        className="bg-purple-600 py-3 px-5 rounded-2xl mb-3"
+      >
+        <Text className="text-center text-white font-semibold text-base">
+          + Create Group
+        </Text>
+      </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={onClose}
-          className="px-4 py-2 rounded-full border border-gray-300"
-        >
-          <Text className="text-gray-700 text-sm">Close</Text>
-        </TouchableOpacity>
-      </View>
+      {/* כפתור סגירה */}
+      <TouchableOpacity onPress={onClose} className="self-center mt-1">
+        <Text className="text-gray-500 underline text-sm">Close</Text>
+      </TouchableOpacity>
     </View>
   );
 }
