@@ -5,26 +5,21 @@ import {
   ScrollView,
   Text,
   View,
-  TouchableOpacity,
   Modal,
-  Dimensions,
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { IPost } from "../../interfaces/post-interface";
-import { useVideoPlayer, VideoView } from "expo-video";
-import { useEvent } from "expo";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PostActions from "./components/post-action-buttons";
-import { FontAwesome } from "@expo/vector-icons";
+import MediaList from "../../components/media-list-after-upload";
+import FullScreenMediaModal from "../../components/media-fullscreen-modal";
+import { IImageModel } from "../../interfaces/image-interface";
 
 interface PostDetailPageRouteParams {
   postId: string;
   fromCreate?: boolean;
 }
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-
-// Helper function to extract a URI string from a value.
 const getUri = (data: any): string => {
   if (typeof data === "string") return data;
   if (
@@ -36,51 +31,6 @@ const getUri = (data: any): string => {
     return data.uri;
   }
   return "";
-};
-
-// FullScreenVideo component using expo-video's API
-interface FullScreenVideoProps {
-  videoUrl: string;
-}
-const FullScreenVideo: React.FC<FullScreenVideoProps> = ({ videoUrl }) => {
-  const player = useVideoPlayer(videoUrl, (player) => {
-    player.loop = true;
-    player.play();
-  });
-  // Listen to playing change events (optional)
-  const { isPlaying } = useEvent(player, "playingChange", {
-    isPlaying: player.playing,
-  });
-
-  return (
-    <View className="flex-1 bg-black justify-center items-center">
-      <VideoView
-        style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT }}
-        player={player}
-        allowsFullscreen
-        allowsPictureInPicture
-        contentFit="contain" // Using contentFit instead of resizeMode
-      />
-      <TouchableOpacity
-        onPress={() => {
-          if (isPlaying) {
-            player.pause();
-          } else {
-            player.play();
-          }
-        }}
-        style={{
-          position: "absolute",
-          bottom: 50,
-          backgroundColor: "rgba(255,255,255,0.7)",
-          padding: 10,
-          borderRadius: 5,
-        }}
-      >
-        <Text style={{ color: "black" }}>{isPlaying ? "Pause" : "Play"}</Text>
-      </TouchableOpacity>
-    </View>
-  );
 };
 
 const PostDetailPage: React.FC = () => {
@@ -99,7 +49,6 @@ const PostDetailPage: React.FC = () => {
         );
         const data = await response.json();
         setPost(data.post);
-        console.log(data.post);
       } catch (error) {
         console.error("Error fetching post details:", error);
       } finally {
@@ -130,10 +79,17 @@ const PostDetailPage: React.FC = () => {
     );
   }
 
-  // Extract the author's profile picture URI (assuming profile_picture is an object with a uri property or a string).
   const authorProfilePic = getUri(
     typeof post.author === "object" ? post.author.profile_picture.url : ""
   );
+
+  const mediaItems: IImageModel[] = post.images!.map((item) => ({
+    url: getUri(item.url),
+    image_id: item.image_id,
+    type: item.type,
+    video_sceenshot_url:
+      item.type === "video" ? item.video_sceenshot_url : undefined,
+  }));
 
   return (
     <>
@@ -158,56 +114,21 @@ const PostDetailPage: React.FC = () => {
             </View>
 
             {/* Post Content */}
-            {post.content ? (
+            {post.content && (
               <Text className="text-base mb-4">{post.content}</Text>
-            ) : null}
+            )}
 
             {/* Media Section */}
-            {/* Media Section */}
-            {post.images &&
-              Array.isArray(post.images) &&
-              post.images.length > 0 && (
-                <ScrollView horizontal className="mb-4">
-                  {post.images.map((item, index) => {
-                    // Use the video screenshot if it's a video, otherwise the normal URL
-                    const uri =
-                      item.type === "video"
-                        ? item.video_sceenshot_url || getUri(item.url)
-                        : getUri(item.url);
-                    if (!uri) return null;
-                    return (
-                      <TouchableOpacity
-                        key={index}
-                        onPress={() => openFullScreen(index)}
-                      >
-                        <View className="relative">
-                          <Image
-                            source={{ uri }}
-                            className="w-64 h-64 rounded mr-2"
-                            resizeMode="cover"
-                          />
-                          {item.type === "video" && (
-                            <View className="absolute inset-0 justify-center items-center">
-                              <FontAwesome
-                                name="play-circle"
-                                size={40}
-                                color="white"
-                              />
-                            </View>
-                          )}
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </ScrollView>
-              )}
+            {mediaItems.length > 0 && (
+              <MediaList media={mediaItems} onPressItem={openFullScreen} />
+            )}
 
             {/* Post Meta */}
-            <Text className="text-sm text-gray-500 mb-2">
+            <Text className="text-sm text-gray-600 mb-2">
               Posted on: {new Date(post.created_at).toLocaleString()}
             </Text>
 
-            {/* Post Actions: Likes and Shares */}
+            {/* Post Actions */}
             <PostActions
               likes={post.likes.length}
               shares={post.shares.length}
@@ -220,9 +141,7 @@ const PostDetailPage: React.FC = () => {
             {/* Comments */}
             {post.comments && post.comments.length > 0 && (
               <>
-                <Text className="text-base font-semibold mb-2 mt-4">
-                  Comments:
-                </Text>
+                <Text className="text-base font-semibold my-2">Comments:</Text>
                 {post.comments.map((comment, index) => (
                   <View key={index} className="mb-2">
                     <Text className="text-sm font-bold">
@@ -239,35 +158,17 @@ const PostDetailPage: React.FC = () => {
         </ScrollView>
       </SafeAreaView>
 
-      {/* Fullscreen Modal for Media Preview */}
+      {/* Fullscreen Modal */}
       <Modal
         visible={modalVisible}
         animationType="slide"
         onRequestClose={() => setModalVisible(false)}
       >
-        <SafeAreaView className="flex-1 bg-black">
-          {post.images &&
-            post.images[selectedMediaIndex] &&
-            (() => {
-              const uri = getUri(post.images[selectedMediaIndex].url);
-              if (!uri) return null;
-              return post.images[selectedMediaIndex].type === "video" ? (
-                <FullScreenVideo videoUrl={uri} />
-              ) : (
-                <Image
-                  source={{ uri }}
-                  className="w-full h-full"
-                  resizeMode="contain"
-                />
-              );
-            })()}
-          <TouchableOpacity
-            className="absolute top-10 right-5 bg-white/70 p-2 rounded-full"
-            onPress={() => setModalVisible(false)}
-          >
-            <Text className="text-black text-lg">Close</Text>
-          </TouchableOpacity>
-        </SafeAreaView>
+        <FullScreenMediaModal
+          media={mediaItems}
+          initialIndex={selectedMediaIndex}
+          onClose={() => setModalVisible(false)}
+        />
       </Modal>
     </>
   );

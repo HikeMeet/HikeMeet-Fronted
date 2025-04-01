@@ -4,10 +4,7 @@ import {
   Text,
   TextInput,
   Alert,
-  View,
   TouchableOpacity,
-  Image,
-  ActivityIndicator,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,7 +13,7 @@ import { uploadMedia } from "../../components/cloudinary-upload";
 import { IImageModel } from "../../interfaces/image-interface";
 import SelectedMediaList, {
   ILocalMedia,
-} from "../../components/media-list-component";
+} from "../../components/media-list-in-before-uploading";
 
 const CreatePostPage: React.FC<any> = ({ navigation }) => {
   const [content, setContent] = useState("");
@@ -102,7 +99,6 @@ const CreatePostPage: React.FC<any> = ({ navigation }) => {
         navigation.replace("PostPage", { postId: result.post._id });
       } else {
         Alert.alert("Error", result.error || "Failed to create post.");
-        // Optionally, remove uploaded media from Cloudinary if needed
       }
     } catch (error) {
       console.error("Error creating post:", error);
@@ -113,30 +109,13 @@ const CreatePostPage: React.FC<any> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView>
-      <ScrollView
-        contentContainerStyle={{ padding: 16 }}
-        style={{ backgroundColor: "white" }}
-      >
-        <Text
-          style={{
-            fontSize: 24,
-            fontWeight: "bold",
-            marginBottom: 16,
-            textAlign: "center",
-          }}
-        >
+    <SafeAreaView className="bg-white flex-1">
+      <ScrollView contentContainerStyle={{ padding: 16 }} className="bg-white">
+        <Text className="text-2xl font-bold mb-4 text-center">
           Create a Post
         </Text>
         <TextInput
-          style={{
-            borderWidth: 1,
-            borderColor: "#ccc",
-            padding: 12,
-            borderRadius: 8,
-            marginBottom: 16,
-            minHeight: 100,
-          }}
+          className="border border-gray-300 p-3 rounded mb-4 min-h-[100px]"
           multiline
           placeholder="What's on your mind?"
           value={content}
@@ -147,31 +126,20 @@ const CreatePostPage: React.FC<any> = ({ navigation }) => {
           onRemove={removeSelectedMedia}
         />
         <TouchableOpacity
-          style={{
-            backgroundColor: "#3b82f6",
-            padding: 12,
-            borderRadius: 8,
-            alignItems: "center",
-            marginBottom: 16,
-          }}
+          className="bg-blue-500 p-3 rounded items-center mb-4"
           onPress={pickMedia}
           disabled={uploading}
         >
-          <Text style={{ color: "white" }}>
+          <Text className="text-white">
             {uploading ? "Uploading..." : "Pick Media"}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={{
-            backgroundColor: "#10b981",
-            padding: 12,
-            borderRadius: 8,
-            alignItems: "center",
-          }}
+          className="bg-green-500 p-3 rounded items-center"
           onPress={submitPost}
           disabled={uploading}
         >
-          <Text style={{ color: "white" }}>Submit Post</Text>
+          <Text className="text-white">Submit Post</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
