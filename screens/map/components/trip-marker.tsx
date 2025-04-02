@@ -21,9 +21,7 @@ export default function TripMarker({
   onPressMarker,
 }: TripMarkerProps) {
   const groupCount = (trip.groups || []).length;
-
-  // Dynamic size based on screen width (between 40 and 64)
-  const imageSize = Math.max(40, Math.min(64, SCREEN_WIDTH * 0.12));
+  const imageSize = Math.max(50, Math.min(72, SCREEN_WIDTH * 0.14));
 
   return (
     <Mapbox.MarkerView
@@ -34,8 +32,10 @@ export default function TripMarker({
         onPress={() => onPressMarker(trip)}
         activeOpacity={0.9}
         className="items-center"
+        style={{ gap: 6 }}
       >
-        <View className="relative mb-1 shadow-lg">
+        {/* תמונה עגולה */}
+        <View className="relative shadow-xl">
           {trip.main_image?.url ? (
             <Image
               source={{ uri: trip.main_image.url }}
@@ -43,8 +43,8 @@ export default function TripMarker({
                 width: imageSize,
                 height: imageSize,
                 borderRadius: imageSize / 2,
-                borderWidth: 3,
-                borderColor: "white",
+                borderWidth: 2,
+                borderColor: "#ffffff",
               }}
               resizeMode="cover"
             />
@@ -54,30 +54,45 @@ export default function TripMarker({
                 width: imageSize,
                 height: imageSize,
                 borderRadius: imageSize / 2,
-                borderWidth: 3,
-                borderColor: "white",
+                borderWidth: 2,
+                borderColor: "#ffffff",
               }}
-              className="bg-gray-400 items-center justify-center"
+              className="bg-gradient-to-br from-gray-400 to-gray-500 items-center justify-center"
             >
-              <Text className="text-white font-bold text-xl">
+              <Text className="text-white font-extrabold text-lg">
                 {trip.name?.charAt(0).toUpperCase()}
               </Text>
             </View>
           )}
 
           {groupCount > 0 && (
-            <View className="absolute -top-1 -left-1 bg-purple-700 rounded-full w-6 h-6 items-center justify-center border border-white shadow-md">
+            <View className="absolute -top-22 -left-1 bg-green-700 rounded-full w-6 h-6 items-center justify-center border border-white shadow-md">
               <Text className="text-white text-xs font-bold">{groupCount}</Text>
             </View>
           )}
         </View>
 
+        {/* תגית שם טיול */}
         <View
-          className={`px-3 py-1 mt-1 rounded-full shadow-sm ${
-            hasAvailability ? "bg-green-600" : "bg-red-500"
+          className={`flex-row items-center px-3 py-[6px] rounded-full border shadow-sm ${
+            hasAvailability
+              ? "bg-emerald-100 border-emerald-500"
+              : "bg-rose-100 border-rose-500"
           }`}
         >
-          <Text className="text-white text-sm font-semibold">{trip.name}</Text>
+          <View
+            className={`w-2 h-2 rounded-full mr-2 ${
+              hasAvailability ? "bg-emerald-600" : "bg-rose-600"
+            }`}
+          />
+          <Text
+            className={`text-[13px] font-semibold ${
+              hasAvailability ? "text-emerald-800" : "text-rose-700"
+            }`}
+            numberOfLines={1}
+          >
+            {trip.name}
+          </Text>
         </View>
       </TouchableOpacity>
     </Mapbox.MarkerView>
