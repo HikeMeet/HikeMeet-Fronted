@@ -48,7 +48,7 @@ const InnerPostCard: React.FC<InnerPostCardProps> = ({ post, navigation }) => {
             <Image
               key={idx}
               source={{ uri: typeof img.url === "string" ? img.url : "" }}
-              className="w-20 h-20 rounded-md mr-2"
+              className="w-32 h-32 rounded-md mr-2"
               resizeMode="cover"
             />
           ))}
