@@ -21,7 +21,7 @@ interface CreatePostPageProps {
   navigation: any;
   route: {
     params: {
-      in_group?: boolean;
+      inGroup?: boolean;
       groupId?: string;
     };
   };
@@ -31,7 +31,7 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
   navigation,
   route,
 }) => {
-  const { in_group, groupId } = route.params || {};
+  const { inGroup: in_group = false, groupId } = route.params || {};
   const [content, setContent] = useState("");
   const [selectedMedia, setSelectedMedia] = useState<ILocalMedia[]>([]);
   const [uploadedMedia, setUploadedMedia] = useState<IImageModel[]>([]);
@@ -40,7 +40,8 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
   const { mongoId } = useAuth();
   const [confirmationVisible, setConfirmationVisible] = useState(false);
   const [postId, setPostId] = useState<String>("");
-
+  // console.log("sssssssssssss", in_group);
+  // console.log("sssssssssssss", groupId);
   // Allow multiple selection from gallery.
   const pickMedia = async () => {
     const permissionResult =
@@ -93,7 +94,7 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
         attached_trip: null,
         attached_group: null,
         is_shared: false,
-        privacy, // include privacy option in the postData
+        privacy: in_group ? "private" : privacy, // include privacy option in the postData
         in_group: in_group ? groupId : undefined,
       };
 
@@ -141,37 +142,42 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
           onRemove={removeSelectedMedia}
         />
         {/* Privacy Option */}
-        <Text className="text-lg font-semibold mb-2">Privacy:</Text>
-        <View className="flex-row mb-4">
-          <TouchableOpacity
-            className={`p-3 rounded border ${
-              privacy === "public"
-                ? "bg-blue-500 border-blue-500"
-                : "bg-white border-gray-300"
-            }`}
-            onPress={() => setPrivacy("public")}
-          >
-            <Text
-              className={`${privacy === "public" ? "text-white" : "text-black"}`}
-            >
-              Public
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className={`p-3 rounded ml-4 border ${
-              privacy === "private"
-                ? "bg-blue-500 border-blue-500"
-                : "bg-white border-gray-300"
-            }`}
-            onPress={() => setPrivacy("private")}
-          >
-            <Text
-              className={`${privacy === "private" ? "text-white" : "text-black"}`}
-            >
-              Private
-            </Text>
-          </TouchableOpacity>
-        </View>
+        {!in_group && (
+          <>
+            <Text className="text-lg font-semibold mb-2">Privacy:</Text>
+            <View className="flex-row mb-4">
+              <TouchableOpacity
+                className={`p-3 rounded border ${
+                  privacy === "public"
+                    ? "bg-blue-500 border-blue-500"
+                    : "bg-white border-gray-300"
+                }`}
+                onPress={() => setPrivacy("public")}
+              >
+                <Text
+                  className={`${privacy === "public" ? "text-white" : "text-black"}`}
+                >
+                  Public
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className={`p-3 rounded ml-4 border ${
+                  privacy === "private"
+                    ? "bg-blue-500 border-blue-500"
+                    : "bg-white border-gray-300"
+                }`}
+                onPress={() => setPrivacy("private")}
+              >
+                <Text
+                  className={`${privacy === "private" ? "text-white" : "text-black"}`}
+                >
+                  Private
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+
         <TouchableOpacity
           className="bg-blue-500 p-3 rounded items-center mb-4"
           onPress={pickMedia}

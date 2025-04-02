@@ -12,7 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
 import BioSection from "../../components/profile-bio-section";
-import CreatePostButton from "../../components/create-post-buton";
+import CreatePostButton from "../posts/components/create-post-buton";
 import HikerButton from "../../components/profile-hikers-button";
 import HikersList from "../../components/hikers-list-in-profile";
 import ProfileImage from "../../components/profile-image";

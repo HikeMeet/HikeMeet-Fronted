@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,31 +8,35 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styled } from "nativewind";
-import CreatePostButton from "../../components/create-post-buton";
+import CreatePostButton from "../posts/components/create-post-buton";
 import SearchInput from "../../components/search-input";
 import PostCard from "../posts/components/post-card-on-feeds";
+import { useFocusEffect } from "@react-navigation/native";
+import { IPost } from "../../interfaces/post-interface";
 
 const Home = ({ navigation }: any) => {
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<IPost[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.EXPO_LOCAL_SERVER}/api/post/all`
-        );
-        const data = await response.json();
-        // Assuming the route returns { posts: [...] }
-        setPosts(data.posts);
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPosts();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      const fetchPosts = async () => {
+        try {
+          const response = await fetch(
+            `${process.env.EXPO_LOCAL_SERVER}/api/post/all?privacy=public`
+          );
+          const data = await response.json();
+          // Assuming the route returns { posts: [...] }
+          setPosts(data.posts);
+        } catch (error) {
+          console.error("Error fetching posts:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchPosts();
+    }, [])
+  );
 
   return (
     <View className="flex-1 bg-white">
@@ -75,16 +79,7 @@ const Home = ({ navigation }: any) => {
           <ActivityIndicator size="large" color="#0000ff" />
         ) : (
           posts.map((post) => (
-            <PostCard
-              key={post._id}
-              post={post}
-              onPress={() =>
-                navigation.navigate("PostStack", {
-                  screen: "PostPage",
-                  params: { postId: post._id },
-                })
-              }
-            />
+            <PostCard key={post._id} post={post} navigation={navigation} />
           ))
         )}
       </ScrollView>

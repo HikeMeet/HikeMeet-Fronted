@@ -2,13 +2,14 @@ import React from "react";
 import { ScrollView, TouchableOpacity, Image, Text, View } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { IPost } from "../../../interfaces/post-interface";
+import PostActions from "./post-action-buttons";
 
 interface PostCardProps {
   post: IPost;
-  onPress?: () => void;
+  navigation: any;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, onPress }) => {
+const PostCard: React.FC<PostCardProps> = ({ post, navigation }) => {
   // Extract author details
   const author =
     typeof post.author === "object"
@@ -85,14 +86,19 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPress }) => {
           )}
           {post.images && post.images.length > 0 && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {post.images.map((img, idx) => (
-                <Image
-                  key={idx}
-                  source={{ uri: img.url }}
-                  className="w-40 h-40 rounded mr-2"
-                  resizeMode="cover"
-                />
-              ))}
+              {post.images.map((img, idx) => {
+                const isVideo = img.type === "video";
+                const previewUrl = isVideo ? img.video_sceenshot_url : img.url;
+
+                return (
+                  <Image
+                    key={idx}
+                    source={{ uri: previewUrl }}
+                    className="w-40 h-40 rounded mr-2"
+                    resizeMode="cover"
+                  />
+                );
+              })}
             </ScrollView>
           )}
         </View>
@@ -102,27 +108,24 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPress }) => {
 
   // Render footer: action buttons.
   const renderFooter = () => (
-    <View className="flex-row justify-around p-2 border-t border-gray-200">
-      <TouchableOpacity className="flex-row items-center">
-        <FontAwesome name="thumbs-up" size={20} color="gray" />
-        <Text className="text-xs text-gray-600 ml-1">{post.likes.length}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity className="flex-row items-center">
-        <FontAwesome name="comment" size={20} color="gray" />
-        <Text className="text-xs text-gray-600 ml-1">
-          {post.comments.length}
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity className="flex-row items-center">
-        <FontAwesome name="share" size={20} color="gray" />
-        <Text className="text-xs text-gray-600 ml-1">{post.shares.length}</Text>
-      </TouchableOpacity>
-    </View>
+    <PostActions
+      likes={post.likes.length}
+      shares={post.shares.length}
+      saves={post.saves.length}
+      onLike={() => console.log("Like clicked!")}
+      onShare={() => console.log("Share clicked!")}
+      onSave={() => console.log("Save clicked!")}
+    />
   );
 
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={() =>
+        navigation.navigate("PostStack", {
+          screen: "PostPage",
+          params: { postId: post._id },
+        })
+      }
       className="bg-white rounded-lg shadow mb-4"
     >
       {renderHeader()}
