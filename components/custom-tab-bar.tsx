@@ -68,6 +68,8 @@ const getIconName = (routeName: string) => {
       return "map-marker";
     case "Chats":
       return "chat";
+    case "Map":
+      return "map";
     default:
       return "help-circle";
   }

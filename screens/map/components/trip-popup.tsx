@@ -1,12 +1,14 @@
 import React from "react";
 import { View, Text, ScrollView, TouchableOpacity, Image } from "react-native";
 import { Trip } from "../map-page";
+import JoinGroupActionButton from "../../../components/group-join-action-button";
 
 type TripPopupProps = {
   trip: Trip;
   onClose: () => void;
   onGroupPress: (groupId: string, action: "join" | "details") => void;
   onAddGroup: () => void;
+  navigation: any;
 };
 
 export default function TripPopup({
@@ -14,6 +16,7 @@ export default function TripPopup({
   onClose,
   onGroupPress,
   onAddGroup,
+  navigation,
 }: TripPopupProps) {
   return (
     <View className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl max-h-[60%] px-5 pt-4 pb-6 border-t border-gray-200">
@@ -39,10 +42,30 @@ export default function TripPopup({
         </View>
       </View>
 
-      {/* רשימת קבוצות */}
-      <Text className="text-base font-medium text-gray-700 mb-2">
-        Available Groups
-      </Text>
+      {/* כותרת קבוצות + כפתור הוספה */}
+      <View className="flex-row justify-between items-center mb-2">
+        <Text className="text-base font-medium text-gray-700">
+          Available Groups
+        </Text>
+        <TouchableOpacity
+          onPress={onAddGroup}
+          className="bg-green-600 px-3 py-1 rounded-xl"
+        >
+          <Text className="text-white text-sm font-semibold">+ Add Group</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Tooltip להסבר הצבעים */}
+      <View className="flex-row items-center space-x-4 mb-2">
+        <View className="flex-row items-center space-x-1">
+          <View className="w-2 h-2 rounded-full bg-green-500" />
+          <Text className="text-sm text-gray-500">Spots available</Text>
+        </View>
+        <View className="flex-row items-center space-x-1">
+          <View className="w-2 h-2 rounded-full bg-red-500" />
+          <Text className="text-sm text-gray-500">Group is full</Text>
+        </View>
+      </View>
 
       <ScrollView
         className="max-h-48 mb-4"
@@ -77,20 +100,16 @@ export default function TripPopup({
                   )}
                 </Text>
 
-                <View className="flex-row space-x-2">
-                  {!isFull && (
-                    <TouchableOpacity
-                      onPress={() => onGroupPress(group._id, "join")}
-                      className="flex-1 bg-green-500 px-4 py-2 rounded-xl"
-                    >
-                      <Text className="text-center text-white font-semibold">
-                        Join
-                      </Text>
-                    </TouchableOpacity>
-                  )}
+                <View className="space-y-2">
+                  <JoinGroupActionButton
+                    group={group}
+                    navigation={navigation}
+                    isInGroupPage={false}
+                    onAction={() => {}}
+                  />
                   <TouchableOpacity
                     onPress={() => onGroupPress(group._id, "details")}
-                    className="flex-1 bg-blue-500 px-4 py-2 rounded-xl"
+                    className="bg-gray-500 px-4 py-2 rounded-xl"
                   >
                     <Text className="text-center text-white font-semibold">
                       Details
@@ -102,16 +121,6 @@ export default function TripPopup({
           })
         )}
       </ScrollView>
-
-      {/* כפתור הוספה */}
-      <TouchableOpacity
-        onPress={onAddGroup}
-        className="bg-purple-600 py-3 px-5 rounded-2xl mb-3"
-      >
-        <Text className="text-center text-white font-semibold text-base">
-          + Create Group
-        </Text>
-      </TouchableOpacity>
 
       {/* כפתור סגירה */}
       <TouchableOpacity onPress={onClose} className="self-center mt-1">
