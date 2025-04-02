@@ -21,15 +21,16 @@
     "expo-image-picker": "~16.0.6",
     "expo-location": "~18.0.7",
     "expo-status-bar": "~2.0.1",
+    "expo-video": "~2.0.6",
+    "expo-video-thumbnails": "~9.0.3",
     "firebase": "^11.1.0",
     "nativewind": "^2.0.11",
     "react": "18.3.1",
     "react-native": "0.76.7",
+    "react-native-modal": "^14.0.0-rc.1",
     "react-native-modal-datetime-picker": "^18.0.0",
     "react-native-web": "~0.19.13",
-    "twrnc": "^4.6.1",
-    "expo-video": "~2.0.6",
-    "expo-video-thumbnails": "~9.0.3"
+    "twrnc": "^4.6.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
@@ -47,7 +48,6 @@
     "expo-router": "~4.0.17",
     "prettier": "^3.4.2",
     "react-native-dotenv": "^3.4.11",
-    "react-native-gesture-handler": "~2.20.2",
     "react-native-otp-entry": "^1.8.2",
     "react-native-paper": "^5.12.5",
     "react-native-reanimated": "^3.16.6",

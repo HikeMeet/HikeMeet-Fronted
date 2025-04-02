@@ -4,13 +4,18 @@ import { useAuth } from "../contexts/auth-context";
 
 interface BioSectionProps {
   bio: string;
-  editable?: boolean; // New prop to control editability
+  editable?: boolean;
 }
 
-const BioSection: React.FC<BioSectionProps> = ({ bio: initialBio, editable = true }) => {
+const BioSection: React.FC<BioSectionProps> = ({
+  bio: initialBio,
+  editable = true,
+}) => {
   const [bio, setBio] = useState<string>(initialBio);
   const [editingBio, setEditingBio] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
+  const [expanded, setExpanded] = useState<boolean>(false);
+  const [isTruncated, setIsTruncated] = useState<boolean>(false);
   const { mongoId } = useAuth();
 
   const handleSaveBio = async () => {
@@ -39,9 +44,22 @@ const BioSection: React.FC<BioSectionProps> = ({ bio: initialBio, editable = tru
     }
   };
 
+  const handleTextLayout = (e: any) => {
+    if (e.nativeEvent.lines.length > 2) {
+      setIsTruncated(true);
+    }
+  };
+
   return (
     <View className="mt-4">
-      <Text className="text-sm font-bold mb-2">Bio</Text>
+      <View className="flex-row items-center justify-between">
+        <Text className="text-sm font-bold mb-2">Bio</Text>
+        {editable && !editingBio && (
+          <Text onPress={() => setEditingBio(true)} className="text-blue-500">
+            Edit
+          </Text>
+        )}
+      </View>
       {editable && editingBio ? (
         <View className="relative">
           <TextInput
@@ -68,17 +86,21 @@ const BioSection: React.FC<BioSectionProps> = ({ bio: initialBio, editable = tru
           </View>
         </View>
       ) : (
-        <View className="flex-row items-center justify-between">
-          <Text className="text-sm text-gray-700 flex-1">
+        <View>
+          <Text
+            className="text-sm text-gray-700"
+            numberOfLines={!expanded ? 2 : undefined}
+            onTextLayout={handleTextLayout}
+          >
             {bio || "No bio provided."}
           </Text>
-          {editable && (
-            <TouchableOpacity
-              onPress={() => setEditingBio(true)}
-              className="ml-2 bg-blue-500 px-3 py-1 rounded"
+          {isTruncated && (
+            <Text
+              onPress={() => setExpanded(!expanded)}
+              className="text-blue-500 mt-1"
             >
-              <Text className="text-white">Edit</Text>
-            </TouchableOpacity>
+              {expanded ? "Show less" : "Show more"}
+            </Text>
           )}
         </View>
       )}
