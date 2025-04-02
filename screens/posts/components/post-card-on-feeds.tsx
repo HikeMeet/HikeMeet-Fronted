@@ -1,100 +1,95 @@
+// components/PostCard.tsx
 import React from "react";
-import { ScrollView, TouchableOpacity, Image, Text, View } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
+import { ScrollView, TouchableOpacity, View, Image, Text } from "react-native";
 import { IPost } from "../../../interfaces/post-interface";
 import PostActions from "./post-action-buttons";
+import InnerPostCard from "./inner-post-card";
 
 interface PostCardProps {
   post: IPost;
-  navigation: any;
+  inShareModal?: boolean;
+  navigation: any; // Pass null for non-clickable preview (e.g., in share modal)
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, navigation }) => {
-  // Extract author details
+const PostCard: React.FC<PostCardProps> = ({
+  post,
+  navigation,
+  inShareModal = false,
+}) => {
+  // Extract author details.
   const author =
     typeof post.author === "object"
       ? post.author
       : { username: post.author, profile_picture: { url: "" } };
 
-  // Render header: profile picture, username, and timestamp.
+  // Render header.
   const renderHeader = () => (
-    <View className="flex-row items-center p-2">
+    <View style={{ flexDirection: "row", alignItems: "center", padding: 8 }}>
       {author.profile_picture?.url ? (
         <Image
           source={{ uri: author.profile_picture.url }}
-          className="w-10 h-10 rounded-full"
+          style={{ width: 40, height: 40, borderRadius: 20 }}
         />
       ) : (
-        <View className="w-10 h-10 bg-gray-300 rounded-full" />
+        <View
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: "#e5e7eb",
+          }}
+        />
       )}
-      <View className="ml-2">
-        <Text className="font-bold text-base">{author.username}</Text>
-        <Text className="text-xs text-gray-500">
+      <View style={{ marginLeft: 8 }}>
+        <Text style={{ fontWeight: "bold", fontSize: 16, color: "#111827" }}>
+          {author.username}
+        </Text>
+        <Text style={{ fontSize: 12, color: "#6b7280" }}>
           {new Date(post.created_at).toLocaleString()}
         </Text>
       </View>
     </View>
   );
 
-  // Render content area. If shared post, show the new post commentary and then a sub-card for the original post.
+  // Render content.
   const renderContent = () => {
     if (post.is_shared && post.original_post) {
       return (
         <View>
-          {/* New post commentary */}
-          {post.content ? (
-            <Text className="p-2 text-base">{post.content}</Text>
-          ) : null}
-          {/* Sub-card for the original post */}
-          <View className="bg-gray-100 p-2 rounded m-2">
-            <Text className="text-xs text-gray-500 mb-1">Shared Post</Text>
-            {typeof post.original_post === "object" ? (
-              <>
-                {post.original_post.content && (
-                  <Text className="text-sm mb-2">
-                    {post.original_post.content}
-                  </Text>
-                )}
-                {post.original_post.images &&
-                  post.original_post.images.length > 0 && (
-                    <ScrollView
-                      horizontal
-                      showsHorizontalScrollIndicator={false}
-                    >
-                      {post.original_post.images.map((img, idx) => (
-                        <Image
-                          key={idx}
-                          source={{ uri: img.url }}
-                          className="w-32 h-32 rounded mr-2"
-                          resizeMode="cover"
-                        />
-                      ))}
-                    </ScrollView>
-                  )}
-              </>
-            ) : (
-              <Text className="text-sm">Original post details unavailable</Text>
-            )}
-          </View>
+          {/* New commentary by sharing user */}
+          <Text style={{ padding: 8, fontSize: 16, color: "#111827" }}>
+            {post.content}
+          </Text>
+          {/* Render the shared chain using InnerPostCard */}
+          <InnerPostCard
+            post={post.original_post as IPost}
+            navigation={navigation}
+          />
         </View>
       );
     } else {
       return (
-        <View className="p-2">
-          {post.content && (
-            <Text className="text-base mb-2">{post.content}</Text>
-          )}
+        <View style={{ padding: 8 }}>
+          {post.content ? (
+            <Text style={{ fontSize: 16, color: "#111827", marginBottom: 8 }}>
+              {post.content}
+            </Text>
+          ) : null}
           {post.images && post.images.length > 0 && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {post.images.map((img, idx) => {
                 const isVideo = img.type === "video";
                 const previewUrl = isVideo ? img.video_sceenshot_url : img.url;
-
                 return (
                   <Image
                     key={idx}
                     source={{ uri: previewUrl }}
-                    className="w-40 h-40 rounded mr-2"
+                    style={{
+                      width: 160,
+                      height: 160,
+                      borderRadius: 12,
+                      marginRight: 8,
+                    }}
                     resizeMode="cover"
                   />
                 );
@@ -106,32 +101,50 @@ const PostCard: React.FC<PostCardProps> = ({ post, navigation }) => {
     }
   };
 
-  // Render footer: action buttons.
-  const renderFooter = () => (
-    <PostActions
-      likes={post.likes.length}
-      shares={post.shares.length}
-      saves={post.saves.length}
-      onLike={() => console.log("Like clicked!")}
-      onShare={() => console.log("Share clicked!")}
-      onSave={() => console.log("Save clicked!")}
-    />
+  // Render footer.
+  const renderFooter = () => {
+    if (inShareModal) return null;
+    return <PostActions post={post} navigation={navigation} />;
+  };
+
+  const CardContent = () => (
+    <>
+      {renderHeader()}
+      {renderContent()}
+      {renderFooter()}
+    </>
   );
 
-  return (
+  const containerStyle = {
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    padding: 0,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#f3f4f6",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  };
+
+  return navigation ? (
     <TouchableOpacity
       onPress={() =>
-        navigation.navigate("PostStack", {
+        navigation.push("PostStack", {
           screen: "PostPage",
           params: { postId: post._id },
         })
       }
-      className="bg-white rounded-lg shadow mb-4"
+      style={containerStyle}
     >
-      {renderHeader()}
-      {renderContent()}
-      {renderFooter()}
+      <CardContent />
     </TouchableOpacity>
+  ) : (
+    <View style={containerStyle}>
+      <CardContent />
+    </View>
   );
 };
 

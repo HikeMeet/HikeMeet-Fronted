@@ -1,39 +1,68 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
   Image,
-  ScrollView,
   TouchableOpacity,
-  SafeAreaView,
+  ActivityIndicator,
+  FlatList,
   StatusBar,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../../contexts/auth-context";
-import { useFocusEffect } from "@react-navigation/native";
-import BioSection from "../../components/profile-bio-section";
+import { styled } from "nativewind";
 import CreatePostButton from "../posts/components/create-post-buton";
+import SearchInput from "../../components/search-input";
+import BioSection from "../../components/profile-bio-section";
 import HikerButton from "../../components/profile-hikers-button";
 import HikersList from "../../components/hikers-list-in-profile";
 import ProfileImage from "../../components/profile-image";
+import { useAuth } from "../../contexts/auth-context";
+import { useFocusEffect } from "@react-navigation/native";
+import { IPost } from "../../interfaces/post-interface";
+import PostCard from "../posts/components/post-card-on-feeds";
 
 const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { mongoUser } = useAuth();
   const [showHikers, setShowHikers] = useState<boolean>(false);
+  const [posts, setPosts] = useState<IPost[]>([]);
+  const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
 
   const toggleHikers = () => {
     setShowHikers((prev) => !prev);
   };
 
+  // When screen is focused, hide the hikers list.
   useFocusEffect(
     useCallback(() => {
       setShowHikers(false);
     }, [])
   );
 
+  // Fetch posts created by this user.
+  const fetchPosts = async () => {
+    if (!mongoUser) return;
+    setLoadingPosts(true);
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/post/all?userId=${mongoUser._id}`
+      );
+      const data = await response.json();
+      setPosts(data.posts);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      setLoadingPosts(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, [mongoUser]);
+
   if (!mongoUser) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
+      <SafeAreaView className="flex-1 justify-center items-center bg-white">
         <Text>Failed to load user data.</Text>
         <TouchableOpacity
           onPress={() => navigation.navigate("ProfilePage")}
@@ -41,38 +70,34 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
         >
           <Text className="text-white">Retry</Text>
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
     );
   }
+
+  // Render header content for the posts feed.
+  const renderPostsHeader = () => (
+    <View className="p-4">
+      <BioSection bio={mongoUser.bio} />
+      <View className="h-px bg-gray-300 my-4" />
+      <CreatePostButton
+        navigation={navigation}
+        location="home"
+        onPress={() => console.log("create post clicked")}
+      />
+    </View>
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" backgroundColor="white" />
 
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
-        <Text className="text-xl font-bold">Profile</Text>
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("AccountStack", { screen: "Settings" })
-          }
-        >
-          <Image
-            source={{
-              uri: "https://cdn-icons-png.flaticon.com/512/2099/2099058.png",
-            }}
-            className="w-6 h-6"
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* Profile Info */}
+      {/* Profile Header */}
       <View className="flex-row items-center p-4">
         <ProfileImage
           initialImageUrl={mongoUser.profile_picture.url}
           size={80}
           id={mongoUser._id}
-          uploadType={"profile"}
+          uploadType="profile"
         />
         <View className="flex-1 ml-5">
           <Text className="text-lg font-bold">{mongoUser.username}</Text>
@@ -87,38 +112,28 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
       </View>
 
       {showHikers ? (
-        // In ProfilePage.tsx (own profile), pass your own ID (e.g., mongoUser._id)
         <HikersList
           isMyProfile={true}
           navigation={navigation}
-          profileId={mongoUser!._id}
+          profileId={mongoUser._id}
         />
       ) : (
-        <ScrollView className="flex-1 p-4">
-          <BioSection bio={mongoUser.bio} />
-          <View className="h-px bg-gray-300 my-4" />
-
-          <CreatePostButton
-            navigation={navigation}
-            location="home"
-            onPress={() => console.log("create post clicked")}
-          />
-
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(
-            (post, index) => (
-              <View
-                key={index}
-                className="mb-4 p-6 bg-gray-100 rounded-lg flex-row justify-between items-center"
-              >
-                <Text className="text-sm">Post {index}</Text>
-                <Ionicons name="create-outline" size={20} color="gray" />
-              </View>
-            )
+        <FlatList
+          data={posts}
+          keyExtractor={(item) => item._id}
+          renderItem={({ item }) => (
+            // Replace with your actual PostCard component that displays a post.
+            <PostCard post={item} navigation={navigation} />
           )}
-        </ScrollView>
+          ListHeaderComponent={renderPostsHeader}
+          refreshing={loadingPosts}
+          onRefresh={fetchPosts}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
+        />
       )}
     </SafeAreaView>
   );
 };
 
-export default ProfilePage;
+export default styled(ProfilePage);

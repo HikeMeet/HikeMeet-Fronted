@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   ActivityIndicator,
+  FlatList,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styled } from "nativewind";
@@ -26,7 +27,6 @@ const Home = ({ navigation }: any) => {
             `${process.env.EXPO_LOCAL_SERVER}/api/post/all?privacy=public`
           );
           const data = await response.json();
-          // Assuming the route returns { posts: [...] }
           setPosts(data.posts);
         } catch (error) {
           console.error("Error fetching posts:", error);
@@ -73,16 +73,24 @@ const Home = ({ navigation }: any) => {
         onPress={() => console.log("create post clicked")}
       />
 
-      {/* Posts Feed */}
-      <ScrollView className="flex-1 px-4">
-        {loading ? (
-          <ActivityIndicator size="large" color="#0000ff" />
-        ) : (
-          posts.map((post) => (
+      {/* Posts Feed using ScrollView */}
+      {loading ? (
+        <ActivityIndicator
+          size="large"
+          color="#0000ff"
+          style={{ marginTop: 20 }}
+        />
+      ) : (
+        <ScrollView
+          className="flex-1 m-2"
+          contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {posts.map((post) => (
             <PostCard key={post._id} post={post} navigation={navigation} />
-          ))
-        )}
-      </ScrollView>
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 };
