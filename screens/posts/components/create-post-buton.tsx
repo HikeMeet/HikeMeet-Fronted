@@ -2,7 +2,7 @@ import React from "react";
 import { Text, TouchableOpacity, GestureResponderEvent } from "react-native";
 
 interface CreatePostButtonProps {
-  location: "home" | "profile"; // Only accepts "home" or "profile"
+  location: "home" | "profile" | "group"; // Only accepts "home" or "profile"
   onPress?: (event: GestureResponderEvent) => void; // Optional press handler
   navigation: any;
   inGroup?: boolean;
@@ -16,12 +16,16 @@ const CreatePostButton: React.FC<CreatePostButtonProps> = ({
   inGroup = false,
   groupId,
 }) => {
+  console.log(groupId, inGroup);
   return (
     <TouchableOpacity
       className={"mx-2 my-2 py-3 rounded-lg bg-blue-500"}
       onPress={() => {
         if (inGroup) {
-          navigation.navigate("PostStack", { inGroup, groupId });
+          navigation.navigate("PostStack", {
+            screen: "CreatePostPage",
+            params: { inGroup, groupId },
+          });
         } else {
           navigation.navigate("PostStack");
         }
