@@ -4,6 +4,8 @@ import { ScrollView, TouchableOpacity, View, Image, Text } from "react-native";
 import { IPost } from "../../../interfaces/post-interface";
 import PostActions from "./post-action-buttons";
 import InnerPostCard from "./inner-post-card";
+import { useAuth } from "../../../contexts/auth-context";
+import ProfileHeaderLink from "./profile-image-name-button";
 
 interface PostCardProps {
   post: IPost;
@@ -24,31 +26,7 @@ const PostCard: React.FC<PostCardProps> = ({
 
   // Render header.
   const renderHeader = () => (
-    <View style={{ flexDirection: "row", alignItems: "center", padding: 8 }}>
-      {author.profile_picture?.url ? (
-        <Image
-          source={{ uri: author.profile_picture.url }}
-          style={{ width: 40, height: 40, borderRadius: 20 }}
-        />
-      ) : (
-        <View
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            backgroundColor: "#e5e7eb",
-          }}
-        />
-      )}
-      <View style={{ marginLeft: 8 }}>
-        <Text style={{ fontWeight: "bold", fontSize: 16, color: "#111827" }}>
-          {author.username}
-        </Text>
-        <Text style={{ fontSize: 12, color: "#6b7280" }}>
-          {new Date(post.created_at).toLocaleString()}
-        </Text>
-      </View>
-    </View>
+    <ProfileHeaderLink post={post} navigation={navigation} />
   );
 
   // Render content.

@@ -15,6 +15,7 @@ import MediaList from "../../components/media-list-after-upload";
 import FullScreenMediaModal from "../../components/media-fullscreen-modal";
 import { IImageModel } from "../../interfaces/image-interface";
 import InnerPostCard from "./components/inner-post-card";
+import ProfileHeaderLink from "./components/profile-image-name-button";
 
 const getUri = (data: any): string => {
   if (typeof data === "string") return data;
@@ -103,21 +104,7 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
         <ScrollView className="bg-gray-50">
           <View className="p-6 bg-white rounded-lg shadow-md m-4">
             {/* Author Section */}
-            <View className="flex-row items-center mb-4">
-              {authorProfilePic ? (
-                <Image
-                  source={{ uri: authorProfilePic }}
-                  className="w-12 h-12 rounded-full mr-3"
-                />
-              ) : (
-                <View className="w-12 h-12 bg-gray-300 rounded-full mr-3" />
-              )}
-              <Text className="text-lg font-bold text-gray-800">
-                {typeof post.author === "object"
-                  ? post.author.username
-                  : post.author}
-              </Text>
-            </View>
+            <ProfileHeaderLink post={post} navigation={navigation} />
 
             {/* Post Content */}
             {post.content && (
