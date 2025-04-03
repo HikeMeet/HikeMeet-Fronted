@@ -1,13 +1,13 @@
+// PostDetailPage.tsx
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Image,
   ScrollView,
   Text,
   View,
   Modal,
+  TouchableOpacity,
 } from "react-native";
-import { useRoute } from "@react-navigation/native";
 import { getPostWithParam, IPost } from "../../interfaces/post-interface";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PostActions from "./components/post-action-buttons";
@@ -16,6 +16,9 @@ import FullScreenMediaModal from "../../components/media-fullscreen-modal";
 import { IImageModel } from "../../interfaces/image-interface";
 import InnerPostCard from "./components/inner-post-card";
 import ProfileHeaderLink from "../my-profile/components/profile-image-name-button";
+import PostOptionsModal from "./components/post-setting-modal";
+import EditableText from "./components/editable-text-for-posts";
+import { useAuth } from "../../contexts/auth-context";
 
 const getUri = (data: any): string => {
   if (typeof data === "string") return data;
@@ -31,9 +34,7 @@ const getUri = (data: any): string => {
 };
 
 type PostDetailPageParams = {
-  route: {
-    params: { postId: string; fromCreate?: boolean };
-  };
+  route: { params: { postId: string; fromCreate?: boolean } };
   navigation: any;
 };
 
@@ -41,11 +42,14 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
   route,
   navigation,
 }) => {
+  const { postId } = route.params;
+  const { mongoId } = useAuth();
   const [post, setPost] = useState<IPost | null>(null);
   const [loading, setLoading] = useState(true);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [mediaModalVisible, setMediaModalVisible] = useState(false);
+  const [optionsVisible, setOptionsVisible] = useState(false);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState<number>(0);
-  const { postId } = route.params;
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -66,7 +70,7 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
 
   const openFullScreen = (index: number) => {
     setSelectedMediaIndex(index);
-    setModalVisible(true);
+    setMediaModalVisible(true);
   };
 
   if (loading) {
@@ -85,10 +89,8 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
     );
   }
 
-    const author = getPostWithParam(post);
-  
+  const author = getPostWithParam(post);
 
-  // Convert post.images into an array of IImageModel
   const mediaItems: IImageModel[] = post.images!.map((item) => ({
     url: getUri(item.url),
     image_id: item.image_id,
@@ -96,25 +98,53 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
     video_sceenshot_url:
       item.type === "video" ? item.video_sceenshot_url : undefined,
   }));
+
   return (
     <>
       <SafeAreaView className="flex-1 bg-gray-50">
         <ScrollView className="bg-gray-50">
           <View className="p-6 bg-white rounded-lg shadow-md m-4">
-            {/* Author Section */}
-            <ProfileHeaderLink
-              userId={author._id}
-              username={author.username}
-              profileImage={author.profile_picture.url}
-              navigation={navigation}
-            />
+            {/* Header with Author and Options Button */}
+            <View className="flex-row items-center justify-between">
+              <ProfileHeaderLink
+                userId={author._id}
+                username={author.username}
+                profileImage={author.profile_picture.url}
+                navigation={navigation}
+              />
+              <TouchableOpacity
+                onPress={() => setOptionsVisible(true)}
+                className="w-12 h-12 items-center justify-center rounded-full bg-gray-200"
+              >
+                <Text className="text-3xl text-gray-600">⋮</Text>
+              </TouchableOpacity>
+            </View>
 
             {/* Post Content */}
-            {post.content && (
-              <Text className="text-base text-gray-700 mb-4">
-                {post.content}
-              </Text>
-            )}
+            <View className="mb-4 px-4">
+              {isEditing ? (
+                <EditableText
+                  text={post.content || ""}
+                  postId={post._id}
+                  isEditing={isEditing}
+                  onSaveComplete={(updatedText: string) => {
+                    setPost({ ...post, content: updatedText });
+                    setIsEditing(false);
+                  }}
+                  onCancel={() => setIsEditing(false)}
+                  textStyle={{
+                    fontSize: 16,
+                    color: "#374151",
+                    marginBottom: 8,
+                  }}
+                  containerStyle={{ marginBottom: 16 }}
+                />
+              ) : (
+                <Text className="text-base text-gray-700 mb-4">
+                  {post.content || "No content."}
+                </Text>
+              )}
+            </View>
 
             {/* Media Section */}
             {mediaItems.length > 0 && (
@@ -168,16 +198,33 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
 
       {/* Fullscreen Modal for Media Preview */}
       <Modal
-        visible={modalVisible}
+        visible={mediaModalVisible}
         animationType="slide"
-        onRequestClose={() => setModalVisible(false)}
+        onRequestClose={() => setMediaModalVisible(false)}
       >
         <FullScreenMediaModal
           media={mediaItems}
           initialIndex={selectedMediaIndex}
-          onClose={() => setModalVisible(false)}
+          onClose={() => setMediaModalVisible(false)}
         />
       </Modal>
+
+      {/* Options Modal for Post Options (Edit/Delete/Report) */}
+      <PostOptionsModal
+        visible={optionsVisible}
+        onClose={() => setOptionsVisible(false)}
+        post={post}
+        navigation={navigation}
+        onEdit={() => {
+          // Instead of navigating to a separate edit screen, toggle inline editing.
+          setIsEditing(true);
+          setOptionsVisible(false);
+        }}
+        onPostUpdated={(deletedPost) => {
+          // If the post is deleted, navigate back.
+          navigation.goBack();
+        }}
+      />
     </>
   );
 };
