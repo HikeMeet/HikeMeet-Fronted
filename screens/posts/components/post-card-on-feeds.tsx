@@ -1,10 +1,9 @@
 // components/PostCard.tsx
-import React from "react";
+import React, { useState } from "react";
 import { ScrollView, TouchableOpacity, View, Image, Text } from "react-native";
 import { getPostWithParam, IPost } from "../../../interfaces/post-interface";
 import PostActions from "./post-action-buttons";
 import InnerPostCard from "./inner-post-card";
-import { useAuth } from "../../../contexts/auth-context";
 import ProfileHeaderLink from "../../my-profile/components/profile-image-name-button";
 
 interface PostCardProps {
@@ -37,9 +36,8 @@ const PostCard: React.FC<PostCardProps> = ({
       return (
         <View>
           {/* New commentary by sharing user */}
-          <Text style={{ padding: 8, fontSize: 16, color: "#111827" }}>
-            {post.content}
-          </Text>
+          <Text className="p-2 text-base text-gray-900">{post.content}</Text>
+
           {/* Render the shared chain using InnerPostCard */}
           <InnerPostCard
             post={post.original_post as IPost}
@@ -49,11 +47,9 @@ const PostCard: React.FC<PostCardProps> = ({
       );
     } else {
       return (
-        <View style={{ padding: 8 }}>
+        <View className="p-2">
           {post.content ? (
-            <Text style={{ fontSize: 16, color: "#111827", marginBottom: 8 }}>
-              {post.content}
-            </Text>
+            <Text className="text-base text-gray-900 mb-2">{post.content}</Text>
           ) : null}
           {post.images && post.images.length > 0 && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -64,12 +60,7 @@ const PostCard: React.FC<PostCardProps> = ({
                   <Image
                     key={idx}
                     source={{ uri: previewUrl }}
-                    style={{
-                      width: 160,
-                      height: 160,
-                      borderRadius: 12,
-                      marginRight: 8,
-                    }}
+                    className="w-40 h-40 rounded-xl mr-2"
                     resizeMode="cover"
                   />
                 );

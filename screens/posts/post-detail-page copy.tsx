@@ -96,7 +96,6 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
     video_sceenshot_url:
       item.type === "video" ? item.video_sceenshot_url : undefined,
   }));
-  console.log(post);
   return (
     <>
       <SafeAreaView className="flex-1 bg-gray-50">

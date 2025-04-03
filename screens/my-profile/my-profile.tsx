@@ -2,18 +2,14 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
-  Image,
   TouchableOpacity,
-  ActivityIndicator,
   FlatList,
   StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 import { styled } from "nativewind";
 import CreatePostButton from "../posts/components/create-post-buton";
-import SearchInput from "../../components/search-input";
-import BioSection from "../../components/profile-bio-section";
+import BioSection from "./components/profile-bio-section";
 import HikerButton from "../../components/profile-hikers-button";
 import HikersList from "../../components/hikers-list-in-profile";
 import ProfileImage from "../../components/profile-image";

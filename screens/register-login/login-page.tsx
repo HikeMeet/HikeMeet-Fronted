@@ -58,7 +58,6 @@ export default function LoginPage({
         setIsVerified(true);
         Alert.alert("Success", "Login successful!");
         if (toResetPassword !== undefined) {
-          console.log(toResetPassword);
           navigation.navigate(toResetPassword ? "ResetPassword" : "Home");
         } else {
           // Handle the case when toResetPassword is undefined

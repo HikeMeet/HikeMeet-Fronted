@@ -35,14 +35,23 @@ const InnerPostCard: React.FC<InnerPostCardProps> = ({ post, navigation }) => {
       ) : null}
       {post.images && post.images.length > 0 && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {post.images.map((img, idx) => (
-            <Image
-              key={idx}
-              source={{ uri: typeof img.url === "string" ? img.url : "" }}
-              className="w-32 h-32 rounded-md mr-2"
-              resizeMode="cover"
-            />
-          ))}
+          {post.images.map((img, idx) => {
+            const isVideo = img.type === "video";
+            const previewUrl = isVideo ? img.video_sceenshot_url : img.url;
+            return (
+              <Image
+                key={idx}
+                source={{ uri: previewUrl }}
+                style={{
+                  width: 160,
+                  height: 160,
+                  borderRadius: 12,
+                  marginRight: 8,
+                }}
+                resizeMode="cover"
+              />
+            );
+          })}
         </ScrollView>
       )}
     </TouchableOpacity>

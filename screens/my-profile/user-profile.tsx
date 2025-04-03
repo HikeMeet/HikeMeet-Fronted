@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import BioSection from "../../components/profile-bio-section";
+import BioSection from "./components/profile-bio-section";
 import { useAuth } from "../../contexts/auth-context";
 import FriendActionButton from "../../components/friend-button";
 import HikersList from "../../components/hikers-list-in-profile";

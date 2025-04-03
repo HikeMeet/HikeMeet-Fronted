@@ -40,8 +40,7 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
   const { mongoId } = useAuth();
   const [confirmationVisible, setConfirmationVisible] = useState(false);
   const [postId, setPostId] = useState<String>("");
-  // console.log("sssssssssssss", in_group);
-  // console.log("sssssssssssss", groupId);
+
   // Allow multiple selection from gallery.
   const pickMedia = async () => {
     const permissionResult =
