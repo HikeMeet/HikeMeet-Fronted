@@ -1,4 +1,5 @@
 import { IImageModel } from "./image-interface";
+import { Group } from "./group-interface";
 
 export interface Trip {
   _id: string;
@@ -12,4 +13,6 @@ export interface Trip {
   tags?: string[];
   description?: string;
   createdBy: string;
+
+  groups?: Group[];
 }
