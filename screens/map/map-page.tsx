@@ -5,21 +5,25 @@ import {
   Text,
   ActivityIndicator,
   Alert,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   Image,
-  Modal,
+  Modal, // אפשר להשאיר אם אתה באמת משתמש ב-Modal (או להוריד אם עברנו לקומפוננטה גמישה)
 } from "react-native";
 import Mapbox, { Camera } from "@rnmapbox/maps";
 import * as Location from "expo-location";
 
+// קומפוננטות שעברו לקבצים נפרדים
+import SearchBar from "./components/SearchBar";
+import TripFilterModal from "../../components/TripFilterModal";
+import GroupFilterModal from "../../components/GroupFilterModal";
+
+// קומפוננטות שלך
 import CenterOnMeButton from "./components/center-on-me-button";
 import TripMarker from "./components/trip-marker";
 import TripPopup from "./components/trip-popup";
-import GroupFilterPopup from "../../components/group-filter-popup";
-import TripFilterPopup from "../../components/trip-filter-popup";
 
+// הממשקים של Trip ו-Group
 export interface Group {
   _id: string;
   name: string;
@@ -62,14 +66,22 @@ type MapPageProps = {
 
 export default function MapPage({ navigation }: MapPageProps) {
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [allTrips, setAllTrips] = useState<Trip[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
+  const [allGroups, setAllGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
+
+  // State לחיפוש
   const [city, setCity] = useState<string>("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("");
+
+  // חלונות פופאפ/מודאל לסינון
   const [showGroupFilter, setShowGroupFilter] = useState(false);
   const [showTripFilter, setShowTripFilter] = useState(false);
+
+  // מצלמה/מיקום
   const cameraRef = useRef<Camera>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null
@@ -77,8 +89,9 @@ export default function MapPage({ navigation }: MapPageProps) {
 
   useEffect(() => {
     fetchAllData({});
-    getUserLocation(); // הוסף את זה
+    getUserLocation();
   }, []);
+
   async function getUserLocation() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -86,7 +99,6 @@ export default function MapPage({ navigation }: MapPageProps) {
         Alert.alert("Permission Denied", "Location permission is required.");
         return;
       }
-
       const location = await Location.getCurrentPositionAsync({});
       const coords: [number, number] = [
         location.coords.longitude,
@@ -118,6 +130,9 @@ export default function MapPage({ navigation }: MapPageProps) {
       }));
 
       setTrips(mergedTrips);
+      setAllTrips(mergedTrips);
+      setGroups(groupsResp);
+      setAllGroups(groupsResp);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -128,15 +143,11 @@ export default function MapPage({ navigation }: MapPageProps) {
   async function fetchTrips(filter: TripFilter): Promise<Trip[]> {
     let url = `${process.env.EXPO_LOCAL_SERVER}/api/trips/all`;
     const params = new URLSearchParams();
-    if (filter.city && filter.city.trim()) {
+    if (filter.city && filter.city.trim())
       params.append("city", filter.city.trim());
-    }
-    if (filter.category && filter.category.trim()) {
+    if (filter.category && filter.category.trim())
       params.append("category", filter.category.trim());
-    }
-    if (params.toString()) {
-      url += `?${params.toString()}`;
-    }
+    if (params.toString()) url += `?${params.toString()}`;
     const resp = await fetch(url);
     if (!resp.ok) throw new Error("Failed to fetch trips");
     const data: Trip[] = await resp.json();
@@ -147,17 +158,13 @@ export default function MapPage({ navigation }: MapPageProps) {
     const resp = await fetch(`${process.env.EXPO_LOCAL_SERVER}/api/group/list`);
     if (!resp.ok) throw new Error("Failed to fetch groups");
     const rawData = await resp.json();
-
-    const filtered = rawData
-      .filter((g: any) => g.status !== "completd")
+    return rawData
+      .filter((g: any) => g.status !== "completed")
       .map((g: any) => ({
         ...g,
         membersCount: Array.isArray(g.members) ? g.members.length : 0,
         leaderName: g.created_by?.username || "Unknown",
       }));
-
-    setGroups(filtered);
-    return filtered;
   }
 
   function toggleViewMode() {
@@ -165,12 +172,8 @@ export default function MapPage({ navigation }: MapPageProps) {
   }
 
   async function handleSearchCity() {
-    await fetchAllData({ city, category: categoryFilter });
-  }
-
-  async function handleCategorySelect(cat: string) {
-    setCategoryFilter(cat);
-    await fetchAllData({ city, category: cat });
+    // ביצוע fetchAllData לפי ה-city
+    await fetchAllData({ city });
   }
 
   function onMarkerPress(trip: Trip) {
@@ -200,11 +203,14 @@ export default function MapPage({ navigation }: MapPageProps) {
     try {
       const resp = await fetch(
         `${process.env.EXPO_LOCAL_SERVER}/api/group/${groupId}/join`,
-        { method: "POST" }
+        {
+          method: "POST",
+        }
       );
       if (!resp.ok) throw new Error("Failed to join group");
       Alert.alert("Success", "You have joined this group!");
-      await fetchAllData({ city, category: categoryFilter });
+      // מרעננים את הדאטה עם הפילטרים הקיימים (למשל city, ...)
+      await fetchAllData({ city });
       setSelectedTrip(null);
     } catch (err) {
       console.error("Error joining group:", err);
@@ -212,22 +218,32 @@ export default function MapPage({ navigation }: MapPageProps) {
     }
   }
 
+  // פונקציה שתופעל ברגע שמשתמש לוחץ Apply ב-TripFilterModal
+  const onApplyTripFilter = (filteredTrips: Trip[]) => {
+    setTrips(filteredTrips);
+    // אפשר להסתיר את המודאל
+    setShowTripFilter(false);
+  };
+
+  // פונקציה שתופעל כשמשתמש לוחץ Apply ב-GroupFilterModal
+  const onApplyGroupFilter = (filteredGroups: Group[]) => {
+    setGroups(filteredGroups);
+    setShowGroupFilter(false);
+  };
+
   return (
     <View className="flex-1 bg-gray-50">
+      {/* אזור החיפוש והכפתורים */}
       <View className="bg-white p-3 shadow-sm">
         <View className="flex-row items-center space-x-2">
-          <TextInput
-            placeholder="Search city..."
+          {/* SearchBar */}
+          <SearchBar
             value={city}
-            onChangeText={setCity}
-            className="flex-1 bg-gray-200 px-3 py-2 rounded"
+            onChangeText={(val) => setCity(val)}
+            onSearch={handleSearchCity}
+            placeholder="Search city..."
           />
-          <TouchableOpacity
-            onPress={handleSearchCity}
-            className="bg-blue-600 px-3 py-2 rounded"
-          >
-            <Text className="text-white font-semibold">Search</Text>
-          </TouchableOpacity>
+          {/* מעבר בין Map / List */}
           <TouchableOpacity
             onPress={toggleViewMode}
             className="bg-green-600 px-3 py-2 rounded"
@@ -237,6 +253,8 @@ export default function MapPage({ navigation }: MapPageProps) {
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* כפתורי פתיחת סינון */}
         <View className="flex-row mt-2 space-x-2">
           <TouchableOpacity
             onPress={() => setShowGroupFilter(true)}
@@ -352,6 +370,7 @@ export default function MapPage({ navigation }: MapPageProps) {
         </ScrollView>
       )}
 
+      {/* Trip Popup */}
       {selectedTrip && (
         <TripPopup
           trip={selectedTrip}
@@ -378,13 +397,21 @@ export default function MapPage({ navigation }: MapPageProps) {
         />
       )}
 
-      <Modal visible={showGroupFilter} transparent animationType="slide">
-        <GroupFilterPopup onClose={() => setShowGroupFilter(false)} />
-      </Modal>
+      {/* מודאל סינון קבוצות */}
+      <GroupFilterModal
+        visible={showGroupFilter}
+        onClose={() => setShowGroupFilter(false)}
+        groups={allGroups}
+        onApply={onApplyGroupFilter}
+      />
 
-      <Modal visible={showTripFilter} transparent animationType="slide">
-        <TripFilterPopup onClose={() => setShowTripFilter(false)} />
-      </Modal>
+      {/* מודאל סינון טיולים */}
+      <TripFilterModal
+        visible={showTripFilter}
+        onClose={() => setShowTripFilter(false)}
+        trips={allTrips}
+        onApply={onApplyTripFilter}
+      />
     </View>
   );
 }

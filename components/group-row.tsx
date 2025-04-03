@@ -8,10 +8,18 @@ interface GroupRowProps {
   group: Group;
   navigation: any;
   onAction?: () => void;
+  showAvailability?: boolean; // אופציונלי
 }
 
-const GroupRow: React.FC<GroupRowProps> = ({ group, navigation, onAction }) => {
+const GroupRow: React.FC<GroupRowProps> = ({
+  group,
+  navigation,
+  onAction,
+  showAvailability = false,
+}) => {
   const currentMembers = group.members ? group.members.length : 0;
+  const spotsLeft = group.max_members - currentMembers;
+  const isFull = spotsLeft <= 0;
 
   return (
     <TouchableOpacity
@@ -60,6 +68,17 @@ const GroupRow: React.FC<GroupRowProps> = ({ group, navigation, onAction }) => {
               isInGroupPage={false}
               onAction={onAction}
             />
+
+            {/* how much place in group left*/}
+            {showAvailability && (
+              <Text
+                className={`text-s font-semibold mt-1 ${
+                  isFull ? "text-red-600" : "text-emerald-600"
+                }`}
+              >
+                {isFull ? "• Full" : `• ${spotsLeft} left`}
+              </Text>
+            )}
           </View>
         </View>
         <Text className="text-sm text-gray-500">Status: {group.status}</Text>
