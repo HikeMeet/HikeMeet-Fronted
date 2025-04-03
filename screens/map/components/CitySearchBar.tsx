@@ -12,7 +12,7 @@ import {
 
 type CitySearchBarProps = {
   onSelectLocation: (coords: [number, number], placeName: string) => void;
-  onClearLocation: () => void; // פונקציה שתופעל כשנמחק הטקסט לגמרי
+  onClearLocation: () => void;
   placeholder?: string;
 };
 
@@ -29,7 +29,6 @@ export default function CitySearchBar({
     if (text.length < 3) {
       setResults([]);
       if (text.length === 0) {
-        // המשתמש מחק לגמרי => חוזרים למיקום הנוכחי
         onClearLocation();
       }
       return;
@@ -122,7 +121,7 @@ const styles = StyleSheet.create({
   },
   resultsContainer: {
     position: "absolute",
-    top: 46, // מתחת לשדה החיפוש
+    top: 46,
     width: "100%",
     maxHeight: 150,
     backgroundColor: "#fff",

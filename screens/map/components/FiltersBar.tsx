@@ -4,8 +4,8 @@ import React from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 
 export type ActiveFilter = {
-  id: string; // מה שמזהה את הפילטר (למשל "tripTag=Water", "city=TelAviv")
-  label: string; // מה יוצג למשתמש ("Trip Tag: Water", "City: Tel Aviv")
+  id: string;
+  label: string;
 };
 
 type FiltersBarProps = {
@@ -23,7 +23,6 @@ export default function FiltersBar({
 }: FiltersBarProps) {
   return (
     <View>
-      {/* כפתורי פתיחת חלונות סינון */}
       <View className="flex-row mt-2 space-x-2 mb-2">
         <TouchableOpacity
           onPress={onOpenGroupFilter}
@@ -44,7 +43,6 @@ export default function FiltersBar({
         </TouchableOpacity>
       </View>
 
-      {/* גלילה אופקית כדי שהצ'יפים יהיו בשורה אחת */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View className="flex-row items-center">
           {filters.map((f) => (

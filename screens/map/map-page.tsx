@@ -45,7 +45,7 @@ export default function MapPage({ navigation }: MapPageProps) {
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [city, setCity] = useState<string>("");
 
-  // סינון
+  // sort
   const [showGroupFilter, setShowGroupFilter] = useState(false);
   const [showTripFilter, setShowTripFilter] = useState(false);
 
@@ -323,7 +323,7 @@ export default function MapPage({ navigation }: MapPageProps) {
   return (
     <View className="flex-1 bg-gray-50">
       <View className="bg-white p-3 shadow-sm">
-        {/* שורת החיפוש */}
+        {/* search */}
         <View
           className="flex-row items-center space-x-2"
           style={{ zIndex: 9999 }}
@@ -482,7 +482,7 @@ export default function MapPage({ navigation }: MapPageProps) {
         />
       )}
 
-      {/* מודאל סינון קבוצות */}
+      {/* sort group modal */}
       <GroupFilterModal
         visible={showGroupFilter}
         onClose={() => setShowGroupFilter(false)}
@@ -492,7 +492,7 @@ export default function MapPage({ navigation }: MapPageProps) {
         }}
         initialFilters={groupModalInitialFilters}
       />
-      {/* מודאל סינון טיולים */}
+      {/* sort trip modal */}
       <TripFilterModal
         visible={showTripFilter}
         onClose={() => setShowTripFilter(false)}

@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Image, Dimensions } from "react-native";
 import Mapbox from "@rnmapbox/maps";
-import { Trip } from "../map-page";
+import { Trip } from "../../../interfaces/trip-interface";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -34,7 +34,7 @@ export default function TripMarker({
         className="items-center"
         style={{ gap: 6 }}
       >
-        {/* תמונה עגולה */}
+        {/* circle photo */}
         <View className="relative shadow-xl">
           {trip.main_image?.url ? (
             <Image
@@ -72,7 +72,7 @@ export default function TripMarker({
           )}
         </View>
 
-        {/* תגית שם טיול */}
+        {/* name trip tag */}
         <View
           className={`flex-row items-center px-3 py-[6px] rounded-full border shadow-sm ${
             hasAvailability
