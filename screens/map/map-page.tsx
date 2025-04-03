@@ -4,8 +4,8 @@ import {
   Text,
   ActivityIndicator,
   Alert,
-  TouchableOpacity,
   ScrollView,
+  TouchableOpacity,
   Image,
 } from "react-native";
 import Mapbox, { Camera } from "@rnmapbox/maps";
@@ -14,14 +14,12 @@ import * as Location from "expo-location";
 import CenterOnMeButton from "./components/center-on-me-button";
 import TripMarker from "./components/trip-marker";
 import TripPopup from "./components/trip-popup";
+import CitySearchBar from "./components/CitySearchBar"; //new
 
-// -- הקומפוננטות החדשות --
-import SearchBar from "./components/SearchBar";
 import TripFilterModal from "../../components/TripFilterModal";
 import GroupFilterModal from "../../components/GroupFilterModal";
 import FiltersBar, { ActiveFilter } from "./components/FiltersBar";
 
-// ייבוא הממשקים מתוך הקבצים החיצוניים
 import { Group } from "../../interfaces/group-interface";
 import { Trip } from "../../interfaces/trip-interface";
 
@@ -40,29 +38,24 @@ export default function MapPage({ navigation }: MapPageProps) {
   const [allTrips, setAllTrips] = useState<Trip[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [allGroups, setAllGroups] = useState<Group[]>([]);
+
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
 
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [city, setCity] = useState<string>("");
 
-  // חלונות סינון
+  // סינון
   const [showGroupFilter, setShowGroupFilter] = useState(false);
   const [showTripFilter, setShowTripFilter] = useState(false);
 
-  // מערך של כל הפילטרים הפעילים (צ'יפים)
   const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
 
-  // כאן נשמור אילו פילטרים נעביר כ-initial ל-TripFilterModal
-  const [tripModalInitialFilters, setTripModalInitialFilters] = useState<{
-    location: string;
-    tags: string[];
-  }>({ location: "", tags: [] });
-
-  const cameraRef = useRef<Camera>(null);
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(
-    null
-  );
+  // initial filters
+  const [tripModalInitialFilters, setTripModalInitialFilters] = useState({
+    location: "",
+    tags: [] as string[],
+  });
   const [groupModalInitialFilters, setGroupModalInitialFilters] = useState({
     difficulties: [] as string[],
     statuses: [] as string[],
@@ -71,12 +64,16 @@ export default function MapPage({ navigation }: MapPageProps) {
     scheduledEnd: "",
   });
 
+  const cameraRef = useRef<Camera>(null);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(
+    null
+  );
+
   useEffect(() => {
     fetchAllData({});
     getUserLocation();
   }, []);
 
-  // -- getUserLocation --
   async function getUserLocation() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -91,7 +88,6 @@ export default function MapPage({ navigation }: MapPageProps) {
     }
   }
 
-  // -- fetchAllData --
   async function fetchAllData(filter: TripFilter) {
     setLoading(true);
     try {
@@ -123,7 +119,6 @@ export default function MapPage({ navigation }: MapPageProps) {
     }
   }
 
-  // -- fetchTrips --
   async function fetchTrips(filter: TripFilter): Promise<Trip[]> {
     let url = `${process.env.EXPO_LOCAL_SERVER}/api/trips/all`;
     const params = new URLSearchParams();
@@ -138,18 +133,20 @@ export default function MapPage({ navigation }: MapPageProps) {
     }
 
     const resp = await fetch(url);
+    console.log("trip", resp);
+
     if (!resp.ok) throw new Error("Failed to fetch trips");
     const data: Trip[] = await resp.json();
     return data.map((t) => ({ ...t, groups: t.groups || [] }));
   }
 
-  // -- fetchGroups --
   async function fetchGroups(): Promise<Group[]> {
     const resp = await fetch(`${process.env.EXPO_LOCAL_SERVER}/api/group/list`);
     if (!resp.ok) throw new Error("Failed to fetch groups");
     const rawData = await resp.json();
+    console.log("group", rawData);
     return rawData
-      .filter((g: any) => g.status !== "completd")
+      .filter((g: any) => g.status !== "completed")
       .map((g: any) => ({
         ...g,
         membersCount: Array.isArray(g.members) ? g.members.length : 0,
@@ -157,32 +154,10 @@ export default function MapPage({ navigation }: MapPageProps) {
       }));
   }
 
-  // החלפת מצב מפה/רשימה
   function toggleViewMode() {
     setViewMode((prev) => (prev === "map" ? "list" : "map"));
   }
 
-  // חיפוש עיר
-  async function handleSearchCity() {
-    await fetchAllData({ city });
-
-    if (city.trim()) {
-      setActiveFilters((prev) => [
-        ...prev.filter((f) => !f.id.startsWith("city=")),
-        { id: `city=${city}`, label: `City: ${city}` },
-      ]);
-    } else {
-      // הסרת צ'יפ של city=...
-      setActiveFilters((prev) => prev.filter((f) => !f.id.startsWith("city=")));
-    }
-  }
-
-  // לחיצה על מרקר
-  function onMarkerPress(trip: Trip) {
-    setSelectedTrip(trip);
-  }
-
-  // Center on user
   async function handleCenterOnMe() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -202,72 +177,97 @@ export default function MapPage({ navigation }: MapPageProps) {
     }
   }
 
-  // הצטרפות לקבוצה
-  async function handleJoinGroup(groupId: string) {
-    try {
-      const resp = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/group/${groupId}/join`,
-        { method: "POST" }
-      );
-      if (!resp.ok) throw new Error("Failed to join group");
-      Alert.alert("Success", "You have joined this group!");
-
-      // טוען מחדש עם הפילטר city הקיים
-      await fetchAllData({ city });
-      setSelectedTrip(null);
-    } catch (err) {
-      console.error("Error joining group:", err);
-      Alert.alert("Error", "Could not join group.");
-    }
+  // בוחר עיר מה- CitySearchBar
+  function handleSelectCity(coords: [number, number], placeName: string) {
+    // מזיזים את המצלמה
+    cameraRef.current?.setCamera({
+      centerCoordinate: coords,
+      zoomLevel: 13,
+      animationDuration: 1000,
+    });
+    // שומרים ב-state
+    setCity(placeName);
+    // טוענים דאטה
+    fetchAllData({ city: placeName });
+    // מוסיפים צ'יפ
+    setActiveFilters((prev) => [
+      // מוחקים קודם city= קודמת
+      ...prev.filter((f) => !f.id.startsWith("city=")),
+      { id: `city=${placeName}`, label: `City: ${placeName}` },
+    ]);
   }
 
-  // --- פתיחת חלון סינון טיולים בצורה מסונכרנת ---
+  // כשלוחצים על מרקר
+  function onMarkerPress(trip: Trip) {
+    setSelectedTrip(trip);
+  }
+
+  // פתיחת TripFilter
   function openTripFilterModal() {
-    // 1) מזהים אם יש tripLocation=xxx
     const locFilter = activeFilters.find((f) =>
       f.id.startsWith("tripLocation=")
     );
     const locationVal = locFilter ? locFilter.id.split("=")[1] : "";
 
-    // 2) מזהים כל tripTag=yyy
     const tagFilters = activeFilters
       .filter((f) => f.id.startsWith("tripTag="))
-      .map((f) => f.id.split("=")[1]); // מה שאחרי '='
+      .map((f) => f.id.split("=")[1]);
 
-    // 3) setState
-    setTripModalInitialFilters({
-      location: locationVal,
-      tags: tagFilters,
-    });
-
-    // פותחים את המודל
+    setTripModalInitialFilters({ location: locationVal, tags: tagFilters });
     setShowTripFilter(true);
   }
 
-  // כשלוחצים Apply ב-TripFilterModal
+  // Apply TripFilter
   function onApplyTripFilters(
     filteredTrips: Trip[],
     chosenFilters: { id: string; label: string }[]
   ) {
     setTrips(filteredTrips);
-
-    // ניקוי פילטרים ישנים:
     setActiveFilters((prev) =>
       prev.filter(
         (f) => !f.id.startsWith("tripTag=") && !f.id.startsWith("tripLocation=")
       )
     );
-    // והוספה של החדשים
     setActiveFilters((prev) => [...prev, ...chosenFilters]);
   }
 
-  // כשלוחצים Apply ב-GroupFilterModal
+  // פתיחת GroupFilter
+  function openGroupFilterModal() {
+    const difficultyFilters = activeFilters
+      .filter((f) => f.id.startsWith("groupDifficulty="))
+      .map((f) => f.id.split("=")[1]);
+
+    const statusFilters = activeFilters
+      .filter((f) => f.id.startsWith("groupStatus="))
+      .map((f) => f.id.split("=")[1]);
+
+    const maxMem = activeFilters.find((f) =>
+      f.id.startsWith("groupMaxMembers=")
+    );
+    const maxVal = maxMem ? maxMem.id.split("=")[1] : "";
+
+    const startF = activeFilters.find((f) => f.id.startsWith("groupStart="));
+    const startVal = startF ? startF.id.split("=")[1] : "";
+
+    const endF = activeFilters.find((f) => f.id.startsWith("groupEnd="));
+    const endVal = endF ? endF.id.split("=")[1] : "";
+
+    setGroupModalInitialFilters({
+      difficulties: difficultyFilters,
+      statuses: statusFilters,
+      maxMembers: maxVal,
+      scheduledStart: startVal,
+      scheduledEnd: endVal,
+    });
+    setShowGroupFilter(true);
+  }
+
+  // Apply GroupFilter
   function onApplyGroupFilters(
     filteredGroups: Group[],
     chosenFilters: { id: string; label: string }[]
   ) {
     setGroups(filteredGroups);
-
     setActiveFilters((prev) => prev.filter((f) => !f.id.startsWith("group")));
     setActiveFilters((prev) => [...prev, ...chosenFilters]);
   }
@@ -277,10 +277,17 @@ export default function MapPage({ navigation }: MapPageProps) {
     const newFilters = activeFilters.filter((f) => f.id !== filterId);
     setActiveFilters(newFilters);
 
-    // city=..
     if (filterId.startsWith("city=")) {
+      // חזרנו למיקום הנוכחי
       setCity("");
-      fetchAllData({ city: "" });
+      if (userLocation) {
+        cameraRef.current?.setCamera({
+          centerCoordinate: userLocation,
+          zoomLevel: 13,
+          animationDuration: 1000,
+        });
+      }
+      fetchAllData({});
       return;
     }
 
@@ -313,54 +320,38 @@ export default function MapPage({ navigation }: MapPageProps) {
     setGroups(filteredGroups);
   }
 
-  function openGroupFilterModal() {
-    // 1) מחפשים groupDifficulty=, groupStatus=, groupMaxMembers=, groupStart=, groupEnd=
-    const difficultyFilters = activeFilters
-      .filter((f) => f.id.startsWith("groupDifficulty="))
-      .map((f) => f.id.split("=")[1]); // הערך שאחרי '='
-
-    const statusFilters = activeFilters
-      .filter((f) => f.id.startsWith("groupStatus="))
-      .map((f) => f.id.split("=")[1]);
-
-    // maxMembers
-    const maxMem = activeFilters.find((f) =>
-      f.id.startsWith("groupMaxMembers=")
-    );
-    const maxVal = maxMem ? maxMem.id.split("=")[1] : "";
-
-    // start date
-    const startF = activeFilters.find((f) => f.id.startsWith("groupStart="));
-    const startVal = startF ? startF.id.split("=")[1] : "";
-
-    // end date
-    const endF = activeFilters.find((f) => f.id.startsWith("groupEnd="));
-    const endVal = endF ? endF.id.split("=")[1] : "";
-
-    // 2) מעדכן את הסטייט
-    setGroupModalInitialFilters({
-      difficulties: difficultyFilters,
-      statuses: statusFilters,
-      maxMembers: maxVal,
-      scheduledStart: startVal,
-      scheduledEnd: endVal,
-    });
-
-    // פותח את המודאל
-    setShowGroupFilter(true);
-  }
-
   return (
     <View className="flex-1 bg-gray-50">
       <View className="bg-white p-3 shadow-sm">
         {/* שורת החיפוש */}
-        <View className="flex-row items-center space-x-2">
-          <SearchBar
-            value={city}
-            onChangeText={(val) => setCity(val)}
-            onSearch={handleSearchCity}
-            placeholder="Search city..."
-          />
+        <View
+          className="flex-row items-center space-x-2"
+          style={{ zIndex: 9999 }}
+        >
+          <View className="flex-1">
+            {/* CitySearchBar עם onClearLocation */}
+            <CitySearchBar
+              placeholder="Search city..."
+              onSelectLocation={handleSelectCity}
+              onClearLocation={() => {
+                // המשתמש מחק לגמרי => חוזרים למיקום המשתמש
+                setCity("");
+                if (userLocation) {
+                  cameraRef.current?.setCamera({
+                    centerCoordinate: userLocation,
+                    zoomLevel: 13,
+                    animationDuration: 1000,
+                  });
+                }
+                // מסירים פילטר city= אם קיים
+                setActiveFilters((prev) =>
+                  prev.filter((f) => !f.id.startsWith("city="))
+                );
+                // טוענים מחדש בלי city
+                fetchAllData({});
+              }}
+            />
+          </View>
 
           <TouchableOpacity
             onPress={toggleViewMode}
@@ -372,11 +363,10 @@ export default function MapPage({ navigation }: MapPageProps) {
           </TouchableOpacity>
         </View>
 
-        {/* סרגל הצ'יפים + כפתורי סינון */}
+        {/* סרגל הצ'יפים + כפתורי Filter */}
         <FiltersBar
           filters={activeFilters}
           onRemoveFilter={handleRemoveFilter}
-          /** לפני פתיחת TripFilter - נאסוף את הפילטרים הקיימים ל-initialFilters */
           onOpenTripFilter={openTripFilterModal}
           onOpenGroupFilter={openGroupFilterModal}
         />
@@ -390,9 +380,7 @@ export default function MapPage({ navigation }: MapPageProps) {
           <Mapbox.MapView
             className="flex-1"
             styleURL={Mapbox.StyleURL.Street}
-            onRegionWillChange={() => {
-              if (selectedTrip) setSelectedTrip(null);
-            }}
+            onRegionWillChange={() => selectedTrip && setSelectedTrip(null)}
           >
             <Camera
               ref={cameraRef}
@@ -418,11 +406,12 @@ export default function MapPage({ navigation }: MapPageProps) {
                 maxZoomLevel={22}
               />
             </Mapbox.VectorSource>
-
             {trips.map((trip) => {
               const [lon, lat] = trip.location.coordinates;
+
+              // Instead of g.membersCount, simply use g.members.length
               const hasAvailability = trip.groups?.some(
-                (g) => g.membersCount < g.max_members
+                (g) => g.members.length < g.max_members
               );
               return (
                 <TripMarker
@@ -431,7 +420,7 @@ export default function MapPage({ navigation }: MapPageProps) {
                   longitude={lon}
                   latitude={lat}
                   hasAvailability={hasAvailability}
-                  onPressMarker={onMarkerPress}
+                  onPressMarker={() => setSelectedTrip(trip)}
                 />
               );
             })}
@@ -483,22 +472,11 @@ export default function MapPage({ navigation }: MapPageProps) {
           trip={selectedTrip}
           onClose={() => setSelectedTrip(null)}
           navigation={navigation}
-          onGroupPress={(groupId, action) => {
-            if (action === "join") {
-              handleJoinGroup(groupId);
-            } else {
-              navigation.navigate("GroupsStack", {
-                screen: "GroupPage",
-                params: { groupId },
-              });
-            }
-          }}
+          onGroupPress={(groupId, action) => {}}
           onAddGroup={() => {
             navigation.navigate("GroupsStack", {
               screen: "CreateGroupPage",
-              params: {
-                trip: selectedTrip,
-              },
+              params: { trip: selectedTrip },
             });
           }}
         />

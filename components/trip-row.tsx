@@ -7,13 +7,21 @@ interface TripRowProps {
   trip: Trip;
   onPress: () => void;
   completedAt?: Date | null;
+  fromMap?: boolean;
 }
 
-const TripRow: React.FC<TripRowProps> = ({ trip, onPress, completedAt }) => {
+const TripRow: React.FC<TripRowProps> = ({
+  trip,
+  onPress,
+  completedAt,
+  fromMap,
+}) => {
+  const containerBg = fromMap ? "bg-white" : "bg-gray-100";
+
   return (
     <TouchableOpacity
       onPress={onPress}
-      className="relative flex-row items-center bg-gray-100 mb-4 p-4 rounded-lg"
+      className={`relative flex-row items-center ${containerBg} mb-4 p-4 rounded-lg`}
     >
       {trip.main_image ? (
         <Image
