@@ -1,8 +1,14 @@
 import { Group } from "./group-interface";
 import { IImageModel } from "./image-interface";
 import { Trip } from "./trip-interface";
+/*************  ✨ Codeium Command 🌟  *************/
+export const getPostWithParam = (post: IPost) =>
+  typeof post.author === "object"
+    ? post.author
+    : { username: post.author, profile_picture: { url: "" }, _id: "" };
 
 interface IUser {
+  /******  c804094c-1c66-45c2-9320-8f7c45d09052  *******/
   _id: string;
   username: string;
   profile_picture: { url: string; image_id: string };

@@ -8,14 +8,14 @@ import {
   Modal,
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
-import { IPost } from "../../interfaces/post-interface";
+import { getPostWithParam, IPost } from "../../interfaces/post-interface";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PostActions from "./components/post-action-buttons";
 import MediaList from "../../components/media-list-after-upload";
 import FullScreenMediaModal from "../../components/media-fullscreen-modal";
 import { IImageModel } from "../../interfaces/image-interface";
 import InnerPostCard from "./components/inner-post-card";
-import ProfileHeaderLink from "./components/profile-image-name-button";
+import ProfileHeaderLink from "../my-profile/components/profile-image-name-button";
 
 const getUri = (data: any): string => {
   if (typeof data === "string") return data;
@@ -85,9 +85,8 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
     );
   }
 
-  const authorProfilePic = getUri(
-    typeof post.author === "object" ? post.author.profile_picture.url : ""
-  );
+    const author = getPostWithParam(post);
+  
 
   // Convert post.images into an array of IImageModel
   const mediaItems: IImageModel[] = post.images!.map((item) => ({
@@ -97,14 +96,19 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
     video_sceenshot_url:
       item.type === "video" ? item.video_sceenshot_url : undefined,
   }));
-
+  console.log(post);
   return (
     <>
       <SafeAreaView className="flex-1 bg-gray-50">
         <ScrollView className="bg-gray-50">
           <View className="p-6 bg-white rounded-lg shadow-md m-4">
             {/* Author Section */}
-            <ProfileHeaderLink post={post} navigation={navigation} />
+            <ProfileHeaderLink
+              userId={author._id}
+              username={author.username}
+              profileImage={author.profile_picture.url}
+              navigation={navigation}
+            />
 
             {/* Post Content */}
             {post.content && (

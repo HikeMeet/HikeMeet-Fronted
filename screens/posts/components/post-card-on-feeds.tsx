@@ -1,11 +1,11 @@
 // components/PostCard.tsx
 import React from "react";
 import { ScrollView, TouchableOpacity, View, Image, Text } from "react-native";
-import { IPost } from "../../../interfaces/post-interface";
+import { getPostWithParam, IPost } from "../../../interfaces/post-interface";
 import PostActions from "./post-action-buttons";
 import InnerPostCard from "./inner-post-card";
 import { useAuth } from "../../../contexts/auth-context";
-import ProfileHeaderLink from "./profile-image-name-button";
+import ProfileHeaderLink from "../../my-profile/components/profile-image-name-button";
 
 interface PostCardProps {
   post: IPost;
@@ -19,14 +19,16 @@ const PostCard: React.FC<PostCardProps> = ({
   inShareModal = false,
 }) => {
   // Extract author details.
-  const author =
-    typeof post.author === "object"
-      ? post.author
-      : { username: post.author, profile_picture: { url: "" } };
+  const author = getPostWithParam(post);
 
   // Render header.
   const renderHeader = () => (
-    <ProfileHeaderLink post={post} navigation={navigation} />
+    <ProfileHeaderLink
+      navigation={navigation}
+      userId={author._id}
+      username={author.username}
+      profileImage={author.profile_picture.url}
+    />
   );
 
   // Render content.
