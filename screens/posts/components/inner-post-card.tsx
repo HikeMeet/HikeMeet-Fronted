@@ -54,6 +54,11 @@ const InnerPostCard: React.FC<InnerPostCardProps> = ({ post, navigation }) => {
           })}
         </ScrollView>
       )}
+      <View className="px-2 pb-1">
+        <Text className="text-xs text-gray-500">
+          {new Date(post.created_at).toLocaleString()}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 };
