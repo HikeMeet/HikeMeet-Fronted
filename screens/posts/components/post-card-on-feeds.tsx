@@ -1,11 +1,9 @@
-// components/PostCard.tsx
 import React from "react";
 import { ScrollView, TouchableOpacity, View, Image, Text } from "react-native";
 import { IPost } from "../../../interfaces/post-interface";
 import PostActions from "./post-action-buttons";
 import InnerPostCard from "./inner-post-card";
-import { useAuth } from "../../../contexts/auth-context";
-import ProfileHeaderLink from "./profile-image-name-button";
+import ProfileHeaderLink from "../../my-profile/components/profile-image-name-button";
 
 interface PostCardProps {
   post: IPost;
@@ -22,11 +20,20 @@ const PostCard: React.FC<PostCardProps> = ({
   const author =
     typeof post.author === "object"
       ? post.author
-      : { username: post.author, profile_picture: { url: "" } };
+      : {
+          _id: post.author,
+          username: post.author,
+          profile_picture: { url: "" },
+        };
 
-  // Render header.
+  // Render header using ProfileHeaderLink.
   const renderHeader = () => (
-    <ProfileHeaderLink post={post} navigation={navigation} />
+    <ProfileHeaderLink
+      navigation={navigation}
+      userId={author._id}
+      username={author.username}
+      profileImage={author.profile_picture.url}
+    />
   );
 
   // Render content.
@@ -35,9 +42,7 @@ const PostCard: React.FC<PostCardProps> = ({
       return (
         <View>
           {/* New commentary by sharing user */}
-          <Text style={{ padding: 8, fontSize: 16, color: "#111827" }}>
-            {post.content}
-          </Text>
+          <Text className="p-2 text-base text-gray-900">{post.content}</Text>
           {/* Render the shared chain using InnerPostCard */}
           <InnerPostCard
             post={post.original_post as IPost}
@@ -47,11 +52,9 @@ const PostCard: React.FC<PostCardProps> = ({
       );
     } else {
       return (
-        <View style={{ padding: 8 }}>
+        <View className="p-2">
           {post.content ? (
-            <Text style={{ fontSize: 16, color: "#111827", marginBottom: 8 }}>
-              {post.content}
-            </Text>
+            <Text className="text-base text-gray-900 mb-2">{post.content}</Text>
           ) : null}
           {post.images && post.images.length > 0 && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -62,12 +65,7 @@ const PostCard: React.FC<PostCardProps> = ({
                   <Image
                     key={idx}
                     source={{ uri: previewUrl }}
-                    style={{
-                      width: 160,
-                      height: 160,
-                      borderRadius: 12,
-                      marginRight: 8,
-                    }}
+                    className="w-40 h-40 rounded-xl mr-2"
                     resizeMode="cover"
                   />
                 );
@@ -79,7 +77,16 @@ const PostCard: React.FC<PostCardProps> = ({
     }
   };
 
-  // Render footer.
+  // Render meta information (date) above the footer.
+  const renderMeta = () => (
+    <View className="px-2 pb-1">
+      <Text className="text-xs text-gray-500">
+        {new Date(post.created_at).toLocaleString()}
+      </Text>
+    </View>
+  );
+
+  // Render footer: action buttons.
   const renderFooter = () => {
     if (inShareModal) return null;
     return <PostActions post={post} navigation={navigation} />;
@@ -89,23 +96,10 @@ const PostCard: React.FC<PostCardProps> = ({
     <>
       {renderHeader()}
       {renderContent()}
+      {renderMeta()}
       {renderFooter()}
     </>
   );
-
-  const containerStyle = {
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 0,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#f3f4f6",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  };
 
   return navigation ? (
     <TouchableOpacity
@@ -115,12 +109,12 @@ const PostCard: React.FC<PostCardProps> = ({
           params: { postId: post._id },
         })
       }
-      style={containerStyle}
+      className="bg-white rounded-2xl border border-gray-200 shadow-md mb-4"
     >
       <CardContent />
     </TouchableOpacity>
   ) : (
-    <View style={containerStyle}>
+    <View className="bg-white rounded-2xl border border-gray-200 shadow-md mb-4">
       <CardContent />
     </View>
   );

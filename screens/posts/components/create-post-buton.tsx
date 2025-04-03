@@ -16,7 +16,6 @@ const CreatePostButton: React.FC<CreatePostButtonProps> = ({
   inGroup = false,
   groupId,
 }) => {
-  console.log(groupId, inGroup);
   return (
     <TouchableOpacity
       className={"mx-2 my-2 py-3 rounded-lg bg-blue-500"}

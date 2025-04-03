@@ -10,7 +10,6 @@ const SettingsScreen = ({ navigation }: any) => {
   const [deletePopupVisible, setDeleteLogoutPopupVisible] = useState(false);
   const { mongoUser } = useAuth();
   const isAdmin = mongoUser?.role === "admin" ? true : false;
-  console.log(isAdmin);
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 bg-white p-4">

@@ -1,16 +1,13 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
-import { useAuth } from "../contexts/auth-context";
+import { useAuth } from "../../../contexts/auth-context";
 
 interface BioSectionProps {
   bio: string;
   editable?: boolean;
 }
 
-const BioSection: React.FC<BioSectionProps> = ({
-  bio: initialBio,
-  editable = true,
-}) => {
+const BioSection: React.FC<BioSectionProps> = ({ bio: initialBio, editable = true }) => {
   const [bio, setBio] = useState<string>(initialBio);
   const [editingBio, setEditingBio] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
@@ -25,9 +22,7 @@ const BioSection: React.FC<BioSectionProps> = ({
         `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoId}/update`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ bio }),
         }
       );
@@ -55,9 +50,9 @@ const BioSection: React.FC<BioSectionProps> = ({
       <View className="flex-row items-center justify-between">
         <Text className="text-sm font-bold mb-2">Bio</Text>
         {editable && !editingBio && (
-          <Text onPress={() => setEditingBio(true)} className="text-blue-500">
-            Edit
-          </Text>
+          <TouchableOpacity onPress={() => setEditingBio(true)}>
+            <Text className="text-blue-500">Edit</Text>
+          </TouchableOpacity>
         )}
       </View>
       {editable && editingBio ? (
@@ -95,12 +90,11 @@ const BioSection: React.FC<BioSectionProps> = ({
             {bio || "No bio provided."}
           </Text>
           {isTruncated && (
-            <Text
-              onPress={() => setExpanded(!expanded)}
-              className="text-blue-500 mt-1"
-            >
-              {expanded ? "Show less" : "Show more"}
-            </Text>
+            <TouchableOpacity onPress={() => setExpanded(!expanded)}>
+              <Text className="text-blue-500 mt-1">
+                {expanded ? "Show less" : "Show more"}
+              </Text>
+            </TouchableOpacity>
           )}
         </View>
       )}

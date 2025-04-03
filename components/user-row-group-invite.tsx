@@ -18,7 +18,6 @@ const InviteUserRow: React.FC<InviteUserRowProps> = ({
   group,
 }) => {
   const { mongoId } = useAuth(); // current user's mongoId
-  console.log("::::friend ", friend);
   return (
     <View className="flex-row items-center justify-between mb-4 p-2 border border-gray-200 rounded">
       <Image

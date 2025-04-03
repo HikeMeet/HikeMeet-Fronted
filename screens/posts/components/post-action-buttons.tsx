@@ -12,13 +12,7 @@ interface PostActionsProps {
 const PostActions: React.FC<PostActionsProps> = ({ post, navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
 
-/*************  ✨ Codeium Command ⭐  *************/
-  /**
-   * Handles when the like button is pressed on a post.
-   * @remarks Currently just logs to the console but will eventually make a
-   * request to the server to like the post.
-   */
-/******  01220775-ced6-473a-ab5c-2b1deca26c45  *******/  const handleLike = () => {
+  const handleLike = () => {
     console.log("Like pressed");
   };
 
