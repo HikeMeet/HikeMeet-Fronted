@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   ActivityIndicator,
-  FlatList,
   ScrollView,
+  RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styled } from "nativewind";
@@ -18,25 +18,37 @@ import { IPost } from "../../interfaces/post-interface";
 const Home = ({ navigation }: any) => {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
+  // Function to fetch posts.
+  const fetchPosts = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/post/all?privacy=public`
+      );
+      const data = await response.json();
+      setPosts(data.posts);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // When the screen is focused, refetch the posts.
   useFocusEffect(
     useCallback(() => {
-      const fetchPosts = async () => {
-        try {
-          const response = await fetch(
-            `${process.env.EXPO_LOCAL_SERVER}/api/post/all?privacy=public`
-          );
-          const data = await response.json();
-          setPosts(data.posts);
-        } catch (error) {
-          console.error("Error fetching posts:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
+      setLoading(true);
       fetchPosts();
     }, [])
   );
+
+  // Handler for pull-to-refresh.
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchPosts();
+  }, []);
 
   return (
     <View className="flex-1 bg-white">
@@ -73,7 +85,7 @@ const Home = ({ navigation }: any) => {
         onPress={() => console.log("create post clicked")}
       />
 
-      {/* Posts Feed using ScrollView */}
+      {/* Posts Feed */}
       {loading ? (
         <ActivityIndicator
           size="large"
@@ -85,9 +97,21 @@ const Home = ({ navigation }: any) => {
           className="flex-1 m-2"
           contentContainerStyle={{ paddingBottom: 20 }}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
         >
           {posts.map((post) => (
-            <PostCard key={post._id} post={post} navigation={navigation} />
+            <PostCard
+              key={post._id}
+              post={post}
+              navigation={navigation}
+              onPostUpdated={(deletedPost) => {
+                setPosts((prevPosts) =>
+                  prevPosts.filter((p) => p._id !== deletedPost._id)
+                );
+              }}
+            />
           ))}
         </ScrollView>
       )}
