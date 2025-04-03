@@ -1,4 +1,3 @@
-// MapPage.tsx
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
@@ -8,51 +7,23 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  Modal, // אפשר להשאיר אם אתה באמת משתמש ב-Modal (או להוריד אם עברנו לקומפוננטה גמישה)
 } from "react-native";
 import Mapbox, { Camera } from "@rnmapbox/maps";
 import * as Location from "expo-location";
 
-// קומפוננטות שעברו לקבצים נפרדים
-import SearchBar from "./components/SearchBar";
-import TripFilterModal from "../../components/TripFilterModal";
-import GroupFilterModal from "../../components/GroupFilterModal";
-
-// קומפוננטות שלך
 import CenterOnMeButton from "./components/center-on-me-button";
 import TripMarker from "./components/trip-marker";
 import TripPopup from "./components/trip-popup";
 
-// הממשקים של Trip ו-Group
-export interface Group {
-  _id: string;
-  name: string;
-  trip: string;
-  max_members: number;
-  membersCount: number;
-  leaderName: string;
-  status?: string;
-  created_by?: any;
-  members?: any[];
-  pending?: any[];
-  privacy?: string;
-}
+// -- הקומפוננטות החדשות --
+import SearchBar from "./components/SearchBar";
+import TripFilterModal from "../../components/TripFilterModal";
+import GroupFilterModal from "../../components/GroupFilterModal";
+import FiltersBar, { ActiveFilter } from "./components/FiltersBar";
 
-export interface Trip {
-  _id: string;
-  name: string;
-  description?: string;
-  location: {
-    address: string;
-    coordinates: [number, number];
-  };
-  main_image?: {
-    url: string;
-    [key: string]: any;
-  };
-  images?: Array<{ url: string; [key: string]: any }>;
-  groups?: Group[];
-}
+// ייבוא הממשקים מתוך הקבצים החיצוניים
+import { Group } from "../../interfaces/group-interface";
+import { Trip } from "../../interfaces/trip-interface";
 
 interface TripFilter {
   city?: string;
@@ -70,28 +41,42 @@ export default function MapPage({ navigation }: MapPageProps) {
   const [groups, setGroups] = useState<Group[]>([]);
   const [allGroups, setAllGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
-  const [viewMode, setViewMode] = useState<"map" | "list">("map");
 
-  // State לחיפוש
+  const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [city, setCity] = useState<string>("");
 
-  // חלונות פופאפ/מודאל לסינון
+  // חלונות סינון
   const [showGroupFilter, setShowGroupFilter] = useState(false);
   const [showTripFilter, setShowTripFilter] = useState(false);
 
-  // מצלמה/מיקום
+  // מערך של כל הפילטרים הפעילים (צ'יפים)
+  const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
+
+  // כאן נשמור אילו פילטרים נעביר כ-initial ל-TripFilterModal
+  const [tripModalInitialFilters, setTripModalInitialFilters] = useState<{
+    location: string;
+    tags: string[];
+  }>({ location: "", tags: [] });
+
   const cameraRef = useRef<Camera>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null
   );
+  const [groupModalInitialFilters, setGroupModalInitialFilters] = useState({
+    difficulties: [] as string[],
+    statuses: [] as string[],
+    maxMembers: "",
+    scheduledStart: "",
+    scheduledEnd: "",
+  });
 
   useEffect(() => {
     fetchAllData({});
     getUserLocation();
   }, []);
 
+  // -- getUserLocation --
   async function getUserLocation() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -100,16 +85,13 @@ export default function MapPage({ navigation }: MapPageProps) {
         return;
       }
       const location = await Location.getCurrentPositionAsync({});
-      const coords: [number, number] = [
-        location.coords.longitude,
-        location.coords.latitude,
-      ];
-      setUserLocation(coords);
+      setUserLocation([location.coords.longitude, location.coords.latitude]);
     } catch (err) {
       console.error("Failed to get user location:", err);
     }
   }
 
+  // -- fetchAllData --
   async function fetchAllData(filter: TripFilter) {
     setLoading(true);
     try {
@@ -129,10 +111,11 @@ export default function MapPage({ navigation }: MapPageProps) {
         groups: groupsByTrip[trip._id] || [],
       }));
 
-      setTrips(mergedTrips);
       setAllTrips(mergedTrips);
-      setGroups(groupsResp);
       setAllGroups(groupsResp);
+
+      setTrips(mergedTrips);
+      setGroups(groupsResp);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -140,26 +123,33 @@ export default function MapPage({ navigation }: MapPageProps) {
     }
   }
 
+  // -- fetchTrips --
   async function fetchTrips(filter: TripFilter): Promise<Trip[]> {
     let url = `${process.env.EXPO_LOCAL_SERVER}/api/trips/all`;
     const params = new URLSearchParams();
-    if (filter.city && filter.city.trim())
+    if (filter.city && filter.city.trim()) {
       params.append("city", filter.city.trim());
-    if (filter.category && filter.category.trim())
+    }
+    if (filter.category && filter.category.trim()) {
       params.append("category", filter.category.trim());
-    if (params.toString()) url += `?${params.toString()}`;
+    }
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+
     const resp = await fetch(url);
     if (!resp.ok) throw new Error("Failed to fetch trips");
     const data: Trip[] = await resp.json();
     return data.map((t) => ({ ...t, groups: t.groups || [] }));
   }
 
+  // -- fetchGroups --
   async function fetchGroups(): Promise<Group[]> {
     const resp = await fetch(`${process.env.EXPO_LOCAL_SERVER}/api/group/list`);
     if (!resp.ok) throw new Error("Failed to fetch groups");
     const rawData = await resp.json();
     return rawData
-      .filter((g: any) => g.status !== "completed")
+      .filter((g: any) => g.status !== "completd")
       .map((g: any) => ({
         ...g,
         membersCount: Array.isArray(g.members) ? g.members.length : 0,
@@ -167,19 +157,32 @@ export default function MapPage({ navigation }: MapPageProps) {
       }));
   }
 
+  // החלפת מצב מפה/רשימה
   function toggleViewMode() {
     setViewMode((prev) => (prev === "map" ? "list" : "map"));
   }
 
+  // חיפוש עיר
   async function handleSearchCity() {
-    // ביצוע fetchAllData לפי ה-city
     await fetchAllData({ city });
+
+    if (city.trim()) {
+      setActiveFilters((prev) => [
+        ...prev.filter((f) => !f.id.startsWith("city=")),
+        { id: `city=${city}`, label: `City: ${city}` },
+      ]);
+    } else {
+      // הסרת צ'יפ של city=...
+      setActiveFilters((prev) => prev.filter((f) => !f.id.startsWith("city=")));
+    }
   }
 
+  // לחיצה על מרקר
   function onMarkerPress(trip: Trip) {
     setSelectedTrip(trip);
   }
 
+  // Center on user
   async function handleCenterOnMe() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -199,17 +202,17 @@ export default function MapPage({ navigation }: MapPageProps) {
     }
   }
 
+  // הצטרפות לקבוצה
   async function handleJoinGroup(groupId: string) {
     try {
       const resp = await fetch(
         `${process.env.EXPO_LOCAL_SERVER}/api/group/${groupId}/join`,
-        {
-          method: "POST",
-        }
+        { method: "POST" }
       );
       if (!resp.ok) throw new Error("Failed to join group");
       Alert.alert("Success", "You have joined this group!");
-      // מרעננים את הדאטה עם הפילטרים הקיימים (למשל city, ...)
+
+      // טוען מחדש עם הפילטר city הקיים
       await fetchAllData({ city });
       setSelectedTrip(null);
     } catch (err) {
@@ -218,32 +221,147 @@ export default function MapPage({ navigation }: MapPageProps) {
     }
   }
 
-  // פונקציה שתופעל ברגע שמשתמש לוחץ Apply ב-TripFilterModal
-  const onApplyTripFilter = (filteredTrips: Trip[]) => {
-    setTrips(filteredTrips);
-    // אפשר להסתיר את המודאל
-    setShowTripFilter(false);
-  };
+  // --- פתיחת חלון סינון טיולים בצורה מסונכרנת ---
+  function openTripFilterModal() {
+    // 1) מזהים אם יש tripLocation=xxx
+    const locFilter = activeFilters.find((f) =>
+      f.id.startsWith("tripLocation=")
+    );
+    const locationVal = locFilter ? locFilter.id.split("=")[1] : "";
 
-  // פונקציה שתופעל כשמשתמש לוחץ Apply ב-GroupFilterModal
-  const onApplyGroupFilter = (filteredGroups: Group[]) => {
+    // 2) מזהים כל tripTag=yyy
+    const tagFilters = activeFilters
+      .filter((f) => f.id.startsWith("tripTag="))
+      .map((f) => f.id.split("=")[1]); // מה שאחרי '='
+
+    // 3) setState
+    setTripModalInitialFilters({
+      location: locationVal,
+      tags: tagFilters,
+    });
+
+    // פותחים את המודל
+    setShowTripFilter(true);
+  }
+
+  // כשלוחצים Apply ב-TripFilterModal
+  function onApplyTripFilters(
+    filteredTrips: Trip[],
+    chosenFilters: { id: string; label: string }[]
+  ) {
+    setTrips(filteredTrips);
+
+    // ניקוי פילטרים ישנים:
+    setActiveFilters((prev) =>
+      prev.filter(
+        (f) => !f.id.startsWith("tripTag=") && !f.id.startsWith("tripLocation=")
+      )
+    );
+    // והוספה של החדשים
+    setActiveFilters((prev) => [...prev, ...chosenFilters]);
+  }
+
+  // כשלוחצים Apply ב-GroupFilterModal
+  function onApplyGroupFilters(
+    filteredGroups: Group[],
+    chosenFilters: { id: string; label: string }[]
+  ) {
     setGroups(filteredGroups);
-    setShowGroupFilter(false);
-  };
+
+    setActiveFilters((prev) => prev.filter((f) => !f.id.startsWith("group")));
+    setActiveFilters((prev) => [...prev, ...chosenFilters]);
+  }
+
+  // הסרת פילטר
+  function handleRemoveFilter(filterId: string) {
+    const newFilters = activeFilters.filter((f) => f.id !== filterId);
+    setActiveFilters(newFilters);
+
+    // city=..
+    if (filterId.startsWith("city=")) {
+      setCity("");
+      fetchAllData({ city: "" });
+      return;
+    }
+
+    let filteredTrips = [...allTrips];
+    let filteredGroups = [...allGroups];
+
+    newFilters.forEach((filter) => {
+      if (filter.id.startsWith("tripTag=")) {
+        const tagVal = filter.id.split("=")[1];
+        filteredTrips = filteredTrips.filter((t) => {
+          const tTags = (t as any).tags || [];
+          return tTags.includes(tagVal);
+        });
+      }
+      if (filter.id.startsWith("tripLocation=")) {
+        const locVal = filter.id.split("=")[1];
+        filteredTrips = filteredTrips.filter((t) =>
+          t.location.address.toLowerCase().includes(locVal.toLowerCase())
+        );
+      }
+      if (filter.id.startsWith("groupStatus=")) {
+        const statusVal = filter.id.split("=")[1];
+        filteredGroups = filteredGroups.filter((g) =>
+          g.status?.toLowerCase().includes(statusVal.toLowerCase())
+        );
+      }
+    });
+
+    setTrips(filteredTrips);
+    setGroups(filteredGroups);
+  }
+
+  function openGroupFilterModal() {
+    // 1) מחפשים groupDifficulty=, groupStatus=, groupMaxMembers=, groupStart=, groupEnd=
+    const difficultyFilters = activeFilters
+      .filter((f) => f.id.startsWith("groupDifficulty="))
+      .map((f) => f.id.split("=")[1]); // הערך שאחרי '='
+
+    const statusFilters = activeFilters
+      .filter((f) => f.id.startsWith("groupStatus="))
+      .map((f) => f.id.split("=")[1]);
+
+    // maxMembers
+    const maxMem = activeFilters.find((f) =>
+      f.id.startsWith("groupMaxMembers=")
+    );
+    const maxVal = maxMem ? maxMem.id.split("=")[1] : "";
+
+    // start date
+    const startF = activeFilters.find((f) => f.id.startsWith("groupStart="));
+    const startVal = startF ? startF.id.split("=")[1] : "";
+
+    // end date
+    const endF = activeFilters.find((f) => f.id.startsWith("groupEnd="));
+    const endVal = endF ? endF.id.split("=")[1] : "";
+
+    // 2) מעדכן את הסטייט
+    setGroupModalInitialFilters({
+      difficulties: difficultyFilters,
+      statuses: statusFilters,
+      maxMembers: maxVal,
+      scheduledStart: startVal,
+      scheduledEnd: endVal,
+    });
+
+    // פותח את המודאל
+    setShowGroupFilter(true);
+  }
 
   return (
     <View className="flex-1 bg-gray-50">
-      {/* אזור החיפוש והכפתורים */}
       <View className="bg-white p-3 shadow-sm">
+        {/* שורת החיפוש */}
         <View className="flex-row items-center space-x-2">
-          {/* SearchBar */}
           <SearchBar
             value={city}
             onChangeText={(val) => setCity(val)}
             onSearch={handleSearchCity}
             placeholder="Search city..."
           />
-          {/* מעבר בין Map / List */}
+
           <TouchableOpacity
             onPress={toggleViewMode}
             className="bg-green-600 px-3 py-2 rounded"
@@ -254,25 +372,14 @@ export default function MapPage({ navigation }: MapPageProps) {
           </TouchableOpacity>
         </View>
 
-        {/* כפתורי פתיחת סינון */}
-        <View className="flex-row mt-2 space-x-2">
-          <TouchableOpacity
-            onPress={() => setShowGroupFilter(true)}
-            className="bg-gray-300 px-3 py-1 rounded"
-          >
-            <Text className="text-sm text-gray-800 font-semibold">
-              Filter Groups
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setShowTripFilter(true)}
-            className="bg-gray-300 px-3 py-1 rounded"
-          >
-            <Text className="text-sm text-gray-800 font-semibold">
-              Filter Trips
-            </Text>
-          </TouchableOpacity>
-        </View>
+        {/* סרגל הצ'יפים + כפתורי סינון */}
+        <FiltersBar
+          filters={activeFilters}
+          onRemoveFilter={handleRemoveFilter}
+          /** לפני פתיחת TripFilter - נאסוף את הפילטרים הקיימים ל-initialFilters */
+          onOpenTripFilter={openTripFilterModal}
+          onOpenGroupFilter={openGroupFilterModal}
+        />
       </View>
 
       {loading ? (
@@ -311,6 +418,7 @@ export default function MapPage({ navigation }: MapPageProps) {
                 maxZoomLevel={22}
               />
             </Mapbox.VectorSource>
+
             {trips.map((trip) => {
               const [lon, lat] = trip.location.coordinates;
               const hasAvailability = trip.groups?.some(
@@ -370,7 +478,6 @@ export default function MapPage({ navigation }: MapPageProps) {
         </ScrollView>
       )}
 
-      {/* Trip Popup */}
       {selectedTrip && (
         <TripPopup
           trip={selectedTrip}
@@ -402,15 +509,20 @@ export default function MapPage({ navigation }: MapPageProps) {
         visible={showGroupFilter}
         onClose={() => setShowGroupFilter(false)}
         groups={allGroups}
-        onApply={onApplyGroupFilter}
+        onApply={(filteredGroups, chosenFilters) => {
+          onApplyGroupFilters(filteredGroups, chosenFilters);
+        }}
+        initialFilters={groupModalInitialFilters}
       />
-
       {/* מודאל סינון טיולים */}
       <TripFilterModal
         visible={showTripFilter}
         onClose={() => setShowTripFilter(false)}
         trips={allTrips}
-        onApply={onApplyTripFilter}
+        onApply={(filteredTrips, chosenFilters) => {
+          onApplyTripFilters(filteredTrips, chosenFilters);
+        }}
+        initialFilters={tripModalInitialFilters}
       />
     </View>
   );

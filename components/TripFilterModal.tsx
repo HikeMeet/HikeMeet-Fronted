@@ -1,5 +1,6 @@
-// TripFilterModal.tsx
-import React, { useState } from "react";
+// ../../components/TripFilterModal.tsx
+
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,14 +11,23 @@ import {
 } from "react-native";
 import { Trip } from "../interfaces/trip-interface";
 
-type Props = {
+type TripFilterModalProps = {
   visible: boolean;
   onClose: () => void;
   trips: Trip[];
+  /** מה קורה כשלוחצים Apply */
   onApply: (
     filteredTrips: Trip[],
     chosenFilters: { id: string; label: string }[]
   ) => void;
+  /**
+   * ערכים שכבר נבחרו (כדי שהModal ייפתח עם הכפתורים/טקסטים מסומנים).
+   * מורכב מ-location ו-tags.
+   */
+  initialFilters?: {
+    location: string;
+    tags: string[];
+  };
 };
 
 const TAGS = [
@@ -43,11 +53,25 @@ export default function TripFilterModal({
   onClose,
   trips,
   onApply,
-}: Props) {
+  /** אם לא מעבירים, נאתחל לערכים ריקים */
+  initialFilters = { location: "", tags: [] },
+}: TripFilterModalProps) {
   const [filters, setFilters] = useState({
     location: "",
     tags: [] as string[],
   });
+
+  // בכל פעם שהמודאל נפתח (visible) - נטען state פנימי מ-initialFilters
+  useEffect(() => {
+    if (visible) {
+      setFilters({
+        location: initialFilters.location,
+        tags: initialFilters.tags,
+      });
+    }
+  }, [visible, initialFilters]);
+
+  if (!visible) return null;
 
   const toggleTag = (tag: string) => {
     const newTags = filters.tags.includes(tag)
@@ -56,43 +80,44 @@ export default function TripFilterModal({
     setFilters({ ...filters, tags: newTags });
   };
 
+  // בסוף, בלחיצה על Apply, מסננים trips לוקלית ובונים chosenFilters
   const applyFilters = () => {
-    // ממיינים את הטיולים המקומיים
     let result = [...trips];
 
     if (filters.location.trim()) {
       result = result.filter((trip) =>
-        trip.location?.address
+        trip.location.address
           ?.toLowerCase()
           .includes(filters.location.toLowerCase())
       );
     }
 
     if (filters.tags.length > 0) {
-      // צריך להחזיק בכל trip איזה tags יש לו - אולי זה אצלך במודל
       result = result.filter((trip) => {
+        // בהנחה שיש ב-Trip מערך tags (או להתאים למבנה שלך)
         const tripTags = (trip as any).tags || [];
         return filters.tags.every((tag) => tripTags.includes(tag));
       });
     }
 
-    // יוצרים מערך של הפילטרים הנוכחיים (לצורך תצוגת הצ'יפים למשל):
-    const chosenFilters = [];
+    const chosenFilters: { id: string; label: string }[] = [];
     if (filters.location.trim()) {
       chosenFilters.push({
-        id: `location=${filters.location}`,
-        label: `Location: ${filters.location}`,
+        id: `tripLocation=${filters.location}`,
+        label: `Trip Location: ${filters.location}`,
       });
     }
+
     filters.tags.forEach((tag) => {
-      chosenFilters.push({ id: `tag=${tag}`, label: `Tag: ${tag}` });
+      chosenFilters.push({
+        id: `tripTag=${tag}`,
+        label: `Trip Tag: ${tag}`,
+      });
     });
 
     onApply(result, chosenFilters);
     onClose();
   };
-
-  if (!visible) return null;
 
   return (
     <TouchableWithoutFeedback onPress={onClose}>
@@ -101,10 +126,13 @@ export default function TripFilterModal({
           <View className="w-[90%] bg-white rounded-xl p-5 max-h-[80%]">
             <Text className="text-lg font-semibold mb-3">Trip Filters</Text>
 
+            {/* Location */}
             <TextInput
               placeholder="Location"
               value={filters.location}
-              onChangeText={(val) => setFilters({ ...filters, location: val })}
+              onChangeText={(val) =>
+                setFilters((prev) => ({ ...prev, location: val }))
+              }
               className="bg-gray-100 px-3 py-2 rounded mb-3"
             />
 
@@ -127,7 +155,9 @@ export default function TripFilterModal({
                     }`}
                   >
                     <Text
-                      className={`text-sm ${selected ? "text-white" : "text-gray-600"}`}
+                      className={`text-sm ${
+                        selected ? "text-white" : "text-gray-600"
+                      }`}
                     >
                       {tag}
                     </Text>

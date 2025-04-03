@@ -1,8 +1,7 @@
 import React from "react";
 import { View, Text, ScrollView, TouchableOpacity, Image } from "react-native";
-import { Trip } from "../map-page";
+import { Trip } from "../../../interfaces/trip-interface";
 import GroupRow from "../../../components/group-row";
-import { Group } from "../../../interfaces/group-interface";
 import Icon from "react-native-vector-icons/Ionicons";
 
 type TripPopupProps = {
@@ -84,7 +83,7 @@ export default function TripPopup({
               key={group._id}
               group={group}
               navigation={navigation}
-              showAvailability // 👈 פה אנחנו מדליקים את זה
+              showAvailability
               onAction={() => onGroupPress(group._id, "join")}
             />
           ))

@@ -1,29 +1,30 @@
-// FiltersBar.tsx
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+// ./components/FiltersBar.tsx
 
-type FilterItem = {
-  id: string; // מפתח ייחודי לזיהוי הפילטר (למשל "trip" / "group" / "city" וכו')
-  label: string; // מה מוצג בצ'יפ למשתמש
+import React from "react";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+
+export type ActiveFilter = {
+  id: string; // מה שמזהה את הפילטר (למשל "tripTag=Water", "city=TelAviv")
+  label: string; // מה יוצג למשתמש ("Trip Tag: Water", "City: Tel Aviv")
 };
 
 type FiltersBarProps = {
-  onOpenGroupFilter: () => void;
+  filters: ActiveFilter[];
+  onRemoveFilter: (filterId: string) => void;
   onOpenTripFilter: () => void;
-  filters: FilterItem[]; // רשימת הפילטרים הנוכחיים
-  onRemoveFilter: (id: string) => void; // פעולה למחיקת פילטר יחיד
+  onOpenGroupFilter: () => void;
 };
 
 export default function FiltersBar({
-  onOpenGroupFilter,
-  onOpenTripFilter,
   filters,
   onRemoveFilter,
+  onOpenTripFilter,
+  onOpenGroupFilter,
 }: FiltersBarProps) {
   return (
     <View>
-      {/* כפתורי הפתיחה של חלונות הסינון */}
-      <View className="flex-row mt-2 space-x-2">
+      {/* כפתורי פתיחת חלונות סינון */}
+      <View className="flex-row mt-2 space-x-2 mb-2">
         <TouchableOpacity
           onPress={onOpenGroupFilter}
           className="bg-gray-300 px-3 py-1 rounded"
@@ -32,6 +33,7 @@ export default function FiltersBar({
             Filter Groups
           </Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           onPress={onOpenTripFilter}
           className="bg-gray-300 px-3 py-1 rounded"
@@ -42,23 +44,25 @@ export default function FiltersBar({
         </TouchableOpacity>
       </View>
 
-      {/* תצוגת הפילטרים הפעילים כצ'יפים */}
-      <View className="flex-row flex-wrap mt-2">
-        {filters.map((filter) => (
-          <View
-            key={filter.id}
-            className="flex-row items-center bg-green-200 px-2 py-1 rounded-full mr-2 mb-2"
-          >
-            <Text className="mr-2 text-sm">{filter.label}</Text>
-            <TouchableOpacity
-              onPress={() => onRemoveFilter(filter.id)}
-              className="bg-green-600 rounded-full px-2"
+      {/* גלילה אופקית כדי שהצ'יפים יהיו בשורה אחת */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View className="flex-row items-center">
+          {filters.map((f) => (
+            <View
+              key={f.id}
+              className="flex-row items-center bg-green-200 px-2 py-1 rounded-full mr-2"
             >
-              <Text className="text-white text-sm">X</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
-      </View>
+              <Text className="mr-2 text-sm">{f.label}</Text>
+              <TouchableOpacity
+                onPress={() => onRemoveFilter(f.id)}
+                className="bg-green-600 rounded-full px-2"
+              >
+                <Text className="text-white text-sm">X</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
     </View>
   );
 }
