@@ -67,37 +67,35 @@ const PostCard: React.FC<PostCardProps> = ({
   // Render the text content area.
   const renderTextContent = () => {
     return (
-      <View style={{ marginBottom: 16, paddingHorizontal: 16 }}>
-        {!isEditing ? (
-          <Text style={{ fontSize: 16, color: "#374151", marginBottom: 8 }}>
-            {post.content || "No content."}
-          </Text>
-        ) : (
-          <EditableText
-            text={post.content || ""}
-            postId={post._id}
-            isEditing={isEditing}
-            onSaveComplete={handleSaveComplete}
-            onCancel={handleCancel}
-            textStyle={{ fontSize: 16, color: "#374151", marginBottom: 8 }}
-            containerStyle={{ marginBottom: 16 }}
-          />
-        )}
+      <View className="p-1">
+        <View style={{ marginBottom: 16, paddingHorizontal: 16 }}>
+          {!isEditing ? (
+            <Text style={{ fontSize: 16, color: "#374151", marginBottom: 8 }}>
+              {post.content || "No content."}
+            </Text>
+          ) : (
+            <EditableText
+              text={post.content || ""}
+              postId={post._id}
+              isEditing={isEditing}
+              onSaveComplete={handleSaveComplete}
+              onCancel={handleCancel}
+              textStyle={{ fontSize: 16, color: "#374151", marginBottom: 8 }}
+              containerStyle={{ marginBottom: 16 }}
+            />
+          )}
+        </View>
+        <InnerPostCard
+          post={post.original_post as IPost}
+          navigation={navigation}
+        />
       </View>
     );
   };
 
   const renderContent = () => {
     if (post.is_shared && post.original_post) {
-      return (
-        <View>
-          {renderTextContent()}
-          <InnerPostCard
-            post={post.original_post as IPost}
-            navigation={navigation}
-          />
-        </View>
-      );
+      return <View>{renderTextContent()}</View>;
     } else {
       return (
         <View className="p-2">
