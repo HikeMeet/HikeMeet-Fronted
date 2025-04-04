@@ -11,7 +11,7 @@ import { FIREBASE_AUTH } from "../firebaseconfig";
 import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "../contexts/auth-context";
-import { deleteMongoUser } from "./requests/delete-user";
+import { deleteMongoUser } from "./requests/user-actions";
 interface ConfirmPopupProps {
   visible: boolean;
   message: string;

@@ -2,11 +2,10 @@ import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
-  Image,
-  ScrollView,
   ActivityIndicator,
   SafeAreaView,
   TouchableOpacity,
+  FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import BioSection from "./components/profile-bio-section";
@@ -16,6 +15,13 @@ import HikersList from "../../components/hikers-list-in-profile";
 import HikerButton from "../../components/profile-hikers-button";
 import { MongoUser } from "../../interfaces/user-interface";
 import ProfileImage from "../../components/profile-image";
+import {
+  blockUser,
+  revokeFriendRequest,
+} from "../../components/requests/user-actions";
+import { fetchPostsForUser } from "../../components/requests/fetch-posts-by-id";
+import PostCard from "../posts/components/post-card-on-feeds";
+import { IPost } from "../../interfaces/post-interface";
 
 interface UserProfileProps {
   route: any;
@@ -30,10 +36,23 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   const [showTooltip, setShowTooltip] = useState<boolean>(false); // Tooltip visibility
   const [showHikers, setShowHikers] = useState<boolean>(false); // Toggle for hikers list
   const { mongoId, mongoUser } = useAuth(); // Current user's ID
+  const [posts, setPosts] = useState<IPost[]>([]);
+  const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
 
   const toggleHikers = useCallback(() => {
     setShowHikers((prev) => !prev);
   }, []);
+
+  const fetchPosts = async () => {
+    setLoadingPosts(true);
+    await fetchPostsForUser(user!).then((posts) => setPosts(posts));
+    console.log("Posts:", posts);
+    setLoadingPosts(false);
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, [user]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -84,18 +103,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   // Handlers for tooltip options
   const handleBlockUser = async () => {
     try {
-      const response = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/friend/block`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            currentUserId: mongoId,
-            targetUserId: userId,
-          }),
-        }
-      );
-      const data = await response.json();
+      const data = await blockUser(mongoId!, userId);
       console.log("Block response:", data);
       setFriendStatus("blocked");
     } catch (error) {
@@ -105,20 +113,15 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
     }
   };
 
+  const renderPostsHeader = () => (
+    <View className="p-4">
+      <BioSection bio={user!.bio} />
+      <View className="h-px bg-gray-300 my-4" />
+    </View>
+  );
   const handleRevokeRequest = async () => {
     try {
-      const response = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/friend/revoke-request`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            currentUserId: mongoId,
-            targetUserId: userId,
-          }),
-        }
-      );
-      const data = await response.json();
+      const data = await revokeFriendRequest(mongoId!, userId);
       console.log("Revoke response:", data);
       setFriendStatus("none");
     } catch (error) {
@@ -127,7 +130,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
       setShowTooltip(false);
     }
   };
-
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
@@ -146,112 +148,92 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      {/* Header */}
-      <View className="flex-row items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-        <Ionicons name="notifications" size={24} color="black" />
+    <SafeAreaView className="flex-1 bg-white p-4">
+      {/* User Details */}
+      <View className="flex-row items-center mb-4">
+        <ProfileImage
+          initialImageUrl={user.profile_picture.url}
+          size={80}
+          id={user._id}
+          uploadType={"profile"}
+          editable={false} // Only editable if the current user is the creator
+        />
+        <View>
+          <Text className="text-xl font-bold">{`${user.username} ${user.last_name}`}</Text>
+          <Text className="text-xl font-bold">{`${user.first_name} ${user.last_name}`}</Text>
+          <Text className="text-sm text-gray-500">Rank: Adventurer</Text>
+          {/* Hiker Button moved under the name and rank */}
+          <HikerButton
+            showHikers={showHikers}
+            toggleHikers={toggleHikers}
+            user={user}
+          />
+        </View>
       </View>
 
-      <ScrollView className="p-4">
-        {/* User Details */}
-        <View className="flex-row items-center mb-4">
-          {/* <Image
-            source={{
-              uri:
-                user.profile_picture.url || "https://via.placeholder.com/150",
-            }}
-            className="w-24 h-24 rounded-full mr-4"
-          /> */}
-          <ProfileImage
-            initialImageUrl={user.profile_picture.url}
-            size={80}
-            id={user._id}
-            uploadType={"profile"}
-            editable={false} // Only editable if the current user is the creator
+      {/* Friend Action Button and Tooltip */}
+      {mongoId && (
+        <View className="flex-row items-center">
+          <FriendActionButton
+            targetUserId={userId}
+            status={friendStatus}
+            onStatusChange={(newStatus: string) => setFriendStatus(newStatus)}
           />
-          <View>
-            <Text className="text-xl font-bold">{`${user.username} ${user.last_name}`}</Text>
-            <Text className="text-xl font-bold">{`${user.first_name} ${user.last_name}`}</Text>
-            <Text className="text-sm text-gray-500">Rank: Adventurer</Text>
-            {/* Hiker Button moved under the name and rank */}
-            <HikerButton
-              showHikers={showHikers}
-              toggleHikers={toggleHikers}
-              user={user}
+          <TouchableOpacity
+            onPress={() => setShowTooltip((prev) => !prev)}
+            className="ml-2 p-2"
+          >
+            <Ionicons
+              name="caret-up"
+              size={16}
+              color="black"
+              style={{ transform: [{ rotate: "180deg" }] }}
             />
-          </View>
+          </TouchableOpacity>
         </View>
+      )}
 
-        {/* Friend Action Button and Tooltip */}
-        {mongoId && (
-          <View className="flex-row items-center">
-            <FriendActionButton
-              targetUserId={userId}
-              status={friendStatus}
-              onStatusChange={(newStatus: string) => setFriendStatus(newStatus)}
-            />
+      {/* Tooltip Options */}
+      {showTooltip && (
+        <View className="mt-2 p-2 bg-white border border-gray-300 rounded shadow-md">
+          <TouchableOpacity onPress={handleBlockUser} className="py-1 px-2">
+            <Text className="text-sm text-gray-700">Block User</Text>
+          </TouchableOpacity>
+          {friendStatus === "request_received" && (
             <TouchableOpacity
-              onPress={() => setShowTooltip((prev) => !prev)}
-              className="ml-2 p-2"
+              onPress={handleRevokeRequest}
+              className="py-1 px-2"
             >
-              <Ionicons
-                name="caret-up"
-                size={16}
-                color="black"
-                style={{ transform: [{ rotate: "180deg" }] }}
-              />
+              <Text className="text-sm text-gray-700">Decline Request</Text>
             </TouchableOpacity>
-          </View>
-        )}
+          )}
+        </View>
+      )}
 
-        {/* Tooltip Options */}
-        {showTooltip && (
-          <View className="mt-2 p-2 bg-white border border-gray-300 rounded shadow-md">
-            <TouchableOpacity onPress={handleBlockUser} className="py-1 px-2">
-              <Text className="text-sm text-gray-700">Block User</Text>
-            </TouchableOpacity>
-            {friendStatus === "request_received" && (
-              <TouchableOpacity
-                onPress={handleRevokeRequest}
-                className="py-1 px-2"
-              >
-                <Text className="text-sm text-gray-700">Decline Request</Text>
-              </TouchableOpacity>
+      {/* Conditional Rendering: Hikers List vs. Bio and Posts */}
+      {showHikers ? (
+        <HikersList
+          isMyProfile={false}
+          navigation={navigation}
+          profileId={userId}
+        />
+      ) : (
+        <>
+          <FlatList
+            data={posts}
+            keyExtractor={(item) => item._id}
+            renderItem={({ item }) => (
+              // Replace with your actual PostCard component that displays a post.
+              <PostCard post={item} navigation={navigation} />
             )}
-          </View>
-        )}
-
-        {/* Conditional Rendering: Hikers List vs. Bio and Posts */}
-        {showHikers ? (
-          <HikersList
-            isMyProfile={false}
-            navigation={navigation}
-            profileId={userId}
+            ListHeaderComponent={renderPostsHeader}
+            refreshing={loadingPosts}
+            onRefresh={fetchPosts}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            showsVerticalScrollIndicator={false}
           />
-        ) : (
-          <>
-            {/* Bio Section - Read-only */}
-            <BioSection bio={user.bio} editable={false} />
-
-            {/* Divider */}
-            <View className="h-px bg-gray-300 my-4" />
-
-            {/* Example Posts */}
-            <Text className="text-lg font-bold mb-2">Posts</Text>
-            {[1, 2, 3].map((post, index) => (
-              <View
-                key={index}
-                className="mb-4 p-4 bg-gray-100 rounded-lg shadow-sm"
-              >
-                <Text className="text-sm text-gray-800">Post {index + 1}</Text>
-              </View>
-            ))}
-          </>
-        )}
-      </ScrollView>
+        </>
+      )}
     </SafeAreaView>
   );
 };
