@@ -75,7 +75,7 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white ">
       <StatusBar barStyle="dark-content" backgroundColor="white" />
 
       {/* Profile Header */}
@@ -118,7 +118,9 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
             // Replace with your actual PostCard component that displays a post.
-            <PostCard post={item} navigation={navigation} />
+            <View className="p-4">
+              <PostCard post={item} navigation={navigation} />
+            </View>
           )}
           ListHeaderComponent={renderPostsHeader}
           refreshing={loadingPosts}

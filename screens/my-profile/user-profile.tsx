@@ -148,7 +148,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white p-4">
+    <SafeAreaView className="flex-1 bg-white ">
       {/* User Details */}
       <View className="flex-row items-center mb-4">
         <ProfileImage
@@ -224,7 +224,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
             keyExtractor={(item) => item._id}
             renderItem={({ item }) => (
               // Replace with your actual PostCard component that displays a post.
-              <PostCard post={item} navigation={navigation} />
+              <View className="p-4">
+                <PostCard post={item} navigation={navigation} />
+              </View>
             )}
             ListHeaderComponent={renderPostsHeader}
             refreshing={loadingPosts}
