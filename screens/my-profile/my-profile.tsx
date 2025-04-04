@@ -18,6 +18,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { IPost } from "../../interfaces/post-interface";
 import PostCard from "../posts/components/post-card-on-feeds";
 import { fetchPostsForUser } from "../../components/requests/fetch-posts-by-id";
+import Icon from "react-native-vector-icons/MaterialIcons"; // Make sure this library is installed
 
 const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { mongoUser } = useAuth();
@@ -39,7 +40,7 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
   // Fetch posts created by this user.
   const fetchPosts = async () => {
     fetchPostsForUser(mongoUser!).then((posts) => setPosts(posts));
-    setLoadingPosts(false); 
+    setLoadingPosts(false);
   };
 
   useEffect(() => {
@@ -95,6 +96,14 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
             user={mongoUser}
           />
         </View>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("AccountStack", { screen: "Settings" })
+          }
+          style={{ alignSelf: "flex-start" }}
+        >
+          <Icon name="settings" size={24} color="black" />
+        </TouchableOpacity>
       </View>
 
       {showHikers ? (
