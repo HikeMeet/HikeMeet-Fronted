@@ -58,6 +58,7 @@ const PostActions: React.FC<PostActionsProps> = ({ post, navigation }) => {
           onClose={() => setModalVisible(false)}
           post={post}
           inGroup={Boolean(post.in_group)}
+          navigation={navigation}
         />
       )}
     </View>

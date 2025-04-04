@@ -13,7 +13,7 @@ interface PostCardProps {
   post: IPost;
   inShareModal?: boolean;
   navigation: any;
-  onPostUpdated: (deletedPost: IPost) => void;
+  onPostUpdated?: (deletedPost: IPost) => void;
 }
 
 const PostCard: React.FC<PostCardProps> = ({
@@ -32,7 +32,6 @@ const PostCard: React.FC<PostCardProps> = ({
           username: post.author,
           profile_picture: { url: "" },
         };
-
 
   // Local state to control inline editing and the options modal.
   const [isEditing, setIsEditing] = useState(false);
@@ -56,7 +55,6 @@ const PostCard: React.FC<PostCardProps> = ({
         username={author.username}
         profileImage={author.profile_picture.url}
       />
-
       <TouchableOpacity
         onPress={() => setOptionsVisible(true)}
         className="w-12 h-12 items-center justify-center rounded-full bg-gray-200"

@@ -17,6 +17,7 @@ import { useAuth } from "../../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { IPost } from "../../interfaces/post-interface";
 import PostCard from "../posts/components/post-card-on-feeds";
+import { fetchPostsForUser } from "../../components/requests/fetch-posts-by-id";
 
 const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { mongoUser } = useAuth();
@@ -37,19 +38,8 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   // Fetch posts created by this user.
   const fetchPosts = async () => {
-    if (!mongoUser) return;
-    setLoadingPosts(true);
-    try {
-      const response = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/post/all?userId=${mongoUser._id}`
-      );
-      const data = await response.json();
-      setPosts(data.posts);
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-    } finally {
-      setLoadingPosts(false);
-    }
+    fetchPostsForUser(mongoUser!).then((posts) => setPosts(posts));
+    setLoadingPosts(false); 
   };
 
   useEffect(() => {
