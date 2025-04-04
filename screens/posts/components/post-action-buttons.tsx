@@ -93,7 +93,6 @@ const PostActions: React.FC<PostActionsProps> = ({ post, navigation }) => {
 
       <TouchableOpacity onPress={handleShare} className="flex-row items-center">
         <FontAwesome name="share" size={20} color="blue" />
-        <Text className="ml-1 text-sm">{post.shares.length}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity

@@ -4,11 +4,22 @@ import { getPostWithParam, IPost } from "../../../interfaces/post-interface";
 import ProfileHeaderLink from "../../my-profile/components/profile-image-name-button";
 
 interface InnerPostCardProps {
-  post: IPost;
+  post?: IPost; // Allow post to be optional for this check.
   navigation: any; // Pass null to disable clicking.
 }
 
 const InnerPostCard: React.FC<InnerPostCardProps> = ({ post, navigation }) => {
+  // If post is unavailable, show message.
+  if (!post || post === null) {
+    return (
+      <View className="bg-gray-50 p-2 rounded-md my-1 ml-4 border border-gray-200 flex justify-center items-center">
+        <Text className="text-sm text-gray-700 text-center">
+          Shared post is unavailable
+        </Text>
+      </View>
+    );
+  }
+
   // Extract author details.
   const author = getPostWithParam(post);
 

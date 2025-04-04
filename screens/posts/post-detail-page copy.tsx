@@ -43,7 +43,6 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
   navigation,
 }) => {
   const { postId } = route.params;
-  const { mongoId } = useAuth();
   const [post, setPost] = useState<IPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [mediaModalVisible, setMediaModalVisible] = useState(false);
@@ -151,6 +150,13 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
               <MediaList media={mediaItems} onPressItem={openFullScreen} />
             )}
 
+            {/* Original Post Preview for Shared Posts */}
+            {post.is_shared  && (
+              <InnerPostCard
+                post={post.original_post as IPost}
+                navigation={navigation}
+              />
+            )}
             {/* Post Meta */}
             <Text className="text-sm text-gray-500 mb-2">
               Posted on: {new Date(post.created_at).toLocaleString()}
@@ -160,15 +166,6 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
             <Text className="text-xs text-gray-400 mb-2">
               Privacy: {post.privacy === "private" ? "Private" : "Public"}
             </Text>
-
-            {/* Original Post Preview for Shared Posts */}
-            {post.is_shared && post.original_post && (
-              <InnerPostCard
-                post={post.original_post as IPost}
-                navigation={navigation}
-              />
-            )}
-
             {/* Post Actions */}
             <PostActions post={post} navigation={navigation} />
 
