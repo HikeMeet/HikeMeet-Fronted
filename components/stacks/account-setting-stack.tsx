@@ -7,6 +7,8 @@ import AdminSettingPage from "../../screens/admin-settings/admin-page";
 import ResetPasswordInsidePage from "../../screens/register-login/reset-password-inside-page";
 import UserProfile from "../../screens/my-profile/user-profile";
 import CommunityGuidelines from "../../screens/my-profile/comunity-guid-page";
+import SavedPosts from "../../screens/my-profile/my-saved-posts";
+import LikedPosts from "../../screens/my-profile/my-liked-posts";
 
 const Stack = createNativeStackNavigator();
 
@@ -37,6 +39,16 @@ const AccountStack = () => {
         name="ComunitiyGuidlined"
         component={CommunityGuidelines}
         options={{ headerShown: false, title: "Comunitiy Guidlined" }}
+      />
+      <Stack.Screen
+        name="SavedPosts"
+        component={SavedPosts}
+        options={{ headerShown: true, title: "Saved Posts" }}
+      />
+      <Stack.Screen
+        name="LikedPosts"
+        component={LikedPosts}
+        options={{ headerShown: true, title: "Liked Posts" }}
       />
     </Stack.Navigator>
   );

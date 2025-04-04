@@ -17,12 +17,18 @@ interface PostActionsProps {
 }
 
 const PostActions: React.FC<PostActionsProps> = ({ post, navigation }) => {
-  const [modalVisible, setModalVisible] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(post.likes.length);
-  const [isSaved, setIsSaved] = useState(false);
-  const [saveCount, setSaveCount] = useState(post.saves.length);
   const { mongoId } = useAuth();
+
+  // Initialize isLiked and isSaved by checking if mongoId exists in the arrays
+  const [isLiked, setIsLiked] = useState<boolean>(() =>
+    post.likes.includes(mongoId!)
+  );
+  const [likeCount, setLikeCount] = useState(post.likes.length);
+  const [isSaved, setIsSaved] = useState<boolean>(() =>
+    post.saves.includes(mongoId!)
+  );
+  const [saveCount, setSaveCount] = useState(post.saves.length);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const handleLike = async () => {
     try {
@@ -55,6 +61,7 @@ const PostActions: React.FC<PostActionsProps> = ({ post, navigation }) => {
       console.error("Error handling save:", error);
     }
   };
+
   const handleShare = () => {
     console.log("Share pressed");
     setModalVisible(true);
@@ -83,10 +90,12 @@ const PostActions: React.FC<PostActionsProps> = ({ post, navigation }) => {
         />
         <Text className="ml-1 text-sm">{saveCount}</Text>
       </TouchableOpacity>
+
       <TouchableOpacity onPress={handleShare} className="flex-row items-center">
         <FontAwesome name="share" size={20} color="blue" />
         <Text className="ml-1 text-sm">{post.shares.length}</Text>
       </TouchableOpacity>
+
       <TouchableOpacity
         onPress={handleComment}
         className="flex-row items-center"

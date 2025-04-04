@@ -19,7 +19,7 @@ import {
   blockUser,
   revokeFriendRequest,
 } from "../../components/requests/user-actions";
-import { fetchPostsForUser } from "../../components/requests/fetch-posts-by-id";
+import { fetchPostsForUser } from "../../components/requests/fetch-posts";
 import PostCard from "../posts/components/post-card-on-feeds";
 import { IPost } from "../../interfaces/post-interface";
 

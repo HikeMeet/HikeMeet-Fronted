@@ -17,7 +17,7 @@ import { useAuth } from "../../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { IPost } from "../../interfaces/post-interface";
 import PostCard from "../posts/components/post-card-on-feeds";
-import { fetchPostsForUser } from "../../components/requests/fetch-posts-by-id";
+import { fetchPostsForUser } from "../../components/requests/fetch-posts";
 import Icon from "react-native-vector-icons/MaterialIcons"; // Make sure this library is installed
 
 const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {

@@ -1,3 +1,5 @@
+import { IPost } from "./post-interface";
+
 export interface Friend {
   id: string;
   status: string;
@@ -23,8 +25,11 @@ export interface MongoUser {
   instagram_link: string;
   role: string;
   social: {
-    posts_saved: string[];
-    posts_liked: string[];
+    posts_saved: IPost[] | string[];
+    posts_liked: IPost[] | string[];
+    total_likes: number;
+    total_shares: number;
+    total_saves: number;
   };
   trip_history: ITripHistoryEntry[];
   firebase_id: string;
