@@ -10,12 +10,14 @@ import {
 import Modal from "react-native-modal";
 import PostCard from "./post-card-on-feeds";
 import { useAuth } from "../../../contexts/auth-context";
+import InnerPostCard from "./inner-post-card";
 
 interface SharePostModalProps {
   visible: boolean;
   onClose: () => void;
   post: any; // Replace with your IPost type if available
   inGroup: boolean;
+  navigation: any;
 }
 
 const SharePostModal: React.FC<SharePostModalProps> = ({
@@ -23,6 +25,7 @@ const SharePostModal: React.FC<SharePostModalProps> = ({
   onClose,
   post,
   inGroup,
+  navigation,
 }) => {
   const [commentary, setCommentary] = useState("");
   const [privacy, setPrivacy] = useState<"public" | "private">("public");
@@ -50,6 +53,10 @@ const SharePostModal: React.FC<SharePostModalProps> = ({
       const data = await res.json();
       if (res.ok) {
         console.log("Post shared successfully", data);
+        navigation.push("PostStack", {
+          screen: "PostPage",
+          params: { postId: data.post._id },
+        });
         setCommentary("");
         onClose();
       } else {
@@ -126,7 +133,7 @@ const SharePostModal: React.FC<SharePostModalProps> = ({
             </>
           )}
           {/* Display the post preview using PostCard, unclickable */}
-          <PostCard post={post} navigation={null} inShareModal={true} />
+          <InnerPostCard post={post} navigation={navigation} />
         </ScrollView>
         {/* Share Post Button */}
         <TouchableOpacity

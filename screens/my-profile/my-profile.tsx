@@ -17,6 +17,8 @@ import { useAuth } from "../../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { IPost } from "../../interfaces/post-interface";
 import PostCard from "../posts/components/post-card-on-feeds";
+import { fetchPostsForUser } from "../../components/requests/fetch-posts";
+import Icon from "react-native-vector-icons/MaterialIcons"; // Make sure this library is installed
 
 const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { mongoUser } = useAuth();
@@ -37,19 +39,8 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   // Fetch posts created by this user.
   const fetchPosts = async () => {
-    if (!mongoUser) return;
-    setLoadingPosts(true);
-    try {
-      const response = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/post/all?userId=${mongoUser._id}`
-      );
-      const data = await response.json();
-      setPosts(data.posts);
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-    } finally {
-      setLoadingPosts(false);
-    }
+    fetchPostsForUser(mongoUser!).then((posts) => setPosts(posts));
+    setLoadingPosts(false);
   };
 
   useEffect(() => {
@@ -84,7 +75,7 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white ">
       <StatusBar barStyle="dark-content" backgroundColor="white" />
 
       {/* Profile Header */}
@@ -105,6 +96,14 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
             user={mongoUser}
           />
         </View>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("AccountStack", { screen: "Settings" })
+          }
+          style={{ alignSelf: "flex-start" }}
+        >
+          <Icon name="settings" size={24} color="black" />
+        </TouchableOpacity>
       </View>
 
       {showHikers ? (
@@ -119,7 +118,9 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
             // Replace with your actual PostCard component that displays a post.
-            <PostCard post={item} navigation={navigation} />
+            <View className="p-4">
+              <PostCard post={item} navigation={navigation} />
+            </View>
           )}
           ListHeaderComponent={renderPostsHeader}
           refreshing={loadingPosts}
