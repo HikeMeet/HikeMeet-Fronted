@@ -111,6 +111,13 @@ const Home = ({ navigation }: any) => {
                   prevPosts.filter((p) => p._id !== deletedPost._id)
                 );
               }}
+              onPostLiked={(updatedPost: IPost) => {
+                setPosts((prevPosts) =>
+                  prevPosts.map((p) =>
+                    p._id === updatedPost._id ? updatedPost : p
+                  )
+                );
+              }}
             />
           ))}
         </ScrollView>

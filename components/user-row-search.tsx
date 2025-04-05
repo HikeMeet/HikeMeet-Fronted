@@ -16,7 +16,6 @@ const UserRow: React.FC<UserRowProps> = ({
   navigation,
 }) => {
   const { mongoId } = useAuth();
-
   const handlePress = () => {
     if (user._id === mongoId) {
       navigation.push("Tabs", { screen: "Profile" });

@@ -54,7 +54,22 @@ const SavedPosts: React.FC<SavedPostsProps> = ({ route, navigation }) => {
           data={posts}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
-            <PostCard post={item} navigation={navigation} />
+            <PostCard
+              post={item}
+              navigation={navigation}
+              onPostUpdated={(deletedPost) => {
+                setPosts((prevPosts) =>
+                  prevPosts.filter((p) => p._id !== deletedPost._id)
+                );
+              }}
+              onPostLiked={(updatedPost: IPost) => {
+                setPosts((prevPosts) =>
+                  prevPosts.map((p) =>
+                    p._id === updatedPost._id ? updatedPost : p
+                  )
+                );
+              }}
+            />
           )}
           contentContainerStyle={{ padding: 16 }}
           ListEmptyComponent={
