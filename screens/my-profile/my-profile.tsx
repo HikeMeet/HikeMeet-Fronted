@@ -119,7 +119,22 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
           renderItem={({ item }) => (
             // Replace with your actual PostCard component that displays a post.
             <View className="p-4">
-              <PostCard post={item} navigation={navigation} />
+              <PostCard
+                post={item}
+                navigation={navigation}
+                onPostUpdated={(deletedPost) => {
+                  setPosts((prevPosts) =>
+                    prevPosts.filter((p) => p._id !== deletedPost._id)
+                  );
+                }}
+                onPostLiked={(updatedPost: IPost) => {
+                  setPosts((prevPosts) =>
+                    prevPosts.map((p) =>
+                      p._id === updatedPost._id ? updatedPost : p
+                    )
+                  );
+                }}
+              />
             </View>
           )}
           ListHeaderComponent={renderPostsHeader}

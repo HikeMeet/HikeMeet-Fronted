@@ -1,7 +1,7 @@
 // PostCard.tsx
 import React, { useState } from "react";
 import { ScrollView, TouchableOpacity, View, Image, Text } from "react-native";
-import { IPost } from "../../../interfaces/post-interface";
+import { IPost, IUser } from "../../../interfaces/post-interface";
 import PostActions from "./post-action-buttons";
 import InnerPostCard from "./inner-post-card";
 import ProfileHeaderLink from "../../my-profile/components/profile-image-name-button";
@@ -14,6 +14,7 @@ interface PostCardProps {
   inShareModal?: boolean;
   navigation: any;
   onPostUpdated?: (deletedPost: IPost) => void;
+  onPostLiked?: (deletedPost: IPost) => void;
 }
 
 const PostCard: React.FC<PostCardProps> = ({
@@ -21,9 +22,8 @@ const PostCard: React.FC<PostCardProps> = ({
   navigation,
   inShareModal = false,
   onPostUpdated,
+  onPostLiked,
 }) => {
-  const { mongoId } = useAuth();
-
   const author =
     typeof post.author === "object"
       ? post.author
@@ -131,7 +131,21 @@ const PostCard: React.FC<PostCardProps> = ({
 
   const renderFooter = () => {
     if (inShareModal) return null;
-    return <PostActions post={post} navigation={navigation} />;
+    return (
+      <PostActions
+        post={post}
+        navigation={navigation}
+        onLikeChangeList={(newLikes) => {
+          // Update the local post object with new likes.
+          const updatedPost = {
+            ...post,
+            likes: newLikes as string[] | IUser[],
+          };
+          // Call the parent's callback to update the post in Home's list.
+          if (onPostLiked) onPostLiked(updatedPost);
+        }}
+      />
+    );
   };
 
   const CardContent = () => (

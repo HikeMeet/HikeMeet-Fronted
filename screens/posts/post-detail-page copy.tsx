@@ -50,20 +50,20 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
   const [selectedMediaIndex, setSelectedMediaIndex] = useState<number>(0);
   const [isEditing, setIsEditing] = useState(false);
 
+  const fetchPost = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/post/${postId}`
+      );
+      const data = await response.json();
+      setPost(data.post);
+    } catch (error) {
+      console.error("Error fetching post details:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.EXPO_LOCAL_SERVER}/api/post/${postId}`
-        );
-        const data = await response.json();
-        setPost(data.post);
-      } catch (error) {
-        console.error("Error fetching post details:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchPost();
   }, [postId]);
 
@@ -151,7 +151,7 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
             )}
 
             {/* Original Post Preview for Shared Posts */}
-            {post.is_shared  && (
+            {post.is_shared && (
               <InnerPostCard
                 post={post.original_post as IPost}
                 navigation={navigation}
@@ -167,7 +167,11 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
               Privacy: {post.privacy === "private" ? "Private" : "Public"}
             </Text>
             {/* Post Actions */}
-            <PostActions post={post} navigation={navigation} />
+            <PostActions
+              post={post}
+              navigation={navigation}
+              onLikeChange={fetchPost}
+            />
 
             {/* Comments */}
             {post.comments && post.comments.length > 0 && (

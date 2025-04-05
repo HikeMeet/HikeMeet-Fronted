@@ -1,7 +1,6 @@
 import { Group } from "./group-interface";
 import { IImageModel } from "./image-interface";
 import { Trip } from "./trip-interface";
-/*************  ✨ Codeium Command 🌟  *************/
 export const getPostWithParam = (post: IPost) =>
   typeof post.author === "object"
     ? post.author
