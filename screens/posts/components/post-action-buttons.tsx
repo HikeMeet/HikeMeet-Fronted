@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { View, TouchableOpacity, Text } from "react-native";
+import { View, TouchableOpacity, Text, Modal, ScrollView } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import { IPost } from "../../../interfaces/post-interface";
+import { IPost, IUser } from "../../../interfaces/post-interface";
 import SharePostModal from "./share-post-modal";
 import {
   likePost,
@@ -10,6 +10,8 @@ import {
   unsavePost,
 } from "../../../components/requests/post-actions";
 import { useAuth } from "../../../contexts/auth-context";
+import UserRow from "../../../components/user-row-search";
+import LikesModal from "./users-liked-list-modal";
 
 interface PostActionsProps {
   post: IPost;
@@ -21,7 +23,9 @@ const PostActions: React.FC<PostActionsProps> = ({ post, navigation }) => {
 
   // Initialize isLiked and isSaved by checking if mongoId exists in the arrays
   const [isLiked, setIsLiked] = useState<boolean>(() =>
-    post.likes.includes(mongoId!)
+    post.likes.some((like: IUser | string) =>
+      typeof like === "string" ? like === mongoId : like._id === mongoId
+    )
   );
   const [likeCount, setLikeCount] = useState(post.likes.length);
   const [isSaved, setIsSaved] = useState<boolean>(() =>
@@ -29,6 +33,7 @@ const PostActions: React.FC<PostActionsProps> = ({ post, navigation }) => {
   );
   const [saveCount, setSaveCount] = useState(post.saves.length);
   const [modalVisible, setModalVisible] = useState(false);
+  const [likesModalVisible, setLikesModalVisible] = useState(false);
 
   const handleLike = async () => {
     try {
@@ -73,14 +78,19 @@ const PostActions: React.FC<PostActionsProps> = ({ post, navigation }) => {
 
   return (
     <View className="border-t border-gray-200 pt-2 mt-2 flex-row justify-evenly items-center">
-      <TouchableOpacity onPress={handleLike} className="flex-row items-center">
-        <FontAwesome
-          name={isLiked ? "thumbs-up" : "thumbs-o-up"}
-          size={20}
-          color={isLiked ? "blue" : "black"}
-        />
-        <Text className="ml-1 text-sm">{likeCount}</Text>
-      </TouchableOpacity>
+      {/* Grouping Like Icon and Like Count */}
+      <View className="flex-row items-center">
+        <TouchableOpacity onPress={handleLike}>
+          <FontAwesome
+            name={isLiked ? "thumbs-up" : "thumbs-o-up"}
+            size={20}
+            color={isLiked ? "blue" : "black"}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => setLikesModalVisible(true)}>
+          <Text className="text-sm font-bold ml-0.5">{likeCount}</Text>
+        </TouchableOpacity>
+      </View>
 
       <TouchableOpacity onPress={handleSave} className="flex-row items-center">
         <FontAwesome
@@ -88,11 +98,12 @@ const PostActions: React.FC<PostActionsProps> = ({ post, navigation }) => {
           size={20}
           color={isSaved ? "blue" : "black"}
         />
-        <Text className="ml-1 text-sm">{saveCount}</Text>
+        <Text className="ml-1 text-sm font-bold">{saveCount}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={handleShare} className="flex-row items-center">
         <FontAwesome name="share" size={20} color="blue" />
+        <Text className="ml-1 text-sm font-bold">{post.shares.length}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -100,7 +111,7 @@ const PostActions: React.FC<PostActionsProps> = ({ post, navigation }) => {
         className="flex-row items-center"
       >
         <FontAwesome name="comment" size={20} color="blue" />
-        <Text className="ml-1 text-sm">{post.comments.length}</Text>
+        <Text className="ml-1 text-sm font-bold">{post.comments.length}</Text>
       </TouchableOpacity>
 
       {/* Share Modal */}
@@ -113,6 +124,14 @@ const PostActions: React.FC<PostActionsProps> = ({ post, navigation }) => {
           navigation={navigation}
         />
       )}
+      {/* Likes Modal */}
+      {/* Likes Modal using separate file */}
+      <LikesModal
+        visible={likesModalVisible}
+        onClose={() => setLikesModalVisible(false)}
+        likes={post.likes}
+        navigation={navigation}
+      />
     </View>
   );
 };
