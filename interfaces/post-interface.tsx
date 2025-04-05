@@ -8,7 +8,6 @@ export const getPostWithParam = (post: IPost) =>
     : { username: post.author, profile_picture: { url: "" }, _id: "" };
 
 export interface IUser {
-  /******  c804094c-1c66-45c2-9320-8f7c45d09052  *******/
   _id: string;
   username: string;
   profile_picture: { url: string; image_id: string };
@@ -16,7 +15,7 @@ export interface IUser {
   last_name?: string;
 }
 
-interface IComment {
+export interface IComment {
   _id: string;
   user: IUser | string;
   text: string;
