@@ -19,7 +19,7 @@ export interface IComment {
   user: IUser | string;
   text: string;
   created_at: string;
-  liked_by?: string[];
+  liked_by?: IUser[] | string[];
 }
 
 export interface IPost {
