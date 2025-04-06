@@ -1,24 +1,30 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   ActivityIndicator,
+  FlatList,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { styled } from "nativewind";
+import CreatePostButton from "../posts/components/create-post-buton";
+import GroupRow from "../../components/group-row";
 import { useFocusEffect } from "@react-navigation/native";
 import { Group } from "../../interfaces/group-interface";
-import GroupRow from "../../components/group-row";
 import { useAuth } from "../../contexts/auth-context";
 
 const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const { mongoId } = useAuth();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
   const [showMyGroups, setShowMyGroups] = useState<boolean>(false);
-  const { mongoId } = useAuth();
+  // Only show 5 groups initially.
+  const [groupsToShow, setGroupsToShow] = useState<number>(5);
 
   const fetchGroups = useCallback(async () => {
     setLoading(true);
@@ -41,32 +47,30 @@ const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       fetchGroups();
-      // Set up an interval to call fetchGroup every 10 seconds (10,000ms)
-
-      //   const intervalId = setInterval(() => {
-      //     fetchGroups();
-      //   }, 10000);
-
-      //   // Clean up the interval on unmount
-      //   return () => clearInterval(intervalId);
     }, [fetchGroups])
   );
 
-  const handleAction = useCallback(() => {
-    // This callback is triggered when a group is joined.
-    // You can choose to re-fetch groups or update local state here.
-    fetchGroups();
-  }, [fetchGroups]);
+  const handleAction = useCallback(
+    (updatedGroup?: Group) => {
+      if (updatedGroup) {
+        setGroups((prevGroups) =>
+          prevGroups.map((group) =>
+            group._id === updatedGroup._id ? updatedGroup : group
+          )
+        );
+      } else {
+        fetchGroups();
+      }
+    },
+    [fetchGroups]
+  );
 
-  // First, filter groups by search text.
+  // Filter groups based on search text.
   let filteredGroups = groups.filter((group) =>
     group.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  // If "My Groups" is toggled, further filter groups by created_by.
-  // Assume that the current user's mongoId is available somehow.
-  // For this example, we simply hard-code a value or you can get it via context.
-
+  // If "My Groups" is toggled, further filter groups by created_by or membership.
   if (showMyGroups) {
     filteredGroups = filteredGroups.filter(
       (group) =>
@@ -74,6 +78,15 @@ const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
         group.members.some((member) => member.user === mongoId)
     );
   }
+
+  // Pagination: data for FlatList.
+  const displayedGroups = filteredGroups.slice(0, groupsToShow);
+  const handleLoadMore = useCallback(() => {
+    if (groupsToShow < filteredGroups.length) {
+      setGroupsToShow((prev) => prev + 5);
+    }
+  }, [groupsToShow, filteredGroups.length]);
+
   return (
     <SafeAreaView className="flex-1 bg-white p-4">
       {/* Top row: Search and Filter */}
@@ -101,7 +114,7 @@ const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
           className="bg-blue-500 px-4 py-2 rounded relative"
         >
           <Text className="text-white text-sm font-semibold text-center">
-            {showMyGroups ? "All Groups" : "All GroupsMy Groups"}
+            {showMyGroups ? "All Groups" : "My Groups"}
           </Text>
         </TouchableOpacity>
 
@@ -113,27 +126,34 @@ const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Groups List */}
-      <ScrollView>
-        {loading ? (
+      {/* Groups List as FlatList */}
+      {loading ? (
+        <View className="flex-1 justify-center items-center mt-10">
           <ActivityIndicator size="large" color="#0000ff" />
-        ) : filteredGroups.length === 0 ? (
-          <View className="flex-1 justify-center items-center mt-20">
-            <Text className="text-lg">No groups found.</Text>
-          </View>
-        ) : (
-          filteredGroups.map((group) => (
+        </View>
+      ) : filteredGroups.length === 0 ? (
+        <View className="flex-1 justify-center items-center mt-20">
+          <Text className="text-lg">No groups found.</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={displayedGroups}
+          keyExtractor={(item) => item._id}
+          renderItem={({ item }) => (
             <GroupRow
-              key={group._id}
-              group={group}
+              group={item}
               navigation={navigation}
               onAction={handleAction}
             />
-          ))
-        )}
-      </ScrollView>
+          )}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.1}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </SafeAreaView>
   );
 };
 
-export default GroupsPage;
+export default styled(GroupsPage);

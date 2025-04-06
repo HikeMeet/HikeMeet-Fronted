@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, TouchableOpacity, Text, Modal, ScrollView } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import { IPost, IUser } from "../../../interfaces/post-interface";
+import { IComment, IPost, IUser } from "../../../interfaces/post-interface";
 import SharePostModal from "./share-post-modal";
 import {
   likePost,
@@ -11,12 +11,14 @@ import {
 } from "../../../components/requests/post-actions";
 import { useAuth } from "../../../contexts/auth-context";
 import LikesModal from "./users-liked-list-modal";
+import CommentModal from "./commnet-modal";
 
 interface PostActionsProps {
   post: IPost;
   navigation: any;
   onLikeChange?: () => void; // <-- Add this line
   onLikeChangeList?: (newLikes: (IUser | string)[]) => void;
+  onCommentsUpdated?: (updatedComments: IComment[]) => void;
 }
 
 const PostActions: React.FC<PostActionsProps> = ({
@@ -24,6 +26,7 @@ const PostActions: React.FC<PostActionsProps> = ({
   navigation,
   onLikeChange,
   onLikeChangeList,
+  onCommentsUpdated,
 }) => {
   const { mongoId, mongoUser } = useAuth();
 
@@ -38,11 +41,16 @@ const PostActions: React.FC<PostActionsProps> = ({
     post.saves.includes(mongoId!)
   );
   const [saveCount, setSaveCount] = useState(post.saves.length);
+  const [commentCount, setCommentCount] = useState(post.comments.length);
+  const [shareCount, setShareCount] = useState(post.shares.length);
   const [modalVisible, setModalVisible] = useState(false);
   const [likesModalVisible, setLikesModalVisible] = useState(false);
 
   // Flag to avoid multiple simultaneous like/unlike requests
   const [isLikeProcessing, setIsLikeProcessing] = useState(false);
+
+  const [commentModalVisible, setCommentModalVisible] = useState(false);
+
   const isLikesArrayOfStrings =
     post.likes.length > 0 && typeof post.likes[0] === "string";
   const handleLike = async () => {
@@ -124,6 +132,7 @@ const PostActions: React.FC<PostActionsProps> = ({
 
   const handleComment = () => {
     console.log("Comment pressed");
+    setCommentModalVisible(true);
   };
 
   return (
@@ -155,7 +164,7 @@ const PostActions: React.FC<PostActionsProps> = ({
       {/* Share Button (Icon & Text) */}
       <TouchableOpacity onPress={handleShare} className="flex-row items-center">
         <FontAwesome name="share" size={20} color="blue" />
-        <Text className="ml-1 text-sm font-bold">{post.shares.length}</Text>
+        <Text className="ml-1 text-sm font-bold">{shareCount}</Text>
       </TouchableOpacity>
 
       {/* Comment Button (Icon & Text) */}
@@ -164,7 +173,7 @@ const PostActions: React.FC<PostActionsProps> = ({
         className="flex-row items-center"
       >
         <FontAwesome name="comment" size={20} color="blue" />
-        <Text className="ml-1 text-sm font-bold">{post.comments.length}</Text>
+        <Text className="ml-1 text-sm font-bold">{commentCount}</Text>
       </TouchableOpacity>
 
       {/* Share Modal */}
@@ -184,6 +193,23 @@ const PostActions: React.FC<PostActionsProps> = ({
         likes={post.likes}
         navigation={navigation}
       />
+      {commentModalVisible && (
+        <CommentModal
+          visible={commentModalVisible}
+          onClose={() => setCommentModalVisible(false)}
+          postId={post._id}
+          initialComments={post.comments}
+          navigation={navigation}
+          onCommentsUpdated={(updatedComments: IComment[]) => {
+            // Update the parent's post data with the new comments
+            if (onCommentsUpdated) {
+              onCommentsUpdated(updatedComments);
+            }
+            // Force modal visibility to remain open.
+            setCommentModalVisible(true);
+          }}
+        />
+      )}
     </View>
   );
 };

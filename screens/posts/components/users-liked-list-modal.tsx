@@ -45,9 +45,10 @@ const LikesModal: React.FC<LikesModalProps> = ({
             {likes.map((like, index) => {
               let user: IUser;
               if (typeof like === "string") {
+                console.log("Like is a string:", like);
                 user = {
                   _id: like,
-                  username: "Unknown",
+                  username: "Unkdfown",
                   profile_picture: {
                     url: "https://via.placeholder.com/150",
                     image_id: "",

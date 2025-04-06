@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
-  ActivityIndicator,
-  ScrollView,
+  TextInput,
   TouchableOpacity,
+  ActivityIndicator,
+  FlatList,
 } from "react-native";
 import UserRow from "./user-row-search";
 import { useAuth } from "../contexts/auth-context";
@@ -23,11 +24,16 @@ const HikersList: React.FC<HikersListProps> = ({
   const [activeTab, setActiveTab] = useState<string>("accepted");
   const [friends, setFriends] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const { mongoId } = useAuth(); // Current user's ID
+  // New state for search text
+  const [searchText, setSearchText] = useState<string>("");
+  // New state: show only 5 friends initially.
+  const [friendsToShow, setFriendsToShow] = useState<number>(5);
+  const { mongoId } = useAuth();
 
   useEffect(() => {
     fetchFriends();
   }, [activeTab, profileId]);
+
   const fetchFriends = async () => {
     if (!profileId) return;
     setLoading(true);
@@ -36,7 +42,6 @@ const HikersList: React.FC<HikersListProps> = ({
       const baseUrl = `${process.env.EXPO_LOCAL_SERVER}/api/friend/${profileId}/friends?status=`;
 
       if (activeTab === "pending") {
-        // For pending, combine both request_sent and request_received, and annotate each object.
         const responseSent = await fetch(baseUrl + "request_sent");
         const responseReceived = await fetch(baseUrl + "request_received");
 
@@ -59,7 +64,6 @@ const HikersList: React.FC<HikersListProps> = ({
 
         fetchedFriends = [...sentFriends, ...receivedFriends];
       } else {
-        // For accepted and blocked, fetch directly and annotate if needed.
         const response = await fetch(baseUrl + activeTab);
         if (!response.ok) {
           throw new Error("Failed to fetch friends");
@@ -71,7 +75,6 @@ const HikersList: React.FC<HikersListProps> = ({
         }));
       }
 
-      // If mongoId is provided, sort so that friend with that ID comes first.
       if (mongoId) {
         fetchedFriends.sort((a, b) => {
           const aIsCurrent = String(a._id) === String(mongoId);
@@ -82,8 +85,6 @@ const HikersList: React.FC<HikersListProps> = ({
         });
       }
 
-      // If isMyProfile is false, update statuses using the additional friend list.
-
       setFriends(fetchedFriends);
     } catch (error) {
       console.error("Error fetching friends:", error);
@@ -91,6 +92,21 @@ const HikersList: React.FC<HikersListProps> = ({
       setLoading(false);
     }
   };
+
+  // Filter friends using searchText.
+  let filteredFriends = friends.filter((friend) =>
+    (friend.name || friend.username || "")
+      .toLowerCase()
+      .includes(searchText.toLowerCase())
+  );
+
+  // Pagination: only display a slice of the filtered friends.
+  const displayedFriends = filteredFriends.slice(0, friendsToShow);
+  const loadMoreFriends = useCallback(() => {
+    if (friendsToShow < filteredFriends.length) {
+      setFriendsToShow((prev) => prev + 5);
+    }
+  }, [friendsToShow, filteredFriends.length]);
 
   return (
     <View className="flex-1 p-4">
@@ -119,23 +135,36 @@ const HikersList: React.FC<HikersListProps> = ({
           </TouchableOpacity>
         </View>
       )}
+      {/* Search TextInput */}
       <Text className="text-xl font-bold mb-2">Hikers</Text>
+      <View className="mb-4">
+        <TextInput
+          placeholder="Search hikers"
+          value={searchText}
+          onChangeText={setSearchText}
+          className="bg-gray-100 rounded-full px-3 py-2 text-base"
+        />
+      </View>
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
-      ) : friends.length > 0 ? (
-        <ScrollView>
-          {friends.map((friend, index) => (
+      ) : filteredFriends.length > 0 ? (
+        <FlatList
+          data={displayedFriends}
+          keyExtractor={(item, index) => item._id || String(index)}
+          renderItem={({ item, index }) => (
             <UserRow
-              key={friend._id || index}
-              user={friend}
+              key={item._id || index}
+              user={item}
               onStatusChange={(newStatus: string) =>
                 console.log("Status changed:", newStatus)
               }
               isMyProfile={isMyProfile}
               navigation={navigation}
             />
-          ))}
-        </ScrollView>
+          )}
+          onEndReached={loadMoreFriends}
+          onEndReachedThreshold={0.1}
+        />
       ) : (
         <Text className="text-gray-500">No hikers found.</Text>
       )}

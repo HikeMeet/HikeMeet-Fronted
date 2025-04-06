@@ -1,7 +1,7 @@
 // PostCard.tsx
 import React, { useState } from "react";
 import { ScrollView, TouchableOpacity, View, Image, Text } from "react-native";
-import { IPost, IUser } from "../../../interfaces/post-interface";
+import { IComment, IPost, IUser } from "../../../interfaces/post-interface";
 import PostActions from "./post-action-buttons";
 import InnerPostCard from "./inner-post-card";
 import ProfileHeaderLink from "../../my-profile/components/profile-image-name-button";
@@ -85,10 +85,12 @@ const PostCard: React.FC<PostCardProps> = ({
             />
           )}
         </View>
-        <InnerPostCard
-          post={post.original_post as IPost}
-          navigation={navigation}
-        />
+        {post.is_shared && (
+          <InnerPostCard
+            post={post.original_post as IPost}
+            navigation={navigation}
+          />
+        )}
       </View>
     );
   };
@@ -141,7 +143,16 @@ const PostCard: React.FC<PostCardProps> = ({
             ...post,
             likes: newLikes as string[] | IUser[],
           };
-          // Call the parent's callback to update the post in Home's list.
+          // Notify the parent to update the post in Home's list.
+          if (onPostLiked) onPostLiked(updatedPost);
+        }}
+        onCommentsUpdated={(updatedComments: IComment[]) => {
+          // Create an updated post with the new comments list.
+          const updatedPost = {
+            ...post,
+            comments: updatedComments,
+          };
+          // Notify the parent so the comment count updates.
           if (onPostLiked) onPostLiked(updatedPost);
         }}
       />

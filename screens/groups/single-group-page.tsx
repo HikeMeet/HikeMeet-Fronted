@@ -19,8 +19,6 @@ import ProfileImage from "../../components/profile-image";
 import JoinGroupActionButton from "../../components/group-join-action-button";
 import GroupDetails from "./components/group-details";
 import GroupPostList from "./components/group-posts";
-import HikersSwitcher from "../../components/hiker-button-list-group-combined";
-import TripRow from "../../components/trip-row";
 
 interface SingleGroupProps {
   navigation: any;
@@ -113,6 +111,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
           group={group}
           navigation={navigation}
           isInGroupPage={true}
+          onAction={fetchGroup}
         />
         {mongoId === group.created_by && (
           <TouchableOpacity
@@ -179,7 +178,11 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
       ) : (
         // Posts tab: only the posts list is scrollable; header stays fixed.
         <View className="flex-1">
-          <GroupPostList groupId={group._id} navigation={navigation} />
+          <GroupPostList
+            groupId={group._id}
+            navigation={navigation}
+            isMember={group.members.some((member) => member.user === mongoId)}
+          />
           <View className="px-4 pb-4">
             <TouchableOpacity
               onPress={() => navigation.navigate("Tabs", { screen: "Groups" })}
