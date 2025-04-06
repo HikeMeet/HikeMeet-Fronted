@@ -9,12 +9,14 @@ interface GroupPostListProps {
   groupId: string;
   navigation: any;
   ListHeaderComponent?: React.ReactElement;
+  isMember?: boolean;
 }
 
 const GroupPostList: React.FC<GroupPostListProps> = ({
   groupId,
   navigation,
   ListHeaderComponent,
+  isMember,
 }) => {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -84,12 +86,14 @@ const GroupPostList: React.FC<GroupPostListProps> = ({
       onEndReachedThreshold={0.1}
       ListHeaderComponent={
         <>
-          <CreatePostButton
-            location="group"
-            navigation={navigation}
-            inGroup={true}
-            groupId={groupId}
-          />
+          {isMember && (
+            <CreatePostButton
+              location="group"
+              navigation={navigation}
+              inGroup={true}
+              groupId={groupId}
+            />
+          )}
           {ListHeaderComponent}
         </>
       }
