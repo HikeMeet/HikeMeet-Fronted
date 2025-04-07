@@ -2,13 +2,12 @@ import * as VideoThumbnails from "expo-video-thumbnails";
 import { getCloudinarySignature } from "./requests/cloudinary-signature";
 import { IImageModel } from "../interfaces/image-interface";
 
-
-
 export const uploadMedia = async (
   uri: string,
-  mediaType: "image" | "video"
+  mediaType: "image" | "video",
+  folder: string
 ): Promise<IImageModel | null> => {
-  const signatureData = await getCloudinarySignature("post_media");
+  const signatureData = await getCloudinarySignature(folder);
   if (!signatureData) {
     throw new Error("Could not get Cloudinary signature.");
   }

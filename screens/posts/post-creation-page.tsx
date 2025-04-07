@@ -79,8 +79,13 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
     try {
       if (selectedMedia.length > 0) {
         for (const media of selectedMedia) {
-          const uploaded = await uploadMedia(media.uri, media.type);
+          const uploaded = await uploadMedia(
+            media.uri,
+            media.type,
+            "post_media"
+          );
           if (uploaded) {
+            console.log("Media uploaded:", uploaded);
             uploadedItems.push(uploaded);
           } else {
             throw new Error("One or more media uploads failed.");
@@ -92,7 +97,7 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
       const postData = {
         author: mongoId,
         content,
-        images: uploadedItems || [],
+        images: uploadedMedia || [],
         attached_trip: null,
         attached_group: null,
         is_shared: false,

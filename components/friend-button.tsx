@@ -14,7 +14,7 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
   targetUserId,
   onStatusChange,
 }) => {
-  const { mongoUser, mongoId, setMongoUser } = useAuth();
+  const { mongoUser, mongoId, setMongoUser, fetchMongoUser } = useAuth();
   const [currentStatus, setCurrentStatus] = useState(status);
 
   // Update local status if prop changes.
@@ -96,38 +96,7 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
       if (onStatusChange) {
         onStatusChange(newStatus);
       }
-
-      // Update mongoUser in context.
-      setMongoUser((prevUser: any) => {
-        if (!prevUser) return prevUser;
-        // Copy the current friends list.
-        let updatedFriends = [...(prevUser.friends || [])];
-
-        // Locate the friend using targetUserId.
-        const friendIndex = updatedFriends.findIndex((friend: any) => {
-          // friend.id can be an object (with $oid) or a string.
-          if (typeof friend.id === "object" && friend.id.$oid) {
-            return friend.id.$oid === targetUserId;
-          }
-          return friend.id === targetUserId;
-        });
-
-        if (newStatus === "none") {
-          // Remove friend if found.
-          if (friendIndex !== -1) {
-            updatedFriends.splice(friendIndex, 1);
-          }
-        } else {
-          // Update existing friend entry or add a new one.
-          const friendEntry = { status: newStatus, id: targetUserId };
-          if (friendIndex !== -1) {
-            updatedFriends[friendIndex] = friendEntry;
-          } else {
-            updatedFriends.push(friendEntry);
-          }
-        }
-        return { ...prevUser, friends: updatedFriends };
-      });
+      fetchMongoUser(mongoId!);
     } catch (error) {
       console.error("Error in friend action:", error);
     }
