@@ -148,7 +148,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView className=" bg-white ">
+    <SafeAreaView className="flex-1 bg-white ">
       {/* User Details */}
       <View className="flex-row items-center mb-4">
         <ProfileImage
