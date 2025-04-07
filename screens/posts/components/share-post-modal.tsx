@@ -11,6 +11,7 @@ import Modal from "react-native-modal";
 import PostCard from "./post-card-on-feeds";
 import { useAuth } from "../../../contexts/auth-context";
 import InnerPostCard from "./inner-post-card";
+import MentionTextInput from "../../../components/metion-with-text-input";
 
 interface SharePostModalProps {
   visible: boolean;
@@ -85,12 +86,21 @@ const SharePostModal: React.FC<SharePostModalProps> = ({
           keyboardShouldPersistTaps="always"
         >
           {/* Text Input for additional commentary */}
-          <TextInput
+
+          <MentionTextInput
+            placeholder="Write a comment..."
             value={commentary}
             onChangeText={setCommentary}
-            placeholder="Add your commentary..."
-            className="border border-gray-300 rounded p-2 mb-4"
-            multiline
+            inputStyle={{
+              flex: 1,
+              borderWidth: 1,
+              borderColor: "#ccc",
+              borderRadius: 8,
+              padding: 8,
+              fontSize: 16,
+              color: "#374151",
+            }}
+            containerStyle={{ flex: 1 }}
           />
           {/* Privacy Options (only if not in a group) */}
           {!inGroup && (

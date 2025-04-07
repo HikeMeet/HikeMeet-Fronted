@@ -15,6 +15,7 @@ import CommentRow from "./comment-row";
 import { IComment } from "../../../interfaces/post-interface";
 import { createComment } from "../../../components/requests/post-comment-requests";
 import { useAuth } from "../../../contexts/auth-context";
+import MentionTextInput from "../../../components/metion-with-text-input";
 
 interface CommentModalProps {
   visible: boolean;
@@ -162,11 +163,20 @@ const CommentModal: React.FC<CommentModalProps> = ({
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex-row items-center p-4"
           >
-            <TextInput
+            <MentionTextInput
               placeholder="Write a comment..."
               value={newCommentText}
               onChangeText={setNewCommentText}
-              className="flex-1 border border-gray-300 rounded-lg p-2"
+              inputStyle={{
+                flex: 1,
+                borderWidth: 1,
+                borderColor: "#ccc",
+                borderRadius: 8,
+                padding: 8,
+                fontSize: 16,
+                color: "#374151",
+              }}
+              containerStyle={{ flex: 1 }}
             />
             <TouchableOpacity
               onPress={handlePostComment}

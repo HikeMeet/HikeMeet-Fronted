@@ -1,8 +1,9 @@
-import { IPost } from "./post-interface";
+import { IPost, IUser } from "./post-interface";
 
 export interface Friend {
   id: string;
   status: string;
+  data?: IUser;
 }
 export interface IProfilePicture {
   url: string;
