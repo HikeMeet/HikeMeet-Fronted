@@ -12,6 +12,7 @@ import {
 import { useAuth } from "../../../contexts/auth-context";
 import LikesModal from "./users-liked-list-modal";
 import ConfirmationModal from "../../../components/confirmation-modal";
+import ParsedMentionText from "./parsed-mention-text";
 
 interface CommentRowProps {
   comment: IComment;
@@ -126,14 +127,10 @@ const CommentRow: React.FC<CommentRowProps> = ({
           profileImage={author.profile_picture.url}
           navigation={navigation}
         />
-        <Text
-          style={[
-            { fontSize: 16, color: "#374151", marginBottom: 8 },
-            isTemporary && { fontWeight: "bold" },
-          ]}
-        >
-          {comment.text}
-        </Text>
+        <ParsedMentionText
+          text={comment.text || "No content."}
+          navigation={navigation}
+        />
         <Text className="text-xs text-gray-500 mt-1">
           {new Date(comment.created_at).toLocaleString()}
         </Text>

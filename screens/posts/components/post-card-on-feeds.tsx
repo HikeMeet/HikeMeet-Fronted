@@ -8,6 +8,7 @@ import ProfileHeaderLink from "../../my-profile/components/profile-image-name-bu
 import { useAuth } from "../../../contexts/auth-context";
 import EditableText from "./editable-text-for-posts";
 import PostOptionsModal from "./post-setting-modal";
+import ParsedMentionText from "./parsed-mention-text";
 
 interface PostCardProps {
   post: IPost;
@@ -70,9 +71,10 @@ const PostCard: React.FC<PostCardProps> = ({
       <View className="p-1">
         <View style={{ marginBottom: 16, paddingHorizontal: 16 }}>
           {!isEditing ? (
-            <Text style={{ fontSize: 16, color: "#374151", marginBottom: 8 }}>
-              {post.content || "No content."}
-            </Text>
+            <ParsedMentionText
+              text={post.content || "No content."}
+              navigation={navigation}
+            />
           ) : (
             <EditableText
               text={post.content || ""}
@@ -80,8 +82,6 @@ const PostCard: React.FC<PostCardProps> = ({
               isEditing={isEditing}
               onSaveComplete={handleSaveComplete}
               onCancel={handleCancel}
-              textStyle={{ fontSize: 16, color: "#374151", marginBottom: 8 }}
-              containerStyle={{ marginBottom: 16 }}
             />
           )}
         </View>

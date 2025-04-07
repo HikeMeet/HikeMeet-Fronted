@@ -148,7 +148,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white ">
+    <SafeAreaView className=" bg-white ">
       {/* User Details */}
       <View className="flex-row items-center mb-4">
         <ProfileImage
@@ -246,7 +246,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
             ListHeaderComponent={renderPostsHeader}
             refreshing={loadingPosts}
             onRefresh={fetchPosts}
-            contentContainerStyle={{ paddingBottom: 20 }}
+            contentContainerStyle={{ paddingBottom: 220 }}
             showsVerticalScrollIndicator={false}
           />
         </>

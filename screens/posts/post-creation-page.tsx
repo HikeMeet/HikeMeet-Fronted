@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import {
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   Text,
   TextInput,
@@ -16,6 +18,7 @@ import SelectedMediaList, {
   ILocalMedia,
 } from "../../components/media-list-in-before-uploading";
 import ConfirmationModal from "../../components/confirmation-modal";
+import MentionTextInput from "../../components/metion-with-text-input";
 
 interface CreatePostPageProps {
   navigation: any;
@@ -129,13 +132,29 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
         <Text className="text-2xl font-bold mb-4 text-center">
           Create a Post
         </Text>
-        <TextInput
-          className="border border-gray-300 p-3 rounded mb-4 min-h-[100px]"
-          multiline
-          placeholder="What's on your mind?"
-          value={content}
-          onChangeText={setContent}
-        />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="bg-white border-t border-gray-200 p-4"
+        >
+          <View className="flex-row items-center">
+            <MentionTextInput
+              placeholder="Write a comment..."
+              value={content}
+              onChangeText={setContent}
+              inputStyle={{
+                flex: 1,
+                borderWidth: 1,
+                borderColor: "#ccc",
+                borderRadius: 8,
+                padding: 8,
+                fontSize: 16,
+                color: "#374151",
+              }}
+              containerStyle={{ flex: 1 }}
+            />
+            {/* You may add a Send button here if needed */}
+          </View>
+        </KeyboardAvoidingView>
         <SelectedMediaList
           media={selectedMedia}
           onRemove={removeSelectedMedia}

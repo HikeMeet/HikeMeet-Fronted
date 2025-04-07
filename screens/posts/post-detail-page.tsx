@@ -29,6 +29,8 @@ import EditableText from "./components/editable-text-for-posts";
 import { useAuth } from "../../contexts/auth-context";
 import { createComment } from "../../components/requests/post-comment-requests";
 import CommentRow from "./components/comment-row";
+import ParsedMentionText from "./components/parsed-mention-text";
+import MentionTextInput from "../../components/metion-with-text-input";
 
 const getUri = (data: any): string => {
   if (typeof data === "string") return data;
@@ -62,7 +64,6 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
   const [newCommentText, setNewCommentText] = useState<string>("");
   const [commentsToShow, setCommentsToShow] = useState<number>(5);
   const { mongoId } = useAuth();
-
 
   const fetchPost = async () => {
     try {
@@ -176,17 +177,12 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
               setIsEditing(false);
             }}
             onCancel={() => setIsEditing(false)}
-            textStyle={{
-              fontSize: 16,
-              color: "#374151",
-              marginBottom: 8,
-            }}
-            containerStyle={{ marginBottom: 16 }}
           />
         ) : (
-          <Text className="text-base text-gray-700 mb-4">
-            {post.content || "No content."}
-          </Text>
+          <ParsedMentionText
+            text={post.content || "No content."}
+            navigation={navigation}
+          />
         )}
       </View>
 
@@ -256,11 +252,20 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex-row items-center p-4"
       >
-        <TextInput
+        <MentionTextInput
           placeholder="Write a comment..."
           value={newCommentText}
           onChangeText={setNewCommentText}
-          className="flex-1 border border-gray-300 rounded-lg p-2"
+          inputStyle={{
+            flex: 1,
+            borderWidth: 1,
+            borderColor: "#ccc",
+            borderRadius: 8,
+            padding: 8,
+            fontSize: 16,
+            color: "#374151",
+          }}
+          containerStyle={{ flex: 1 }}
         />
         <TouchableOpacity
           onPress={handlePostComment}
