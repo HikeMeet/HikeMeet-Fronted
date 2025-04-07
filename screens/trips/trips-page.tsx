@@ -169,7 +169,7 @@ const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.1}
           refreshControl={
-            <RefreshControl refreshing={loading} onRefresh={toggleTrips} />
+            <RefreshControl refreshing={loading} onRefresh={fetchTrips} />
           }
           contentContainerStyle={{ paddingBottom: 20 }}
           showsVerticalScrollIndicator={false}

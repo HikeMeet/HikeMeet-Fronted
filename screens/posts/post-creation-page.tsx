@@ -12,7 +12,10 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/auth-context";
-import { uploadMedia } from "../../components/cloudinary-upload";
+import {
+  deleteImageFromCloudinary,
+  uploadMedia,
+} from "../../components/cloudinary-upload";
 import { IImageModel } from "../../interfaces/image-interface";
 import SelectedMediaList, {
   ILocalMedia,
@@ -79,8 +82,13 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
     try {
       if (selectedMedia.length > 0) {
         for (const media of selectedMedia) {
-          const uploaded = await uploadMedia(media.uri, media.type);
+          const uploaded = await uploadMedia(
+            media.uri,
+            media.type,
+            "post_media"
+          );
           if (uploaded) {
+            console.log("Media uploaded:", uploaded);
             uploadedItems.push(uploaded);
           } else {
             throw new Error("One or more media uploads failed.");
@@ -116,6 +124,11 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
         setConfirmationVisible(true);
       } else {
         // You may still want to alert on error.
+        if (uploadedItems.length > 0) {
+          for (const item of uploadedItems) {
+            deleteImageFromCloudinary(item.delete_token!);
+          } // Add this closing bracket
+        }
         Alert.alert("Error", result.error || "Failed to create post.");
       }
     } catch (error) {

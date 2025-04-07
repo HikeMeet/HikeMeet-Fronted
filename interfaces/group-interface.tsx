@@ -1,4 +1,4 @@
-import { IImageModel } from "./trip-interface";
+import { IImageModel } from "./image-interface";
 
 export interface GroupMember {
   user: string;

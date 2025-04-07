@@ -93,7 +93,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
       <View className="flex-row items-center justify-between mb-4">
         {group.main_image && (
           <ProfileImage
-            initialImageUrl={group.main_image.url}
+            initialImageUrl={group.main_image}
             size={60}
             id={group._id}
             uploadType="group"

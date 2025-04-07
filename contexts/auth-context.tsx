@@ -17,6 +17,7 @@ interface AuthContextProps {
   setMongoId: React.Dispatch<React.SetStateAction<string | null>>;
   userFriendsMinDetail: MongoUser[];
   setUserFriendsMinDetail: React.Dispatch<React.SetStateAction<MongoUser[]>>;
+  fetchMongoUser: (mongoIdToFetch: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -42,6 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error(`Error fetching user data: ${response.status}`);
       }
       const data: MongoUser = await response.json();
+      console.log("Fetched Mongossssssssssssss user:", data);
       setMongoUser(data);
       // Optionally update mongoId if needed.
       setMongoId(data._id);
@@ -122,19 +124,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  // Polling effect to update the Mongo user every 10 seconds if the user is verified and a mongoId exists.
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isVerified && mongoId) {
-      interval = setInterval(() => {
-        fetchMongoUser(mongoId);
-      }, 30000); // every 10 seconds
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isVerified, mongoId]);
-
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -157,6 +146,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setMongoUser,
         userFriendsMinDetail,
         setUserFriendsMinDetail,
+        fetchMongoUser, // Expose the function here
       }}
     >
       {children}

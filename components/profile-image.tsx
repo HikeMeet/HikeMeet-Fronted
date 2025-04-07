@@ -1,4 +1,3 @@
-// components/ProfileImage.tsx
 import React, { useCallback, useState } from "react";
 import {
   Image,
@@ -14,16 +13,19 @@ import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import { deleteImageFromCloudinary, uploadMedia } from "./cloudinary-upload";
+import { IImageModel } from "../interfaces/image-interface";
 
-// Default image URLs for profile and trip (adjust as needed)
+// Default image URLs for profile, trip, and group (adjust as needed)
 const DEFAULT_PROFILE_IMAGE_URL =
   "https://res.cloudinary.com/dyebkjnoc/image/upload/v1742156351/profile_images/tpyngwygeoykeur0hgre.jpg";
 const DEFAULT_TRIP_IMAGE_URL =
   "https://res.cloudinary.com/dyebkjnoc/image/upload/v1742664563/trip_images/pxn2u29twifmjcjq7whv.png";
 const DEFAULT_GROUP_IMAGE_URL =
   "https://res.cloudinary.com/dyebkjnoc/image/upload/v1743157838/group_images/o1onsa093hqedz3ti7fo.webp";
+
 interface MainImageProps {
-  initialImageUrl: string;
+  initialImageUrl: IImageModel;
   size?: number;
   id: string;
   uploadType?: "profile" | "trip" | "group";
@@ -38,12 +40,12 @@ const ProfileImage: React.FC<MainImageProps> = ({
   uploadType = "profile",
   editable = true,
 }) => {
-  const [imageUri, setImageUri] = useState<string>(initialImageUrl);
+  const [image, setImage] = useState<IImageModel>(initialImageUrl);
   const [uploading, setUploading] = useState(false);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [viewImageVisible, setViewImageVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { setMongoUser } = useAuth();
+  const { setMongoUser, mongoId } = useAuth();
 
   useFocusEffect(
     useCallback(() => {
@@ -51,73 +53,95 @@ const ProfileImage: React.FC<MainImageProps> = ({
     }, [])
   );
 
-  const uploadImageToBackend = async (uri: string) => {
-    const formData = new FormData();
-    console.log("Uploading file with URI:", uri);
-    formData.append("image", {
-      uri,
-      type: "image/jpeg",
-      name: "upload.jpg",
-    } as any);
-
+  /**
+   * Upload media from the front end using uploadMedia function,
+   * then update the record in the backend using the update route.
+   */
+  const uploadMediaToBackend = async (uri: string) => {
+    setUploading(true);
     try {
-      const backendUrl =
-        (process.env.EXPO_LOCAL_SERVER as string) ||
-        "http://192.168.1.100:3000";
-      let requestUrl: string;
+      // Determine folder based on upload type.
+      const folder =
+        uploadType === "trip"
+          ? "trip_images"
+          : uploadType === "group"
+            ? "group_images"
+            : "profile_images";
 
-      if (uploadType === "trip") {
-        requestUrl = `${backendUrl}/api/trips/${id}/upload-profile-picture`;
-      } else if (uploadType === "group") {
-        requestUrl = `${backendUrl}/api/group/${id}/upload-profile-picture`;
-      } else {
-        requestUrl = `${backendUrl}/api/user/${id}/upload-profile-picture`;
+      // Upload media directly to Cloudinary.
+      const mediaResult = await uploadMedia(uri, "image", folder);
+      if (!mediaResult) {
+        throw new Error("Media upload failed.");
       }
 
-      console.log("Sending request to:", requestUrl);
+      // Build backend update URL.
+      const backendUrl = process.env.EXPO_LOCAL_SERVER as string;
+      let requestUrl: string;
+      if (uploadType === "trip") {
+        requestUrl = `${backendUrl}/api/trips/${id}/update`;
+      } else if (uploadType === "group") {
+        requestUrl = `${backendUrl}/api/group/${id}/update`;
+      } else {
+        requestUrl = `${backendUrl}/api/user/${id}/update`;
+      }
+
+      // Prepare payload with the appropriate key.
+      const updatePayload =
+        uploadType === "trip" || uploadType === "group"
+          ? { main_image: mediaResult, updated_by: mongoId }
+          : { profile_picture: mediaResult };
+
+      console.log("Updating backend with URL:", requestUrl);
 
       const response = await fetch(requestUrl, {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatePayload),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
+        // If the update fails, remove the uploaded image from Cloudinary.
+        if (mediaResult.delete_token) {
+          try {
+            await deleteImageFromCloudinary(mediaResult.delete_token);
+          } catch (err) {
+            console.error("Error removing image from Cloudinary:", err);
+          }
+        }
         throw new Error(`Server error (${response.status}): ${errorText}`);
       }
 
       const updatedResponse = await response.json();
-      console.log("Upload successful:", updatedResponse);
+      console.log("Update successful:", updatedResponse);
 
-      // Use the appropriate property based on the upload type.
       if (uploadType === "trip" || uploadType === "group") {
-        if (updatedResponse.main_image && updatedResponse.main_image.url) {
-          setImageUri(updatedResponse.main_image.url);
-        } else {
-          throw new Error("Trip image URL not found in response");
-        }
+        setImage(updatedResponse.main_image);
       } else {
-        if (
-          updatedResponse.profile_picture &&
-          updatedResponse.profile_picture.url
-        ) {
-          setImageUri(updatedResponse.profile_picture.url);
-          setMongoUser(updatedResponse);
-        } else {
-          throw new Error("Profile image URL not found in response");
-        }
+        setImage(updatedResponse.profile_picture);
+        setMongoUser(updatedResponse);
       }
       setErrorMessage(null);
     } catch (error: any) {
-      console.error("Backend upload error:", error);
+      console.error("Media upload error:", error);
       setErrorMessage("Upload failed.");
     } finally {
       setUploading(false);
     }
   };
 
-  const handlePress = async () => {
-    // Request media library permissions.
+  // Handle image press: if editable, show tooltip; if not, view image.
+  const onImagePress = () => {
+    if (uploading) return;
+    if (editable) {
+      setTooltipVisible(true);
+    } else {
+      setViewImageVisible(true);
+    }
+  };
+
+  // Request permission and launch image picker.
+  const handleImageChange = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
@@ -128,7 +152,6 @@ const ProfileImage: React.FC<MainImageProps> = ({
       return;
     }
 
-    // Launch the image picker.
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       quality: 1,
@@ -137,8 +160,7 @@ const ProfileImage: React.FC<MainImageProps> = ({
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const asset = result.assets[0];
       console.log("Image selected:", asset.uri);
-      setUploading(true);
-      await uploadImageToBackend(asset.uri);
+      await uploadMediaToBackend(asset.uri);
     } else {
       console.log("No image selected.");
     }
@@ -153,27 +175,48 @@ const ProfileImage: React.FC<MainImageProps> = ({
         "http://192.168.1.100:3000";
       let requestUrl: string;
       if (uploadType === "trip") {
-        requestUrl = `${backendUrl}/api/trips/${id}/delete-profile-picture`;
+        requestUrl = `${backendUrl}/api/trips/${id}/update`;
       } else if (uploadType === "group") {
-        requestUrl = `${backendUrl}/api/group/${id}/delete-profile-picture`;
+        requestUrl = `${backendUrl}/api/group/${id}/update`;
       } else {
-        requestUrl = `${backendUrl}/api/user/${id}/delete-profile-picture`;
+        requestUrl = `${backendUrl}/api/user/${id}/update`;
       }
-      console.log("Calling DELETE on:", requestUrl);
+      console.log("Updating backend with URL:", requestUrl);
+
+      // Retrieve the current media (the photo that will be removed)
+      // For example, for user profile:
+
+      // Build update payload that resets the image field to the default values.
+
+      // Send update request to backend
       const response = await fetch(requestUrl, {
-        method: "DELETE",
+        method: "POST", // or PUT if your route is set that way
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ updated_by: mongoId }),
       });
+
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Server error (${response.status}): ${errorText}`);
       }
+
       const updatedModel = await response.json();
       console.log("Photo removal successful:", updatedModel);
-      // Update the image URI based on type.
+
+      // After successfully updating the backend, remove the old image from Cloudinary.
+      if (image?.delete_token) {
+        try {
+          await deleteImageFromCloudinary(image.delete_token);
+        } catch (err) {
+          console.error("Error removing image from Cloudinary:", err);
+        }
+      }
+
+      // Update UI based on type.
       if (uploadType === "trip" || uploadType === "group") {
-        setImageUri(updatedModel.main_image.url);
+        setImage(updatedModel.main_image.url);
       } else {
-        setImageUri(updatedModel.profile_picture.url);
+        setImage(updatedModel.profile_picture.url);
         setMongoUser(updatedModel);
       }
       setTooltipVisible(false);
@@ -182,17 +225,6 @@ const ProfileImage: React.FC<MainImageProps> = ({
       setErrorMessage("Failed to remove photo.");
     } finally {
       setUploading(false);
-    }
-  };
-
-  // Only allow press if we're not uploading.
-  // If editable is true, show tooltip; if false, go directly to view mode.
-  const onImagePress = () => {
-    if (uploading) return;
-    if (editable) {
-      setTooltipVisible(true);
-    } else {
-      setViewImageVisible(true);
     }
   };
 
@@ -230,8 +262,8 @@ const ProfileImage: React.FC<MainImageProps> = ({
               ) : (
                 <Image
                   source={
-                    imageUri
-                      ? { uri: imageUri }
+                    image.url
+                      ? { uri: image.url }
                       : require("../assets/default-profile.png")
                   }
                   className="w-full h-full rounded-full"
@@ -282,7 +314,8 @@ const ProfileImage: React.FC<MainImageProps> = ({
                 className="py-2"
                 onPress={() => {
                   setTooltipVisible(false);
-                  handlePress();
+                  handleRemovePhoto();
+                  handleImageChange();
                 }}
               >
                 <Text className="text-lg text-blue-500 text-center">
@@ -307,7 +340,7 @@ const ProfileImage: React.FC<MainImageProps> = ({
                 </Text>
               </TouchableOpacity>
               {/* Show "Remove Photo" option if current image is not the default */}
-              {imageUri !== defaultUrl && (
+              {image.url !== defaultUrl && (
                 <TouchableOpacity className="py-2" onPress={handleRemovePhoto}>
                   <Text className="text-lg text-blue-500 text-center">
                     Remove Photo
@@ -335,9 +368,7 @@ const ProfileImage: React.FC<MainImageProps> = ({
           </Pressable>
           <Image
             source={
-              imageUri
-                ? { uri: imageUri }
-                : require("../assets/default-profile.png")
+              image ? { uri: image } : require("../assets/default-profile.png")
             }
             className="w-full h-4/5"
             resizeMode="contain"
