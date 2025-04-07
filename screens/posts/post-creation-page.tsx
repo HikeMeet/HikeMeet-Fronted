@@ -12,7 +12,10 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/auth-context";
-import { uploadMedia } from "../../components/cloudinary-upload";
+import {
+  deleteImageFromCloudinary,
+  uploadMedia,
+} from "../../components/cloudinary-upload";
 import { IImageModel } from "../../interfaces/image-interface";
 import SelectedMediaList, {
   ILocalMedia,
@@ -97,7 +100,7 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
       const postData = {
         author: mongoId,
         content,
-        images: uploadedMedia || [],
+        images: uploadedItems || [],
         attached_trip: null,
         attached_group: null,
         is_shared: false,
@@ -121,6 +124,11 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
         setConfirmationVisible(true);
       } else {
         // You may still want to alert on error.
+        if (uploadedItems.length > 0) {
+          for (const item of uploadedItems) {
+            deleteImageFromCloudinary(item.delete_token!);
+          } // Add this closing bracket
+        }
         Alert.alert("Error", result.error || "Failed to create post.");
       }
     } catch (error) {

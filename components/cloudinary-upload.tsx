@@ -41,6 +41,7 @@ export const uploadMedia = async (
   formData.append("signature", signatureData.signature);
   formData.append("folder", signatureData.folder);
   formData.append("resource_type", "auto");
+  formData.append("return_delete_token", "true");
 
   const cloudinaryUrl = "https://api.cloudinary.com/v1_1/dyebkjnoc/upload";
   try {
@@ -59,6 +60,7 @@ export const uploadMedia = async (
       return {
         url: secureUrl,
         image_id: uploadResult.public_id,
+        delete_token: uploadResult.delete_token, // save the deletion token
         type: mediaType,
         video_sceenshot_url:
           mediaType === "video" ? videoScreenshot : undefined,
@@ -68,6 +70,24 @@ export const uploadMedia = async (
     }
   } catch (error) {
     console.error("Error uploading media:", error);
+    throw error;
+  }
+};
+
+
+export const deleteImageFromCloudinary = async (deleteToken: string) => {
+  try {
+    const cloudinaryUrl =
+      "https://api.cloudinary.com/v1_1/dyebkjnoc/delete_by_token";
+    const response = await fetch(cloudinaryUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: deleteToken }),
+    });
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error deleting image from Cloudinary:", error);
     throw error;
   }
 };

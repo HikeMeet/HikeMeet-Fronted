@@ -13,7 +13,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { uploadMedia } from "./cloudinary-upload";
+import { deleteImageFromCloudinary, uploadMedia } from "./cloudinary-upload";
 
 // Default image URLs for profile, trip, and group (adjust as needed)
 const DEFAULT_PROFILE_IMAGE_URL =
@@ -44,7 +44,7 @@ const ProfileImage: React.FC<MainImageProps> = ({
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [viewImageVisible, setViewImageVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { setMongoUser, mongoId } = useAuth();
+  const { setMongoUser, mongoUser, mongoId } = useAuth();
 
   useFocusEffect(
     useCallback(() => {
@@ -100,6 +100,14 @@ const ProfileImage: React.FC<MainImageProps> = ({
 
       if (!response.ok) {
         const errorText = await response.text();
+        // If the update fails, remove the uploaded image from Cloudinary.
+        if (mediaResult.delete_token) {
+          try {
+            await deleteImageFromCloudinary(mediaResult.delete_token);
+          } catch (err) {
+            console.error("Error removing image from Cloudinary:", err);
+          }
+        }
         throw new Error(`Server error (${response.status}): ${errorText}`);
       }
 
@@ -132,7 +140,7 @@ const ProfileImage: React.FC<MainImageProps> = ({
   };
 
   // Request permission and launch image picker.
-  const handlePress = async () => {
+  const handleImageChange = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
@@ -166,22 +174,49 @@ const ProfileImage: React.FC<MainImageProps> = ({
         "http://192.168.1.100:3000";
       let requestUrl: string;
       if (uploadType === "trip") {
-        requestUrl = `${backendUrl}/api/trips/${id}/delete-profile-picture`;
+        requestUrl = `${backendUrl}/api/trips/${id}/update`;
       } else if (uploadType === "group") {
-        requestUrl = `${backendUrl}/api/group/${id}/delete-profile-picture`;
+        requestUrl = `${backendUrl}/api/group/${id}/update`;
       } else {
-        requestUrl = `${backendUrl}/api/user/${id}/delete-profile-picture`;
+        requestUrl = `${backendUrl}/api/user/${id}/update`;
       }
-      console.log("Calling DELETE on:", requestUrl);
+      console.log("Updating backend with URL:", requestUrl);
+
+      // Retrieve the current media (the photo that will be removed)
+      // For example, for user profile:
+      const currentMedia =
+        uploadType === "trip" || uploadType === "group"
+          ? null // if needed, adjust for trip/group if you store current main_image somewhere
+          : mongoUser?.profile_picture;
+
+      // Build update payload that resets the image field to the default values.
+      let updatePayload;
+
+      // Send update request to backend
       const response = await fetch(requestUrl, {
-        method: "DELETE",
+        method: "POST", // or PUT if your route is set that way
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatePayload),
       });
+
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Server error (${response.status}): ${errorText}`);
       }
+
       const updatedModel = await response.json();
       console.log("Photo removal successful:", updatedModel);
+
+      // After successfully updating the backend, remove the old image from Cloudinary.
+      if (currentMedia?.delete_token) {
+        try {
+          await deleteImageFromCloudinary(currentMedia.delete_token);
+        } catch (err) {
+          console.error("Error removing image from Cloudinary:", err);
+        }
+      }
+
+      // Update UI based on type.
       if (uploadType === "trip" || uploadType === "group") {
         setImageUri(updatedModel.main_image.url);
       } else {
@@ -283,7 +318,8 @@ const ProfileImage: React.FC<MainImageProps> = ({
                 className="py-2"
                 onPress={() => {
                   setTooltipVisible(false);
-                  handlePress();
+                  handleRemovePhoto();
+                  handleImageChange();
                 }}
               >
                 <Text className="text-lg text-blue-500 text-center">
