@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { StyleProp, TextStyle, ViewStyle } from "react-native";
+import MentionTextInput from "../../../components/metion-with-text-input";
 
 interface EditableTextProps {
   text: string;
@@ -63,23 +64,24 @@ const EditableText: React.FC<EditableTextProps> = ({
   if (isEditing) {
     return (
       <View style={containerStyle}>
-        <TextInput
-          style={[
-            {
+        <View className="flex-row items-center">
+          <MentionTextInput
+            placeholder="Write a comment..."
+            value={editedText}
+            onChangeText={setEditedText}
+            inputStyle={{
+              flex: 1,
               borderWidth: 1,
-              borderColor: "#d1d5db",
+              borderColor: "#ccc",
               borderRadius: 8,
               padding: 8,
               fontSize: 16,
               color: "#374151",
-            },
-            textStyle,
-          ]}
-          multiline
-          value={editedText}
-          onChangeText={setEditedText}
-          placeholder="Edit your text..."
-        />
+            }}
+            containerStyle={{ flex: 1 }}
+          />
+          {/* You may add a Send button here if needed */}
+        </View>
         <View
           style={{
             flexDirection: "row",

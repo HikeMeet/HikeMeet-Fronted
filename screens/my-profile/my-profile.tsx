@@ -81,7 +81,7 @@ const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
       {/* Profile Header */}
       <View className="flex-row items-center p-4">
         <ProfileImage
-          initialImageUrl={mongoUser.profile_picture.url}
+          initialImageUrl={mongoUser.profile_picture}
           size={80}
           id={mongoUser._id}
           uploadType="profile"

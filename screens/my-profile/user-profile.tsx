@@ -152,7 +152,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
       {/* User Details */}
       <View className="flex-row items-center mb-4">
         <ProfileImage
-          initialImageUrl={user.profile_picture.url}
+          initialImageUrl={user.profile_picture}
           size={80}
           id={user._id}
           uploadType={"profile"}

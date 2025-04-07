@@ -14,6 +14,7 @@ import { useAuth } from "../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { deleteImageFromCloudinary, uploadMedia } from "./cloudinary-upload";
+import { IImageModel } from "../interfaces/image-interface";
 
 // Default image URLs for profile, trip, and group (adjust as needed)
 const DEFAULT_PROFILE_IMAGE_URL =
@@ -24,7 +25,7 @@ const DEFAULT_GROUP_IMAGE_URL =
   "https://res.cloudinary.com/dyebkjnoc/image/upload/v1743157838/group_images/o1onsa093hqedz3ti7fo.webp";
 
 interface MainImageProps {
-  initialImageUrl: string;
+  initialImageUrl: IImageModel;
   size?: number;
   id: string;
   uploadType?: "profile" | "trip" | "group";
@@ -39,12 +40,12 @@ const ProfileImage: React.FC<MainImageProps> = ({
   uploadType = "profile",
   editable = true,
 }) => {
-  const [imageUri, setImageUri] = useState<string>(initialImageUrl);
+  const [image, setImage] = useState<IImageModel>(initialImageUrl);
   const [uploading, setUploading] = useState(false);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [viewImageVisible, setViewImageVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { setMongoUser, mongoUser, mongoId } = useAuth();
+  const { setMongoUser, mongoId } = useAuth();
 
   useFocusEffect(
     useCallback(() => {
@@ -115,9 +116,9 @@ const ProfileImage: React.FC<MainImageProps> = ({
       console.log("Update successful:", updatedResponse);
 
       if (uploadType === "trip" || uploadType === "group") {
-        setImageUri(updatedResponse.main_image.url);
+        setImage(updatedResponse.main_image);
       } else {
-        setImageUri(updatedResponse.profile_picture.url);
+        setImage(updatedResponse.profile_picture);
         setMongoUser(updatedResponse);
       }
       setErrorMessage(null);
@@ -184,19 +185,14 @@ const ProfileImage: React.FC<MainImageProps> = ({
 
       // Retrieve the current media (the photo that will be removed)
       // For example, for user profile:
-      const currentMedia =
-        uploadType === "trip" || uploadType === "group"
-          ? null // if needed, adjust for trip/group if you store current main_image somewhere
-          : mongoUser?.profile_picture;
 
       // Build update payload that resets the image field to the default values.
-      let updatePayload;
 
       // Send update request to backend
       const response = await fetch(requestUrl, {
         method: "POST", // or PUT if your route is set that way
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatePayload),
+        body: JSON.stringify({ updated_by: mongoId }),
       });
 
       if (!response.ok) {
@@ -208,9 +204,9 @@ const ProfileImage: React.FC<MainImageProps> = ({
       console.log("Photo removal successful:", updatedModel);
 
       // After successfully updating the backend, remove the old image from Cloudinary.
-      if (currentMedia?.delete_token) {
+      if (image?.delete_token) {
         try {
-          await deleteImageFromCloudinary(currentMedia.delete_token);
+          await deleteImageFromCloudinary(image.delete_token);
         } catch (err) {
           console.error("Error removing image from Cloudinary:", err);
         }
@@ -218,9 +214,9 @@ const ProfileImage: React.FC<MainImageProps> = ({
 
       // Update UI based on type.
       if (uploadType === "trip" || uploadType === "group") {
-        setImageUri(updatedModel.main_image.url);
+        setImage(updatedModel.main_image.url);
       } else {
-        setImageUri(updatedModel.profile_picture.url);
+        setImage(updatedModel.profile_picture.url);
         setMongoUser(updatedModel);
       }
       setTooltipVisible(false);
@@ -266,8 +262,8 @@ const ProfileImage: React.FC<MainImageProps> = ({
               ) : (
                 <Image
                   source={
-                    imageUri
-                      ? { uri: imageUri }
+                    image.url
+                      ? { uri: image.url }
                       : require("../assets/default-profile.png")
                   }
                   className="w-full h-full rounded-full"
@@ -344,7 +340,7 @@ const ProfileImage: React.FC<MainImageProps> = ({
                 </Text>
               </TouchableOpacity>
               {/* Show "Remove Photo" option if current image is not the default */}
-              {imageUri !== defaultUrl && (
+              {image.url !== defaultUrl && (
                 <TouchableOpacity className="py-2" onPress={handleRemovePhoto}>
                   <Text className="text-lg text-blue-500 text-center">
                     Remove Photo
@@ -372,9 +368,7 @@ const ProfileImage: React.FC<MainImageProps> = ({
           </Pressable>
           <Image
             source={
-              imageUri
-                ? { uri: imageUri }
-                : require("../assets/default-profile.png")
+              image ? { uri: image } : require("../assets/default-profile.png")
             }
             className="w-full h-4/5"
             resizeMode="contain"
