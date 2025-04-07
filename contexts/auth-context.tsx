@@ -15,6 +15,8 @@ interface AuthContextProps {
   mongoUser: MongoUser | null;
   setMongoUser: React.Dispatch<React.SetStateAction<MongoUser | null>>;
   setMongoId: React.Dispatch<React.SetStateAction<string | null>>;
+  userFriendsMinDetail: MongoUser[];
+  setUserFriendsMinDetail: React.Dispatch<React.SetStateAction<MongoUser[]>>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -26,6 +28,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [mongoId, setMongoId] = useState<string | null>(null);
   const [mongoUser, setMongoUser] = useState<MongoUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [userFriendsMinDetail, setUserFriendsMinDetail] = useState<MongoUser[]>(
+    []
+  );
 
   // Function to fetch Mongo user by mongoId or firebase id if necessary.
   const fetchMongoUser = async (mongoIdToFetch: string) => {
@@ -89,7 +94,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 throw new Error(`Error fetching user data: ${response.status}`);
               }
               const data: MongoUser = await response.json();
-              console.log("MongoDB User Data:", data);
+              console.log("MongoDB User Data:", data.friends);
               setMongoId(data._id);
               setMongoUser(data);
               await AsyncStorage.setItem("user", JSON.stringify(currentUser));
@@ -107,6 +112,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUserId(null);
           setMongoId(null);
           setMongoUser(null);
+          setUserFriendsMinDetail([]);
           await AsyncStorage.removeItem("user");
           await AsyncStorage.removeItem("mongoId");
         }
@@ -149,6 +155,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setMongoId,
         mongoUser,
         setMongoUser,
+        userFriendsMinDetail,
+        setUserFriendsMinDetail,
       }}
     >
       {children}
