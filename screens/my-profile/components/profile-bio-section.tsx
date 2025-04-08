@@ -7,7 +7,10 @@ interface BioSectionProps {
   editable?: boolean;
 }
 
-const BioSection: React.FC<BioSectionProps> = ({ bio: initialBio, editable = true }) => {
+const BioSection: React.FC<BioSectionProps> = ({
+  bio: initialBio,
+  editable = true,
+}) => {
   const [bio, setBio] = useState<string>(initialBio);
   const [editingBio, setEditingBio] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
@@ -46,9 +49,9 @@ const BioSection: React.FC<BioSectionProps> = ({ bio: initialBio, editable = tru
   };
 
   return (
-    <View className="mt-4">
+    <View>
       <View className="flex-row items-center justify-between">
-        <Text className="text-sm font-bold mb-2">Bio</Text>
+        <Text className="text-sm font-bold mb-1">Bio</Text>
         {editable && !editingBio && (
           <TouchableOpacity onPress={() => setEditingBio(true)}>
             <Text className="text-blue-500">Edit</Text>

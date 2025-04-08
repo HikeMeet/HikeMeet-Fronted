@@ -76,10 +76,11 @@ const MentionTextInput: React.FC<MentionTextInputProps> = ({
           multiline={true} // Allow newline/enter key input.
           {...props}
         />
-        {mentionMatch && suggestionFriends.length > 0 && (
+        {mentionMatch && (
           <FriendMentionList
             friends={suggestionFriends}
             onSelectFriend={handleSelectFriend}
+            mentionQuery={mentionQuery}
           />
         )}
       </KeyboardAvoidingView>
