@@ -31,7 +31,7 @@ type GroupFilterModalProps = {
   };
 };
 
-const DIFFICULTIES = ["Easy", "Medium", "Hard"];
+const DIFFICULTIES = ["beginner", "intermediate", "advanced", "hardcore"];
 const STATUSES = ["planned", "active"];
 
 export default function GroupFilterModal({
@@ -174,7 +174,7 @@ export default function GroupFilterModal({
 
   return (
     <TouchableWithoutFeedback onPress={onClose}>
-      <View className="absolute top-0 left-0 right-0 bottom-0 bg-black/30 justify-center items-center">
+      <View className="absolute top-20 left-0 right-0 bottom-0 bg-black/30 justify-center items-center">
         <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
           <View className="w-[90%] bg-white rounded-xl p-5 max-h-[80%]">
             <Text className="text-lg font-semibold mb-3">Group Filters</Text>

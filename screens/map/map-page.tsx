@@ -131,7 +131,20 @@ export default function MapPage({ navigation }: MapPageProps) {
     });
   }
 
-  /** החלת כל הפילטרים הפעילים על allTrips/allGroups */
+  /** עזר – בונה trips עם groups מסוננות */
+  function rebuildTripsWithGroups(baseTrips: Trip[], filteredGroups: Group[]) {
+    const byTrip: Record<string, Group[]> = {};
+    filteredGroups.forEach((g) => {
+      if (!byTrip[g.trip]) byTrip[g.trip] = [];
+      byTrip[g.trip].push(g);
+    });
+    return baseTrips.map((tr) => ({
+      ...tr,
+      groups: byTrip[tr._id] || [],
+    }));
+  }
+
+  /** החלת כל הפילטרים הפעילים */
   function applyAllFilters(filters: ActiveFilter[]) {
     let t = [...allTrips];
     let g = [...allGroups];
@@ -149,8 +162,8 @@ export default function MapPage({ navigation }: MapPageProps) {
 
       /* ---------- GROUP filters ---------- */
       if (f.id.startsWith("groupStatus=")) {
-        const status = f.id.split("=")[1];
-        g = g.filter((gr) => gr.status?.toLowerCase() === status.toLowerCase());
+        const status = f.id.split("=")[1].toLowerCase();
+        g = g.filter((gr) => gr.status?.toLowerCase() === status);
       }
       if (f.id.startsWith("groupDifficulty=")) {
         const diff = f.id.split("=")[1];
@@ -172,8 +185,9 @@ export default function MapPage({ navigation }: MapPageProps) {
       }
     });
 
-    setTrips(t);
+    /* עדכן state */
     setGroups(g);
+    setTrips(rebuildTripsWithGroups(t, g));
   }
 
   /* ---------- location ---------- */
@@ -240,8 +254,6 @@ export default function MapPage({ navigation }: MapPageProps) {
   /* ---------- filter‑modal handlers ---------- */
   function openTripFilterModal() {
     hideCarousel();
-
-    // הפקת ערכי ברירת‑מחדל מה‑activeFilters
     const locFilter = activeFilters.find((f) =>
       f.id.startsWith("tripLocation=")
     );
@@ -300,10 +312,12 @@ export default function MapPage({ navigation }: MapPageProps) {
     setGroups(filteredGroups);
 
     setActiveFilters((prev) => [
-      // הסר את כל הפילטרים שמתחילים ב‑group*
       ...prev.filter((f) => !f.id.startsWith("group")),
       ...chosen,
     ]);
+
+    // עדכון trips בהתאם
+    setTrips(rebuildTripsWithGroups(allTrips, filteredGroups));
 
     setShowGroupFilter(false);
     if (viewMode === "map") showCarousel();
@@ -312,11 +326,8 @@ export default function MapPage({ navigation }: MapPageProps) {
   function handleRemoveFilter(filterId: string) {
     const newFilters = activeFilters.filter((f) => f.id !== filterId);
     setActiveFilters(newFilters);
-
-    // עדכון רשימות לפי הפילטרים הנותרים
     applyAllFilters(newFilters);
 
-    // אם הסרנו פילטר עיר – אפס city
     if (filterId.startsWith("city=")) {
       setCity("");
       if (viewMode === "map" && userLocation) {
@@ -470,7 +481,13 @@ export default function MapPage({ navigation }: MapPageProps) {
           )}
         </>
       ) : (
-        <TripList trips={trips} navigation={navigation} />
+        <TripList
+          trips={trips}
+          onOpenTrip={openTripPopup}
+          onScrollStart={() => {
+            if (popupTrip) closeTripPopup(); // סגור אם פתוח
+          }}
+        />
       )}
 
       {/* Popup */}
