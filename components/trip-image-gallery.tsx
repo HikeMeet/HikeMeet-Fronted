@@ -1,4 +1,3 @@
-// components/TripImagesUploader.tsx
 import React, { useState, useRef, useEffect } from "react";
 import {
   View,
@@ -12,11 +11,11 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
+import { deleteImageFromCloudinary, uploadMedia } from "./cloudinary-upload";
+import { IImageModel } from "../interfaces/image-interface";
+import FullScreenMediaModal from "./media-fullscreen-modal";
 
-interface ImageItem {
-  url: string;
-  image_id: string;
-}
+interface ImageItem extends IImageModel {}
 
 interface TripImagesUploaderProps {
   tripId: string;
@@ -37,20 +36,10 @@ const TripImagesUploader: React.FC<TripImagesUploaderProps> = ({
 }) => {
   const [images, setImages] = useState<ImageItem[]>(initialImages);
   const [uploading, setUploading] = useState(false);
-  const [fullScreenVisible, setFullScreenVisible] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [mediaModalVisible, setMediaModalVisible] = useState(false);
+  const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedForDeletion, setSelectedForDeletion] = useState<string[]>([]);
-  const scrollViewRef = useRef<ScrollView>(null);
-
-  useEffect(() => {
-    if (fullScreenVisible && scrollViewRef.current) {
-      scrollViewRef.current.scrollTo({
-        x: selectedIndex * SCREEN_WIDTH,
-        animated: false,
-      });
-    }
-  }, [fullScreenVisible, selectedIndex]);
 
   const pickImages = async () => {
     try {
@@ -60,8 +49,9 @@ const TripImagesUploader: React.FC<TripImagesUploaderProps> = ({
         alert("Media library permissions are required to upload images.");
         return;
       }
+      // Allow all media types (images & videos)
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
         allowsMultipleSelection: true,
         quality: 1,
       });
@@ -70,26 +60,44 @@ const TripImagesUploader: React.FC<TripImagesUploaderProps> = ({
           alert(`Cannot upload more than ${MAX_IMAGE_COUNT} photos to a trip.`);
           return;
         }
-        const formData = new FormData();
-        result.assets.forEach((asset, index) => {
-          formData.append("images", {
-            uri: asset.uri,
-            name: `upload_${Date.now()}_${index}.jpg`,
-            type: "image/jpeg",
-          } as any);
-        });
         setUploading(true);
-        const backendUrl =
-          process.env.EXPO_LOCAL_SERVER || "http://192.168.1.100:3000";
-        const requestUrl = `${backendUrl}/api/trips/${tripId}/upload-trip-images`;
         try {
+          // Upload each selected asset to Cloudinary.
+          const uploadedImages = await Promise.all(
+            result.assets.map((asset) =>
+              uploadMedia(
+                asset.uri,
+                asset.type as "image" | "video",
+                "trip_images"
+              )
+            )
+          );
+          // Filter out any unsuccessful uploads.
+          const validUploadedImages = uploadedImages.filter(
+            (img): img is ImageItem => img !== null
+          );
+          // Append the new images using the $push operator.
+          const backendUrl =
+            process.env.EXPO_LOCAL_SERVER || "http://192.168.1.100:3000";
+          const requestUrl = `${backendUrl}/api/trips/${tripId}/update`;
           const response = await fetch(requestUrl, {
             method: "POST",
-            body: formData,
-            headers: { "Content-Type": "multipart/form-data" },
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              $push: { images: { $each: validUploadedImages } },
+            }),
           });
           if (!response.ok) {
             const errorText = await response.text();
+            for (const img of validUploadedImages) {
+              if (img.delete_token) {
+                try {
+                  await deleteImageFromCloudinary(img.delete_token);
+                } catch (err) {
+                  console.error("Error removing image from Cloudinary:", err);
+                }
+              }
+            }
             alert(`Upload failed: ${errorText}`);
           } else {
             const updatedTrip = await response.json();
@@ -113,8 +121,8 @@ const TripImagesUploader: React.FC<TripImagesUploaderProps> = ({
   };
 
   const openFullScreen = (index: number) => {
-    setSelectedIndex(index);
-    setFullScreenVisible(true);
+    setSelectedMediaIndex(index);
+    setMediaModalVisible(true);
   };
 
   const toggleDeleteMode = () => {
@@ -137,16 +145,24 @@ const TripImagesUploader: React.FC<TripImagesUploaderProps> = ({
     }
   };
 
+  // Deletion flow remains unchanged.
   const handleDeleteSelectedImages = async () => {
     try {
       const backendUrl =
         process.env.EXPO_LOCAL_SERVER || "http://192.168.1.100:3000";
-      const requestUrl = `${backendUrl}/api/trips/${tripId}/delete-trip-images`;
+      const requestUrl = `${backendUrl}/api/trips/${tripId}/update`;
+
+      // Build update payload using $pull operator to remove images from the array.
+      const updatePayload = {
+        $pull: { images: { image_id: { $in: selectedForDeletion } } },
+      };
+
       const response = await fetch(requestUrl, {
-        method: "DELETE",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageIds: selectedForDeletion }),
+        body: JSON.stringify(updatePayload),
       });
+
       if (!response.ok) {
         const errorText = await response.text();
         alert(`Deletion failed: ${errorText}`);
@@ -155,6 +171,19 @@ const TripImagesUploader: React.FC<TripImagesUploaderProps> = ({
         setImages(updatedTrip.images);
         if (onImagesUpdated) {
           onImagesUpdated(updatedTrip.images);
+        }
+
+        // Loop through selectedForDeletion array and delete each image from Cloudinary.
+        // Use the local images state to find the corresponding delete token.
+        for (const id of selectedForDeletion) {
+          const imageToDelete = images.find((img) => img.image_id === id);
+          if (imageToDelete?.delete_token) {
+            try {
+              await deleteImageFromCloudinary(imageToDelete.delete_token);
+            } catch (err) {
+              console.error("Error removing image from Cloudinary:", err);
+            }
+          }
         }
         setIsDeleting(false);
         setSelectedForDeletion([]);
@@ -178,12 +207,12 @@ const TripImagesUploader: React.FC<TripImagesUploaderProps> = ({
             className="bg-gray-300 w-40 h-40 justify-center items-center"
           >
             <Text className="text-gray-700 text-center">
-              Click to upload images
+              Click to upload images or videos
             </Text>
           </TouchableOpacity>
         ) : (
           <View className="bg-gray-300 w-40 h-40 justify-center items-center">
-            <Text className="text-gray-700 text-center">No Images</Text>
+            <Text className="text-gray-700 text-center">No Media</Text>
           </View>
         )
       ) : (
@@ -206,13 +235,17 @@ const TripImagesUploader: React.FC<TripImagesUploaderProps> = ({
                 className="relative mr-2"
               >
                 <Image
-                  source={{ uri: img.url }}
+                  source={{
+                    uri:
+                      img.type === "video" && img.video_sceenshot_url
+                        ? img.video_sceenshot_url
+                        : img.url,
+                  }}
                   className="w-20 h-20 rounded"
                   style={
                     isDeleting ? { borderWidth: 2, borderColor: "red" } : {}
                   }
                 />
-
                 {isDeleting && selectedForDeletion.includes(img.image_id) && (
                   <View className="absolute top-0 right-0 bg-red-500 rounded-full p-1">
                     <Ionicons name="checkmark" size={16} color="white" />
@@ -221,7 +254,6 @@ const TripImagesUploader: React.FC<TripImagesUploaderProps> = ({
               </TouchableOpacity>
             ))}
           </ScrollView>
-
           {enabled && (
             <View className="flex-col ml-2">
               <TouchableOpacity
@@ -249,42 +281,17 @@ const TripImagesUploader: React.FC<TripImagesUploaderProps> = ({
         </View>
       )}
 
-      {/* Fullscreen Modal with horizontal scroll */}
+      {/* Fullscreen Modal for Media Preview */}
       <Modal
-        visible={fullScreenVisible}
+        visible={mediaModalVisible}
         animationType="slide"
-        onRequestClose={() => setFullScreenVisible(false)}
+        onRequestClose={() => setMediaModalVisible(false)}
       >
-        <View className="flex-1 bg-black">
-          <TouchableOpacity
-            className="absolute top-10 right-5 bg-white/70 p-2 rounded-full z-10"
-            onPress={() => setFullScreenVisible(false)}
-          >
-            <Text className="text-black text-lg">Close</Text>
-          </TouchableOpacity>
-          <ScrollView
-            ref={scrollViewRef}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onContentSizeChange={() => {
-              scrollViewRef.current?.scrollTo({
-                x: selectedIndex * SCREEN_WIDTH,
-                animated: false,
-              });
-            }}
-            className="flex-1"
-          >
-            {images.map((img, index) => (
-              <Image
-                key={index}
-                source={{ uri: img.url }}
-                style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT }}
-                resizeMode="contain"
-              />
-            ))}
-          </ScrollView>
-        </View>
+        <FullScreenMediaModal
+          media={images}
+          initialIndex={selectedMediaIndex}
+          onClose={() => setMediaModalVisible(false)}
+        />
       </Modal>
     </>
   );

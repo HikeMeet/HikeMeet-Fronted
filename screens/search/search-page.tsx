@@ -51,7 +51,6 @@ const SearchPage = ({ navigation }: any) => {
         const friendData = await friendResponse.json();
         friendList = friendData.friends || [];
       }
-      console.log("::::friends:", friendList);
       // Map through userList and add friendStatus based on friendList.
       const updatedUsers = userList.map((user: any) => {
         const friendEntry = friendList.find(

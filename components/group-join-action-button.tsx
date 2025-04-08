@@ -10,7 +10,7 @@ interface JoinGroupActionButtonProps {
   group: Group;
   navigation: any;
   isInGroupPage: boolean;
-  onAction?: () => void;
+  onAction?: (updatedGroup?: Group) => void;
 }
 
 const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
@@ -93,14 +93,22 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
         Alert.alert("Error", errorData.error || "Failed to join group");
         return;
       }
+      let updatedGroup = { ...group };
       if (group.privacy === "public") {
         Alert.alert("Success", "You have joined the group!");
         setJoinStatus("member");
-        onAction();
+        // Add the current user to the members list.
+        updatedGroup.members = [...(group.members as any), { user: mongoId }];
       } else {
         Alert.alert("Success", "Join request sent!");
         setJoinStatus("requested");
+        // Add a pending request.
+        updatedGroup.pending = [
+          ...(group.pending as any),
+          { user: mongoId, origin: "request", status: "pending" },
+        ];
       }
+      onAction(updatedGroup);
     } catch (error) {
       console.error("Error joining group:", error);
       Alert.alert("Error", "Failed to join group");
@@ -128,7 +136,10 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
       }
       Alert.alert("Success", "You have left the group.");
       setJoinStatus("none");
-      onAction();
+      let updatedGroup = { ...group };
+      // Remove the current user from the members list.
+      updatedGroup.members = group.members.filter((m) => m.user !== mongoId);
+      onAction(updatedGroup);
     } catch (error) {
       console.error("Error leaving group:", error);
       Alert.alert("Error", "Failed to leave group");
@@ -156,6 +167,11 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
       }
       Alert.alert("Success", "Invitation accepted!");
       setJoinStatus("member");
+      let updatedGroup = { ...group };
+      // Add current user to members and remove any pending invite entries.
+      updatedGroup.members = [...(group.members as any), { user: mongoId }];
+      updatedGroup.pending = group.pending.filter((p) => p.user !== mongoId);
+      onAction(updatedGroup);
     } catch (error) {
       console.error("Error accepting invite:", error);
       Alert.alert("Error", "Failed to accept invite");
@@ -183,6 +199,10 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
       }
       Alert.alert("Success", "Invitation declined.");
       setJoinStatus("none");
+      let updatedGroup = { ...group };
+      // Remove the pending invite.
+      updatedGroup.pending = group.pending.filter((p) => p.user !== mongoId);
+      onAction(updatedGroup);
     } catch (error) {
       console.error("Error declining invite:", error);
       Alert.alert("Error", "Failed to decline invite");

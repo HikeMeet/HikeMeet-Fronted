@@ -1,19 +1,25 @@
 import { Group } from "./group-interface";
 import { IImageModel } from "./image-interface";
 import { Trip } from "./trip-interface";
+export const getPostWithParam = (post: IPost) =>
+  typeof post.author === "object"
+    ? post.author
+    : { username: post.author, profile_picture: { url: "" }, _id: "" };
 
-interface IUser {
+export interface IUser {
   _id: string;
   username: string;
   profile_picture: { url: string; image_id: string };
+  first_name?: string;
+  last_name?: string;
 }
 
-interface IComment {
+export interface IComment {
   _id: string;
   user: IUser | string;
   text: string;
   created_at: string;
-  liked_by?: string[];
+  liked_by?: IUser[] | string[];
 }
 
 export interface IPost {
@@ -24,7 +30,7 @@ export interface IPost {
   images?: IImageModel[];
   attached_trip?: string | Trip;
   attached_group?: string | Group;
-  likes: string[];
+  likes: IUser[] | string[];
   shares: string[];
   saves: string[];
   comments: IComment[];

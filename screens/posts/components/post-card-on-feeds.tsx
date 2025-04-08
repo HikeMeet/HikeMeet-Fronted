@@ -1,80 +1,107 @@
-// components/PostCard.tsx
-import React from "react";
+// PostCard.tsx
+import React, { useState } from "react";
 import { ScrollView, TouchableOpacity, View, Image, Text } from "react-native";
-import { IPost } from "../../../interfaces/post-interface";
+import { IComment, IPost, IUser } from "../../../interfaces/post-interface";
 import PostActions from "./post-action-buttons";
 import InnerPostCard from "./inner-post-card";
+import ProfileHeaderLink from "../../my-profile/components/profile-image-name-button";
+import { useAuth } from "../../../contexts/auth-context";
+import EditableText from "./editable-text-for-posts";
+import PostOptionsModal from "./post-setting-modal";
+import ParsedMentionText from "./parsed-mention-text";
 
 interface PostCardProps {
   post: IPost;
   inShareModal?: boolean;
-  navigation: any; // Pass null for non-clickable preview (e.g., in share modal)
+  navigation: any;
+  onPostUpdated?: (deletedPost: IPost) => void;
+  onPostLiked?: (deletedPost: IPost) => void;
 }
 
 const PostCard: React.FC<PostCardProps> = ({
   post,
   navigation,
   inShareModal = false,
+  onPostUpdated,
+  onPostLiked,
 }) => {
-  // Extract author details.
   const author =
     typeof post.author === "object"
       ? post.author
-      : { username: post.author, profile_picture: { url: "" } };
+      : {
+          _id: post.author,
+          username: post.author,
+          profile_picture: { url: "" },
+        };
 
-  // Render header.
+  // Local state to control inline editing and the options modal.
+  const [isEditing, setIsEditing] = useState(false);
+  const [optionsVisible, setOptionsVisible] = useState(false);
+
+  const handleSaveComplete = (updatedText: string) => {
+    // Update post content locally.
+    post.content = updatedText;
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
+
   const renderHeader = () => (
-    <View style={{ flexDirection: "row", alignItems: "center", padding: 8 }}>
-      {author.profile_picture?.url ? (
-        <Image
-          source={{ uri: author.profile_picture.url }}
-          style={{ width: 40, height: 40, borderRadius: 20 }}
-        />
-      ) : (
-        <View
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            backgroundColor: "#e5e7eb",
-          }}
-        />
-      )}
-      <View style={{ marginLeft: 8 }}>
-        <Text style={{ fontWeight: "bold", fontSize: 16, color: "#111827" }}>
-          {author.username}
-        </Text>
-        <Text style={{ fontSize: 12, color: "#6b7280" }}>
-          {new Date(post.created_at).toLocaleString()}
-        </Text>
-      </View>
+    <View className="flex-row items-center justify-between p-2">
+      <ProfileHeaderLink
+        navigation={navigation}
+        userId={author._id}
+        username={author.username}
+        profileImage={author.profile_picture.url}
+      />
+      <TouchableOpacity
+        onPress={() => setOptionsVisible(true)}
+        className="w-12 h-12 items-center justify-center rounded-full bg-gray-200"
+      >
+        <Text className="text-3xl text-gray-600">⋮</Text>
+      </TouchableOpacity>
     </View>
   );
 
-  // Render content.
-  const renderContent = () => {
-    if (post.is_shared && post.original_post) {
-      return (
-        <View>
-          {/* New commentary by sharing user */}
-          <Text style={{ padding: 8, fontSize: 16, color: "#111827" }}>
-            {post.content}
-          </Text>
-          {/* Render the shared chain using InnerPostCard */}
+  // Render the text content area.
+  const renderTextContent = () => {
+    return (
+      <View className="p-1">
+        <View style={{ marginBottom: 16, paddingHorizontal: 16 }}>
+          {!isEditing ? (
+            <ParsedMentionText
+              text={post.content || "No content."}
+              navigation={navigation}
+            />
+          ) : (
+            <EditableText
+              text={post.content || ""}
+              postId={post._id}
+              isEditing={isEditing}
+              onSaveComplete={handleSaveComplete}
+              onCancel={handleCancel}
+            />
+          )}
+        </View>
+        {post.is_shared && (
           <InnerPostCard
             post={post.original_post as IPost}
             navigation={navigation}
           />
-        </View>
-      );
+        )}
+      </View>
+    );
+  };
+
+  const renderContent = () => {
+    if (post.is_shared && post.original_post) {
+      return <View>{renderTextContent()}</View>;
     } else {
       return (
-        <View style={{ padding: 8 }}>
-          {post.content ? (
-            <Text style={{ fontSize: 16, color: "#111827", marginBottom: 8 }}>
-              {post.content}
-            </Text>
-          ) : null}
+        <View className="p-2">
+          {renderTextContent()}
           {post.images && post.images.length > 0 && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {post.images.map((img, idx) => {
@@ -84,12 +111,7 @@ const PostCard: React.FC<PostCardProps> = ({
                   <Image
                     key={idx}
                     source={{ uri: previewUrl }}
-                    style={{
-                      width: 160,
-                      height: 160,
-                      borderRadius: 12,
-                      marginRight: 8,
-                    }}
+                    className="w-40 h-40 rounded-xl mr-2"
                     resizeMode="cover"
                   />
                 );
@@ -101,33 +123,60 @@ const PostCard: React.FC<PostCardProps> = ({
     }
   };
 
-  // Render footer.
+  const renderMeta = () => (
+    <View className="px-2 pb-1">
+      <Text className="text-xs text-gray-500">
+        {new Date(post.created_at).toLocaleString()}
+      </Text>
+    </View>
+  );
+
   const renderFooter = () => {
     if (inShareModal) return null;
-    return <PostActions post={post} navigation={navigation} />;
+    return (
+      <PostActions
+        post={post}
+        navigation={navigation}
+        onLikeChangeList={(newLikes) => {
+          // Update the local post object with new likes.
+          const updatedPost = {
+            ...post,
+            likes: newLikes as string[] | IUser[],
+          };
+          // Notify the parent to update the post in Home's list.
+          if (onPostLiked) onPostLiked(updatedPost);
+        }}
+        onCommentsUpdated={(updatedComments: IComment[]) => {
+          // Create an updated post with the new comments list.
+          const updatedPost = {
+            ...post,
+            comments: updatedComments,
+          };
+          // Notify the parent so the comment count updates.
+          if (onPostLiked) onPostLiked(updatedPost);
+        }}
+      />
+    );
   };
 
   const CardContent = () => (
     <>
       {renderHeader()}
       {renderContent()}
+      {renderMeta()}
       {renderFooter()}
+      {optionsVisible && (
+        <PostOptionsModal
+          visible={optionsVisible}
+          onClose={() => setOptionsVisible(false)}
+          post={post}
+          navigation={navigation}
+          onEdit={() => setIsEditing(true)}
+          onPostUpdated={onPostUpdated}
+        />
+      )}
     </>
   );
-
-  const containerStyle = {
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 0,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#f3f4f6",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  };
 
   return navigation ? (
     <TouchableOpacity
@@ -137,12 +186,12 @@ const PostCard: React.FC<PostCardProps> = ({
           params: { postId: post._id },
         })
       }
-      style={containerStyle}
+      className="bg-white rounded-2xl border border-gray-200 shadow-md mb-4"
     >
       <CardContent />
     </TouchableOpacity>
   ) : (
-    <View style={containerStyle}>
+    <View className="bg-white rounded-2xl border border-gray-200 shadow-md mb-4">
       <CardContent />
     </View>
   );

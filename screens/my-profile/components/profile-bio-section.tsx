@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
-import { useAuth } from "../contexts/auth-context";
+import { useAuth } from "../../../contexts/auth-context";
 
 interface BioSectionProps {
   bio: string;
@@ -25,9 +25,7 @@ const BioSection: React.FC<BioSectionProps> = ({
         `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoId}/update`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ bio }),
         }
       );
@@ -51,13 +49,13 @@ const BioSection: React.FC<BioSectionProps> = ({
   };
 
   return (
-    <View className="mt-4">
+    <View>
       <View className="flex-row items-center justify-between">
-        <Text className="text-sm font-bold mb-2">Bio</Text>
+        <Text className="text-sm font-bold mb-1">Bio</Text>
         {editable && !editingBio && (
-          <Text onPress={() => setEditingBio(true)} className="text-blue-500">
-            Edit
-          </Text>
+          <TouchableOpacity onPress={() => setEditingBio(true)}>
+            <Text className="text-blue-500">Edit</Text>
+          </TouchableOpacity>
         )}
       </View>
       {editable && editingBio ? (
@@ -95,12 +93,11 @@ const BioSection: React.FC<BioSectionProps> = ({
             {bio || "No bio provided."}
           </Text>
           {isTruncated && (
-            <Text
-              onPress={() => setExpanded(!expanded)}
-              className="text-blue-500 mt-1"
-            >
-              {expanded ? "Show less" : "Show more"}
-            </Text>
+            <TouchableOpacity onPress={() => setExpanded(!expanded)}>
+              <Text className="text-blue-500 mt-1">
+                {expanded ? "Show less" : "Show more"}
+              </Text>
+            </TouchableOpacity>
           )}
         </View>
       )}

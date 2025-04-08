@@ -6,16 +6,21 @@ import {
   Text,
   View,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import Modal from "react-native-modal";
 import PostCard from "./post-card-on-feeds";
 import { useAuth } from "../../../contexts/auth-context";
+import InnerPostCard from "./inner-post-card";
+import MentionTextInput from "../../../components/metion-with-text-input";
 
 interface SharePostModalProps {
   visible: boolean;
   onClose: () => void;
   post: any; // Replace with your IPost type if available
   inGroup: boolean;
+  navigation: any;
 }
 
 const SharePostModal: React.FC<SharePostModalProps> = ({
@@ -23,6 +28,7 @@ const SharePostModal: React.FC<SharePostModalProps> = ({
   onClose,
   post,
   inGroup,
+  navigation,
 }) => {
   const [commentary, setCommentary] = useState("");
   const [privacy, setPrivacy] = useState<"public" | "private">("public");
@@ -50,6 +56,10 @@ const SharePostModal: React.FC<SharePostModalProps> = ({
       const data = await res.json();
       if (res.ok) {
         console.log("Post shared successfully", data);
+        navigation.push("PostStack", {
+          screen: "PostPage",
+          params: { postId: data.post._id },
+        });
         setCommentary("");
         onClose();
       } else {
@@ -78,55 +88,68 @@ const SharePostModal: React.FC<SharePostModalProps> = ({
           keyboardShouldPersistTaps="always"
         >
           {/* Text Input for additional commentary */}
-          <TextInput
-            value={commentary}
-            onChangeText={setCommentary}
-            placeholder="Add your commentary..."
-            className="border border-gray-300 rounded p-2 mb-4"
-            multiline
-          />
-          {/* Privacy Options (only if not in a group) */}
-          {!inGroup && (
-            <>
-              <Text className="text-lg font-semibold mb-2">Privacy:</Text>
-              <View className="flex-row mb-4">
-                <TouchableOpacity
-                  className={`p-3 rounded border ${
-                    privacy === "public"
-                      ? "bg-blue-500 border-blue-500"
-                      : "bg-white border-gray-300"
-                  }`}
-                  onPress={() => setPrivacy("public")}
-                >
-                  <Text
-                    className={`${
-                      privacy === "public" ? "text-white" : "text-black"
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className="bg-white border-t border-gray-200 p-4"
+          >
+            <MentionTextInput
+              placeholder="Write a comment..."
+              value={commentary}
+              onChangeText={setCommentary}
+              inputStyle={{
+                flex: 1,
+                borderWidth: 1,
+                borderColor: "#ccc",
+                borderRadius: 8,
+                padding: 8,
+                fontSize: 16,
+                color: "#374151",
+              }}
+              containerStyle={{ flex: 1 }}
+            />
+            {/* Privacy Options (only if not in a group) */}
+            {!inGroup && (
+              <>
+                <Text className="text-lg font-semibold mb-2">Privacy:</Text>
+                <View className="flex-row mb-4">
+                  <TouchableOpacity
+                    className={`p-3 rounded border ${
+                      privacy === "public"
+                        ? "bg-blue-500 border-blue-500"
+                        : "bg-white border-gray-300"
                     }`}
+                    onPress={() => setPrivacy("public")}
                   >
-                    Public
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  className={`p-3 rounded ml-4 border ${
-                    privacy === "private"
-                      ? "bg-blue-500 border-blue-500"
-                      : "bg-white border-gray-300"
-                  }`}
-                  onPress={() => setPrivacy("private")}
-                >
-                  <Text
-                    className={`${
-                      privacy === "private" ? "text-white" : "text-black"
+                    <Text
+                      className={`${
+                        privacy === "public" ? "text-white" : "text-black"
+                      }`}
+                    >
+                      Public
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    className={`p-3 rounded ml-4 border ${
+                      privacy === "private"
+                        ? "bg-blue-500 border-blue-500"
+                        : "bg-white border-gray-300"
                     }`}
+                    onPress={() => setPrivacy("private")}
                   >
-                    Private
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
+                    <Text
+                      className={`${
+                        privacy === "private" ? "text-white" : "text-black"
+                      }`}
+                    >
+                      Private
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </KeyboardAvoidingView>
           {/* Display the post preview using PostCard, unclickable */}
-          <PostCard post={post} navigation={null} inShareModal={true} />
+          <InnerPostCard post={post} navigation={navigation} />
         </ScrollView>
         {/* Share Post Button */}
         <TouchableOpacity

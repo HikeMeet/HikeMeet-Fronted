@@ -2,7 +2,7 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import CreatePostPage from "../../screens/posts/post-creation-page";
-import PostDetailPage from "../../screens/posts/post-detail-page copy";
+import PostDetailPage from "../../screens/posts/post-detail-page";
 
 const Stack = createNativeStackNavigator();
 

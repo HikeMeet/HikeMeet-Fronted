@@ -56,7 +56,6 @@ const MembersModal: React.FC<MembersModalProps> = ({
     setLoading(true);
     try {
       const data = await fetchGroupDetails(groupId, false);
-      console.log("::::::", data.group);
       setGroup(data.group);
       // Optionally update members and pending lists from the group:
       setMembersData(data.group.members);
@@ -82,7 +81,6 @@ const MembersModal: React.FC<MembersModalProps> = ({
     try {
       const ids = group.members.map((m) => m.user);
       const users = await fetchUsersData(ids);
-      console.log("::::ss::::", users);
       const merged = users.map((user: any) => {
         const info = group.members.find((m) => m.user === user._id);
         return { ...user, role: info?.role, joined_at: info?.joined_at };

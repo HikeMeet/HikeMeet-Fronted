@@ -47,7 +47,6 @@ const InviteFriendsModal: React.FC<InviteFriendsModalProps> = ({
     setLoading(true);
     try {
       const data = await fetchGroupDetails(groupId, false);
-      console.log("::::::", data.group);
       setGroup(data.group);
     } catch (error) {
       console.error("Error fetching group:", error);

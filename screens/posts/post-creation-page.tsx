@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import {
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   Text,
   TextInput,
@@ -10,12 +12,16 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/auth-context";
-import { uploadMedia } from "../../components/cloudinary-upload";
+import {
+  deleteImageFromCloudinary,
+  uploadMedia,
+} from "../../components/cloudinary-upload";
 import { IImageModel } from "../../interfaces/image-interface";
 import SelectedMediaList, {
   ILocalMedia,
 } from "../../components/media-list-in-before-uploading";
 import ConfirmationModal from "../../components/confirmation-modal";
+import MentionTextInput from "../../components/metion-with-text-input";
 
 interface CreatePostPageProps {
   navigation: any;
@@ -40,8 +46,7 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
   const { mongoId } = useAuth();
   const [confirmationVisible, setConfirmationVisible] = useState(false);
   const [postId, setPostId] = useState<String>("");
-  // console.log("sssssssssssss", in_group);
-  // console.log("sssssssssssss", groupId);
+
   // Allow multiple selection from gallery.
   const pickMedia = async () => {
     const permissionResult =
@@ -77,8 +82,13 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
     try {
       if (selectedMedia.length > 0) {
         for (const media of selectedMedia) {
-          const uploaded = await uploadMedia(media.uri, media.type);
+          const uploaded = await uploadMedia(
+            media.uri,
+            media.type,
+            "post_media"
+          );
           if (uploaded) {
+            console.log("Media uploaded:", uploaded);
             uploadedItems.push(uploaded);
           } else {
             throw new Error("One or more media uploads failed.");
@@ -114,6 +124,11 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
         setConfirmationVisible(true);
       } else {
         // You may still want to alert on error.
+        if (uploadedItems.length > 0) {
+          for (const item of uploadedItems) {
+            deleteImageFromCloudinary(item.delete_token!);
+          } // Add this closing bracket
+        }
         Alert.alert("Error", result.error || "Failed to create post.");
       }
     } catch (error) {
@@ -130,13 +145,29 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
         <Text className="text-2xl font-bold mb-4 text-center">
           Create a Post
         </Text>
-        <TextInput
-          className="border border-gray-300 p-3 rounded mb-4 min-h-[100px]"
-          multiline
-          placeholder="What's on your mind?"
-          value={content}
-          onChangeText={setContent}
-        />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="bg-white border-t border-gray-200 p-4"
+        >
+          <View className="flex-row items-center">
+            <MentionTextInput
+              placeholder="Write a comment..."
+              value={content}
+              onChangeText={setContent}
+              inputStyle={{
+                flex: 1,
+                borderWidth: 1,
+                borderColor: "#ccc",
+                borderRadius: 8,
+                padding: 8,
+                fontSize: 16,
+                color: "#374151",
+              }}
+              containerStyle={{ flex: 1 }}
+            />
+            {/* You may add a Send button here if needed */}
+          </View>
+        </KeyboardAvoidingView>
         <SelectedMediaList
           media={selectedMedia}
           onRemove={removeSelectedMedia}

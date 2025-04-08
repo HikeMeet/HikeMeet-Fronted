@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { TouchableOpacity, Text } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { TouchableOpacity, Text, View, Modal } from "react-native";
 import tw from "twrnc";
 import { useAuth } from "../contexts/auth-context";
 
 interface FriendActionButtonProps {
-  status: string; // 'accepted', 'request_sent', 'request_received', 'blocked', or "none"
+  status: string; // "accepted", "request_sent", "request_received", "blocked", or "none"
   targetUserId: string;
   onStatusChange?: (newStatus: string) => void;
 }
@@ -14,18 +14,25 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
   targetUserId,
   onStatusChange,
 }) => {
-  const { mongoUser, mongoId, setMongoUser } = useAuth();
+  const { mongoUser, mongoId, fetchMongoUser } = useAuth();
   const [currentStatus, setCurrentStatus] = useState(status);
+  const [showActions, setShowActions] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+  });
+  const buttonRef = useRef<any>(null);
 
-  // Update local status if prop changes.
+  // Update local status based on mongoUser changes.
   useEffect(() => {
     const friendStatus = mongoUser?.friends?.find(
       (friend) => String(friend.id) === String(targetUserId)
     )?.status;
-    setCurrentStatus(friendStatus || "none"); // fallback if friendStatus is undefined
+    setCurrentStatus(friendStatus || "none");
   }, [mongoUser, targetUserId]);
 
-  // Determine API endpoint, label, and style based on current status.
+  // Determine the primary button's API endpoint, label, and styling.
   const getEndpointAndStyle = () => {
     switch (currentStatus) {
       case "accepted":
@@ -63,9 +70,9 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
 
   const { endpoint, label, color } = getEndpointAndStyle();
 
+  // Handle primary (short press) action.
   const handlePress = async () => {
     try {
-      // Send API request.
       const response = await fetch(
         `${process.env.EXPO_LOCAL_SERVER}/api/friend${endpoint}`,
         {
@@ -75,9 +82,6 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
         }
       );
       const data = await response.json();
-      console.log("Response:", data);
-
-      // Determine new status.
       let newStatus = currentStatus;
       if (currentStatus === "none") {
         newStatus = "request_sent";
@@ -90,53 +94,134 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
       } else if (currentStatus === "blocked") {
         newStatus = "none";
       }
-
-      // Update local state and invoke callback.
       setCurrentStatus(newStatus);
-      if (onStatusChange) {
-        onStatusChange(newStatus);
-      }
-
-      // Update mongoUser in context.
-      setMongoUser((prevUser: any) => {
-        if (!prevUser) return prevUser;
-        // Copy the current friends list.
-        let updatedFriends = [...(prevUser.friends || [])];
-
-        // Locate the friend using targetUserId.
-        const friendIndex = updatedFriends.findIndex((friend: any) => {
-          // friend.id can be an object (with $oid) or a string.
-          if (typeof friend.id === "object" && friend.id.$oid) {
-            return friend.id.$oid === targetUserId;
-          }
-          return friend.id === targetUserId;
-        });
-
-        if (newStatus === "none") {
-          // Remove friend if found.
-          if (friendIndex !== -1) {
-            updatedFriends.splice(friendIndex, 1);
-          }
-        } else {
-          // Update existing friend entry or add a new one.
-          const friendEntry = { status: newStatus, id: targetUserId };
-          if (friendIndex !== -1) {
-            updatedFriends[friendIndex] = friendEntry;
-          } else {
-            updatedFriends.push(friendEntry);
-          }
-        }
-        return { ...prevUser, friends: updatedFriends };
-      });
+      onStatusChange && onStatusChange(newStatus);
+      fetchMongoUser(mongoId!);
     } catch (error) {
       console.error("Error in friend action:", error);
     }
   };
 
+  // Measure the button's position on screen.
+  const measureButton = () => {
+    if (buttonRef.current) {
+      buttonRef.current.measureInWindow(
+        (x: any, y: any, width: any, height: any) => {
+          setTooltipPosition({ top: y + height, left: x, width });
+        }
+      );
+    }
+  };
+
+  // Show extra actions on long press.
+  const handleLongPress = () => {
+    measureButton();
+    setShowActions(true);
+  };
+
+  // Extra action handlers.
+  const handleBlockUser = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/friend/block`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ currentUserId: mongoId, targetUserId }),
+        }
+      );
+      const data = await response.json();
+      console.log("Block User Response:", data);
+      setCurrentStatus("blocked");
+      onStatusChange && onStatusChange("blocked");
+      setShowActions(false);
+      fetchMongoUser(mongoId!);
+    } catch (error) {
+      console.error("Error blocking user:", error);
+    }
+  };
+
+  const handleDeclineRequest = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/friend/decline-request`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ currentUserId: mongoId, targetUserId }),
+        }
+      );
+      const data = await response.json();
+      console.log("Decline Request Response:", data);
+      setCurrentStatus("none");
+      onStatusChange && onStatusChange("none");
+      setShowActions(false);
+      fetchMongoUser(mongoId!);
+    } catch (error) {
+      console.error("Error declining friend request:", error);
+    }
+  };
+
   return (
-    <TouchableOpacity onPress={handlePress} style={tw`${color} p-4 rounded-lg`}>
-      <Text style={tw`text-white text-center`}>{label}</Text>
-    </TouchableOpacity>
+    <View style={tw`relative`}>
+      <TouchableOpacity
+        ref={buttonRef}
+        onPress={handlePress}
+        onLongPress={handleLongPress}
+        style={tw`${color} py-1 px-2 border border-${color}-400 rounded-full shadow-sm`}
+      >
+        <Text style={tw`text-white text-center text-sm font-semibold`}>
+          {label}
+        </Text>
+      </TouchableOpacity>
+
+      {showActions && currentStatus !== "blocked" && (
+        <Modal
+          transparent
+          animationType="fade"
+          visible={showActions}
+          onRequestClose={() => setShowActions(false)}
+        >
+          <TouchableOpacity
+            style={{ flex: 1 }}
+            activeOpacity={1}
+            onPress={() => setShowActions(false)}
+          >
+            <View
+              style={{
+                position: "absolute",
+                top: tooltipPosition.top,
+                left: tooltipPosition.left,
+                // width: tooltipPosition.width,
+              }}
+            >
+              <View
+                style={tw`bg-white border border-gray-300 rounded shadow-md p-2`}
+              >
+                {currentStatus === "request_received" && (
+                  <TouchableOpacity
+                    onPress={handleDeclineRequest}
+                    style={tw`py-1 px-2 bg-yellow-100 rounded`}
+                  >
+                    <Text style={tw`text-sm text-yellow-600 font-bold`}>
+                      Decline Request
+                    </Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  onPress={handleBlockUser}
+                  style={tw`py-1 px-2 bg-red-100 rounded mb-1`}
+                >
+                  <Text style={tw`text-sm text-red-600 font-bold`}>
+                    Block User
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      )}
+    </View>
   );
 };
 

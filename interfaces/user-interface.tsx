@@ -1,11 +1,15 @@
+import { IImageModel } from "./image-interface";
+import { IPost, IUser } from "./post-interface";
+
 export interface Friend {
   id: string;
   status: string;
+  data?: IUser;
 }
-export interface IProfilePicture {
-  url: string;
-  image_id: string;
-}
+// export interface IProfilePicture {
+//   url: string;
+//   image_id: string;
+// }
 export interface ITripHistoryEntry {
   trip: string;
   completed_at: Date;
@@ -17,14 +21,17 @@ export interface MongoUser {
   last_name: string;
   gender: string;
   birth_date: string | null;
-  profile_picture: IProfilePicture;
+  profile_picture: IImageModel;
   bio: string;
   facebook_link: string;
   instagram_link: string;
   role: string;
   social: {
-    posts_saved: string[];
-    posts_liked: string[];
+    posts_saved: IPost[] | string[];
+    posts_liked: IPost[] | string[];
+    total_likes: number;
+    total_shares: number;
+    total_saves: number;
   };
   trip_history: ITripHistoryEntry[];
   firebase_id: string;
