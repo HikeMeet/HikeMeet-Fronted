@@ -11,9 +11,12 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
-import { deleteImageFromCloudinary, uploadMedia } from "./cloudinary-upload";
-import { IImageModel } from "../interfaces/image-interface";
-import FullScreenMediaModal from "./media-fullscreen-modal";
+import {
+  deleteImageFromCloudinary,
+  uploadMedia,
+} from "../../../components/cloudinary-upload";
+import { IImageModel } from "../../../interfaces/image-interface";
+import FullScreenMediaModal from "../../../components/media-fullscreen-modal";
 
 interface ImageItem extends IImageModel {}
 

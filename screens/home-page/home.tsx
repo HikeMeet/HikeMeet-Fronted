@@ -7,6 +7,9 @@ import {
   ScrollView,
   RefreshControl,
   FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styled } from "nativewind";
@@ -125,35 +128,42 @@ const Home = ({ navigation }: any) => {
             style={{ marginTop: 20 }}
           />
         ) : (
-          <FlatList
-            data={posts.slice(0, postsToShow)}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-              <PostCard
-                post={item}
-                navigation={navigation}
-                onPostUpdated={(deletedPost) => {
-                  setPosts((prevPosts) =>
-                    prevPosts.filter((p) => p._id !== deletedPost._id)
-                  );
-                }}
-                onPostLiked={(updatedPost: IPost) => {
-                  setPosts((prevPosts) =>
-                    prevPosts.map((p) =>
-                      p._id === updatedPost._id ? updatedPost : p
-                    )
-                  );
-                }}
-              />
-            )}
-            onEndReached={handleLoadMorePosts}
-            onEndReachedThreshold={0.1}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-            contentContainerStyle={{ paddingBottom: 20 }}
-            showsVerticalScrollIndicator={false}
-          />
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+          >
+            <FlatList
+              keyboardShouldPersistTaps="always"
+              keyboardDismissMode="none"
+              data={posts.slice(0, postsToShow)}
+              keyExtractor={(item) => item._id}
+              renderItem={({ item }) => (
+                <PostCard
+                  post={item}
+                  navigation={navigation}
+                  onPostUpdated={(deletedPost) => {
+                    setPosts((prevPosts) =>
+                      prevPosts.filter((p) => p._id !== deletedPost._id)
+                    );
+                  }}
+                  onPostLiked={(updatedPost: IPost) => {
+                    setPosts((prevPosts) =>
+                      prevPosts.map((p) =>
+                        p._id === updatedPost._id ? updatedPost : p
+                      )
+                    );
+                  }}
+                />
+              )}
+              onEndReached={handleLoadMorePosts}
+              onEndReachedThreshold={0.1}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+              contentContainerStyle={{ paddingBottom: 20 }}
+              showsVerticalScrollIndicator={false}
+            />
+          </KeyboardAvoidingView>
         )}
       </View>
     </SafeAreaView>

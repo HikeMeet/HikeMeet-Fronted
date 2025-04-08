@@ -28,8 +28,8 @@ export interface IPost {
   in_group?: string | Group;
   content?: string;
   images?: IImageModel[];
-  attached_trip?: string | Trip;
-  attached_group?: string | Group;
+  attached_trips?: string[] | Trip[];
+  attached_groups?: string[] | Group[];
   likes: IUser[] | string[];
   shares: string[];
   saves: string[];

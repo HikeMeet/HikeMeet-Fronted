@@ -10,8 +10,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Trip } from "../../interfaces/trip-interface";
-import TripRow from "../../components/trip-row";
+import TripRow from "./component/trip-row";
 import { useAuth } from "../../contexts/auth-context";
+import { fetchTrips } from "../../components/requests/fetch-trips";
 
 const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -23,16 +24,10 @@ const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [tripsToShow, setTripsToShow] = useState<number>(5);
   const { mongoUser } = useAuth();
 
-  const fetchTrips = async () => {
+  const handleFetchTrips = async () => {
     try {
-      const response = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/trips/all`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch trips");
-      }
-      const data: Trip[] = await response.json();
-      setTrips(data);
+      const response = await fetchTrips();
+      setTrips(response);
     } catch (error) {
       console.error("Error fetching trips:", error);
     } finally {
@@ -41,7 +36,7 @@ const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   useEffect(() => {
-    fetchTrips();
+    handleFetchTrips();
   }, []);
 
   // Function to fetch trips from the user's trip history.
@@ -79,7 +74,7 @@ const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
       fetchTripHistory();
     } else {
       // Show all trips.
-      fetchTrips();
+      handleFetchTrips();
     }
     setShowHistory(!showHistory);
   };
@@ -169,7 +164,7 @@ const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.1}
           refreshControl={
-            <RefreshControl refreshing={loading} onRefresh={fetchTrips} />
+            <RefreshControl refreshing={loading} onRefresh={handleFetchTrips} />
           }
           contentContainerStyle={{ paddingBottom: 20 }}
           showsVerticalScrollIndicator={false}

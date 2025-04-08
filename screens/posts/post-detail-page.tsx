@@ -31,6 +31,10 @@ import { createComment } from "../../components/requests/post-comment-requests";
 import CommentRow from "./components/comment-row";
 import ParsedMentionText from "./components/parsed-mention-text";
 import MentionTextInput from "../../components/metion-with-text-input";
+import SelectedGroupsList from "./components/attached-group-preview";
+import SelectedTripsList from "./components/attached-trip-preview";
+import { Group } from "../../interfaces/group-interface";
+import { Trip } from "../../interfaces/trip-interface";
 
 const getUri = (data: any): string => {
   if (typeof data === "string") return data;
@@ -185,6 +189,18 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
           />
         )}
       </View>
+
+      {/* Preview of attached groups */}
+      <SelectedGroupsList
+        groups={post.attached_groups as Group[]}
+        navigation={navigation}
+      />
+
+      {/* Preview of attached trips */}
+      <SelectedTripsList
+        trips={post.attached_trips as Trip[]}
+        navigation={navigation}
+      />
 
       {/* Media Section */}
       {mediaItems.length > 0 && (

@@ -1,6 +1,13 @@
 // PostCard.tsx
 import React, { useState } from "react";
-import { ScrollView, TouchableOpacity, View, Image, Text } from "react-native";
+import {
+  ScrollView,
+  TouchableOpacity,
+  View,
+  Image,
+  Text,
+  KeyboardAvoidingView,
+} from "react-native";
 import { IComment, IPost, IUser } from "../../../interfaces/post-interface";
 import PostActions from "./post-action-buttons";
 import InnerPostCard from "./inner-post-card";
@@ -9,6 +16,10 @@ import { useAuth } from "../../../contexts/auth-context";
 import EditableText from "./editable-text-for-posts";
 import PostOptionsModal from "./post-setting-modal";
 import ParsedMentionText from "./parsed-mention-text";
+import SelectedGroupsList from "./attached-group-preview";
+import SelectedTripsList from "./attached-trip-preview";
+import { Group } from "../../../interfaces/group-interface";
+import { Trip } from "../../../interfaces/trip-interface";
 
 interface PostCardProps {
   post: IPost;
@@ -102,6 +113,16 @@ const PostCard: React.FC<PostCardProps> = ({
       return (
         <View className="p-2">
           {renderTextContent()}
+          <SelectedGroupsList
+            groups={post.attached_groups as Group[]}
+            navigation={navigation}
+          />
+
+          {/* Preview of attached trips */}
+          <SelectedTripsList
+            trips={post.attached_trips as Trip[]}
+            navigation={navigation}
+          />
           {post.images && post.images.length > 0 && (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {post.images.map((img, idx) => {
@@ -134,47 +155,50 @@ const PostCard: React.FC<PostCardProps> = ({
   const renderFooter = () => {
     if (inShareModal) return null;
     return (
-      <PostActions
-        post={post}
-        navigation={navigation}
-        onLikeChangeList={(newLikes) => {
-          // Update the local post object with new likes.
-          const updatedPost = {
-            ...post,
-            likes: newLikes as string[] | IUser[],
-          };
-          // Notify the parent to update the post in Home's list.
-          if (onPostLiked) onPostLiked(updatedPost);
-        }}
-        onCommentsUpdated={(updatedComments: IComment[]) => {
-          // Create an updated post with the new comments list.
-          const updatedPost = {
-            ...post,
-            comments: updatedComments,
-          };
-          // Notify the parent so the comment count updates.
-          if (onPostLiked) onPostLiked(updatedPost);
-        }}
-      />
+      <View style={{ marginBottom: 16 }}>
+        {/* adjust margin as needed */}
+        <PostActions
+          post={post}
+          navigation={navigation}
+          onLikeChangeList={(newLikes) => {
+            // Update the local post object with new likes.
+            const updatedPost = {
+              ...post,
+              likes: newLikes as string[] | IUser[],
+            };
+            // Notify the parent to update the post in Home's list.
+            if (onPostLiked) onPostLiked(updatedPost);
+          }}
+          onCommentsUpdated={(updatedComments: IComment[]) => {
+            // Create an updated post with the new comments list.
+            const updatedPost = {
+              ...post,
+              comments: updatedComments,
+            };
+            // Notify the parent so the comment count updates.
+            if (onPostLiked) onPostLiked(updatedPost);
+          }}
+        />
+      </View>
     );
   };
 
   const CardContent = () => (
     <>
-      {renderHeader()}
-      {renderContent()}
-      {renderMeta()}
-      {renderFooter()}
-      {optionsVisible && (
-        <PostOptionsModal
-          visible={optionsVisible}
-          onClose={() => setOptionsVisible(false)}
-          post={post}
-          navigation={navigation}
-          onEdit={() => setIsEditing(true)}
-          onPostUpdated={onPostUpdated}
-        />
-      )}
+        {renderHeader()}
+        {renderContent()}
+        {renderMeta()}
+        {renderFooter()}
+        {optionsVisible && (
+          <PostOptionsModal
+            visible={optionsVisible}
+            onClose={() => setOptionsVisible(false)}
+            post={post}
+            navigation={navigation}
+            onEdit={() => setIsEditing(true)}
+            onPostUpdated={onPostUpdated}
+          />
+        )}
     </>
   );
 
