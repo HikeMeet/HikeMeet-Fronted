@@ -131,6 +131,51 @@ export default function MapPage({ navigation }: MapPageProps) {
     });
   }
 
+  /** החלת כל הפילטרים הפעילים על allTrips/allGroups */
+  function applyAllFilters(filters: ActiveFilter[]) {
+    let t = [...allTrips];
+    let g = [...allGroups];
+
+    filters.forEach((f) => {
+      /* ---------- TRIP filters ---------- */
+      if (f.id.startsWith("tripTag=")) {
+        const tag = f.id.split("=")[1];
+        t = t.filter((tr) => (tr as any).tags?.includes(tag));
+      }
+      if (f.id.startsWith("tripLocation=")) {
+        const loc = f.id.split("=")[1].toLowerCase();
+        t = t.filter((tr) => tr.location.address.toLowerCase().includes(loc));
+      }
+
+      /* ---------- GROUP filters ---------- */
+      if (f.id.startsWith("groupStatus=")) {
+        const status = f.id.split("=")[1];
+        g = g.filter((gr) => gr.status?.toLowerCase() === status.toLowerCase());
+      }
+      if (f.id.startsWith("groupDifficulty=")) {
+        const diff = f.id.split("=")[1];
+        g = g.filter((gr: any) => gr.difficulty === diff);
+      }
+      if (f.id.startsWith("groupMaxMembers=")) {
+        const max = parseInt(f.id.split("=")[1], 10);
+        if (!isNaN(max)) g = g.filter((gr) => gr.max_members <= max);
+      }
+      if (f.id.startsWith("groupStart=")) {
+        const start = f.id.split("=")[1];
+        g = g.filter(
+          (gr: any) => gr.scheduled_start && gr.scheduled_start >= start
+        );
+      }
+      if (f.id.startsWith("groupEnd=")) {
+        const end = f.id.split("=")[1];
+        g = g.filter((gr: any) => gr.scheduled_end && gr.scheduled_end <= end);
+      }
+    });
+
+    setTrips(t);
+    setGroups(g);
+  }
+
   /* ---------- location ---------- */
   async function getUserLocation() {
     try {
@@ -195,20 +240,43 @@ export default function MapPage({ navigation }: MapPageProps) {
   /* ---------- filter‑modal handlers ---------- */
   function openTripFilterModal() {
     hideCarousel();
+
+    // הפקת ערכי ברירת‑מחדל מה‑activeFilters
+    const locFilter = activeFilters.find((f) =>
+      f.id.startsWith("tripLocation=")
+    );
+    const tagFilters = activeFilters
+      .filter((f) => f.id.startsWith("tripTag="))
+      .map((f) => f.id.split("=")[1]);
+
     setTripModalInitialFilters({
-      location: "",
-      tags: [],
+      location: locFilter ? locFilter.id.split("=")[1] : "",
+      tags: tagFilters,
     });
     setShowTripFilter(true);
   }
+
   function openGroupFilterModal() {
     hideCarousel();
+
+    const difficulties = activeFilters
+      .filter((f) => f.id.startsWith("groupDifficulty="))
+      .map((f) => f.id.split("=")[1]);
+    const statuses = activeFilters
+      .filter((f) => f.id.startsWith("groupStatus="))
+      .map((f) => f.id.split("=")[1]);
+    const maxMem = activeFilters.find((f) =>
+      f.id.startsWith("groupMaxMembers=")
+    );
+    const startF = activeFilters.find((f) => f.id.startsWith("groupStart="));
+    const endF = activeFilters.find((f) => f.id.startsWith("groupEnd="));
+
     setGroupModalInitialFilters({
-      difficulties: [],
-      statuses: [],
-      maxMembers: "",
-      scheduledStart: "",
-      scheduledEnd: "",
+      difficulties,
+      statuses,
+      maxMembers: maxMem ? maxMem.id.split("=")[1] : "",
+      scheduledStart: startF ? startF.id.split("=")[1] : "",
+      scheduledEnd: endF ? endF.id.split("=")[1] : "",
     });
     setShowGroupFilter(true);
   }
@@ -230,10 +298,13 @@ export default function MapPage({ navigation }: MapPageProps) {
     chosen: ActiveFilter[]
   ) {
     setGroups(filteredGroups);
+
     setActiveFilters((prev) => [
+      // הסר את כל הפילטרים שמתחילים ב‑group*
       ...prev.filter((f) => !f.id.startsWith("group")),
       ...chosen,
     ]);
+
     setShowGroupFilter(false);
     if (viewMode === "map") showCarousel();
   }
@@ -241,7 +312,21 @@ export default function MapPage({ navigation }: MapPageProps) {
   function handleRemoveFilter(filterId: string) {
     const newFilters = activeFilters.filter((f) => f.id !== filterId);
     setActiveFilters(newFilters);
-    // … כאן אפשר לעדכן trips/groups בהתאם
+
+    // עדכון רשימות לפי הפילטרים הנותרים
+    applyAllFilters(newFilters);
+
+    // אם הסרנו פילטר עיר – אפס city
+    if (filterId.startsWith("city=")) {
+      setCity("");
+      if (viewMode === "map" && userLocation) {
+        cameraRef.current?.setCamera({
+          centerCoordinate: userLocation,
+          zoomLevel: 13,
+          animationDuration: 1000,
+        });
+      }
+    }
   }
 
   /* ---------- view‑mode toggle ---------- */
@@ -352,6 +437,7 @@ export default function MapPage({ navigation }: MapPageProps) {
           if (viewMode === "map") showCarousel();
         }}
       />
+
       {loading ? (
         <ActivityIndicator size="large" color="#0D9488" className="mt-10" />
       ) : viewMode === "map" ? (
@@ -386,6 +472,7 @@ export default function MapPage({ navigation }: MapPageProps) {
       ) : (
         <TripList trips={trips} navigation={navigation} />
       )}
+
       {/* Popup */}
       {popupTrip && (
         <Animated.View
@@ -423,12 +510,13 @@ export default function MapPage({ navigation }: MapPageProps) {
         onApply={onApplyGroupFilters}
         initialFilters={groupModalInitialFilters}
       />
+
       {/* Trip Filter Modal */}
       <TripFilterModal
         visible={showTripFilter}
         onClose={() => {
           setShowTripFilter(false);
-          if (viewMode === "map" && !popupTrip) showCarousel(); // ← וגם כאן
+          if (viewMode === "map" && !popupTrip) showCarousel();
         }}
         trips={allTrips}
         onApply={onApplyTripFilters}
