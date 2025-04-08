@@ -103,7 +103,7 @@ const PostActions: React.FC<PostActionsProps> = ({
         onLikeChange();
       }
     } catch (error) {
-      console.error("Error handling like:", error);
+      console.warn("Cliking to fast", error);
     } finally {
       setIsLikeProcessing(false);
     }
@@ -121,7 +121,7 @@ const PostActions: React.FC<PostActionsProps> = ({
         setSaveCount(saveCount - 1);
       }
     } catch (error) {
-      console.error("Error handling save:", error);
+      console.warn("Cliking to fast", error);
     }
   };
 
