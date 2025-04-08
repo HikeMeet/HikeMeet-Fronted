@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FIREBASE_AUTH } from "../firebaseconfig";
 import { ActivityIndicator, View } from "react-native";
 import { MongoUser } from "../interfaces/user-interface";
+import { IUser } from "../interfaces/post-interface";
 
 interface AuthContextProps {
   user: User | null;
@@ -14,6 +15,9 @@ interface AuthContextProps {
   mongoId: string | null; // MongoDB _id
   mongoUser: MongoUser | null;
   setMongoUser: React.Dispatch<React.SetStateAction<MongoUser | null>>;
+  Users: IUser[] | [];
+  setUsers: React.Dispatch<React.SetStateAction<IUser[] | []>>;
+
   setMongoId: React.Dispatch<React.SetStateAction<string | null>>;
   userFriendsMinDetail: MongoUser[];
   setUserFriendsMinDetail: React.Dispatch<React.SetStateAction<MongoUser[]>>;
@@ -28,6 +32,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userId, setUserId] = useState<string | null>(null);
   const [mongoId, setMongoId] = useState<string | null>(null);
   const [mongoUser, setMongoUser] = useState<MongoUser | null>(null);
+  const [Users, setUsers] = useState<IUser[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [userFriendsMinDetail, setUserFriendsMinDetail] = useState<MongoUser[]>(
     []
@@ -45,6 +50,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const data: MongoUser = await response.json();
       console.log("Fetched Mongossssssssssssss user:", data);
       setMongoUser(data);
+
       // Optionally update mongoId if needed.
       setMongoId(data._id);
       await AsyncStorage.setItem("mongoId", data._id);
@@ -96,11 +102,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 throw new Error(`Error fetching user data: ${response.status}`);
               }
               const data: MongoUser = await response.json();
-              console.log("MongoDB User Data:", data.friends);
               setMongoId(data._id);
               setMongoUser(data);
               await AsyncStorage.setItem("user", JSON.stringify(currentUser));
               await AsyncStorage.setItem("mongoId", data._id);
+
+              const usersResponse = await fetch(
+                `${process.env.EXPO_LOCAL_SERVER}/api/user/partial-all`
+              );
+              if (!usersResponse.ok) {
+                throw new Error(
+                  `Error fetching user data: ${usersResponse.status}`
+                );
+              }
+              setUsers(await usersResponse.json());
             } catch (error) {
               console.error("Error fetching user:", error);
             }
@@ -113,6 +128,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setIsVerified(false);
           setUserId(null);
           setMongoId(null);
+          setUsers([]);
           setMongoUser(null);
           setUserFriendsMinDetail([]);
           await AsyncStorage.removeItem("user");
@@ -144,6 +160,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setMongoId,
         mongoUser,
         setMongoUser,
+        Users,
+        setUsers,
         userFriendsMinDetail,
         setUserFriendsMinDetail,
         fetchMongoUser, // Expose the function here
