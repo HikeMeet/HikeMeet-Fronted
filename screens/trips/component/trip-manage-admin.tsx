@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Trip } from "../interfaces/trip-interface";
+import { Trip } from "../../../interfaces/trip-interface";
 import TripRow from "./trip-row-manage-admin";
 import Ionicons from "react-native-vector-icons/Ionicons";
 

@@ -1,7 +1,7 @@
 // TripRow.tsx
 import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
-import { Trip } from "../interfaces/trip-interface";
+import { Trip } from "../../../interfaces/trip-interface";
 
 interface TripRowProps {
   trip: Trip;

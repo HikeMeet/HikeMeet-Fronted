@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Trip } from "../interfaces/trip-interface";
-import ConfirmationModal from "./confirmation-modal";
+import { Trip } from "../../../interfaces/trip-interface";
+import ConfirmationModal from "../../../components/confirmation-modal";
 
 interface TripRowProps {
   trip: Trip;

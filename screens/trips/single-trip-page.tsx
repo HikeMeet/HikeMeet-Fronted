@@ -14,7 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import ProfileImage from "../../components/profile-image";
 import { Trip } from "../../interfaces/trip-interface";
 import { useAuth } from "../../contexts/auth-context";
-import TripImagesUploader from "../../components/trip-image-gallery";
+import TripImagesUploader from "./component/trip-image-gallery";
 import MapDirectionButton from "../../components/get-direction";
 
 // Determine if native Mapbox code is available (i.e. not running in Expo Go)
