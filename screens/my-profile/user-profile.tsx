@@ -40,7 +40,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   const fetchPosts = async () => {
     setLoadingPosts(true);
     await fetchPostsForUser(user!).then((posts) => setPosts(posts));
-    console.log("Posts:", posts);
     setLoadingPosts(false);
   };
 
@@ -127,7 +126,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
       {/* User Details */}
       <View className="flex-row items-center mb-4">
         <ProfileImage
-          initialImageUrl={user.profile_picture}
+          initialImage={user.profile_picture}
           size={80}
           id={user._id}
           uploadType={"profile"}

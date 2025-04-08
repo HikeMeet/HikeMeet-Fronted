@@ -1,7 +1,6 @@
 // ParsedMentionText.tsx
 import React from "react";
 import { Text } from "react-native";
-import { Friend } from "../../../interfaces/user-interface";
 import { useAuth } from "../../../contexts/auth-context";
 
 interface ParsedMentionTextProps {
@@ -13,13 +12,12 @@ const ParsedMentionText: React.FC<ParsedMentionTextProps> = ({
   text,
   navigation,
 }) => {
-  const { mongoUser } = useAuth();
+  const { mongoUser, Users } = useAuth();
   const regex = /@(\w+)/g;
   const parts: Array<{ text: string; isMention: boolean; friendId?: string }> =
     [];
   let lastIndex = 0;
   let match;
-  const friendList = mongoUser?.friends || [];
 
   while ((match = regex.exec(text)) !== null) {
     if (match.index > lastIndex) {
@@ -30,13 +28,12 @@ const ParsedMentionText: React.FC<ParsedMentionTextProps> = ({
     }
     const username = match[1];
     let friendId: string | undefined;
-    if (friendList.length > 0) {
-      const friend = friendList.find(
-        (f) =>
-          f.data && f.data.username.toLowerCase() === username.toLowerCase()
+    if (Users.length > 0) {
+      const friend = Users.find(
+        (f) => f && f.username.toLowerCase() === username.toLowerCase()
       );
-      if (friend && friend.data) {
-        friendId = friend.data._id;
+      if (friend && friend) {
+        friendId = friend._id;
       }
     }
     parts.push({ text: match[0], isMention: true, friendId });

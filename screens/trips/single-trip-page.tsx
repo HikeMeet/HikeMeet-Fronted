@@ -147,7 +147,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
       <View className="flex-row items-center p-4">
         {tripData && tripData.main_image && (
           <ProfileImage
-            initialImageUrl={tripData.main_image}
+            initialImage={tripData.main_image}
             size={60}
             id={tripId}
             uploadType="trip"

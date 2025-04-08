@@ -15,7 +15,7 @@ const ProfileHeaderLink: React.FC<ProfileHeaderLinkProps> = ({
   profileImage,
   navigation,
 }) => {
-  const { mongoId } = useAuth();
+  const { mongoId, mongoUser } = useAuth();
 
   const handlePress = () => {
     if (userId === mongoId) {

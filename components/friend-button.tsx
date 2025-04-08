@@ -82,7 +82,6 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
         }
       );
       const data = await response.json();
-      console.log("Response:", data);
       let newStatus = currentStatus;
       if (currentStatus === "none") {
         newStatus = "request_sent";

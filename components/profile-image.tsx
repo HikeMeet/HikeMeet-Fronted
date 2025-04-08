@@ -25,7 +25,7 @@ const DEFAULT_GROUP_IMAGE_URL =
   "https://res.cloudinary.com/dyebkjnoc/image/upload/v1743157838/group_images/o1onsa093hqedz3ti7fo.webp";
 
 interface MainImageProps {
-  initialImageUrl: IImageModel;
+  initialImage: IImageModel;
   size?: number;
   id: string;
   uploadType?: "profile" | "trip" | "group";
@@ -34,18 +34,18 @@ interface MainImageProps {
 }
 
 const ProfileImage: React.FC<MainImageProps> = ({
-  initialImageUrl,
+  initialImage,
   size = 100,
   id,
   uploadType = "profile",
   editable = true,
 }) => {
-  const [image, setImage] = useState<IImageModel>(initialImageUrl);
+  const [image, setImage] = useState<IImageModel>(initialImage);
   const [uploading, setUploading] = useState(false);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [viewImageVisible, setViewImageVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { setMongoUser, mongoId } = useAuth();
+  const { mongoId, setMongoUser } = useAuth();
 
   useFocusEffect(
     useCallback(() => {
@@ -166,6 +166,15 @@ const ProfileImage: React.FC<MainImageProps> = ({
     }
   };
 
+  const deletImage = async () => {
+    if (image?.delete_token) {
+      try {
+        await deleteImageFromCloudinary(image.delete_token);
+      } catch (err) {
+        console.error("Error removing image from Cloudinary:", err);
+      }
+    }
+  };
   // Remove the current photo via DELETE endpoint.
   const handleRemovePhoto = async () => {
     try {
@@ -204,18 +213,13 @@ const ProfileImage: React.FC<MainImageProps> = ({
       console.log("Photo removal successful:", updatedModel);
 
       // After successfully updating the backend, remove the old image from Cloudinary.
-      if (image?.delete_token) {
-        try {
-          await deleteImageFromCloudinary(image.delete_token);
-        } catch (err) {
-          console.error("Error removing image from Cloudinary:", err);
-        }
-      }
 
       // Update UI based on type.
       if (uploadType === "trip" || uploadType === "group") {
+        deletImage();
         setImage(updatedModel.main_image.url);
       } else {
+        deletImage();
         setImage(updatedModel.profile_picture.url);
         setMongoUser(updatedModel);
       }
@@ -368,7 +372,9 @@ const ProfileImage: React.FC<MainImageProps> = ({
           </Pressable>
           <Image
             source={
-              image ? { uri: image } : require("../assets/default-profile.png")
+              image
+                ? { uri: image.url }
+                : require("../assets/default-profile.png")
             }
             className="w-full h-4/5"
             resizeMode="contain"
