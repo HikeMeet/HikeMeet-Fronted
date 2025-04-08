@@ -1,3 +1,4 @@
+// screens/map/map-page.tsx
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
@@ -9,24 +10,28 @@ import {
 } from "react-native";
 import * as Location from "expo-location";
 import { Camera } from "@rnmapbox/maps";
+
 import MapHeader from "./components/header/MapHeader";
 import { MapContainer } from "./components/map/MapContainer";
 import TripCarousel from "./components/carousel/TripCarousel";
 import TripPopup from "./components/popup/trip-popup";
 import TripList from "./components/list/TripList";
+import TripFilterModal from "../../components/TripFilterModal";
+import GroupFilterModal from "../../components/GroupFilterModal";
 
 import { Trip } from "../../interfaces/trip-interface";
 import { Group } from "../../interfaces/group-interface";
 import { ActiveFilter } from "./components/header/FiltersBar";
-/* Haversine helper */ /// neet to be libery change to import
+
+/* Haversine helper */
 function distanceMeters(
   [lon1, lat1]: [number, number],
   [lon2, lat2]: [number, number]
 ) {
   const toRad = (d: number) => (d * Math.PI) / 180;
-  const R = 6371000; // metres
-  const φ1 = toRad(lat1);
-  const φ2 = toRad(lat2);
+  const R = 6371000;
+  const φ1 = toRad(lat1),
+    φ2 = toRad(lat2);
   const Δφ = toRad(lat2 - lat1);
   const Δλ = toRad(lon2 - lon1);
   const a =
@@ -49,6 +54,22 @@ export default function MapPage({ navigation }: MapPageProps) {
   const [city, setCity] = useState("");
   const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
   const [carouselVisible, setCarouselVisible] = useState(true);
+
+  /* filter‑modal state */
+  const [showTripFilter, setShowTripFilter] = useState(false);
+  const [showGroupFilter, setShowGroupFilter] = useState(false);
+  const [tripModalInitialFilters, setTripModalInitialFilters] = useState({
+    location: "",
+    tags: [] as string[],
+  });
+  const [groupModalInitialFilters, setGroupModalInitialFilters] = useState({
+    difficulties: [] as string[],
+    statuses: [] as string[],
+    maxMembers: "",
+    scheduledStart: "",
+    scheduledEnd: "",
+  });
+
   /* ---------- map & location ---------- */
   const cameraRef = useRef<Camera>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
@@ -56,9 +77,12 @@ export default function MapPage({ navigation }: MapPageProps) {
   );
 
   /* ---------- animations ---------- */
-  const panelOldAnim = useRef(new Animated.Value(1)).current; // carousel
-  const panelNewAnim = useRef(new Animated.Value(0)).current; // popup
+  const panelOldAnim = useRef(new Animated.Value(1)).current;
+  const panelNewAnim = useRef(new Animated.Value(0)).current;
   const [popupTrip, setPopupTrip] = useState<Trip | null>(null);
+
+  const controlsDisabled =
+    popupTrip !== null || showTripFilter || showGroupFilter;
 
   /* ---------- effects ---------- */
   useEffect(() => {
@@ -66,7 +90,6 @@ export default function MapPage({ navigation }: MapPageProps) {
     getUserLocation();
   }, []);
 
-  // מיון לפי מרחק כאשר יש גם מיקום וגם רשימה מלאה
   useEffect(() => {
     if (!userLocation || !allTrips.length) return;
     const sorted = [...allTrips].sort((a, b) => {
@@ -83,7 +106,6 @@ export default function MapPage({ navigation }: MapPageProps) {
     setTrips(sorted);
   }, [userLocation, allTrips]);
 
-  // החזרת הקרוסלה כאשר חוזרים למפה ואין פופ‑אפ
   useEffect(() => {
     if (viewMode === "map" && !popupTrip) showCarousel();
   }, [viewMode, popupTrip]);
@@ -97,10 +119,9 @@ export default function MapPage({ navigation }: MapPageProps) {
       useNativeDriver: false,
     }).start(() => setCarouselVisible(false));
   }
-
   function showCarousel() {
     setCarouselVisible((prev) => {
-      if (prev) return prev; // כבר גלוי
+      if (prev) return prev;
       Animated.timing(panelOldAnim, {
         toValue: 1,
         duration: 200,
@@ -142,9 +163,7 @@ export default function MapPage({ navigation }: MapPageProps) {
       setAllTrips(merged);
       setAllGroups(groupsResp);
       setGroups(groupsResp);
-      if (!userLocation) setTrips(merged); // fallback עד שיש מיקום
-    } catch (e) {
-      console.error(e);
+      if (!userLocation) setTrips(merged);
     } finally {
       setLoading(false);
     }
@@ -158,22 +177,71 @@ export default function MapPage({ navigation }: MapPageProps) {
       params.append("category", filter.category.trim());
     if (params.toString()) url += `?${params.toString()}`;
     const resp = await fetch(url);
-    if (!resp.ok) throw new Error("Failed to fetch trips");
     const data: Trip[] = await resp.json();
     return data.map((t) => ({ ...t, groups: t.groups || [] }));
   }
-
   async function fetchGroups(): Promise<Group[]> {
     const resp = await fetch(`${process.env.EXPO_LOCAL_SERVER}/api/group/list`);
-    if (!resp.ok) throw new Error("Failed to fetch groups");
     const raw = await resp.json();
     return raw
-      .filter((g: any) => g.status !== "complק")
+      .filter((g: any) => g.status !== "compl")
       .map((g: any) => ({
         ...g,
         membersCount: Array.isArray(g.members) ? g.members.length : 0,
         leaderName: g.created_by?.username || "Unknown",
       }));
+  }
+
+  /* ---------- filter‑modal handlers ---------- */
+  function openTripFilterModal() {
+    hideCarousel();
+    setTripModalInitialFilters({
+      location: "",
+      tags: [],
+    });
+    setShowTripFilter(true);
+  }
+  function openGroupFilterModal() {
+    hideCarousel();
+    setGroupModalInitialFilters({
+      difficulties: [],
+      statuses: [],
+      maxMembers: "",
+      scheduledStart: "",
+      scheduledEnd: "",
+    });
+    setShowGroupFilter(true);
+  }
+
+  function onApplyTripFilters(filteredTrips: Trip[], chosen: ActiveFilter[]) {
+    setTrips(filteredTrips);
+    setActiveFilters((prev) => [
+      ...prev.filter(
+        (f) => !f.id.startsWith("tripTag=") && !f.id.startsWith("tripLocation=")
+      ),
+      ...chosen,
+    ]);
+    setShowTripFilter(false);
+    if (viewMode === "map") showCarousel();
+  }
+
+  function onApplyGroupFilters(
+    filteredGroups: Group[],
+    chosen: ActiveFilter[]
+  ) {
+    setGroups(filteredGroups);
+    setActiveFilters((prev) => [
+      ...prev.filter((f) => !f.id.startsWith("group")),
+      ...chosen,
+    ]);
+    setShowGroupFilter(false);
+    if (viewMode === "map") showCarousel();
+  }
+
+  function handleRemoveFilter(filterId: string) {
+    const newFilters = activeFilters.filter((f) => f.id !== filterId);
+    setActiveFilters(newFilters);
+    // … כאן אפשר לעדכן trips/groups בהתאם
   }
 
   /* ---------- view‑mode toggle ---------- */
@@ -182,7 +250,7 @@ export default function MapPage({ navigation }: MapPageProps) {
       hideCarousel();
       setViewMode("list");
     } else {
-      setViewMode("map"); // useEffect יחזיר את הקרוסלה
+      setViewMode("map");
     }
   };
 
@@ -238,7 +306,6 @@ export default function MapPage({ navigation }: MapPageProps) {
       }).start();
     });
   }
-
   function closeTripPopup() {
     Animated.timing(panelNewAnim, {
       toValue: 0,
@@ -275,9 +342,9 @@ export default function MapPage({ navigation }: MapPageProps) {
         viewMode={viewMode}
         onToggleView={toggleViewMode}
         activeFilters={activeFilters}
-        onRemoveFilter={() => {}}
-        onOpenTripFilter={hideCarousel}
-        onOpenGroupFilter={hideCarousel}
+        onRemoveFilter={handleRemoveFilter}
+        onOpenTripFilter={openTripFilterModal}
+        onOpenGroupFilter={openGroupFilterModal}
         onSelectCity={handleSelectCity}
         onClearCity={() => {
           setCity("");
@@ -285,7 +352,6 @@ export default function MapPage({ navigation }: MapPageProps) {
           if (viewMode === "map") showCarousel();
         }}
       />
-
       {loading ? (
         <ActivityIndicator size="large" color="#0D9488" className="mt-10" />
       ) : viewMode === "map" ? (
@@ -296,6 +362,7 @@ export default function MapPage({ navigation }: MapPageProps) {
             userLocation={userLocation}
             onCenterOnMe={handleCenterOnMe}
             onMarkerPress={openTripPopup}
+            disableControls={controlsDisabled}
           />
 
           {carouselVisible && trips.length > 0 && (
@@ -319,7 +386,7 @@ export default function MapPage({ navigation }: MapPageProps) {
       ) : (
         <TripList trips={trips} navigation={navigation} />
       )}
-
+      {/* Popup */}
       {popupTrip && (
         <Animated.View
           style={{
@@ -344,9 +411,29 @@ export default function MapPage({ navigation }: MapPageProps) {
           />
         </Animated.View>
       )}
+
+      {/* Groups Filter Modal */}
+      <GroupFilterModal
+        visible={showGroupFilter}
+        onClose={() => {
+          setShowGroupFilter(false);
+          if (viewMode === "map" && !popupTrip) showCarousel();
+        }}
+        groups={allGroups}
+        onApply={onApplyGroupFilters}
+        initialFilters={groupModalInitialFilters}
+      />
+      {/* Trip Filter Modal */}
+      <TripFilterModal
+        visible={showTripFilter}
+        onClose={() => {
+          setShowTripFilter(false);
+          if (viewMode === "map" && !popupTrip) showCarousel(); // ← וגם כאן
+        }}
+        trips={allTrips}
+        onApply={onApplyTripFilters}
+        initialFilters={tripModalInitialFilters}
+      />
     </View>
   );
 }
-// --------------------------------------------------
-// Other component files remain unchanged.
-// ==================================================
