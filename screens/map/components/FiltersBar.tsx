@@ -1,7 +1,6 @@
-// ./components/FiltersBar.tsx
-
 import React from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 export type ActiveFilter = {
   id: string;
@@ -22,40 +21,46 @@ export default function FiltersBar({
   onOpenGroupFilter,
 }: FiltersBarProps) {
   return (
-    <View>
-      <View className="flex-row mt-2 space-x-2 mb-2">
+    <View className="mt-2">
+      {/* כפתורים ראשיים: Trip / Group Filter */}
+      <View className="flex-row space-x-2 mb-2">
         <TouchableOpacity
           onPress={onOpenGroupFilter}
-          className="bg-gray-300 px-3 py-1 rounded"
+          className="flex-row items-center bg-white rounded-full px-3 py-1 shadow-sm"
         >
-          <Text className="text-sm text-gray-800 font-semibold">
+          <Ionicons name="people" size={16} color="#444" />
+          <Text className="text-sm text-gray-800 font-semibold ml-1">
             Filter Groups
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={onOpenTripFilter}
-          className="bg-gray-300 px-3 py-1 rounded"
+          className="flex-row items-center bg-white rounded-full px-3 py-1 shadow-sm"
         >
-          <Text className="text-sm text-gray-800 font-semibold">
+          <Ionicons name="map" size={16} color="#444" />
+          <Text className="text-sm text-gray-800 font-semibold ml-1">
             Filter Trips
           </Text>
         </TouchableOpacity>
       </View>
 
+      {/* רשימת פילטרים פעילים כ'צ'יפים' גלילה אופקית */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View className="flex-row items-center">
+        <View className="flex-row items-center space-x-2">
           {filters.map((f) => (
             <View
               key={f.id}
-              className="flex-row items-center bg-green-200 px-2 py-1 rounded-full mr-2"
+              className="flex-row items-center bg-white border border-green-500 px-3 py-1 rounded-full shadow-sm"
             >
-              <Text className="mr-2 text-sm">{f.label}</Text>
+              <Text className="mr-1 text-sm text-green-700 font-medium">
+                {f.label}
+              </Text>
               <TouchableOpacity
                 onPress={() => onRemoveFilter(f.id)}
-                className="bg-green-600 rounded-full px-2"
+                className="flex-row items-center justify-center w-5 h-5 rounded-full bg-green-600"
               >
-                <Text className="text-white text-sm">X</Text>
+                <Text className="text-white text-xs">×</Text>
               </TouchableOpacity>
             </View>
           ))}

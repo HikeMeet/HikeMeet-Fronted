@@ -1,5 +1,3 @@
-// ./components/CitySearchBar.tsx
-
 import React, { useState } from "react";
 import {
   View,
@@ -7,8 +5,8 @@ import {
   TouchableOpacity,
   Text,
   ScrollView,
-  StyleSheet,
 } from "react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 type CitySearchBarProps = {
   onSelectLocation: (coords: [number, number], placeName: string) => void;
@@ -24,8 +22,10 @@ export default function CitySearchBar({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
 
+  // חיפוש Mapbox
   async function handleSearch(text: string) {
     setQuery(text);
+    // פחות מ-3 תוים => איפוס
     if (text.length < 3) {
       setResults([]);
       if (text.length === 0) {
@@ -51,13 +51,15 @@ export default function CitySearchBar({
     }
   }
 
+  // בחירת מקום => קוראים לפונקציה של MapPage
   function handleSelect(item: any) {
     const [lon, lat] = item.geometry.coordinates;
-    onSelectLocation([lon, lat], item.place_name);
+    onSelectLocation([lon, lat], item.place_name); // חשוב
     setQuery(item.place_name);
     setResults([]);
   }
 
+  // ניקוי החיפוש
   function clearInput() {
     setQuery("");
     setResults([]);
@@ -65,30 +67,35 @@ export default function CitySearchBar({
   }
 
   return (
-    <View style={{ zIndex: 9999 }}>
-      <View style={styles.inputContainer}>
+    <View className="relative z-50">
+      {/* שורת חיפוש מעוגלת עם אייקון זכוכית מגדלת בצד שמאל */}
+      <View className="flex-row items-center bg-white rounded-full px-3 py-2 shadow-sm">
+        <Ionicons name="search" size={18} color="#666" />
         <TextInput
           placeholder={placeholder}
           value={query}
           onChangeText={handleSearch}
-          style={styles.input}
+          className="flex-1 ml-2 text-sm text-gray-800 py-1"
         />
+
+        {/* כפתור ניקוי אם יש תוכן */}
         {query.length > 0 && (
-          <TouchableOpacity onPress={clearInput} style={styles.clearButton}>
-            <Text style={styles.clearText}>×</Text>
+          <TouchableOpacity onPress={clearInput} className="p-1 ml-2">
+            <Ionicons name="close" size={18} color="#666" />
           </TouchableOpacity>
         )}
       </View>
 
+      {/* רשימת תוצאות החיפוש */}
       {results.length > 0 && (
-        <ScrollView style={styles.resultsContainer}>
+        <ScrollView className="absolute top-12 w-full max-h-40 bg-white border border-gray-300 rounded-md shadow z-50">
           {results.map((item) => (
             <TouchableOpacity
               key={item.id}
-              style={styles.resultItem}
               onPress={() => handleSelect(item)}
+              className="px-3 py-2 border-b border-gray-200"
             >
-              <Text>{item.place_name}</Text>
+              <Text className="text-sm text-gray-800">{item.place_name}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -96,43 +103,3 @@ export default function CitySearchBar({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  inputContainer: {
-    position: "relative",
-    backgroundColor: "#f1f1f1",
-    borderRadius: 5,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  input: {
-    flex: 1,
-    padding: 6,
-  },
-  clearButton: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  clearText: {
-    fontSize: 16,
-    color: "#777",
-  },
-  resultsContainer: {
-    position: "absolute",
-    top: 46,
-    width: "100%",
-    maxHeight: 150,
-    backgroundColor: "#fff",
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderTopWidth: 0,
-    zIndex: 9999,
-  },
-  resultItem: {
-    padding: 8,
-    borderBottomColor: "#eee",
-    borderBottomWidth: 1,
-  },
-});

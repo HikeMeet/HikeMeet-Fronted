@@ -25,12 +25,39 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
             target: route.key,
             canPreventDefault: true,
           });
-
           if (!isFocused && !event.defaultPrevented) {
             navigation.navigate(route.name);
           }
         };
 
+        // אם זה הטאב של "Map", מציגים כפתור גדול יותר, ממוקם מעט בצד ימין
+        if (route.name === "Map") {
+          return (
+            <TouchableOpacity
+              key={route.key}
+              onPress={onPress}
+              // מעט גדול ומורם
+              className="items-center justify-center"
+              style={{
+                width: 70,
+                height: 70,
+                borderRadius: 35,
+                backgroundColor: isFocused ? "#16a34a" : "#4ade80", // ירוק בהיר כשלא ממוקד, ירוק כהה כשכן
+                marginTop: -20, // מרים אותו מעל הבר
+                shadowColor: "#000",
+                shadowOpacity: 0.15,
+                shadowRadius: 6,
+                shadowOffset: { width: 0, height: 2 },
+                elevation: 4,
+              }}
+            >
+              <Icon name={iconName} size={32} color="#fff" />
+              {/* אפשר להוסיף טקסט קטן מתחת לאייקון (לא חובה) */}
+            </TouchableOpacity>
+          );
+        }
+
+        // טאב רגיל
         return (
           <TouchableOpacity
             key={route.key}
@@ -45,7 +72,9 @@ const CustomTabBar: React.FC<CustomTabBarProps> = ({
               />
             </View>
             <Text
-              className={`text-xs mt-1 ${isFocused ? "text-green-600 font-bold" : "text-gray-400"}`}
+              className={`text-xs mt-1 ${
+                isFocused ? "text-green-600 font-bold" : "text-gray-400"
+              }`}
             >
               {route.name}
             </Text>
@@ -69,7 +98,7 @@ const getIconName = (routeName: string) => {
     case "Chats":
       return "chat";
     case "Map":
-      return "map";
+      return "map"; // אייקון מפת
     default:
       return "help-circle";
   }

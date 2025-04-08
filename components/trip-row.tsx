@@ -1,4 +1,3 @@
-// TripRow.tsx
 import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { Trip } from "../interfaces/trip-interface";
@@ -8,6 +7,7 @@ interface TripRowProps {
   onPress: () => void;
   completedAt?: Date | null;
   fromMap?: boolean;
+  smallImage?: boolean; // חדש
 }
 
 const TripRow: React.FC<TripRowProps> = ({
@@ -15,8 +15,12 @@ const TripRow: React.FC<TripRowProps> = ({
   onPress,
   completedAt,
   fromMap,
+  smallImage = false,
 }) => {
   const containerBg = fromMap ? "bg-white" : "bg-gray-100";
+
+  // אם smallImage = true => w-10 h-10, אחרת w-16 h-16
+  const imageSizeClass = smallImage ? "w-2 h-2" : "w-16 h-16";
 
   return (
     <TouchableOpacity
@@ -26,11 +30,12 @@ const TripRow: React.FC<TripRowProps> = ({
       {trip.main_image ? (
         <Image
           source={{ uri: trip.main_image.url }}
-          className="w-16 h-16 mr-4 rounded"
+          className={`${imageSizeClass} mr-4 rounded`}
         />
       ) : (
-        <View className="w-16 h-16 bg-gray-300 mr-4 rounded" />
+        <View className={`${imageSizeClass} bg-gray-300 mr-4 rounded`} />
       )}
+
       <View className="flex-1">
         <Text
           className="text-lg font-bold"
@@ -47,6 +52,7 @@ const TripRow: React.FC<TripRowProps> = ({
           {trip.location.address}
         </Text>
       </View>
+
       {completedAt && (
         <Text className="absolute top-2 right-2 text-xs text-gray-600">
           {new Date(completedAt).toLocaleDateString()}
