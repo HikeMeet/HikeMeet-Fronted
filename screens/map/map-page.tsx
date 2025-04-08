@@ -383,14 +383,15 @@ export default function MapPage({ navigation }: MapPageProps) {
 
     fetchAllData({ city: placeName }).then(() => {
       // ← Re-sort immediately after retrieval
+      const center = coords || searchCenter || userLocation;
       const sorted = [...allTrips].sort((a, b) => {
         const dA = distanceMeters(
           a.location.coordinates as [number, number],
-          coords
+          center
         );
         const dB = distanceMeters(
           b.location.coordinates as [number, number],
-          coords
+          center
         );
         return dA - dB;
       });
