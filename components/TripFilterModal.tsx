@@ -1,5 +1,3 @@
-// ../../components/TripFilterModal.tsx
-
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -15,15 +13,11 @@ type TripFilterModalProps = {
   visible: boolean;
   onClose: () => void;
   trips: Trip[];
-  /** מה קורה כשלוחצים Apply */
   onApply: (
     filteredTrips: Trip[],
     chosenFilters: { id: string; label: string }[]
   ) => void;
-  /**
-   * ערכים שכבר נבחרו (כדי שהModal ייפתח עם הכפתורים/טקסטים מסומנים).
-   * מורכב מ-location ו-tags.
-   */
+
   initialFilters?: {
     location: string;
     tags: string[];
@@ -53,7 +47,6 @@ export default function TripFilterModal({
   onClose,
   trips,
   onApply,
-  /** אם לא מעבירים, נאתחל לערכים ריקים */
   initialFilters = { location: "", tags: [] },
 }: TripFilterModalProps) {
   const [filters, setFilters] = useState({
@@ -61,7 +54,6 @@ export default function TripFilterModal({
     tags: [] as string[],
   });
 
-  // בכל פעם שהמודאל נפתח (visible) - נטען state פנימי מ-initialFilters
   useEffect(() => {
     if (visible) {
       setFilters({
@@ -80,7 +72,6 @@ export default function TripFilterModal({
     setFilters({ ...filters, tags: newTags });
   };
 
-  // בסוף, בלחיצה על Apply, מסננים trips לוקלית ובונים chosenFilters
   const applyFilters = () => {
     let result = [...trips];
 
@@ -94,7 +85,6 @@ export default function TripFilterModal({
 
     if (filters.tags.length > 0) {
       result = result.filter((trip) => {
-        // בהנחה שיש ב-Trip מערך tags (או להתאים למבנה שלך)
         const tripTags = (trip as any).tags || [];
         return filters.tags.every((tag) => tripTags.includes(tag));
       });

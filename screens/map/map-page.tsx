@@ -9,18 +9,19 @@ import {
 } from "react-native";
 import * as Location from "expo-location";
 import { Camera } from "@rnmapbox/maps";
+import CitySearchBar from "./components/header/city-search-bar";
 
-import MapHeader from "./components/header/MapHeader";
-import { MapContainer } from "./components/map/MapContainer";
-import TripCarousel from "./components/carousel/TripCarousel";
+import MapHeader from "./components/header/map-header";
+import { MapContainer } from "./components/map/map-container";
+import TripCarousel from "./components/carousel/trip-carousel";
 import TripPopup from "./components/popup/trip-popup";
-import TripList from "./components/list/TripList";
+import TripList from "./components/list/trip-list";
 import TripFilterModal from "../../components/TripFilterModal";
 import GroupFilterModal from "../../components/GroupFilterModal";
 
 import { Trip } from "../../interfaces/trip-interface";
 import { Group } from "../../interfaces/group-interface";
-import { ActiveFilter } from "./components/header/FiltersBar";
+import { ActiveFilter } from "./components/header/filters-bar";
 
 /* Haversine helper */
 function distanceMeters(
@@ -94,7 +95,7 @@ export default function MapPage({ navigation }: MapPageProps) {
     getUserLocation();
   }, []);
 
-  /* מיון לפי מרכז חיפוש או מיקום משתמש */
+  /* Sort by search center or user location */
   useEffect(() => {
     const center = searchCenter || userLocation;
     if (!center || !allTrips.length) return;
@@ -138,7 +139,7 @@ export default function MapPage({ navigation }: MapPageProps) {
     });
   }
 
-  /** עזר – בונה trips עם groups מסוננות */
+  /** Auxiliary – Constructs trips with filtered groups */
   function rebuildTripsWithGroups(baseTrips: Trip[], filteredGroups: Group[]) {
     const byTrip: Record<string, Group[]> = {};
     filteredGroups.forEach((g) => {
@@ -151,7 +152,7 @@ export default function MapPage({ navigation }: MapPageProps) {
     }));
   }
 
-  /** החלת כל הפילטרים הפעילים */
+  /** Apply all active filters */
   function applyAllFilters(filters: ActiveFilter[]) {
     let t = [...allTrips];
     let g = [...allGroups];
@@ -336,7 +337,7 @@ export default function MapPage({ navigation }: MapPageProps) {
 
     if (filterId.startsWith("city=")) {
       setCity("");
-      +setCityQuery(""); // ← הוסף זאת
+      +setCityQuery("");
       setSearchCenter(null);
       if (viewMode === "map" && userLocation) {
         cameraRef.current?.setCamera({
@@ -381,7 +382,7 @@ export default function MapPage({ navigation }: MapPageProps) {
     setSearchCenter(coords);
 
     fetchAllData({ city: placeName }).then(() => {
-      // ← מיון מחדש מיד לאחר השליפה
+      // ← Re-sort immediately after retrieval
       const sorted = [...allTrips].sort((a, b) => {
         const dA = distanceMeters(
           a.location.coordinates as [number, number],
@@ -459,6 +460,30 @@ export default function MapPage({ navigation }: MapPageProps) {
   /* ---------- render ---------- */
   return (
     <View className="flex-1 bg-gray-50">
+      <View className="flex-row items-center justify-between space-x-2">
+        {/* City SearchBar */}
+        <View className="flex-[4]">
+          <CitySearchBar
+            value={cityQuery}
+            onChangeText={setCityQuery}
+            onSelectLocation={handleSelectCity}
+            onClearLocation={() => {
+              const cityFilter = activeFilters.find((f) =>
+                f.id.startsWith("city=")
+              );
+              if (cityFilter) {
+                handleRemoveFilter(cityFilter.id);
+              } else {
+                setCity("");
+                setCityQuery("");
+                setSearchCenter(null);
+                fetchAllData({});
+              }
+            }}
+          />
+        </View>
+      </View>
+
       <MapHeader
         viewMode={viewMode}
         onToggleView={toggleViewMode}
@@ -466,16 +491,6 @@ export default function MapPage({ navigation }: MapPageProps) {
         onRemoveFilter={handleRemoveFilter}
         onOpenTripFilter={openTripFilterModal}
         onOpenGroupFilter={openGroupFilterModal}
-        onSelectCity={handleSelectCity}
-        onClearCity={() => {
-          setCity("");
-          setCityQuery("");
-          setSearchCenter(null);
-          fetchAllData({});
-          if (viewMode === "map") showCarousel();
-        }}
-        cityQuery={cityQuery}
-        setCityQuery={setCityQuery}
       />
 
       {loading ? (

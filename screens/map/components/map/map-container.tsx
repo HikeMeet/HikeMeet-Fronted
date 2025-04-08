@@ -3,14 +3,13 @@ import { View } from "react-native";
 import Mapbox, { Camera } from "@rnmapbox/maps";
 
 import CenterOnMeButton from "./center-on-me-button";
-import Buildings3D from "./Buildings3D";
-import MarkersLayer from "./MarkersLayer";
+import Buildings3D from "./buildings-3D";
+import MarkersLayer from "./markers-layer";
 import { Trip } from "../../../../interfaces/trip-interface";
 
 type Props = {
   cameraRef: React.RefObject<Camera>;
   trips: Trip[];
-  /** נקודה שלפיה ממורכזת המצלמה – searchCenter או userLocation */
   centerCoordinate: [number, number];
   onCenterOnMe: () => void;
   onMarkerPress: (trip: Trip) => void;

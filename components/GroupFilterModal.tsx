@@ -1,5 +1,3 @@
-// ./components/GroupFilterModal.tsx
-
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -10,21 +8,19 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { Group } from "../interfaces/group-interface";
-// או הנתיב הנכון ל-Group interface
 
 type GroupFilterModalProps = {
   visible: boolean;
   onClose: () => void;
   groups: Group[];
-  /** קורית בעת לחיצה על Apply */
+  /** Occurs when you click Apply */
   onApply: (
     filteredGroups: Group[],
     chosenFilters: { id: string; label: string }[]
   ) => void;
-  /** אם תרצה שהפופאפ ייפתח עם הפילטרים שכבר נבחרו */
   initialFilters?: {
-    difficulties: string[]; // למשל ['Easy','Medium','Hard']
-    statuses: string[]; // למשל ['planned','active']
+    difficulties: string[];
+    statuses: string[];
     maxMembers?: string;
     scheduledStart?: string;
     scheduledEnd?: string;
@@ -55,7 +51,6 @@ export default function GroupFilterModal({
     scheduledEnd: "",
   });
 
-  // בכל פעם שהמודל נפתח, נטען את הערכים שכבר נבחרו
   useEffect(() => {
     if (visible) {
       setFilters({
@@ -70,7 +65,7 @@ export default function GroupFilterModal({
 
   if (!visible) return null;
 
-  // בחירת/ביטול קושי מסוים
+  // Selecting/deselecting a specific difficulty
   const toggleDifficulty = (diff: string) => {
     const newDiffs = filters.difficulties.includes(diff)
       ? filters.difficulties.filter((d) => d !== diff)
@@ -79,7 +74,7 @@ export default function GroupFilterModal({
     setFilters({ ...filters, difficulties: newDiffs });
   };
 
-  // בחירת/ביטול סטטוס מסוים
+  // Select/deselect a specific status
   const toggleStatus = (st: string) => {
     const newStatuses = filters.statuses.includes(st)
       ? filters.statuses.filter((s) => s !== st)
@@ -107,13 +102,12 @@ export default function GroupFilterModal({
 
     // statuses
     if (filters.statuses.length > 0) {
-      // מניחים של-g.status יכול להיות 'planned'/'active'
       result = result.filter((g) =>
         filters.statuses.includes(g.status?.toLowerCase())
       );
     }
 
-    // תאריך התחלה
+    // Start date
     if (filters.scheduledStart.trim()) {
       result = result.filter(
         (g: any) =>
@@ -122,7 +116,7 @@ export default function GroupFilterModal({
       );
     }
 
-    // תאריך סיום
+    // End date
     if (filters.scheduledEnd.trim()) {
       result = result.filter(
         (g: any) =>
@@ -130,7 +124,6 @@ export default function GroupFilterModal({
       );
     }
 
-    // בונים מערך chosenFilters לצורך הצ'יפים במסך הראשי
     const chosenFilters: { id: string; label: string }[] = [];
 
     if (filters.maxMembers.trim()) {
@@ -174,9 +167,9 @@ export default function GroupFilterModal({
 
   return (
     <TouchableWithoutFeedback onPress={onClose}>
-      <View className="absolute top-20 left-0 right-0 bottom-0 bg-black/30 justify-center items-center">
+      <View className="absolute top-0 left-0 right-0 bottom-0 bg-black/50 justify-center items-center">
         <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
-          <View className="w-[90%] bg-white rounded-xl p-5 max-h-[80%]">
+          <View className="w-[90%] mt-20 bg-white rounded-xl p-5 max-h-[80%]">
             <Text className="text-lg font-semibold mb-3">Group Filters</Text>
 
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -254,7 +247,6 @@ export default function GroupFilterModal({
                 })}
               </ScrollView>
 
-              {/* תאריך התחלה/סיום */}
               <Text className="font-semibold mb-1">
                 Start Date (YYYY-MM-DD)
               </Text>
@@ -278,7 +270,6 @@ export default function GroupFilterModal({
               />
             </ScrollView>
 
-            {/* כפתור Apply */}
             <TouchableOpacity
               className="bg-green-600 py-2 rounded"
               onPress={applyFilters}

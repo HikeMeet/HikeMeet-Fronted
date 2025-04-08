@@ -25,9 +25,8 @@ export default function TripPopup({
   const groups = trip.groups || [];
 
   return (
-    // במקום max-h-[70%] → תן יותר גובה ובשקיפות קלה
     <View className="bg-white/90 rounded-t-[32px] shadow-2xl max-h-[100%] px-6 pt-5 pb-4 border-t border-gray-100">
-      {/* כפתור סגירה (X) */}
+      {/* Close button (X) */}
       <TouchableOpacity
         onPress={onClose}
         className="absolute top-4 right-4 z-50"
@@ -36,15 +35,15 @@ export default function TripPopup({
         <Icon name="close" size={22} color="#555" />
       </TouchableOpacity>
 
-      {/* פס גרירה קטן (אופציונלי) */}
+      {/* Small drag bar (optional) */}
       <View className="w-12 h-1.5 bg-gray-300 rounded-full self-center mb-3" />
 
-      {/* מידע הטיול (TripRow) */}
+      {/* Trip information (TripRow) */}
       <View className="relative mb-4">
         <TripRow
           trip={trip}
           fromMap
-          // ניתן להקטין תמונה דרך פרופ מיוחד או דרך עיצוב ב-TripRow
+          // You can reduce an image through a special prop or through design in TripRow
           onPress={() =>
             navigation.navigate("TripsStack", {
               screen: "TripPage",
@@ -53,7 +52,7 @@ export default function TripPopup({
           }
         />
 
-        {/* כפתור Add Group */}
+        {/* button Add Group */}
         <TouchableOpacity
           onPress={onAddGroup}
           className="absolute right-1 top-5 mt-0 bg-emerald-600 px-4 py-2 rounded-xl shadow-sm"
@@ -62,12 +61,12 @@ export default function TripPopup({
         </TouchableOpacity>
       </View>
 
-      {/* כותרת – Available Groups */}
+      {/* title– Available Groups */}
       <Text className="text-base font-medium text-gray-700 mb-2">
         Available Groups
       </Text>
 
-      {/* רשימת הקבוצות */}
+      {/* list groups*/}
       <ScrollView className="max-h-48" showsVerticalScrollIndicator={false}>
         {groups.length === 0 ? (
           <Text className="text-gray-400 italic mt-2">No groups yet.</Text>

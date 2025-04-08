@@ -6,7 +6,7 @@ import { Trip } from "../../../../interfaces/trip-interface";
 type Props = {
   trips: Trip[];
   onOpenTrip: (trip: Trip) => void;
-  onScrollStart: () => void; // NEW
+  onScrollStart: () => void;
 };
 
 export default function TripList({ trips, onOpenTrip, onScrollStart }: Props) {
@@ -17,10 +17,7 @@ export default function TripList({ trips, onOpenTrip, onScrollStart }: Props) {
   }
 
   return (
-    <ScrollView
-      className="flex-1 p-3"
-      onScrollBeginDrag={onScrollStart} // ← סגור Popup בתחילת גלילה
-    >
+    <ScrollView className="flex-1 p-3" onScrollBeginDrag={onScrollStart}>
       {trips.map((trip) => (
         <TripRow key={trip._id} trip={trip} onPress={() => onOpenTrip(trip)} />
       ))}

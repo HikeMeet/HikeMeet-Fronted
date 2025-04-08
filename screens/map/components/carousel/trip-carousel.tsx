@@ -6,7 +6,7 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from "react-native";
-import TripCard from "./TripCard";
+import TripCard from "./trip-card";
 import { Trip } from "../../../../interfaces/trip-interface";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");

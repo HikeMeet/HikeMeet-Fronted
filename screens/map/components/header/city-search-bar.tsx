@@ -59,14 +59,15 @@ export default function CitySearchBar({
   }
 
   return (
-    <View className="relative z-50">
-      <View className="flex-row items-center bg-white rounded-full px-3 py-2 shadow-sm">
+    <View className="relative">
+      {/* Search Bar */}
+      <View className="flex-row items-center bg-white rounded-full px-4 py-2 shadow-md">
         <Ionicons name="search" size={18} color="#666" />
         <TextInput
           placeholder={placeholder}
           value={value}
           onChangeText={handleSearch}
-          className="flex-1 ml-2 text-sm text-gray-800 py-1"
+          className="flex-1 ml-2 text-sm text-gray-800"
         />
         {value.length > 0 && (
           <TouchableOpacity onPress={clearInput} className="p-1 ml-2">
@@ -75,13 +76,17 @@ export default function CitySearchBar({
         )}
       </View>
 
+      {/* Results Dropdown */}
       {results.length > 0 && (
-        <ScrollView className="absolute top-12 w-full max-h-40 bg-white border border-gray-300 rounded-md shadow">
+        <ScrollView
+          className="absolute top-12 w-full max-h-60 bg-white border border-gray-300 rounded-xl shadow-lg"
+          style={{ zIndex: 9999, elevation: 10 }}
+        >
           {results.map((item) => (
             <TouchableOpacity
               key={item.id}
               onPress={() => handleSelect(item)}
-              className="px-3 py-2 border-b border-gray-200"
+              className="px-4 py-3 border-b border-gray-200"
             >
               <Text className="text-sm text-gray-800">{item.place_name}</Text>
             </TouchableOpacity>

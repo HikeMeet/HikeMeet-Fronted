@@ -10,9 +10,9 @@ export default function ViewModeButton({ viewMode, onToggle }: Props) {
   return (
     <TouchableOpacity
       onPress={onToggle}
-      className="bg-green-600 px-3 py-2 rounded"
+      className="bg-green-600 px-3 py-1 rounded-full"
     >
-      <Text className="text-white font-semibold">
+      <Text className="text-white text-sm font-medium">
         {viewMode === "map" ? "List View" : "Map View"}
       </Text>
     </TouchableOpacity>

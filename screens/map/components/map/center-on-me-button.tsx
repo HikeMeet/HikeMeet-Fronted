@@ -3,7 +3,6 @@ import { TouchableOpacity, Image } from "react-native";
 
 type Props = {
   onPress: () => void;
-  /** כשה‑disabled true – הכפתור מטושטש ולא מקבל לחיצה */
   disabled?: boolean;
 };
 
