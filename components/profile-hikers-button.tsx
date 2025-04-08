@@ -21,11 +21,13 @@ const HikerButton: React.FC<HikerButtonProps> = ({
   return (
     <TouchableOpacity
       onPress={toggleHikers}
-      className={`bg-green-500 px-3 py-1 rounded-full w-28 items-center mt-2 ${
-        showHikers ? "border-2 border-green-700" : ""
+      className={`px-3 py-1 rounded-full w-28 items-center mt-2 border-2 border-green-700 ${
+        showHikers ? "bg-green-300" : "bg-green-500"
       }`}
     >
-      <Text className="text-white text-sm">Hikers ({acceptedCount})</Text>
+      <Text className={`text-white text-sm ${showHikers ? "font-bold" : ""}`}>
+        Hikers ({acceptedCount})
+      </Text>
     </TouchableOpacity>
   );
 };

@@ -4,10 +4,9 @@ import {
   Text,
   ActivityIndicator,
   SafeAreaView,
-  TouchableOpacity,
   FlatList,
+  StatusBar,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import BioSection from "./components/profile-bio-section";
 import { useAuth } from "../../contexts/auth-context";
 import FriendActionButton from "../../components/friend-button";
@@ -15,10 +14,6 @@ import HikersList from "../../components/hikers-list-in-profile";
 import HikerButton from "../../components/profile-hikers-button";
 import { MongoUser } from "../../interfaces/user-interface";
 import ProfileImage from "../../components/profile-image";
-import {
-  blockUser,
-  revokeFriendRequest,
-} from "../../components/requests/user-actions";
 import { fetchPostsForUser } from "../../components/requests/fetch-posts";
 import PostCard from "../posts/components/post-card-on-feeds";
 import { IPost } from "../../interfaces/post-interface";
@@ -33,7 +28,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   const [user, setUser] = useState<MongoUser | null>(null); // User data
   const [friendStatus, setFriendStatus] = useState<string>("none"); // Friend status
   const [loading, setLoading] = useState<boolean>(true); // Loading state
-  const [showTooltip, setShowTooltip] = useState<boolean>(false); // Tooltip visibility
   const [showHikers, setShowHikers] = useState<boolean>(false); // Toggle for hikers list
   const { mongoId, mongoUser } = useAuth(); // Current user's ID
   const [posts, setPosts] = useState<IPost[]>([]);
@@ -101,17 +95,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   }, [userId, mongoId]);
 
   // Handlers for tooltip options
-  const handleBlockUser = async () => {
-    try {
-      const data = await blockUser(mongoId!, userId);
-      console.log("Block response:", data);
-      setFriendStatus("blocked");
-    } catch (error) {
-      console.error("Error blocking user:", error);
-    } finally {
-      setShowTooltip(false);
-    }
-  };
 
   const renderPostsHeader = () => (
     <View className="p-4">
@@ -119,17 +102,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
       <View className="h-px bg-gray-300 my-4" />
     </View>
   );
-  const handleRevokeRequest = async () => {
-    try {
-      const data = await revokeFriendRequest(mongoId!, userId);
-      console.log("Revoke response:", data);
-      setFriendStatus("none");
-    } catch (error) {
-      console.error("Error revoking friend request:", error);
-    } finally {
-      setShowTooltip(false);
-    }
-  };
+
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
@@ -149,6 +122,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white ">
+      <StatusBar barStyle="dark-content" backgroundColor="white" />
+
       {/* User Details */}
       <View className="flex-row items-center mb-4">
         <ProfileImage
@@ -158,9 +133,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
           uploadType={"profile"}
           editable={false} // Only editable if the current user is the creator
         />
-        <View>
+        <View className="flex-1 ml-5">
           <Text className="text-xl font-bold">{`${user.username} ${user.last_name}`}</Text>
-          <Text className="text-xl font-bold">{`${user.first_name} ${user.last_name}`}</Text>
+          <Text className="text-sm font-bold">{`${user.first_name} ${user.last_name}`}</Text>
           <Text className="text-sm text-gray-500">Rank: Adventurer</Text>
           {/* Hiker Button moved under the name and rank */}
           <HikerButton
@@ -168,47 +143,21 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
             toggleHikers={toggleHikers}
             user={user}
           />
+          {mongoId && (
+            <View className="flex-row items-center">
+              <FriendActionButton
+                targetUserId={userId}
+                status={friendStatus}
+                onStatusChange={(newStatus: string) =>
+                  setFriendStatus(newStatus)
+                }
+              />
+            </View>
+          )}
         </View>
       </View>
 
       {/* Friend Action Button and Tooltip */}
-      {mongoId && (
-        <View className="flex-row items-center">
-          <FriendActionButton
-            targetUserId={userId}
-            status={friendStatus}
-            onStatusChange={(newStatus: string) => setFriendStatus(newStatus)}
-          />
-          <TouchableOpacity
-            onPress={() => setShowTooltip((prev) => !prev)}
-            className="ml-2 p-2"
-          >
-            <Ionicons
-              name="caret-up"
-              size={16}
-              color="black"
-              style={{ transform: [{ rotate: "180deg" }] }}
-            />
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Tooltip Options */}
-      {showTooltip && (
-        <View className="mt-2 p-2 bg-white border border-gray-300 rounded shadow-md">
-          <TouchableOpacity onPress={handleBlockUser} className="py-1 px-2">
-            <Text className="text-sm text-gray-700">Block User</Text>
-          </TouchableOpacity>
-          {friendStatus === "request_received" && (
-            <TouchableOpacity
-              onPress={handleRevokeRequest}
-              className="py-1 px-2"
-            >
-              <Text className="text-sm text-gray-700">Decline Request</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
 
       {/* Conditional Rendering: Hikers List vs. Bio and Posts */}
       {showHikers ? (
