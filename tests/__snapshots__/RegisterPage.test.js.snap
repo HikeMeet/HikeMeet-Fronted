@@ -1,0 +1,1367 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RegisterPage should render correctly (snapshot) 1`] = `
+<View
+  onLayout={[Function]}
+  style={
+    [
+      [
+        {
+          "flexBasis": "0%",
+          "flexGrow": 1,
+          "flexShrink": 1,
+        },
+        {
+          "backgroundColor": "#334155",
+        },
+      ],
+      {
+        "paddingBottom": 0,
+      },
+    ]
+  }
+>
+  <View
+    style={
+      [
+        {
+          "flexBasis": "0%",
+          "flexGrow": 1,
+          "flexShrink": 1,
+        },
+        {
+          "alignItems": "center",
+        },
+        {
+          "justifyContent": "center",
+        },
+        {
+          "paddingLeft": 24,
+          "paddingRight": 24,
+        },
+      ]
+    }
+  >
+    <View
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "alignItems": "center",
+          "backgroundColor": "#e5e7eb",
+          "borderBottomLeftRadius": 9999,
+          "borderBottomRightRadius": 9999,
+          "borderTopLeftRadius": 9999,
+          "borderTopRightRadius": 9999,
+          "flexDirection": "row",
+          "left": 16,
+          "opacity": 1,
+          "paddingBottom": 4,
+          "paddingLeft": 12,
+          "paddingRight": 12,
+          "paddingTop": 4,
+          "position": "absolute",
+          "top": 40,
+        }
+      }
+    >
+      <Text
+        allowFontScaling={false}
+        selectable={false}
+        style={
+          [
+            {
+              "color": "#333",
+              "fontSize": 16,
+            },
+            undefined,
+            {
+              "fontFamily": "Material Design Icons",
+              "fontStyle": "normal",
+              "fontWeight": "normal",
+            },
+            {},
+          ]
+        }
+      >
+        󰁍
+      </Text>
+      <Text
+        style={
+          [
+            {
+              "marginLeft": 4,
+            },
+            {
+              "color": "#1f2937",
+            },
+            {
+              "fontWeight": "700",
+            },
+            {
+              "fontSize": 14,
+              "lineHeight": 20,
+            },
+          ]
+        }
+      >
+        Back
+      </Text>
+    </View>
+    <Text
+      style={
+        [
+          {
+            "fontSize": 30,
+            "lineHeight": 36,
+          },
+          {
+            "fontWeight": "700",
+          },
+          {
+            "color": "#fff",
+          },
+          {
+            "marginBottom": 4,
+          },
+        ]
+      }
+    >
+      Create an Account
+    </Text>
+    <Text
+      style={
+        [
+          {
+            "fontSize": 18,
+            "lineHeight": 28,
+          },
+          {
+            "color": "#d1d5db",
+          },
+          {
+            "marginBottom": 8,
+          },
+        ]
+      }
+    >
+      Join us to get started!
+    </Text>
+    <RCTScrollView
+      contentContainerStyle={
+        {
+          "paddingBottom": 20,
+        }
+      }
+      style={
+        [
+          {
+            "flexBasis": "0%",
+            "flexGrow": 1,
+            "flexShrink": 1,
+          },
+        ]
+      }
+    >
+      <View>
+        <View
+          style={
+            [
+              {
+                "flexDirection": "row",
+              },
+              {
+                "alignItems": "center",
+              },
+              {
+                "width": "100%",
+              },
+              {
+                "paddingLeft": 16,
+                "paddingRight": 16,
+              },
+              {
+                "paddingBottom": 12,
+                "paddingTop": 12,
+              },
+              {
+                "borderBottomWidth": 1,
+                "borderLeftWidth": 1,
+                "borderRightWidth": 1,
+                "borderTopWidth": 1,
+              },
+              {
+                "borderBottomColor": "#d1d5db",
+                "borderLeftColor": "#d1d5db",
+                "borderRightColor": "#d1d5db",
+                "borderTopColor": "#d1d5db",
+              },
+              {
+                "borderBottomLeftRadius": 6,
+                "borderBottomRightRadius": 6,
+                "borderTopLeftRadius": 6,
+                "borderTopRightRadius": 6,
+              },
+              {
+                "backgroundColor": "#fff",
+              },
+              {
+                "marginBottom": 12,
+              },
+            ]
+          }
+        >
+          <Text
+            allowFontScaling={false}
+            selectable={false}
+            style={
+              [
+                {
+                  "color": "#aaa",
+                  "fontSize": 20,
+                },
+                {
+                  "marginRight": 8,
+                },
+                {
+                  "fontFamily": "Material Design Icons",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                {},
+              ]
+            }
+          >
+            󰀄
+          </Text>
+          <TextInput
+            keyboardType="default"
+            onChangeText={[Function]}
+            placeholder="Username"
+            placeholderTextColor="#aaa"
+            secureTextEntry={false}
+            style={
+              [
+                {
+                  "flexBasis": "0%",
+                  "flexGrow": 1,
+                  "flexShrink": 1,
+                },
+                {
+                  "color": "#1f2937",
+                },
+                {
+                  "fontSize": 16,
+                  "lineHeight": 24,
+                },
+                {
+                  "height": 48,
+                },
+                {
+                  "lineHeight": 24,
+                },
+              ]
+            }
+            value=""
+          />
+        </View>
+        <View
+          style={
+            [
+              {
+                "flexDirection": "row",
+              },
+              {
+                "width": "100%",
+              },
+              {
+                "marginBottom": 4,
+              },
+            ]
+          }
+        >
+          <View
+            style={
+              [
+                {
+                  "flexBasis": "0%",
+                  "flexGrow": 1,
+                  "flexShrink": 1,
+                },
+              ]
+            }
+          >
+            <View
+              style={
+                [
+                  {
+                    "flexDirection": "row",
+                  },
+                  {
+                    "alignItems": "center",
+                  },
+                  {
+                    "width": "100%",
+                  },
+                  {
+                    "paddingLeft": 16,
+                    "paddingRight": 16,
+                  },
+                  {
+                    "paddingBottom": 12,
+                    "paddingTop": 12,
+                  },
+                  {
+                    "borderBottomWidth": 1,
+                    "borderLeftWidth": 1,
+                    "borderRightWidth": 1,
+                    "borderTopWidth": 1,
+                  },
+                  {
+                    "borderBottomColor": "#d1d5db",
+                    "borderLeftColor": "#d1d5db",
+                    "borderRightColor": "#d1d5db",
+                    "borderTopColor": "#d1d5db",
+                  },
+                  {
+                    "borderBottomLeftRadius": 6,
+                    "borderBottomRightRadius": 6,
+                    "borderTopLeftRadius": 6,
+                    "borderTopRightRadius": 6,
+                  },
+                  {
+                    "backgroundColor": "#fff",
+                  },
+                  {
+                    "marginBottom": 12,
+                  },
+                ]
+              }
+            >
+              <Text
+                allowFontScaling={false}
+                selectable={false}
+                style={
+                  [
+                    {
+                      "color": "#aaa",
+                      "fontSize": 20,
+                    },
+                    {
+                      "marginRight": 8,
+                    },
+                    {
+                      "fontFamily": "Material Design Icons",
+                      "fontStyle": "normal",
+                      "fontWeight": "normal",
+                    },
+                    {},
+                  ]
+                }
+              >
+                󰀓
+              </Text>
+              <TextInput
+                keyboardType="default"
+                onChangeText={[Function]}
+                placeholder="First Name"
+                placeholderTextColor="#aaa"
+                secureTextEntry={false}
+                style={
+                  [
+                    {
+                      "flexBasis": "0%",
+                      "flexGrow": 1,
+                      "flexShrink": 1,
+                    },
+                    {
+                      "color": "#1f2937",
+                    },
+                    {
+                      "fontSize": 16,
+                      "lineHeight": 24,
+                    },
+                    {
+                      "height": 48,
+                    },
+                    {
+                      "lineHeight": 24,
+                    },
+                  ]
+                }
+                value=""
+              />
+            </View>
+          </View>
+          <View
+            style={
+              [
+                {
+                  "flexBasis": "0%",
+                  "flexGrow": 1,
+                  "flexShrink": 1,
+                },
+                [
+                  {
+                    "marginLeft": 16,
+                  },
+                ],
+              ]
+            }
+          >
+            <View
+              style={
+                [
+                  {
+                    "flexDirection": "row",
+                  },
+                  {
+                    "alignItems": "center",
+                  },
+                  {
+                    "width": "100%",
+                  },
+                  {
+                    "paddingLeft": 16,
+                    "paddingRight": 16,
+                  },
+                  {
+                    "paddingBottom": 12,
+                    "paddingTop": 12,
+                  },
+                  {
+                    "borderBottomWidth": 1,
+                    "borderLeftWidth": 1,
+                    "borderRightWidth": 1,
+                    "borderTopWidth": 1,
+                  },
+                  {
+                    "borderBottomColor": "#d1d5db",
+                    "borderLeftColor": "#d1d5db",
+                    "borderRightColor": "#d1d5db",
+                    "borderTopColor": "#d1d5db",
+                  },
+                  {
+                    "borderBottomLeftRadius": 6,
+                    "borderBottomRightRadius": 6,
+                    "borderTopLeftRadius": 6,
+                    "borderTopRightRadius": 6,
+                  },
+                  {
+                    "backgroundColor": "#fff",
+                  },
+                  {
+                    "marginBottom": 12,
+                  },
+                ]
+              }
+            >
+              <Text
+                allowFontScaling={false}
+                selectable={false}
+                style={
+                  [
+                    {
+                      "color": "#aaa",
+                      "fontSize": 20,
+                    },
+                    {
+                      "marginRight": 8,
+                    },
+                    {
+                      "fontFamily": "Material Design Icons",
+                      "fontStyle": "normal",
+                      "fontWeight": "normal",
+                    },
+                    {},
+                  ]
+                }
+              >
+                󰀓
+              </Text>
+              <TextInput
+                keyboardType="default"
+                onChangeText={[Function]}
+                placeholder="Last Name"
+                placeholderTextColor="#aaa"
+                secureTextEntry={false}
+                style={
+                  [
+                    {
+                      "flexBasis": "0%",
+                      "flexGrow": 1,
+                      "flexShrink": 1,
+                    },
+                    {
+                      "color": "#1f2937",
+                    },
+                    {
+                      "fontSize": 16,
+                      "lineHeight": 24,
+                    },
+                    {
+                      "height": 48,
+                    },
+                    {
+                      "lineHeight": 24,
+                    },
+                  ]
+                }
+                value=""
+              />
+            </View>
+          </View>
+        </View>
+        <View
+          style={
+            [
+              {
+                "width": "100%",
+              },
+            ]
+          }
+        >
+          <View
+            style={
+              [
+                {
+                  "flexDirection": "row",
+                },
+                {
+                  "alignItems": "center",
+                },
+                {
+                  "width": "100%",
+                },
+                {
+                  "paddingLeft": 12,
+                  "paddingRight": 12,
+                },
+                {
+                  "paddingBottom": 12,
+                  "paddingTop": 12,
+                },
+                {
+                  "borderBottomWidth": 1,
+                  "borderLeftWidth": 1,
+                  "borderRightWidth": 1,
+                  "borderTopWidth": 1,
+                },
+                {
+                  "borderBottomColor": "#d1d5db",
+                  "borderLeftColor": "#d1d5db",
+                  "borderRightColor": "#d1d5db",
+                  "borderTopColor": "#d1d5db",
+                },
+                {
+                  "borderBottomLeftRadius": 6,
+                  "borderBottomRightRadius": 6,
+                  "borderTopLeftRadius": 6,
+                  "borderTopRightRadius": 6,
+                },
+                {
+                  "backgroundColor": "#fff",
+                },
+                {
+                  "marginBottom": 12,
+                },
+              ]
+            }
+          >
+            <Text
+              allowFontScaling={false}
+              selectable={false}
+              style={
+                [
+                  {
+                    "color": "#aaa",
+                    "fontSize": 16,
+                  },
+                  {
+                    "marginRight": 6,
+                  },
+                  {
+                    "fontFamily": "Material Design Icons",
+                    "fontStyle": "normal",
+                    "fontWeight": "normal",
+                  },
+                  {},
+                ]
+              }
+            >
+              󰊞
+            </Text>
+            <View
+              style={
+                {
+                  "color": "#333",
+                  "flex": 1,
+                  "fontSize": 14,
+                }
+              }
+            >
+              <RNCPicker
+                items={
+                  [
+                    {
+                      "label": "Select Gender",
+                      "testID": undefined,
+                      "textColor": undefined,
+                      "value": "",
+                    },
+                    {
+                      "label": "Male",
+                      "testID": undefined,
+                      "textColor": undefined,
+                      "value": "male",
+                    },
+                    {
+                      "label": "Female",
+                      "testID": undefined,
+                      "textColor": undefined,
+                      "value": "female",
+                    },
+                    {
+                      "label": "Other",
+                      "testID": undefined,
+                      "textColor": undefined,
+                      "value": "other",
+                    },
+                  ]
+                }
+                numberOfLines={1}
+                onChange={[Function]}
+                selectedIndex={0}
+                style={
+                  [
+                    {
+                      "height": 216,
+                    },
+                    undefined,
+                  ]
+                }
+              />
+            </View>
+          </View>
+        </View>
+        <View
+          style={
+            [
+              {
+                "flexDirection": "row",
+              },
+              {
+                "alignItems": "center",
+              },
+              {
+                "width": "100%",
+              },
+              {
+                "paddingLeft": 16,
+                "paddingRight": 16,
+              },
+              {
+                "paddingBottom": 12,
+                "paddingTop": 12,
+              },
+              {
+                "borderBottomWidth": 1,
+                "borderLeftWidth": 1,
+                "borderRightWidth": 1,
+                "borderTopWidth": 1,
+              },
+              {
+                "borderBottomColor": "#d1d5db",
+                "borderLeftColor": "#d1d5db",
+                "borderRightColor": "#d1d5db",
+                "borderTopColor": "#d1d5db",
+              },
+              {
+                "borderBottomLeftRadius": 6,
+                "borderBottomRightRadius": 6,
+                "borderTopLeftRadius": 6,
+                "borderTopRightRadius": 6,
+              },
+              {
+                "backgroundColor": "#fff",
+              },
+              {
+                "marginBottom": 12,
+              },
+            ]
+          }
+        >
+          <Text
+            allowFontScaling={false}
+            selectable={false}
+            style={
+              [
+                {
+                  "color": "#aaa",
+                  "fontSize": 20,
+                },
+                {
+                  "marginRight": 8,
+                },
+                {
+                  "fontFamily": "Material Design Icons",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                {},
+              ]
+            }
+          >
+            󰃭
+          </Text>
+          <TextInput
+            keyboardType="default"
+            onChangeText={[Function]}
+            onPress={[Function]}
+            placeholder="Select Your Birthdate"
+            placeholderTextColor="#aaa"
+            secureTextEntry={false}
+            style={
+              [
+                {
+                  "flexBasis": "0%",
+                  "flexGrow": 1,
+                  "flexShrink": 1,
+                },
+                {
+                  "color": "#1f2937",
+                },
+                {
+                  "fontSize": 16,
+                  "lineHeight": 24,
+                },
+                {
+                  "height": 48,
+                },
+                {
+                  "lineHeight": 24,
+                },
+              ]
+            }
+            value=""
+          />
+        </View>
+        <View
+          style={
+            [
+              {
+                "flexDirection": "row",
+              },
+              {
+                "alignItems": "center",
+              },
+              {
+                "width": "100%",
+              },
+              {
+                "paddingLeft": 16,
+                "paddingRight": 16,
+              },
+              {
+                "paddingBottom": 12,
+                "paddingTop": 12,
+              },
+              {
+                "borderBottomWidth": 1,
+                "borderLeftWidth": 1,
+                "borderRightWidth": 1,
+                "borderTopWidth": 1,
+              },
+              {
+                "borderBottomColor": "#d1d5db",
+                "borderLeftColor": "#d1d5db",
+                "borderRightColor": "#d1d5db",
+                "borderTopColor": "#d1d5db",
+              },
+              {
+                "borderBottomLeftRadius": 6,
+                "borderBottomRightRadius": 6,
+                "borderTopLeftRadius": 6,
+                "borderTopRightRadius": 6,
+              },
+              {
+                "backgroundColor": "#fff",
+              },
+              {
+                "marginBottom": 12,
+              },
+            ]
+          }
+        >
+          <Text
+            allowFontScaling={false}
+            selectable={false}
+            style={
+              [
+                {
+                  "color": "#aaa",
+                  "fontSize": 20,
+                },
+                {
+                  "marginRight": 8,
+                },
+                {
+                  "fontFamily": "Material Design Icons",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                {},
+              ]
+            }
+          >
+            󰇮
+          </Text>
+          <TextInput
+            keyboardType="email-address"
+            onChangeText={[Function]}
+            placeholder="Email"
+            placeholderTextColor="#aaa"
+            secureTextEntry={false}
+            style={
+              [
+                {
+                  "flexBasis": "0%",
+                  "flexGrow": 1,
+                  "flexShrink": 1,
+                },
+                {
+                  "color": "#1f2937",
+                },
+                {
+                  "fontSize": 16,
+                  "lineHeight": 24,
+                },
+                {
+                  "height": 48,
+                },
+                {
+                  "lineHeight": 24,
+                },
+              ]
+            }
+            value=""
+          />
+        </View>
+        <View
+          style={
+            [
+              {
+                "flexDirection": "row",
+              },
+              {
+                "alignItems": "center",
+              },
+              {
+                "width": "100%",
+              },
+              {
+                "paddingLeft": 16,
+                "paddingRight": 16,
+              },
+              {
+                "paddingBottom": 12,
+                "paddingTop": 12,
+              },
+              {
+                "borderBottomWidth": 1,
+                "borderLeftWidth": 1,
+                "borderRightWidth": 1,
+                "borderTopWidth": 1,
+              },
+              {
+                "borderBottomColor": "#d1d5db",
+                "borderLeftColor": "#d1d5db",
+                "borderRightColor": "#d1d5db",
+                "borderTopColor": "#d1d5db",
+              },
+              {
+                "borderBottomLeftRadius": 6,
+                "borderBottomRightRadius": 6,
+                "borderTopLeftRadius": 6,
+                "borderTopRightRadius": 6,
+              },
+              {
+                "backgroundColor": "#fff",
+              },
+              {
+                "marginBottom": 12,
+              },
+            ]
+          }
+        >
+          <Text
+            allowFontScaling={false}
+            selectable={false}
+            style={
+              [
+                {
+                  "color": "#aaa",
+                  "fontSize": 20,
+                },
+                {
+                  "marginRight": 8,
+                },
+                {
+                  "fontFamily": "Material Design Icons",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                {},
+              ]
+            }
+          >
+            󰌾
+          </Text>
+          <TextInput
+            keyboardType="default"
+            onChangeText={[Function]}
+            placeholder="Password"
+            placeholderTextColor="#aaa"
+            secureTextEntry={true}
+            style={
+              [
+                {
+                  "flexBasis": "0%",
+                  "flexGrow": 1,
+                  "flexShrink": 1,
+                },
+                {
+                  "color": "#1f2937",
+                },
+                {
+                  "fontSize": 16,
+                  "lineHeight": 24,
+                },
+                {
+                  "height": 48,
+                },
+                {
+                  "lineHeight": 24,
+                },
+              ]
+            }
+            value=""
+          />
+        </View>
+        <View
+          style={
+            [
+              {
+                "flexDirection": "row",
+              },
+              {
+                "alignItems": "center",
+              },
+              {
+                "width": "100%",
+              },
+              {
+                "paddingLeft": 16,
+                "paddingRight": 16,
+              },
+              {
+                "paddingBottom": 12,
+                "paddingTop": 12,
+              },
+              {
+                "borderBottomWidth": 1,
+                "borderLeftWidth": 1,
+                "borderRightWidth": 1,
+                "borderTopWidth": 1,
+              },
+              {
+                "borderBottomColor": "#d1d5db",
+                "borderLeftColor": "#d1d5db",
+                "borderRightColor": "#d1d5db",
+                "borderTopColor": "#d1d5db",
+              },
+              {
+                "borderBottomLeftRadius": 6,
+                "borderBottomRightRadius": 6,
+                "borderTopLeftRadius": 6,
+                "borderTopRightRadius": 6,
+              },
+              {
+                "backgroundColor": "#fff",
+              },
+              {
+                "marginBottom": 12,
+              },
+            ]
+          }
+        >
+          <Text
+            allowFontScaling={false}
+            selectable={false}
+            style={
+              [
+                {
+                  "color": "#aaa",
+                  "fontSize": 20,
+                },
+                {
+                  "marginRight": 8,
+                },
+                {
+                  "fontFamily": "Material Design Icons",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                {},
+              ]
+            }
+          >
+            󰌾
+          </Text>
+          <TextInput
+            keyboardType="default"
+            onChangeText={[Function]}
+            placeholder="Confirm Password"
+            placeholderTextColor="#aaa"
+            secureTextEntry={true}
+            style={
+              [
+                {
+                  "flexBasis": "0%",
+                  "flexGrow": 1,
+                  "flexShrink": 1,
+                },
+                {
+                  "color": "#1f2937",
+                },
+                {
+                  "fontSize": 16,
+                  "lineHeight": 24,
+                },
+                {
+                  "height": 48,
+                },
+                {
+                  "lineHeight": 24,
+                },
+              ]
+            }
+            value=""
+          />
+        </View>
+        <View
+          style={
+            [
+              {
+                "flexDirection": "row",
+              },
+              {
+                "alignItems": "center",
+              },
+              {
+                "marginBottom": 8,
+              },
+            ]
+          }
+        >
+          <View
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onClick={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "opacity": 1,
+              }
+            }
+          >
+            <View
+              style={
+                [
+                  {
+                    "width": 24,
+                  },
+                  {
+                    "height": 24,
+                  },
+                  {
+                    "borderBottomLeftRadius": 4,
+                    "borderBottomRightRadius": 4,
+                    "borderTopLeftRadius": 4,
+                    "borderTopRightRadius": 4,
+                  },
+                  {
+                    "borderBottomWidth": 1,
+                    "borderLeftWidth": 1,
+                    "borderRightWidth": 1,
+                    "borderTopWidth": 1,
+                  },
+                  {
+                    "backgroundColor": "#fff",
+                  },
+                  {
+                    "borderBottomColor": "#d1d5db",
+                    "borderLeftColor": "#d1d5db",
+                    "borderRightColor": "#d1d5db",
+                    "borderTopColor": "#d1d5db",
+                  },
+                  {
+                    "alignItems": "center",
+                  },
+                  {
+                    "justifyContent": "center",
+                  },
+                ]
+              }
+            />
+            <Text
+              style={
+                [
+                  {
+                    "color": "#d1d5db",
+                  },
+                  [
+                    {
+                      "marginLeft": 8,
+                    },
+                  ],
+                ]
+              }
+            >
+              I accept the Terms & Conditions
+            </Text>
+          </View>
+          <View
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onClick={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              {
+                "opacity": 1,
+              }
+            }
+          >
+            <Text
+              style={
+                [
+                  {
+                    "color": "#86efac",
+                  },
+                  {
+                    "fontWeight": "700",
+                  },
+                  {
+                    "marginLeft": 8,
+                  },
+                ]
+              }
+            >
+              Terms & Conditions
+            </Text>
+          </View>
+        </View>
+        <View
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": undefined,
+              "disabled": undefined,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            {
+              "backgroundColor": "#16a34a",
+              "borderBottomLeftRadius": 8,
+              "borderBottomRightRadius": 8,
+              "borderTopLeftRadius": 8,
+              "borderTopRightRadius": 8,
+              "opacity": 1,
+              "paddingBottom": 16,
+              "paddingTop": 16,
+              "width": "100%",
+            }
+          }
+        >
+          <Text
+            style={
+              [
+                {
+                  "textAlign": "center",
+                },
+                {
+                  "color": "#fff",
+                },
+                {
+                  "fontSize": 18,
+                  "lineHeight": 28,
+                },
+                {
+                  "fontWeight": "700",
+                },
+              ]
+            }
+          >
+            Register
+          </Text>
+        </View>
+        <View
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": undefined,
+              "disabled": undefined,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            {
+              "marginTop": 24,
+              "opacity": 1,
+            }
+          }
+        >
+          <Text
+            style={
+              [
+                {
+                  "color": "#d1d5db",
+                },
+              ]
+            }
+          >
+            Already have an account?
+             
+            <Text
+              style={
+                [
+                  {
+                    "color": "#86efac",
+                  },
+                  {
+                    "fontWeight": "700",
+                  },
+                ]
+              }
+            >
+              Log in here
+            </Text>
+          </Text>
+        </View>
+      </View>
+    </RCTScrollView>
+  </View>
+</View>
+`;
