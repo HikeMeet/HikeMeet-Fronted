@@ -2,10 +2,10 @@ import React from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 
-import { Trip } from "../../../interfaces/trip-interface";
-import { Group } from "../../../interfaces/group-interface";
-import GroupRow from "../../../components/group-row";
-import TripRow from "../../../components/trip-row";
+import { Trip } from "../../../../interfaces/trip-interface";
+import { Group } from "../../../../interfaces/group-interface";
+import GroupRow from "../../../../components/group-row";
+import TripRow from "../../../../components/trip-row";
 
 type TripPopupProps = {
   trip: Trip;
@@ -25,7 +25,8 @@ export default function TripPopup({
   const groups = trip.groups || [];
 
   return (
-    <View className="bg-white rounded-t-3xl shadow-2xl max-h-[70%] px-5 pt-4 pb-6 border-t border-gray-200">
+    // במקום max-h-[70%] → תן יותר גובה ובשקיפות קלה
+    <View className="bg-white/90 rounded-t-[32px] shadow-2xl max-h-[100%] px-6 pt-5 pb-4 border-t border-gray-100">
       {/* כפתור סגירה (X) */}
       <TouchableOpacity
         onPress={onClose}
@@ -55,7 +56,7 @@ export default function TripPopup({
         {/* כפתור Add Group */}
         <TouchableOpacity
           onPress={onAddGroup}
-          className="absolute right-1 top-5 mt-3 bg-emerald-600 px-4 py-2 rounded-xl shadow-sm"
+          className="absolute right-1 top-5 mt-0 bg-emerald-600 px-4 py-2 rounded-xl shadow-sm"
         >
           <Text className="text-white text-xs font-semibold">+ Add</Text>
         </TouchableOpacity>

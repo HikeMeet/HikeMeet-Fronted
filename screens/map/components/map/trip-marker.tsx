@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Image, Dimensions } from "react-native";
 import Mapbox from "@rnmapbox/maps";
-import { Trip } from "../../../interfaces/trip-interface";
+import { Trip } from "../../../../interfaces/trip-interface";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
