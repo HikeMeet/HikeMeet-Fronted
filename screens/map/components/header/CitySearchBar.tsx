@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   TextInput,
@@ -8,29 +8,28 @@ import {
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-type CitySearchBarProps = {
+type Props = {
+  value: string;
+  onChangeText: (t: string) => void;
   onSelectLocation: (coords: [number, number], placeName: string) => void;
   onClearLocation: () => void;
   placeholder?: string;
 };
 
 export default function CitySearchBar({
+  value,
+  onChangeText,
   onSelectLocation,
   onClearLocation,
   placeholder = "Search city...",
-}: CitySearchBarProps) {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<any[]>([]);
+}: Props) {
+  const [results, setResults] = React.useState<any[]>([]);
 
-  // חיפוש Mapbox
   async function handleSearch(text: string) {
-    setQuery(text);
-    // פחות מ-3 תוים => איפוס
+    onChangeText(text);
     if (text.length < 3) {
       setResults([]);
-      if (text.length === 0) {
-        onClearLocation();
-      }
+      if (text.length === 0) onClearLocation();
       return;
     }
 
@@ -40,55 +39,44 @@ export default function CitySearchBar({
       )}.json?access_token=${process.env.MAPBOX_TOKEN_PUBLIC}&autocomplete=true`;
       const resp = await fetch(url);
       const data = await resp.json();
-      if (data && data.features) {
-        setResults(data.features);
-      } else {
-        setResults([]);
-      }
-    } catch (error) {
-      console.error("Error fetching Mapbox results:", error);
+      setResults(data?.features || []);
+    } catch {
       setResults([]);
     }
   }
 
-  // בחירת מקום => קוראים לפונקציה של MapPage
   function handleSelect(item: any) {
     const [lon, lat] = item.geometry.coordinates;
-    onSelectLocation([lon, lat], item.place_name); // חשוב
-    setQuery(item.place_name);
+    onSelectLocation([lon, lat], item.place_name);
+    onChangeText(item.place_name);
     setResults([]);
   }
 
-  // ניקוי החיפוש
   function clearInput() {
-    setQuery("");
+    onChangeText("");
     setResults([]);
     onClearLocation();
   }
 
   return (
     <View className="relative z-50">
-      {/* שורת חיפוש מעוגלת עם אייקון זכוכית מגדלת בצד שמאל */}
       <View className="flex-row items-center bg-white rounded-full px-3 py-2 shadow-sm">
         <Ionicons name="search" size={18} color="#666" />
         <TextInput
           placeholder={placeholder}
-          value={query}
+          value={value}
           onChangeText={handleSearch}
           className="flex-1 ml-2 text-sm text-gray-800 py-1"
         />
-
-        {/* כפתור ניקוי אם יש תוכן */}
-        {query.length > 0 && (
+        {value.length > 0 && (
           <TouchableOpacity onPress={clearInput} className="p-1 ml-2">
             <Ionicons name="close" size={18} color="#666" />
           </TouchableOpacity>
         )}
       </View>
 
-      {/* רשימת תוצאות החיפוש */}
       {results.length > 0 && (
-        <ScrollView className="absolute top-12 w-full max-h-40 bg-white border border-gray-300 rounded-md shadow z-50">
+        <ScrollView className="absolute top-12 w-full max-h-40 bg-white border border-gray-300 rounded-md shadow">
           {results.map((item) => (
             <TouchableOpacity
               key={item.id}

@@ -13,6 +13,8 @@ type Props = {
   onOpenGroupFilter: () => void;
   onSelectCity: (coords: [number, number], place: string) => void;
   onClearCity: () => void;
+  cityQuery: string;
+  setCityQuery: (q: string) => void;
 };
 
 export default function MapHeader({
@@ -24,6 +26,8 @@ export default function MapHeader({
   onOpenGroupFilter,
   onSelectCity,
   onClearCity,
+  cityQuery,
+  setCityQuery,
 }: Props) {
   return (
     <View className="bg-white p-3 shadow-sm">
@@ -33,9 +37,20 @@ export default function MapHeader({
       >
         <View className="flex-1">
           <CitySearchBar
+            value={cityQuery}
+            onChangeText={setCityQuery}
             placeholder="Search city..."
             onSelectLocation={onSelectCity}
-            onClearLocation={onClearCity}
+            onClearLocation={() => {
+              const cityFilter = activeFilters.find((f) =>
+                f.id.startsWith("city=")
+              );
+              if (cityFilter) {
+                onRemoveFilter(cityFilter.id); // ← הסרה מהפילטרים
+              } else {
+                onClearCity(); // ← גיבוי, אם לא קיים פילטר (נדיר)
+              }
+            }}
           />
         </View>
         <ViewModeButton viewMode={viewMode} onToggle={onToggleView} />

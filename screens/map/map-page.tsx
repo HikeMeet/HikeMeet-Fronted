@@ -1,4 +1,3 @@
-// screens/map/map-page.tsx
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
@@ -52,8 +51,13 @@ export default function MapPage({ navigation }: MapPageProps) {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [city, setCity] = useState("");
+  const [cityQuery, setCityQuery] = useState("");
+
   const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
   const [carouselVisible, setCarouselVisible] = useState(true);
+  const [searchCenter, setSearchCenter] = useState<[number, number] | null>(
+    null
+  );
 
   /* filter‑modal state */
   const [showTripFilter, setShowTripFilter] = useState(false);
@@ -90,21 +94,24 @@ export default function MapPage({ navigation }: MapPageProps) {
     getUserLocation();
   }, []);
 
+  /* מיון לפי מרכז חיפוש או מיקום משתמש */
   useEffect(() => {
-    if (!userLocation || !allTrips.length) return;
+    const center = searchCenter || userLocation;
+    if (!center || !allTrips.length) return;
+
     const sorted = [...allTrips].sort((a, b) => {
       const dA = distanceMeters(
         a.location.coordinates as [number, number],
-        userLocation
+        center
       );
       const dB = distanceMeters(
         b.location.coordinates as [number, number],
-        userLocation
+        center
       );
       return dA - dB;
     });
     setTrips(sorted);
-  }, [userLocation, allTrips]);
+  }, [searchCenter, userLocation, allTrips]);
 
   useEffect(() => {
     if (viewMode === "map" && !popupTrip) showCarousel();
@@ -185,7 +192,6 @@ export default function MapPage({ navigation }: MapPageProps) {
       }
     });
 
-    /* עדכן state */
     setGroups(g);
     setTrips(rebuildTripsWithGroups(t, g));
   }
@@ -196,7 +202,12 @@ export default function MapPage({ navigation }: MapPageProps) {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") return;
       const loc = await Location.getCurrentPositionAsync({});
-      setUserLocation([loc.coords.longitude, loc.coords.latitude]);
+      const first = [loc.coords.longitude, loc.coords.latitude] as [
+        number,
+        number,
+      ];
+      setUserLocation(first);
+      if (!searchCenter) setSearchCenter(first);
     } catch (err) {
       console.error("Failed to get user location", err);
     }
@@ -270,7 +281,6 @@ export default function MapPage({ navigation }: MapPageProps) {
 
   function openGroupFilterModal() {
     hideCarousel();
-
     const difficulties = activeFilters
       .filter((f) => f.id.startsWith("groupDifficulty="))
       .map((f) => f.id.split("=")[1]);
@@ -310,15 +320,11 @@ export default function MapPage({ navigation }: MapPageProps) {
     chosen: ActiveFilter[]
   ) {
     setGroups(filteredGroups);
-
     setActiveFilters((prev) => [
       ...prev.filter((f) => !f.id.startsWith("group")),
       ...chosen,
     ]);
-
-    // עדכון trips בהתאם
     setTrips(rebuildTripsWithGroups(allTrips, filteredGroups));
-
     setShowGroupFilter(false);
     if (viewMode === "map") showCarousel();
   }
@@ -330,6 +336,8 @@ export default function MapPage({ navigation }: MapPageProps) {
 
     if (filterId.startsWith("city=")) {
       setCity("");
+      +setCityQuery(""); // ← הוסף זאת
+      setSearchCenter(null);
       if (viewMode === "map" && userLocation) {
         cameraRef.current?.setCamera({
           centerCoordinate: userLocation,
@@ -369,12 +377,29 @@ export default function MapPage({ navigation }: MapPageProps) {
       animationDuration: 1000,
     });
     setCity(placeName);
-    fetchAllData({ city: placeName });
+    setCityQuery(placeName);
+    setSearchCenter(coords);
+
+    fetchAllData({ city: placeName }).then(() => {
+      // ← מיון מחדש מיד לאחר השליפה
+      const sorted = [...allTrips].sort((a, b) => {
+        const dA = distanceMeters(
+          a.location.coordinates as [number, number],
+          coords
+        );
+        const dB = distanceMeters(
+          b.location.coordinates as [number, number],
+          coords
+        );
+        return dA - dB;
+      });
+      setTrips(sorted);
+    });
+
     setActiveFilters((prev) => [
       ...prev.filter((f) => !f.id.startsWith("city=")),
       { id: `city=${placeName}`, label: `City: ${placeName}` },
     ]);
-    hideCarousel();
   }
 
   /* ---------- popup open / close ---------- */
@@ -444,9 +469,13 @@ export default function MapPage({ navigation }: MapPageProps) {
         onSelectCity={handleSelectCity}
         onClearCity={() => {
           setCity("");
+          setCityQuery("");
+          setSearchCenter(null);
           fetchAllData({});
           if (viewMode === "map") showCarousel();
         }}
+        cityQuery={cityQuery}
+        setCityQuery={setCityQuery}
       />
 
       {loading ? (
@@ -456,7 +485,9 @@ export default function MapPage({ navigation }: MapPageProps) {
           <MapContainer
             cameraRef={cameraRef}
             trips={trips}
-            userLocation={userLocation}
+            centerCoordinate={
+              searchCenter || userLocation || [34.7818, 32.0853]
+            }
             onCenterOnMe={handleCenterOnMe}
             onMarkerPress={openTripPopup}
             disableControls={controlsDisabled}
@@ -485,7 +516,7 @@ export default function MapPage({ navigation }: MapPageProps) {
           trips={trips}
           onOpenTrip={openTripPopup}
           onScrollStart={() => {
-            if (popupTrip) closeTripPopup(); // סגור אם פתוח
+            if (popupTrip) closeTripPopup();
           }}
         />
       )}

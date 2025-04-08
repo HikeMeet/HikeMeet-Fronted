@@ -12,7 +12,7 @@ export default function TripCard({
   onOpenPopup: () => void;
 }) {
   const activeGroupsCount =
-    trip.groups?.filter((g) => g.status === "planned").length || 0;
+    trip.groups?.filter((g) => g.status === "planned" || "active").length || 0;
 
   return (
     <View

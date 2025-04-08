@@ -10,10 +10,10 @@ import { Trip } from "../../../../interfaces/trip-interface";
 type Props = {
   cameraRef: React.RefObject<Camera>;
   trips: Trip[];
-  userLocation: [number, number] | null;
+  /** נקודה שלפיה ממורכזת המצלמה – searchCenter או userLocation */
+  centerCoordinate: [number, number];
   onCenterOnMe: () => void;
   onMarkerPress: (trip: Trip) => void;
-  /** אם true – כפתור Center מושבת (למשל כש‑popup/modal פתוח) */
   disableControls: boolean;
 };
 
@@ -22,7 +22,7 @@ export const MapContainer = forwardRef<Camera, Props>(
     {
       cameraRef,
       trips,
-      userLocation,
+      centerCoordinate,
       onCenterOnMe,
       onMarkerPress,
       disableControls,
@@ -37,7 +37,7 @@ export const MapContainer = forwardRef<Camera, Props>(
           ref={cameraRef}
           zoomLevel={13}
           pitch={0}
-          centerCoordinate={userLocation || [34.7818, 32.0853]}
+          centerCoordinate={centerCoordinate}
         />
 
         <Buildings3D />
