@@ -16,7 +16,7 @@ const FriendMentionList: React.FC<FriendMentionListProps> = ({
   // If there are no suggestions:
   if (friends.length === 0) {
     // If the query is one character or empty, display "No friends"
-    if (mentionQuery.length <= 1) {
+    if (mentionQuery.length < 1) {
       return (
         <View style={{ minHeight: 5, justifyContent: "center" }}>
           <Text className="text-center sm:text-sm text-gray-500">
