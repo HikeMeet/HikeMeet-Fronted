@@ -1,8 +1,6 @@
-/*
 import React from "react";
 import RegisterPage from "../screens/register-login/register-page";
 import { render, fireEvent, waitFor, act } from "@testing-library/react-native";
-import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 const mockNavigate = jest.fn();
@@ -36,7 +34,6 @@ describe("RegisterPage", () => {
 
   it("should show error if fields are not filled", async () => {
     const { getByText } = render(<RegisterPage navigation={mockNavigation} />);
-
     fireEvent.press(getByText("Register"));
 
     await waitFor(() => {
@@ -45,7 +42,7 @@ describe("RegisterPage", () => {
   });
 
   it("should show error if user is under 18", async () => {
-    const { getByText, getByPlaceholderText, UNSAFE_getAllByType } = render(
+    const { getByText, getByPlaceholderText, getByTestId } = render(
       <RegisterPage navigation={mockNavigation} />
     );
 
@@ -56,28 +53,29 @@ describe("RegisterPage", () => {
     fireEvent.changeText(getByPlaceholderText("Password"), "Test1234!");
     fireEvent.changeText(getByPlaceholderText("Confirm Password"), "Test1234!");
 
-    // מפעילים את DatePicker דרך UNSAFE_getAllByType
-    const datePickers = UNSAFE_getAllByType(
-      require("@react-native-community/datetimepicker").default
-    );
-    expect(datePickers.length).toBeGreaterThan(0);
+    // לחץ על השדה לבחירת תאריך הלידה כדי להציג את DateTimePicker
+    fireEvent.press(getByPlaceholderText("Select Your Birthdate"));
 
-    const picker = datePickers[0];
-    const under18Date = new Date();
-    under18Date.setFullYear(under18Date.getFullYear() - 10); // רק 10 שנים אחורה
-
-    await act(() => {
-      picker.props.onChange({}, under18Date);
+    // ודא שה-DateTimePicker מופיע
+    await waitFor(() => {
+      expect(getByTestId("birthdate-picker")).toBeTruthy();
     });
 
-    // Gender
-    const genderPickers = UNSAFE_getAllByType(
-      require("@react-native-picker/picker").Picker
-    );
-    expect(genderPickers.length).toBeGreaterThan(0);
+    // בחר תאריך כך שהמשתמש יהיה מתחת לגיל 18 (לדוגמה – 10 שנים אחורה)
+    const under18Date = new Date();
+    under18Date.setFullYear(under18Date.getFullYear() - 10);
 
-    await act(() => {
-      genderPickers[0].props.onValueChange("male", 1);
+    // קריאה מתוקנת ל-onChange עם מבנה האירוע הנדרש (nativeEvent.timestamp)
+    await act(async () => {
+      getByTestId("birthdate-picker").props.onChange(
+        { nativeEvent: { timestamp: under18Date.getTime() } },
+        under18Date
+      );
+    });
+
+    // בחר ערך במרכיב הבחירה של המין באמצעות fireEvent
+    await act(async () => {
+      fireEvent(getByTestId("gender-picker"), "onValueChange", "male", 1);
     });
 
     fireEvent.press(getByText("I accept the Terms & Conditions"));
@@ -90,47 +88,3 @@ describe("RegisterPage", () => {
     });
   });
 });
-/*
-  it("should navigate to Verify page after successful sign up", async () => {
-    const { getByText, getByPlaceholderText, getByDisplayValue } = render(
-      <RegisterPage navigation={mockNavigation} />
-    );
-
-    fireEvent.changeText(getByPlaceholderText("Username"), "testuser");
-    fireEvent.changeText(getByPlaceholderText("First Name"), "Test");
-    fireEvent.changeText(getByPlaceholderText("Last Name"), "User");
-    fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
-    fireEvent.changeText(getByPlaceholderText("Password"), "Test1234!");
-    fireEvent.changeText(getByPlaceholderText("Confirm Password"), "Test1234!");
-
-    fireEvent.press(getByPlaceholderText("Select Your Birthdate"));
-    await act(async () => {
-      fireEvent(getByPlaceholderText("Select Your Birthdate"), "onChange", {
-        nativeEvent: { timestamp: new Date(2008, 1, 1).getTime() },
-      });
-    });
-
-    // Simulate GenderPicker selection directly
-    await act(async () => {
-      fireEvent(getByDisplayValue("Select Gender"), "onValueChange", "male");
-    });
-
-    fireEvent.press(getByText("I accept the Terms & Conditions"));
-
-    await act(async () => {
-      fireEvent.press(getByText("Register"));
-    });
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("Verify", {
-        username: "testuser",
-        email: "test@example.com",
-        firstName: "Test",
-        lastName: "User",
-        birthdate: expect.any(String),
-        gender: "male",
-      });
-    });
-  });
-
-  */

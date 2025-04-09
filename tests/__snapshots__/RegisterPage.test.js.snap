@@ -665,6 +665,7 @@ exports[`RegisterPage should render correctly (snapshot) 1`] = `
                     undefined,
                   ]
                 }
+                testID="gender-picker"
               />
             </View>
           </View>

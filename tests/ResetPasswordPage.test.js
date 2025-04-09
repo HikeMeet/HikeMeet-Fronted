@@ -1,7 +1,29 @@
-/*import React from "react";
+import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import ForgotPasswordPage from "../screens/register-login/forgot-password-page";
 import { Alert } from "react-native";
+
+// שמירת הפונקציה המקורית של console.error
+const originalConsoleError = console.error;
+
+// השתקת התראה לגבי עדכוני Animated(View) שלא עטופים ב-act
+beforeAll(() => {
+  console.error = (...args) => {
+    if (
+      typeof args[0] === "string" &&
+      args[0].includes(
+        "An update to Animated(View) inside a test was not wrapped in act"
+      )
+    ) {
+      return;
+    }
+    originalConsoleError(...args);
+  };
+});
+
+afterAll(() => {
+  console.error = originalConsoleError;
+});
 
 const mockNavigate = jest.fn();
 const mockNavigation = { navigate: mockNavigate, goBack: jest.fn() };
@@ -56,6 +78,3 @@ describe("ForgotPasswordPage", () => {
     });
   });
 });
-
-
-*/
