@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-      - woozai-patch-1
-      - feature/interactive-map-page2-include-test
+      - feature/*
   pull_request:
     branches:
       - main
@@ -15,51 +14,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout frontend repo
+      # 1. Checkout frontend
       - name: Checkout frontend
         uses: actions/checkout@v4
 
-      # Step 2: Clone backend repo
-      - name: Clone backend repo
+      # 2. Clone backend
+      - name: Clone backend
         run: git clone https://github.com/HikeMeet/HikeMeet-Backend.git temp-backend
 
-      # Step 3: Start backend and frontend using Docker Compose
+      # 3. Docker Compose: build and start services
       - name: Start backend and frontend using Docker Compose
         run: docker compose -f docker-compose.yml up -d --build
 
-      # Step 4: Debug - Print backend logs to see status
-      - name: Show backend logs (for debugging)
+      # 4. Debug logs: check backend container logs
+      - name: Show backend logs
         run: docker logs hike-backend || echo "No logs available"
 
-      # Step 5: Debug - Try curl directly and show full response
-      - name: Try calling backend API (debug)
+      # 5. Check backend health
+      - name: Wait for backend to be ready
         run: |
-          echo "Testing backend API directly:"
-          curl -v http://backend:3000/api || echo "Backend not responding"
-
-      # Step 6: Wait until backend is ready (HTTP 200 response)
-      - name: Wait for backend to return 200
-        run: |
-          echo "Waiting for backend to respond with 200..."
+          echo "Waiting for backend..."
           timeout 90 bash -c '
-          until [ "$(curl -s -o /dev/null -w "%{http_code}" http://backend:3000/api)" == "200" ]; do
+          until curl --silent http://localhost:3000/api; do
             sleep 2
             echo "Still waiting..."
           done
-          '
-          echo "Backend is up and responding!"
+          echo "✅ Backend is UP!"
 
-      # Step 7: Setup Node.js to run frontend tests
+      # 6. Set up Node.js (locally for running tests)
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
-          cache: "npm"
+          cache: npm
 
-      # Step 8: Install frontend dependencies (outside container)
+      # 7. Install deps (outside container for running tests)
       - name: Install frontend dependencies
         run: npm install
 
-      # Step 9: Run frontend tests
+      # 8. Run tests
       - name: Run frontend tests
         run: npm run test
