@@ -26,7 +26,7 @@ jobs:
       # שלב 3: Build Docker image ל-backend (בלי compose!)
       - name: Build backend Docker image
         run: |
-          docker build -t hike-backend ./temp-backend
+          docker build -t backend ./temp-backend
 
       # שלב 4: הרצת השרת ברקע
       - name: Run backend server
