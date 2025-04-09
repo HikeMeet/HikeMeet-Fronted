@@ -19,44 +19,39 @@ jobs:
       - name: Checkout frontend repo
         uses: actions/checkout@v4
 
-      # שלב 2: Clone backend לריפו נפרד
+      # שלב 2: Clone ל-backend repo
       - name: Clone backend repo
         run: git clone https://github.com/HikeMeet/HikeMeet-Backend.git temp-backend
 
-      # שלב 3: Build Docker image ל-backend (בלי compose!)
-      - name: Build backend Docker image
-        run: |
-          docker build -t backend ./temp-backend
+      # שלב 3: הרצת כל השירותים בבת אחת בעזרת Docker Compose
+      - name: Start backend and frontend using Docker Compose
+        run: docker compose up -d --build
 
-      # שלב 4: הרצת השרת ברקע
-      - name: Run backend server
-        run: |
-          docker run -d -p 3000:3000 --name backend
-
-      - name: Show backend container logs
+      # שלב 4: הצגת לוגים של השרת (לצורכי דיבאג)
+      - name: Show backend logs
         run: docker logs backend
 
-      # שלב 5: וידוא שהשרת מוכן
+      # שלב 5: המתנה לוודא שהשרת עלה (בדיקת API)
       - name: Wait for backend to be ready
         run: |
           echo "Waiting for server..."
-          until curl --silent http://localhost:3000/api; do
+          until curl --silent http://localhost:4000/api; do
             sleep 2
             echo "Still waiting..."
           done
           echo "Server is up!"
 
-      # שלב 6: Set up Node.js לפרונט
+      # שלב 6: הגדרת Node.js לבדיקות של הפרונט
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 22.x
           cache: "npm"
 
-      # שלב 7: התקנת תלויות
+      # שלב 7: התקנת תלויות לבדיקות מקומיות בפרונט (מחוץ ל-Docker)
       - name: Install frontend dependencies
         run: npm install
 
-      # שלב 8: הרצת בדיקות
+      # שלב 8: הרצת בדיקות של הפרונט
       - name: Run frontend tests
         run: npm run test
