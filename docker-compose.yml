@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   backend:
     build:
@@ -8,6 +6,8 @@ services:
     container_name: hikemeet-backend
     ports:
       - "5000:3000"
+    env_file:
+      - .env.backend
     networks:
       - hikemeet-net
 
@@ -20,13 +20,7 @@ services:
       - "3000:3000"
     depends_on:
       - backend
-    env_file:
-      - .env.backend
     environment:
       - EXPO_LOCAL_SERVER=http://backend:3000
     networks:
       - hikemeet-net
-
-networks:
-  hikemeet-net:
-    driver: bridge
