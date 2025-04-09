@@ -17,10 +17,16 @@ RUN npm install -g expo-cli
 # שלב 6: העתקת שאר הקבצים
 COPY . .
 
-# פורט 19000 – ברירת מחדל של expo dev server
+# שלב 7: משתני סביבה (לגישה ל-backend מתוך ה-client)
+# חשוב! ניתן להחליף את ה-URL לפי שם השירות ב-Docker Compose או IP חיצוני
+ENV EXPO_LOCAL_SERVER=http://backend:3000
+
+# שלב 8: פתיחת פורטים של expo
+# expo go app (default dev)
 EXPOSE 19000
-# פורטים נוספים אם אתה רוצה גם web
+
+# web version if used
 EXPOSE 19006
 
-# שלב 7: הפעלת expo (כברירת מחדל)
+# שלב 9: הפעלת השרת
 CMD ["npm", "run", "start"]

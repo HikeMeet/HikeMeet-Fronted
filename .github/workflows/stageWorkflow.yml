@@ -15,43 +15,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # שלב 1: Checkout לפרונט
-      - name: Checkout frontend repo
+      # Checkout frontend (root repo)
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # שלב 2: Clone ל-backend repo
-      - name: Clone backend repo
-        run: git clone https://github.com/HikeMeet/HikeMeet-Backend.git temp-backend
-
-      # שלב 3: הרצת כל השירותים בבת אחת בעזרת Docker Compose
+      # Start backend and frontend using Docker Compose
       - name: Start backend and frontend using Docker Compose
+        working-directory: ./HikeMeet-Fronted
         run: docker compose up -d --build
 
-      # שלב 4: הצגת לוגים של השרת (לצורכי דיבאג)
-      - name: Show backend logs
-        run: docker logs backend
-
-      # שלב 5: המתנה לוודא שהשרת עלה (בדיקת API)
+      # Wait until backend is ready (via API check)
       - name: Wait for backend to be ready
         run: |
-          echo "Waiting for server..."
-          until curl --silent http://localhost:4000/api; do
+          echo "Waiting for backend..."
+          until curl --silent http://localhost:3000/api/health; do
             sleep 2
             echo "Still waiting..."
           done
-          echo "Server is up!"
+          echo "Backend is up!"
 
-      # שלב 6: הגדרת Node.js לבדיקות של הפרונט
+      # Install Node.js for frontend tests (outside container)
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 22.x
+          node-version: 18.x
           cache: "npm"
+          cache-dependency-path: HikeMeet-Fronted/package-lock.json
 
-      # שלב 7: התקנת תלויות לבדיקות מקומיות בפרונט (מחוץ ל-Docker)
+      # Install dependencies & run tests locally (not in Docker)
       - name: Install frontend dependencies
+        working-directory: HikeMeet-Fronted
         run: npm install
 
-      # שלב 8: הרצת בדיקות של הפרונט
       - name: Run frontend tests
+        working-directory: HikeMeet-Fronted
         run: npm run test

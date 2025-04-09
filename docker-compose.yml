@@ -1,25 +1,17 @@
-version: "3.9"
+version: "3.8"
 
 services:
   backend:
     build:
-      context: ./temp-backend
-    container_name: backend
+      context: ../HikeMeet-Backend
     ports:
-      - "4000:4000"
-    environment:
-      NODE_ENV: development
-    command: npm run dev
+      - "3000:3000"
+    container_name: hike-backend
 
   frontend:
     build:
       context: .
-    container_name: frontend
-    ports:
-      - "19000:19000"
-      - "19006:19006"
     environment:
-      EXPO_DEVTOOLS_LISTEN_ADDRESS: 0.0.0.0
-    command: npm run start
+      - EXPO_LOCAL_SERVER=http://backend:3000
     depends_on:
       - backend
