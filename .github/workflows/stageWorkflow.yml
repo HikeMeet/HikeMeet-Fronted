@@ -4,59 +4,42 @@ on:
   push:
     branches:
       - main
-      - feature/*
+      - woozai-patch-1
+      - feature/interactive-map-page2-include-test
   pull_request:
     branches:
       - main
-
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      # שלב 1: Checkout לקוד הפרונטאנד
-      - name: Checkout frontend
+      - name: Checkout Frontend Repo
         uses: actions/checkout@v4
 
-      # שלב 2: Clone לקוד הבאקאנד
-      - name: Clone backend repository
-        run: git clone https://github.com/HikeMeet/HikeMeet-Backend.git hikemeet-backend
+      - name: Clone Backend Repo
+        run: git clone https://github.com/HikeMeet/HikeMeet-Backend.git ../hikemeet-backend
 
-      # שלב 3: הפעלת Docker Compose
-      - name: Start services with Docker Compose
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Start Containers
         run: docker compose -f docker-compose.yml up -d --build
 
-      # שלב 4: הדפסת לוגים של הבאקאנד
-      - name: Print backend logs
-        run: docker logs hikemeet-backend || echo "No logs available"
-
-      # שלב 5: המתנה שהבקאנד יהיה זמין
       - name: Wait for backend to be ready
         run: |
           echo "Waiting for backend..."
           for i in {1..30}; do
-            if curl --silent http://hikemeet-backend:5000/api; then
-              echo "✅ Backend is ready!"
+            if curl -s http://localhost:5000/api | grep -q "Server is working"; then
+              echo "✅ Backend is up!"
               exit 0
-            else
-              echo "⏳ Waiting for backend... ($i)"
-              sleep 3
             fi
+            echo "⏳ Waiting for backend... ($i)"
+            sleep 2
           done
           echo "❌ Backend did not respond in time"
+          docker logs hikemeet-backend || true
           exit 1
 
-      # שלב 6: התקנת Node.js
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
-          cache: "npm"
-
-      # שלב 7: התקנת תלויות והרצת טסטים בפרונטאנד
-      - name: Install frontend dependencies
-        run: npm install
-
-      - name: Run frontend tests
-        run: npm run test
-#
+      - name: Run Frontend Tests
+        run: docker exec hikemeet-frontend npm test
