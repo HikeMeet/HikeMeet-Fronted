@@ -14,44 +14,48 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout frontend
+      # שלב 1: Checkout לקוד הפרונטאנד
       - name: Checkout frontend
         uses: actions/checkout@v4
 
-      # 2. Clone backend
-      - name: Clone backend
-        run: git clone https://github.com/HikeMeet/HikeMeet-Backend.git temp-backend
+      # שלב 2: Clone לקוד הבאקאנד
+      - name: Clone backend repository
+        run: git clone https://github.com/HikeMeet/HikeMeet-Backend.git hikemeet-backend
 
-      # 3. Docker Compose: build and start services
-      - name: Start backend and frontend using Docker Compose
+      # שלב 3: הפעלת Docker Compose
+      - name: Start services with Docker Compose
         run: docker compose -f docker-compose.yml up -d --build
 
-      # 4. Debug logs: check backend container logs
-      - name: Show backend logs
-        run: docker logs hike-backend || echo "No logs available"
+      # שלב 4: הדפסת לוגים של הבאקאנד
+      - name: Print backend logs
+        run: docker logs hikemeet-backend || echo "No logs available"
 
-      # 5. Check backend health
+      # שלב 5: המתנה שהבקאנד יהיה זמין
       - name: Wait for backend to be ready
         run: |
           echo "Waiting for backend..."
-          timeout 90 bash -c '
-          until curl --silent http://localhost:3000/api; do
-            sleep 2
-            echo "Still waiting..."
+          for i in {1..30}; do
+            if curl --silent http://localhost:5000/api/health; then
+              echo "✅ Backend is ready!"
+              exit 0
+            else
+              echo "⏳ Waiting for backend... ($i)"
+              sleep 3
+            fi
           done
-          echo "✅ Backend is UP!"
+          echo "❌ Backend did not respond in time"
+          exit 1
 
-      # 6. Set up Node.js (locally for running tests)
+      # שלב 6: התקנת Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
-          cache: npm
+          cache: "npm"
 
-      # 7. Install deps (outside container for running tests)
+      # שלב 7: התקנת תלויות והרצת טסטים בפרונטאנד
       - name: Install frontend dependencies
         run: npm install
 
-      # 8. Run tests
       - name: Run frontend tests
         run: npm run test

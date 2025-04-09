@@ -1,13 +1,13 @@
+version: "3.8"
+
 services:
   backend:
     build:
-      context: ./temp-backend
+      context: ./hikemeet-backend
       dockerfile: Dockerfile
-    container_name: hike-backend
+    container_name: hikemeet-backend
     ports:
-      - "3000:3000"
-    working_dir: /app
-    command: npm run dev
+      - "5000:5000"
     networks:
       - hikemeet-net
 
@@ -15,14 +15,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: hike-frontend
+    container_name: hikemeet-frontend
     ports:
-      - "19000:19000"
-      - "19006:19006"
+      - "3000:3000"
     depends_on:
       - backend
-    environment:
-      - EXPO_LOCAL_SERVER=http://backend:3000
     networks:
       - hikemeet-net
 
