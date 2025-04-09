@@ -1,0 +1,11 @@
+# docker-compose.yml
+version: "3.9"
+
+services:
+  server:
+    build:
+      context: ./HikeMeet-Backend
+    ports:
+      - "4000:4000"
+    environment:
+    command: ["npm", "start"]

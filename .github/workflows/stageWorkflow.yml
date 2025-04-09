@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - woozai-patch-1
+      - feature/interactive-map-page2-include-test
   pull_request:
     branches:
       - main
@@ -30,3 +31,21 @@ jobs:
 
       - name: Run linter
         run: npm run lint
+
+      # הרצת השרת בקונטיינר
+      - name: Start backend server in Docker
+        run: docker compose up -d
+
+      # המתנה שהשרת יעלה (אפשר להחליף ב-healthcheck אם רוצים)
+      - name: Wait for backend to be ready
+        run: |
+          echo "Waiting for server..."
+          until curl --silent http://localhost:4000/health; do
+            sleep 2
+            echo "Still waiting for server..."
+          done
+          echo "Server is up!"
+
+      # הרצת הבדיקות
+      - name: Run tests
+        run: npm run test
