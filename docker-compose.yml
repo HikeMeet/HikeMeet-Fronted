@@ -24,6 +24,8 @@ services:
       - backend
     environment:
       - EXPO_LOCAL_SERVER=http://backend:3000
+    env_file:
+      - .env
     networks:
       - hikemeet-net
 
