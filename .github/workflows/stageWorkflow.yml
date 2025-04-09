@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-      - woozai-patch-1
-      - feature/interactive-map-page2-include-test
   pull_request:
     branches:
       - main
@@ -15,16 +13,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout frontend (root repo)
-      - name: Checkout code
+      # Step 1: Checkout frontend repo
+      - name: Checkout frontend
         uses: actions/checkout@v4
 
-      # Start backend and frontend using Docker Compose
-      - name: Start backend and frontend using Docker Compose
-        working-directory: ./HikeMeet-Fronted
-        run: docker compose up -d --build
+      # Step 2: Clone backend repo
+      - name: Clone backend repo
+        run: git clone https://github.com/HikeMeet/HikeMeet-Backend.git temp-backend
 
-      # Wait until backend is ready (via API check)
+      # Step 3: Start backend and frontend using Docker Compose
+      - name: Start backend and frontend using Docker Compose
+        run: docker compose -f docker-compose.yml up -d --build
+
+      # Step 4: Wait for backend to be ready
       - name: Wait for backend to be ready
         run: |
           echo "Waiting for backend..."
@@ -34,19 +35,16 @@ jobs:
           done
           echo "Backend is up!"
 
-      # Install Node.js for frontend tests (outside container)
+      # Step 5: Setup Node.js for tests
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
           cache: "npm"
-          cache-dependency-path: HikeMeet-Fronted/package-lock.json
 
-      # Install dependencies & run tests locally (not in Docker)
+      # Step 6: Install dependencies and run frontend tests
       - name: Install frontend dependencies
-        working-directory: HikeMeet-Fronted
         run: npm install
 
       - name: Run frontend tests
-        working-directory: HikeMeet-Fronted
         run: npm run test
