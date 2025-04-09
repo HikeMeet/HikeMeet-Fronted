@@ -9,7 +9,6 @@ services:
       - "3000:3000"
     expose:
       - "3000"
-    container_name: hike-backend
 
   frontend:
     build:
