@@ -15,37 +15,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the React Native repository
-      - uses: actions/checkout@v4
+      # שלב 1: Checkout לפרונט
+      - name: Checkout frontend repo
+        uses: actions/checkout@v4
 
-      # Set up Node.js for the React Native app
+      # שלב 2: Clone לריפו של ה־backend לתוך תיקיית backend
+      - name: Clone backend repo
+        run: git clone https://github.com/HikeMeet/HikeMeet-Backend.git backend
+
+      # שלב 3: Set up Node.js עבור הפרונט
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 22.x
           cache: "npm"
 
-          # Install dependencies for the React Native app
-      - name: Install React Native dependencies
+      # שלב 4: התקנת תלויות הפרונט
+      - name: Install frontend dependencies
         run: npm install
 
-      #- name: Run linter
-      #  run: npm run lint
-
-      # הרצת השרת בקונטיינר
-      - name: Start backend server in Docker
+      # שלב 5: הפעלת השרת דרך Docker Compose
+      - name: Start backend with Docker Compose
         run: docker compose up -d
 
-      # המתנה שהשרת יעלה (אפשר להחליף ב-healthcheck אם רוצים)
+      # שלב 6: המתנה שהשרת יעלה (בדיקה מול /health)
       - name: Wait for backend to be ready
         run: |
           echo "Waiting for server..."
           until curl --silent http://localhost:4000/health; do
             sleep 2
-            echo "Still waiting for server..."
+            echo "Still waiting..."
           done
           echo "Server is up!"
 
-      # הרצת הבדיקות
-      - name: Run tests
+      # שלב 7: הרצת בדיקות הפרונט
+      - name: Run frontend tests
         run: npm run test
