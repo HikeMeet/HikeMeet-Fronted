@@ -8,4 +8,5 @@ services:
     ports:
       - "4000:4000"
     environment:
+      NODE_ENV: test
     command: npm run start
