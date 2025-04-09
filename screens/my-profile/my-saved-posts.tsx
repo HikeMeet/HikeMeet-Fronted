@@ -9,7 +9,7 @@ import {
 import PostCard from "../posts/components/post-card-on-feeds";
 import { useAuth } from "../../contexts/auth-context";
 import { IPost } from "../../interfaces/post-interface";
-import { fetchLikedPostsForUser } from "../../components/requests/fetch-posts";
+import { fetchLikedSavedPostsForUser } from "../../components/requests/fetch-posts";
 
 interface SavedPostsProps {
   route: any;
@@ -24,7 +24,7 @@ const SavedPosts: React.FC<SavedPostsProps> = ({ route, navigation }) => {
 
   const fetchPosts = useCallback(async () => {
     try {
-      const fetchedPosts = await fetchLikedPostsForUser(mongoId!, "saved");
+      const fetchedPosts = await fetchLikedSavedPostsForUser(mongoId!, "saved");
       setPosts(fetchedPosts);
     } catch (error) {
       console.error("Error fetching saved posts:", error);

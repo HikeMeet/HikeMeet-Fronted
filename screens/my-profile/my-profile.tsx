@@ -24,7 +24,7 @@ import PostCard from "../posts/components/post-card-on-feeds";
 import { fetchPostsForUser } from "../../components/requests/fetch-posts";
 import HikersList from "../../components/hikers-list-in-profile";
 
-const ProfilePage: React.FC<{ navigation: any }> = ({ navigation }) => {
+const ProfilePage = ({ navigation }: any) => {
   const { mongoUser } = useAuth();
   const [showHikers, setShowHikers] = useState<boolean>(false);
   const [posts, setPosts] = useState<IPost[]>([]);

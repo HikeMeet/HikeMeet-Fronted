@@ -15,7 +15,10 @@ export const fetchPostsForUser = async (userId: {
   }
 };
 
-export const fetchLikedPostsForUser = async (userId: string, type: string) => {
+export const fetchLikedSavedPostsForUser = async (
+  userId: string,
+  type: string
+) => {
   const response = await fetch(`${API_BASE_URL}/${type}/${userId}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch ${type} posts`);
