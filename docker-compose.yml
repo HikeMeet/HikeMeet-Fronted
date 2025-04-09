@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   backend:
     build:
@@ -24,3 +26,7 @@ services:
       - EXPO_LOCAL_SERVER=http://backend:3000
     networks:
       - hikemeet-net
+
+networks:
+  hikemeet-net:
+    driver: bridge
