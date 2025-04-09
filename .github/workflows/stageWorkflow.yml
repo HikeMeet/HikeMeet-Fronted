@@ -31,7 +31,7 @@ jobs:
       # שלב 4: הרצת השרת ברקע
       - name: Run backend server
         run: |
-          docker run -d -p 3000:3000 --name backend backend
+          docker run -d -p 3000:3000 --name backend
 
       - name: Show backend container logs
         run: docker logs backend
