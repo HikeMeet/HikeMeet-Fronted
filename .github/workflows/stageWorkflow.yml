@@ -33,6 +33,9 @@ jobs:
         run: |
           docker run -d -p 3000:3000 --name backend-server hike-backend
 
+      - name: Show backend container logs
+        run: docker logs backend-server
+
       # שלב 5: וידוא שהשרת מוכן
       - name: Wait for backend to be ready
         run: |
