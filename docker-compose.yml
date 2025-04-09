@@ -4,8 +4,11 @@ services:
   backend:
     build:
       context: ./temp-backend
+    container_name: hike-backend
     ports:
       - "3000:3000"
+    expose:
+      - "3000"
     container_name: hike-backend
 
   frontend:
