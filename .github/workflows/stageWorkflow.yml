@@ -35,7 +35,7 @@ jobs:
         run: |
           echo "Waiting for backend..."
           for i in {1..30}; do
-            if curl --silent http://localhost:5000/api/health; then
+            if curl --silent http://localhost:5000/api; then
               echo "✅ Backend is ready!"
               exit 0
             else
