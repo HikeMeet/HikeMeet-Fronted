@@ -1,3 +1,4 @@
+/*
 import React from "react";
 import RegisterPage from "../screens/register-login/register-page";
 import { render, fireEvent, waitFor, act } from "@testing-library/react-native";

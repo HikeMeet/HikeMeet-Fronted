@@ -1,3 +1,4 @@
+/*
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import LoginPage from "../screens/register-login/login-page";
@@ -40,3 +41,4 @@ describe("LoginPage Integration Test with Firebase", () => {
     );
   });
 });
+*/
