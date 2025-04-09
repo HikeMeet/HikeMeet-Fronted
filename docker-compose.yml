@@ -12,6 +12,6 @@ services:
     build:
       context: .
     environment:
-      - EXPO_LOCAL_SERVER=http://backend:3000
+      - EXPO_LOCAL_SERVER=http://backend:3000/api
     depends_on:
       - backend
