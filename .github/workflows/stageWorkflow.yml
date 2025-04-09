@@ -30,24 +30,14 @@ jobs:
 
       # שלב 4: הרצת השרת ברקע
       - name: Run backend server
-        run: docker run -d -p 3000:3000 --name backend-server hike-backend
+        run: |
+          docker run -d -p 4000:4000 --name backend-server hike-backend
 
-      - name: Show running containers
-        run: docker ps -a
-
-      - name: Show backend container logs
-        run: docker logs backend-server
-
-      - name: Exec into container to check processes
-        run: docker exec backend-server ps aux
-
-      - name: Try curl from inside the container
-        run: docker exec backend-server curl -v http://localhost:3000/api
-
+      # שלב 5: וידוא שהשרת מוכן
       - name: Wait for backend to be ready
         run: |
           echo "Waiting for server..."
-          until curl --silent http://localhost:3000/api; do
+          until curl --silent http://localhost:4000/api; do
             sleep 2
             echo "Still waiting..."
           done
