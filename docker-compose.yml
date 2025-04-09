@@ -20,6 +20,8 @@ services:
       - "3000:3000"
     depends_on:
       - backend
+    env_file:
+      - .env.backend
     environment:
       - EXPO_LOCAL_SERVER=http://backend:3000
     networks:

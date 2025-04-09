@@ -24,6 +24,27 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # לפני שלב Build and Start Containers
+      - name: Export backend secrets
+        run: |
+          echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> .env.backend
+          echo "FIREBASE_PRIVATE_KEY_ID=${{ secrets.FIREBASE_PRIVATE_KEY_ID }}" >> .env.backend
+          echo "FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}" >> .env.backend
+          echo "FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}" >> .env.backend
+          echo "FIREBASE_CLIENT_ID=${{ secrets.FIREBASE_CLIENT_ID }}" >> .env.backend
+          echo "FIREBASE_AUTH_URI=${{ secrets.FIREBASE_AUTH_URI }}" >> .env.backend
+          echo "FIREBASE_TOKEN_URI=${{ secrets.FIREBASE_TOKEN_URI }}" >> .env.backend
+          echo "FIREBASE_AUTH_PROVIDER_CERT_URL=${{ secrets.FIREBASE_AUTH_PROVIDER_CERT_URL }}" >> .env.backend
+          echo "FIREBASE_CLIENT_CERT_URL=${{ secrets.FIREBASE_CLIENT_CERT_URL }}" >> .env.backend
+          echo "FIREBASE_TYPE=${{ secrets.FIREBASE_TYPE }}" >> .env.backend
+          echo "FIREBASE_UNIVERSE_DOMAIN=${{ secrets.FIREBASE_UNIVERSE_DOMAIN }}" >> .env.backend
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env.backend
+          echo "PORT=${{ secrets.PORT }}" >> .env.backend
+          echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> .env.backend
+          echo "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}" >> .env.backend
+          echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> .env.backend
+          echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}" >> .env.backend
+
       - name: Build and Start Containers
         run: docker compose -f docker-compose.yml up -d --build
 
