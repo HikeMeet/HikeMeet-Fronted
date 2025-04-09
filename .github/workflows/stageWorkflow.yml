@@ -6,7 +6,7 @@ on:
     branches:
       - main
       - woozai-patch-1
-      - feature/interactive-map-page2-include-test
+      - feature/interactive-map-page2-include-test #need to be change
   pull_request:
     branches:
       - main

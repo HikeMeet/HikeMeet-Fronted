@@ -22,7 +22,7 @@ export default function FiltersBar({
 }: FiltersBarProps) {
   return (
     <View className="flex-col space-y-2">
-      {/* כפתורי סינון */}
+      {/* Filter buttons*/}
       <View className="flex-row space-x-2">
         <TouchableOpacity
           onPress={onOpenGroupFilter}
@@ -45,7 +45,7 @@ export default function FiltersBar({
         </TouchableOpacity>
       </View>
 
-      {/* צ'יפים נגללים */}
+      {/* Rolling chips*/}
       {filters.length > 0 && (
         <ScrollView
           horizontal

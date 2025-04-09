@@ -14,6 +14,7 @@ type Props = {
   onCenterOnMe: () => void;
   onMarkerPress: (trip: Trip) => void;
   disableControls: boolean;
+  selectedTripId?: string | null;
 };
 
 export const MapContainer = forwardRef<Camera, Props>(
@@ -25,6 +26,7 @@ export const MapContainer = forwardRef<Camera, Props>(
       onCenterOnMe,
       onMarkerPress,
       disableControls,
+      selectedTripId,
     },
     _ref
   ) => (
@@ -40,7 +42,11 @@ export const MapContainer = forwardRef<Camera, Props>(
         />
 
         <Buildings3D />
-        <MarkersLayer trips={trips} onMarkerPress={onMarkerPress} />
+        <MarkersLayer
+          trips={trips}
+          onMarkerPress={onMarkerPress}
+          selectedTripId={selectedTripId}
+        />
       </Mapbox.MapView>
     </View>
   )

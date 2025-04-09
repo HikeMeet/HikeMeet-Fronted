@@ -88,7 +88,6 @@ export default function MapPage({ navigation }: MapPageProps) {
 
   const controlsDisabled =
     popupTrip !== null || showTripFilter || showGroupFilter;
-
   /* ---------- effects ---------- */
   useEffect(() => {
     fetchAllData({});
@@ -364,7 +363,7 @@ export default function MapPage({ navigation }: MapPageProps) {
     Location.getCurrentPositionAsync({}).then((loc) => {
       cameraRef.current?.setCamera({
         centerCoordinate: [loc.coords.longitude, loc.coords.latitude],
-        zoomLevel: 13,
+        zoomLevel: 14,
         animationDuration: 1000,
       });
     });
@@ -374,7 +373,7 @@ export default function MapPage({ navigation }: MapPageProps) {
   function handleSelectCity(coords: [number, number], placeName: string) {
     cameraRef.current?.setCamera({
       centerCoordinate: coords,
-      zoomLevel: 16,
+      zoomLevel: 13,
       animationDuration: 1000,
     });
     setCity(placeName);
@@ -415,6 +414,19 @@ export default function MapPage({ navigation }: MapPageProps) {
   });
 
   function openTripPopup(trip: Trip) {
+    const sameLocationCount = trips.filter((t) => {
+      const [lonA, latA] = t.location.coordinates;
+      const [lonB, latB] = trip.location.coordinates;
+      return lonA === lonB && latA === latB;
+    }).length;
+
+    const zoomLevel = sameLocationCount > 1 ? 20 : 16;
+
+    cameraRef.current?.setCamera({
+      centerCoordinate: trip.location.coordinates as [number, number],
+      zoomLevel: zoomLevel,
+      animationDuration: 1000,
+    });
     hideCarousel();
     Animated.timing(panelOldAnim, {
       toValue: 0,
@@ -442,18 +454,33 @@ export default function MapPage({ navigation }: MapPageProps) {
 
   /* ---------- carousel scroll sync ---------- */
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+
   function handleScrollEnd(e: NativeSyntheticEvent<NativeScrollEvent>) {
     const offsetX = e.nativeEvent.contentOffset.x;
     const newIdx = Math.round(offsetX / (SCREEN_WIDTH * 0.85));
+
     if (newIdx !== currentIndex) {
       setCurrentIndex(newIdx);
       const trip = trips[newIdx];
       if (trip?.location?.coordinates) {
+        // Check if there is more than one trip with the same coordinates
+        const sameLocationCount = trips.filter((t) => {
+          const [lonA, latA] = t.location.coordinates;
+          const [lonB, latB] = trip.location.coordinates;
+          return lonA === lonB && latA === latB;
+        }).length;
+
+        const zoomLevel = sameLocationCount > 1 ? 20 : 16;
+
         cameraRef.current?.setCamera({
           centerCoordinate: trip.location.coordinates as [number, number],
-          zoomLevel: 16,
+          zoomLevel: zoomLevel,
           animationDuration: 1000,
         });
+      }
+      if (trip?._id) {
+        setSelectedTripId(trip._id);
       }
     }
   }
@@ -507,6 +534,7 @@ export default function MapPage({ navigation }: MapPageProps) {
             onCenterOnMe={handleCenterOnMe}
             onMarkerPress={openTripPopup}
             disableControls={controlsDisabled}
+            selectedTripId={selectedTripId}
           />
 
           {carouselVisible && trips.length > 0 && (

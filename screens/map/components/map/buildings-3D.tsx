@@ -14,8 +14,8 @@ export default function Buildings3D() {
           fillExtrusionOpacity: 0.6,
         }}
         filter={["==", "extrude", "true"]}
-        minZoomLevel={15}
-        maxZoomLevel={22}
+        minZoomLevel={20}
+        maxZoomLevel={20}
       />
     </Mapbox.VectorSource>
   );

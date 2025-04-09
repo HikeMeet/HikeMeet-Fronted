@@ -22,7 +22,7 @@ export default function MapHeader({
 }: Props) {
   return (
     <View className="bg-white p-3 shadow-sm rounded-2xl space-y-3">
-      {/* Filters Bar למעלה */}
+      {/* Filters Bar above */}
       <View className="absolute top-3 right-3 z-10">
         <ViewModeButton viewMode={viewMode} onToggle={onToggleView} />
       </View>
@@ -33,8 +33,6 @@ export default function MapHeader({
         onOpenTripFilter={onOpenTripFilter}
         onOpenGroupFilter={onOpenGroupFilter}
       />
-
-      {/* View Mode Button למטה */}
     </View>
   );
 }
