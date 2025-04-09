@@ -4,17 +4,14 @@ import {
   Text,
   TouchableOpacity,
   ActivityIndicator,
-  ScrollView,
   RefreshControl,
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styled } from "nativewind";
 import CreatePostButton from "../posts/components/create-post-buton";
-import SearchInput from "../../components/search-input";
 import PostCard from "../posts/components/post-card-on-feeds";
 import { useFocusEffect } from "@react-navigation/native";
 import { IPost } from "../../interfaces/post-interface";
@@ -70,74 +67,80 @@ const Home = ({ navigation }: any) => {
     fetchPosts();
   }, [showFriendsOnly]);
 
-  return (
-    <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 bg-white">
-        {/* Header */}
-        <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
-          <Text className="text-xl font-bold">Hikemeet</Text>
-          <TouchableOpacity onPress={() => navigation.navigate("SearchPage")}>
-            <Ionicons name="search" size={24} color="black" />
-          </TouchableOpacity>
-        </View>
+  // Render the header for the FlatList.
+  const renderHeader = () => (
+    <>
+      {/* Header Section */}
+      <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
+        <Text className="text-xl font-bold">Hikemeet</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("SearchPage")}>
+          <Ionicons name="search" size={24} color="black" />
+        </TouchableOpacity>
+      </View>
 
-        {/* Filters Toggle */}
-        <View className="flex-row justify-around py-2 border-b border-gray-300 mt-4">
-          <TouchableOpacity
-            onPress={() => setShowFriendsOnly(true)}
-            className={`px-4 py-2 rounded-lg ${
-              showFriendsOnly ? "bg-blue-500" : "bg-gray-100"
+      {/* Filters Toggle */}
+      <View className="flex-row justify-around py-2 border-b border-gray-300 mt-4 bg-white">
+        <TouchableOpacity
+          onPress={() => setShowFriendsOnly(true)}
+          className={`px-4 py-2 rounded-lg ${
+            showFriendsOnly ? "bg-blue-500" : "bg-gray-100"
+          }`}
+        >
+          <Text
+            className={`text-sm font-medium ${
+              showFriendsOnly ? "text-white" : "text-gray-700"
             }`}
           >
-            <Text
-              className={`text-sm font-medium ${
-                showFriendsOnly ? "text-white" : "text-gray-700"
-              }`}
-            >
-              Friends Only
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setShowFriendsOnly(false)}
-            className={`px-4 py-2 rounded-lg ${
-              !showFriendsOnly ? "bg-blue-500" : "bg-gray-100"
+            Friends Only
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setShowFriendsOnly(false)}
+          className={`px-4 py-2 rounded-lg ${
+            !showFriendsOnly ? "bg-blue-500" : "bg-gray-100"
+          }`}
+        >
+          <Text
+            className={`text-sm font-medium ${
+              !showFriendsOnly ? "text-white" : "text-gray-700"
             }`}
           >
-            <Text
-              className={`text-sm font-medium ${
-                !showFriendsOnly ? "text-white" : "text-gray-700"
-              }`}
-            >
-              All
-            </Text>
-          </TouchableOpacity>
-        </View>
+            All
+          </Text>
+        </TouchableOpacity>
+      </View>
 
-        {/* Create Post */}
+      {/* Create Post Button */}
+      <View className="bg-white py-2">
         <CreatePostButton
           navigation={navigation}
           location="home"
           onPress={() => console.log("create post clicked")}
         />
+      </View>
+    </>
+  );
 
-        {/* Posts Feed */}
-        {loading ? (
-          <ActivityIndicator
-            size="large"
-            color="#0000ff"
-            style={{ marginTop: 20 }}
-          />
-        ) : (
-          <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-          >
-            <FlatList
-              keyboardShouldPersistTaps="always"
-              keyboardDismissMode="none"
-              data={posts.slice(0, postsToShow)}
-              keyExtractor={(item) => item._id}
-              renderItem={({ item }) => (
+  return (
+    <SafeAreaView className="flex-1 bg-white">
+      {loading ? (
+        <ActivityIndicator
+          size="large"
+          color="#0000ff"
+          style={{ marginTop: 20 }}
+        />
+      ) : (
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <FlatList
+            keyboardShouldPersistTaps="always"
+            keyboardDismissMode="none"
+            data={posts.slice(0, postsToShow)}
+            keyExtractor={(item) => item._id}
+            renderItem={({ item }) => (
+              <View className="p-2">
                 <PostCard
                   post={item}
                   navigation={navigation}
@@ -154,18 +157,19 @@ const Home = ({ navigation }: any) => {
                     );
                   }}
                 />
-              )}
-              onEndReached={handleLoadMorePosts}
-              onEndReachedThreshold={0.1}
-              refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-              }
-              contentContainerStyle={{ paddingBottom: 20 }}
-              showsVerticalScrollIndicator={false}
-            />
-          </KeyboardAvoidingView>
-        )}
-      </View>
+              </View>
+            )}
+            ListHeaderComponent={renderHeader}
+            onEndReached={handleLoadMorePosts}
+            onEndReachedThreshold={0.1}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            contentContainerStyle={{ paddingBottom: 20 }}
+            showsVerticalScrollIndicator={false}
+          />
+        </KeyboardAvoidingView>
+      )}
     </SafeAreaView>
   );
 };

@@ -142,6 +142,8 @@ const CommentModal: React.FC<CommentModalProps> = ({
           </View>
           {/* Comments List */}
           <FlatList
+            keyboardShouldPersistTaps="always"
+            keyboardDismissMode="none"
             ref={flatListRef}
             data={displayedComments}
             keyExtractor={(item) => item._id}
@@ -157,6 +159,7 @@ const CommentModal: React.FC<CommentModalProps> = ({
             onEndReached={loadMoreComments}
             onEndReachedThreshold={0.1}
             contentContainerStyle={{ paddingBottom: 100 }}
+            showsVerticalScrollIndicator={false}
           />
           {/* Sticky Input for New Comment */}
           <KeyboardAvoidingView

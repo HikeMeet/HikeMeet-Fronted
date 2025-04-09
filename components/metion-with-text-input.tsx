@@ -73,7 +73,7 @@ const MentionTextInput: React.FC<MentionTextInputProps> = ({
           onChangeText={onChangeText}
           placeholder={placeholder}
           style={inputStyle}
-          multiline={true} // Allow newline/enter key input.
+          multiline={true}
           {...props}
         />
         {mentionMatch && (

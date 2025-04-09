@@ -14,8 +14,6 @@ const BioSection: React.FC<BioSectionProps> = ({
   const [bio, setBio] = useState<string>(initialBio);
   const [editingBio, setEditingBio] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
-  const [expanded, setExpanded] = useState<boolean>(false);
-  const [isTruncated, setIsTruncated] = useState<boolean>(false);
   const { mongoId } = useAuth();
 
   const handleSaveBio = async () => {
@@ -39,12 +37,6 @@ const BioSection: React.FC<BioSectionProps> = ({
       Alert.alert("Error", "Failed to update bio. Please try again.");
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleTextLayout = (e: any) => {
-    if (e.nativeEvent.lines.length > 2) {
-      setIsTruncated(true);
     }
   };
 
@@ -85,20 +77,9 @@ const BioSection: React.FC<BioSectionProps> = ({
         </View>
       ) : (
         <View>
-          <Text
-            className="text-sm text-gray-700"
-            numberOfLines={!expanded ? 2 : undefined}
-            onTextLayout={handleTextLayout}
-          >
+          <Text className="text-sm text-gray-700">
             {bio || "No bio provided."}
           </Text>
-          {isTruncated && (
-            <TouchableOpacity onPress={() => setExpanded(!expanded)}>
-              <Text className="text-blue-500 mt-1">
-                {expanded ? "Show less" : "Show more"}
-              </Text>
-            </TouchableOpacity>
-          )}
         </View>
       )}
     </View>

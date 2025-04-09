@@ -23,6 +23,11 @@ const DEFAULT_TRIP_IMAGE_URL =
   "https://res.cloudinary.com/dyebkjnoc/image/upload/v1742664563/trip_images/pxn2u29twifmjcjq7whv.png";
 const DEFAULT_GROUP_IMAGE_URL =
   "https://res.cloudinary.com/dyebkjnoc/image/upload/v1743157838/group_images/o1onsa093hqedz3ti7fo.webp";
+const DEFAULT_PROFILE_IMAGE_ID = "profile_images/tpyngwygeoykeur0hgre";
+
+const DEFAULT_TRIP_IMAGE_ID = "trip_images/pxn2u29twifmjcjq7whv";
+
+const DEFAULT_GROUP_IMAGE_ID = "group_images/o1onsa093hqedz3ti7fo";
 
 interface MainImageProps {
   initialImage: IImageModel;
@@ -183,25 +188,42 @@ const ProfileImage: React.FC<MainImageProps> = ({
         (process.env.EXPO_LOCAL_SERVER as string) ||
         "http://192.168.1.100:3000";
       let requestUrl: string;
+      let defaultImage: IImageModel;
       if (uploadType === "trip") {
         requestUrl = `${backendUrl}/api/trips/${id}/update`;
+        defaultImage = {
+          url: DEFAULT_TRIP_IMAGE_URL,
+          image_id: DEFAULT_TRIP_IMAGE_ID,
+          type: "image",
+        };
       } else if (uploadType === "group") {
         requestUrl = `${backendUrl}/api/group/${id}/update`;
+        defaultImage = {
+          url: DEFAULT_GROUP_IMAGE_URL,
+          image_id: DEFAULT_GROUP_IMAGE_ID,
+          type: "image",
+        };
       } else {
         requestUrl = `${backendUrl}/api/user/${id}/update`;
+        defaultImage = {
+          url: DEFAULT_PROFILE_IMAGE_URL,
+          image_id: DEFAULT_PROFILE_IMAGE_ID,
+          type: "image",
+        };
       }
       console.log("Updating backend with URL:", requestUrl);
 
-      // Retrieve the current media (the photo that will be removed)
-      // For example, for user profile:
-
-      // Build update payload that resets the image field to the default values.
 
       // Send update request to backend
+      const updatePayload =
+        uploadType === "trip" || uploadType === "group"
+          ? { main_image: defaultImage, updated_by: mongoId }
+          : { profile_picture: defaultImage };
+
       const response = await fetch(requestUrl, {
         method: "POST", // or PUT if your route is set that way
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ updated_by: mongoId }),
+        body: JSON.stringify(updatePayload),
       });
 
       if (!response.ok) {
