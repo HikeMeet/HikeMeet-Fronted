@@ -90,9 +90,19 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
   // When a comment is updated (e.g., liked), update it in the post's comments list.
   const handleCommentUpdated = (updatedComment: IComment) => {
     if (!post) return;
-    const updatedComments = post.comments.map((c) =>
-      c._id === updatedComment._id ? updatedComment : c
-    );
+
+    let updatedComments;
+    // If the comment is marked as deleted, filter it out
+    if ((updatedComment as any).deleted) {
+      updatedComments = post.comments.filter(
+        (c) => c._id !== updatedComment._id
+      );
+    } else {
+      // Otherwise update the existing comment object.
+      updatedComments = post.comments.map((c) =>
+        c._id === updatedComment._id ? updatedComment : c
+      );
+    }
     setPost({ ...post, comments: updatedComments });
   };
 
@@ -168,7 +178,6 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
           <Text className="text-3xl text-gray-600">⋮</Text>
         </TouchableOpacity>
       </View>
-
       {/* Post Content */}
       <View className="mb-4 px-4">
         {isEditing ? (
@@ -189,24 +198,20 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
           />
         )}
       </View>
-
       {/* Preview of attached groups */}
       <SelectedGroupsList
         groups={post.attached_groups as Group[]}
         navigation={navigation}
       />
-
       {/* Preview of attached trips */}
       <SelectedTripsList
         trips={post.attached_trips as Trip[]}
         navigation={navigation}
       />
-
       {/* Media Section */}
       {mediaItems.length > 0 && (
         <MediaList media={mediaItems} onPressItem={openFullScreen} />
       )}
-
       {/* Original Post Preview for Shared Posts */}
       {post.is_shared && (
         <InnerPostCard
@@ -214,28 +219,24 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
           navigation={navigation}
         />
       )}
-
       {/* Post Meta */}
       <Text className="text-sm text-gray-500 mb-2">
         Posted on: {new Date(post.created_at).toLocaleString()}
       </Text>
-
       {/* Privacy Text */}
       <Text className="text-xs text-gray-400 mb-2">
         Privacy: {post.privacy === "private" ? "Private" : "Public"}
       </Text>
-
       {/* Post Actions */}
       <PostActions
         post={post}
         navigation={navigation}
         onLikeChange={fetchPost}
       />
-
       {/* Comments Section Title */}
-      <View className="mt-4 mb-2 px-4">
+      {/* <View className="mt-4 mb-2 px-4">
         <Text className="text-base font-semibold text-gray-800">Comments:</Text>
-      </View>
+      </View> */}
     </View>
   );
 
@@ -244,8 +245,8 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
 
   return (
     <>
-      <SafeAreaView className="flex-auto bg-gray-50 ">
-        <FlatList
+      <SafeAreaView className="flex-1 bg-gray-50 ">
+        {/* <FlatList
           data={displayedComments}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
@@ -260,8 +261,8 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
           onEndReached={loadMoreComments}
           onEndReachedThreshold={0.1}
           contentContainerStyle={{ paddingBottom: 180 }}
-        />
-
+        /> */}
+        {ListHeader()}
         {/* Sticky Input for New Comment */}
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
