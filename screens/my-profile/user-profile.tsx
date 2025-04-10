@@ -6,6 +6,8 @@ import {
   SafeAreaView,
   FlatList,
   StatusBar,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import BioSection from "./components/profile-bio-section";
 import { useAuth } from "../../contexts/auth-context";
@@ -96,10 +98,51 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   // Handlers for tooltip options
 
   const renderPostsHeader = () => (
-    <View className="p-4">
-      <BioSection bio={user!.bio} />
-      <View className="h-px bg-gray-300 my-4" />
-    </View>
+    <>
+      <StatusBar barStyle="dark-content" backgroundColor="white" />
+      {user && (
+        <View className="bg-white">
+          {/* Profile Info Row */}
+          <View className="flex-row items-center p-4">
+            <ProfileImage
+              initialImage={user.profile_picture}
+              size={80}
+              id={user._id}
+              uploadType={"profile"}
+              editable={false} // Only editable if the current user is the creator
+            />
+            <View className="flex-1 ml-2">
+              <Text className="text-xl font-bold">{`${user.username} ${user.last_name}`}</Text>
+              <Text className="text-sm font-bold">{`${user.first_name} ${user.last_name}`}</Text>
+              <Text className="text-sm text-gray-500">Rank: Adventurer</Text>
+              {/* Hiker Button moved under the name and rank */}
+              <HikerButton
+                showHikers={showHikers}
+                toggleHikers={toggleHikers}
+                user={user}
+              />
+              {mongoId && (
+                <View className="flex-row items-center">
+                  <FriendActionButton
+                    targetUserId={userId}
+                    status={friendStatus}
+                    onStatusChange={(newStatus: string) =>
+                      setFriendStatus(newStatus)
+                    }
+                  />
+                </View>
+              )}
+            </View>
+          </View>
+          {/* Bio Section Row */}
+          <View className="p-4 bg-white">
+            {/* Optional horizontal divider */}
+            <View className="h-px bg-gray-300 my-2" />
+            <BioSection bio={user!.bio} />
+          </View>
+        </View>
+      )}
+    </>
   );
 
   if (loading) {
@@ -121,43 +164,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white ">
-      <StatusBar barStyle="dark-content" backgroundColor="white" />
-
-      {/* User Details */}
-      <View className="flex-row items-center mb-4">
-        <ProfileImage
-          initialImage={user.profile_picture}
-          size={80}
-          id={user._id}
-          uploadType={"profile"}
-          editable={false} // Only editable if the current user is the creator
-        />
-        <View className="flex-1 ml-5">
-          <Text className="text-xl font-bold">{`${user.username} ${user.last_name}`}</Text>
-          <Text className="text-sm font-bold">{`${user.first_name} ${user.last_name}`}</Text>
-          <Text className="text-sm text-gray-500">Rank: Adventurer</Text>
-          {/* Hiker Button moved under the name and rank */}
-          <HikerButton
-            showHikers={showHikers}
-            toggleHikers={toggleHikers}
-            user={user}
-          />
-          {mongoId && (
-            <View className="flex-row items-center">
-              <FriendActionButton
-                targetUserId={userId}
-                status={friendStatus}
-                onStatusChange={(newStatus: string) =>
-                  setFriendStatus(newStatus)
-                }
-              />
-            </View>
-          )}
-        </View>
-      </View>
-
-      {/* Friend Action Button and Tooltip */}
-
       {/* Conditional Rendering: Hikers List vs. Bio and Posts */}
       {showHikers ? (
         <HikersList
@@ -167,36 +173,41 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
         />
       ) : (
         <>
-          <FlatList
-            data={posts}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-              // Replace with your actual PostCard component that displays a post.
-              <View className="p-4">
-                <PostCard
-                  post={item}
-                  navigation={navigation}
-                  onPostUpdated={(deletedPost) => {
-                    setPosts((prevPosts) =>
-                      prevPosts.filter((p) => p._id !== deletedPost._id)
-                    );
-                  }}
-                  onPostLiked={(updatedPost: IPost) => {
-                    setPosts((prevPosts) =>
-                      prevPosts.map((p) =>
-                        p._id === updatedPost._id ? updatedPost : p
-                      )
-                    );
-                  }}
-                />
-              </View>
-            )}
-            ListHeaderComponent={renderPostsHeader}
-            refreshing={loadingPosts}
-            onRefresh={fetchPosts}
-            contentContainerStyle={{ paddingBottom: 220 }}
-            showsVerticalScrollIndicator={false}
-          />
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+          >
+            <FlatList
+              data={posts}
+              keyExtractor={(item) => item._id}
+              renderItem={({ item }) => (
+                // Replace with your actual PostCard component that displays a post.
+                <View className="p-4">
+                  <PostCard
+                    post={item}
+                    navigation={navigation}
+                    onPostUpdated={(deletedPost) => {
+                      setPosts((prevPosts) =>
+                        prevPosts.filter((p) => p._id !== deletedPost._id)
+                      );
+                    }}
+                    onPostLiked={(updatedPost: IPost) => {
+                      setPosts((prevPosts) =>
+                        prevPosts.map((p) =>
+                          p._id === updatedPost._id ? updatedPost : p
+                        )
+                      );
+                    }}
+                  />
+                </View>
+              )}
+              ListHeaderComponent={renderPostsHeader}
+              refreshing={loadingPosts}
+              onRefresh={fetchPosts}
+              contentContainerStyle={{ paddingBottom: 220 }}
+              showsVerticalScrollIndicator={false}
+            />
+          </KeyboardAvoidingView>
         </>
       )}
     </SafeAreaView>

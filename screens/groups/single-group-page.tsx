@@ -101,7 +101,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
           />
         )}
         <Text
-          className="text-3xl font-bold flex-1"
+          className="text-lg font-bold"
           numberOfLines={1}
           ellipsizeMode="tail"
         >
