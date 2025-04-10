@@ -90,9 +90,19 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
   // When a comment is updated (e.g., liked), update it in the post's comments list.
   const handleCommentUpdated = (updatedComment: IComment) => {
     if (!post) return;
-    const updatedComments = post.comments.map((c) =>
-      c._id === updatedComment._id ? updatedComment : c
-    );
+
+    let updatedComments;
+    // If the comment is marked as deleted, filter it out
+    if ((updatedComment as any).deleted) {
+      updatedComments = post.comments.filter(
+        (c) => c._id !== updatedComment._id
+      );
+    } else {
+      // Otherwise update the existing comment object.
+      updatedComments = post.comments.map((c) =>
+        c._id === updatedComment._id ? updatedComment : c
+      );
+    }
     setPost({ ...post, comments: updatedComments });
   };
 
@@ -244,7 +254,7 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
 
   return (
     <>
-      <SafeAreaView className="flex-auto bg-gray-50 ">
+      <SafeAreaView className="flex-1 bg-gray-50 ">
         <FlatList
           data={displayedComments}
           keyExtractor={(item) => item._id}

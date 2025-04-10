@@ -104,9 +104,7 @@ const CommentRow: React.FC<CommentRowProps> = ({
   const handleDelete = async () => {
     try {
       await deleteComment(postId, comment._id, mongoId!);
-      // Notify parent about deletion.
-      // Here, you could either remove the comment from the list
-      // or trigger a refetch; we'll call onCommentUpdated with a flag.
+
       if (onCommentUpdated) {
         // Parent should remove the comment from its list.
         onCommentUpdated({ ...comment, deleted: true } as IComment);
