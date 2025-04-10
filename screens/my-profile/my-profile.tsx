@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -34,14 +34,13 @@ const ProfilePage = ({ navigation }: any) => {
     setShowHikers((prev) => !prev);
   };
 
-  // When screen is focused, hide the hikers list.
+  // Always call hooks in the same order!
   useFocusEffect(
     useCallback(() => {
       setShowHikers(false);
     }, [])
   );
 
-  // Fetch posts created by this user.
   const fetchPosts = async () => {
     setLoadingPosts(true);
     try {
@@ -60,6 +59,48 @@ const ProfilePage = ({ navigation }: any) => {
     }
   }, [mongoUser]);
 
+  // Always call useMemo, even if mongoUser is null.
+  const memoizedHeader = useMemo(() => {
+    if (!mongoUser) return null;
+    return (
+      <>
+        <StatusBar barStyle="dark-content" backgroundColor="white" />
+        {/* Profile Header */}
+        <View className="flex-row items-center p-4 bg-white">
+          <ProfileImage
+            initialImage={mongoUser.profile_picture}
+            size={80}
+            id={mongoUser._id}
+            uploadType="profile"
+          />
+          <View className="flex-1 ml-5">
+            <Text className="text-lg font-bold">{mongoUser.username}</Text>
+            <Text className="text-sm font-bold">{`${mongoUser.first_name} ${mongoUser.last_name}`}</Text>
+            <Text className="text-sm text-gray-500">Rank: Adventurer</Text>
+            <HikerButton
+              showHikers={showHikers}
+              toggleHikers={toggleHikers}
+              user={mongoUser}
+            />
+          </View>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("AccountStack", { screen: "Settings" })
+            }
+            style={{ alignSelf: "flex-start" }}
+          >
+            <Icon name="settings" size={24} color="black" />
+          </TouchableOpacity>
+        </View>
+        {/* Bio and Create Post Section */}
+        <View className="p-4 bg-white">
+          <BioSection bio={mongoUser.bio} />
+        </View>
+      </>
+    );
+  }, [mongoUser, showHikers]);
+
+  // Early return if there is no user.
   if (!mongoUser) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-white">
@@ -74,66 +115,20 @@ const ProfilePage = ({ navigation }: any) => {
     );
   }
 
-  // Combine profile header, bio, and create post into the posts feed header.
-  const renderProfileHeader = () => (
-    <>
-      <StatusBar barStyle="dark-content" backgroundColor="white" />
-
-      {/* Profile Header */}
-      <View className="flex-row items-center p-4 bg-white">
-        <ProfileImage
-          initialImage={mongoUser.profile_picture}
-          size={80}
-          id={mongoUser._id}
-          uploadType="profile"
-        />
-        <View className="flex-1 ml-5">
-          <Text className="text-lg font-bold">{mongoUser.username}</Text>
-          <Text className="text-sm font-bold">{`${mongoUser.first_name} ${mongoUser.last_name}`}</Text>
-          <Text className="text-sm text-gray-500">Rank: Adventurer</Text>
-          <HikerButton
-            showHikers={showHikers}
-            toggleHikers={toggleHikers}
-            user={mongoUser}
-          />
-        </View>
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("AccountStack", { screen: "Settings" })
-          }
-          style={{ alignSelf: "flex-start" }}
-        >
-          <Icon name="settings" size={24} color="black" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Bio and Create Post Section */}
-      <View className="p-4 bg-white">
-        <BioSection bio={mongoUser.bio} />
-        <View className="h-px bg-gray-300 my-4" />
-        <CreatePostButton
-          navigation={navigation}
-          location="home"
-          onPress={() => console.log("create post clicked")}
-        />
-      </View>
-    </>
-  );
-
   return (
     <SafeAreaView className="flex-1 bg-white">
-      {showHikers ? (
-        // When showing hikers, render the HikersList component.
-        <HikersList
-          isMyProfile={true}
-          navigation={navigation}
-          profileId={mongoUser._id}
-        />
-      ) : (
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-        >
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        {showHikers ? (
+          <HikersList
+            isMyProfile={true}
+            navigation={navigation}
+            profileId={mongoUser._id}
+            headerComponent={memoizedHeader!} // Pass the memoized header
+          />
+        ) : (
           <FlatList
             keyboardShouldPersistTaps="always"
             keyboardDismissMode="none"
@@ -159,7 +154,24 @@ const ProfilePage = ({ navigation }: any) => {
                 />
               </View>
             )}
-            ListHeaderComponent={renderProfileHeader}
+            ListHeaderComponent={
+              <>
+                {memoizedHeader}
+                <View className="h-px bg-gray-300 my-4" />
+                <CreatePostButton
+                  navigation={navigation}
+                  location="home"
+                  onPress={() => console.log("create post clicked")}
+                />
+              </>
+            }
+            ListEmptyComponent={
+              loadingPosts ? (
+                <View style={{ marginTop: 20, alignItems: "center" }}>
+                  <ActivityIndicator size="large" color="#0000ff" />
+                </View>
+              ) : null
+            }
             refreshControl={
               <RefreshControl
                 refreshing={loadingPosts}
@@ -169,8 +181,8 @@ const ProfilePage = ({ navigation }: any) => {
             contentContainerStyle={{ paddingBottom: 20 }}
             showsVerticalScrollIndicator={false}
           />
-        </KeyboardAvoidingView>
-      )}
+        )}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

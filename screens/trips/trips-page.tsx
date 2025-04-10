@@ -135,40 +135,46 @@ const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
     <SafeAreaView className="flex-1 bg-white p-4">
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
-      ) : filteredTrips.length === 0 ? (
-        <View className="flex-1 justify-center items-center mt-20">
-          <Text className="text-lg">No trips found.</Text>
-        </View>
       ) : (
-        <FlatList
-          data={displayedTrips}
-          keyExtractor={(item, index) => `${item._id}-${index}`}
-          renderItem={({ item, index }) => {
-            // Use the index to access the corresponding trip history entry.
-            const completedAt = tripsHistory[index]?.completed_at;
-            return (
-              <TripRow
-                key={`${item._id}-${index}`}
-                trip={item}
-                completedAt={completedAt}
-                onPress={() =>
-                  navigation.navigate("TripsStack", {
-                    screen: "TripPage",
-                    params: { tripId: item._id },
-                  })
-                }
+        <>
+          {renderListHeader()}
+          <FlatList
+            data={displayedTrips}
+            keyExtractor={(item, index) => `${item._id}-${index}`}
+            renderItem={({ item, index }) => {
+              // Use the index to access the corresponding trip history entry.
+              const completedAt = tripsHistory[index]?.completed_at;
+              return (
+                <TripRow
+                  key={`${item._id}-${index}`}
+                  trip={item}
+                  completedAt={completedAt}
+                  onPress={() =>
+                    navigation.navigate("TripsStack", {
+                      screen: "TripPage",
+                      params: { tripId: item._id },
+                    })
+                  }
+                />
+              );
+            }}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.1}
+            ListEmptyComponent={
+              <View className="mt-10">
+                <Text className="text-lg text-center">No trips found.</Text>
+              </View>
+            }
+            refreshControl={
+              <RefreshControl
+                refreshing={loading}
+                onRefresh={handleFetchTrips}
               />
-            );
-          }}
-          ListHeaderComponent={renderListHeader}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.1}
-          refreshControl={
-            <RefreshControl refreshing={loading} onRefresh={handleFetchTrips} />
-          }
-          contentContainerStyle={{ paddingBottom: 20 }}
-          showsVerticalScrollIndicator={false}
-        />
+            }
+            contentContainerStyle={{ paddingBottom: 20 }}
+            showsVerticalScrollIndicator={false}
+          />
+        </>
       )}
     </SafeAreaView>
   );
