@@ -1,7 +1,17 @@
 import React from "react";
-import Mapbox from "@rnmapbox/maps";
+import Constants from "expo-constants";
 
-export default function Buildings3D() {
+// רק טען את Mapbox אם לא ב-Expo Go
+let Mapbox = null;
+if (Constants.appOwnership !== "expo") {
+  Mapbox = require("@rnmapbox/maps").default;
+}
+
+const Buildings3D = () => {
+  if (!Mapbox) {
+    return null;
+  }
+
   return (
     <Mapbox.VectorSource id="composite" url="mapbox://mapbox.mapbox-streets-v8">
       <Mapbox.FillExtrusionLayer
@@ -14,9 +24,11 @@ export default function Buildings3D() {
           fillExtrusionOpacity: 0.6,
         }}
         filter={["==", "extrude", "true"]}
-        minZoomLevel={20}
-        maxZoomLevel={20}
+        minZoomLevel={15}
+        maxZoomLevel={22}
       />
     </Mapbox.VectorSource>
   );
-}
+};
+
+export default Buildings3D;

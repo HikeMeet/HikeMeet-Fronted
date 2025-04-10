@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
+  Text,
   ActivityIndicator,
   Animated,
   Dimensions,
@@ -8,7 +9,6 @@ import {
   NativeScrollEvent,
 } from "react-native";
 import * as Location from "expo-location";
-import { Camera } from "@rnmapbox/maps";
 import CitySearchBar from "./components/header/city-search-bar";
 
 import MapHeader from "./components/header/map-header";
@@ -18,12 +18,24 @@ import TripPopup from "./components/popup/trip-popup";
 import TripList from "./components/list/trip-list";
 import TripFilterModal from "../../components/TripFilterModal";
 import GroupFilterModal from "../../components/GroupFilterModal";
+import Constants from "expo-constants";
 
 import { Trip } from "../../interfaces/trip-interface";
 import { Group } from "../../interfaces/group-interface";
 import { ActiveFilter } from "./components/header/filters-bar";
 
-/* Haversine helper */
+// Load Mapbox dynamically
+let Mapbox: any = null;
+let Camera: any = null;
+if (Constants.appOwnership !== "expo") {
+  Mapbox = require("@rnmapbox/maps").default;
+  Camera = require("@rnmapbox/maps").Camera;
+}
+
+const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
+type TripFilter = { city?: string; category?: string };
+type MapPageProps = { navigation: any; route: any };
+
 function distanceMeters(
   [lon1, lat1]: [number, number],
   [lon2, lat2]: [number, number]
@@ -39,11 +51,17 @@ function distanceMeters(
   return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
-type TripFilter = { city?: string; category?: string };
-type MapPageProps = { navigation: any; route: any };
-
 export default function MapPage({ navigation }: MapPageProps) {
+  if (!Mapbox || !Camera) {
+    return (
+      <View className="flex-1 items-center justify-center p-4">
+        <Text className="text-center text-gray-600">
+          Maps are disabled in Expo Go. Please use a custom dev client to view
+          maps.
+        </Text>
+      </View>
+    );
+  }
   /* ---------- state ---------- */
   const [trips, setTrips] = useState<Trip[]>([]);
   const [allTrips, setAllTrips] = useState<Trip[]>([]);
@@ -76,7 +94,7 @@ export default function MapPage({ navigation }: MapPageProps) {
   });
 
   /* ---------- map & location ---------- */
-  const cameraRef = useRef<Camera>(null);
+  const cameraRef = useRef<any>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null
   );

@@ -7,10 +7,16 @@ import {
   Animated,
   Dimensions,
 } from "react-native";
-import Mapbox from "@rnmapbox/maps";
+import Constants from "expo-constants";
 import { Trip } from "../../../../interfaces/trip-interface";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+// נטען את Mapbox רק אם לא ב-Expo Go
+let Mapbox: any = null;
+if (Constants.appOwnership !== "expo") {
+  Mapbox = require("@rnmapbox/maps").default;
+}
 
 type TripMarkerProps = {
   trip: Trip;
@@ -29,12 +35,13 @@ export default function TripMarker({
   isSelected = false,
   onPressMarker,
 }: TripMarkerProps) {
+  if (!Mapbox) return null;
+
   const groupCount = (trip.groups || []).length;
   const imageSize = Math.max(50, Math.min(50, SCREEN_WIDTH * 0.14));
   const ringSize = 4;
   const containerSize = imageSize + ringSize * 1;
 
-  // Animation for scaling when cursor is selected
   const scaleAnim = useRef(new Animated.Value(isSelected ? 1.1 : 1)).current;
   useEffect(() => {
     Animated.timing(scaleAnim, {
@@ -44,7 +51,6 @@ export default function TripMarker({
     }).start();
   }, [isSelected]);
 
-  // Colors for the trip name label – default based on availability
   const defaultNameBgColor = hasAvailability ? "bg-emerald-100" : "bg-rose-100";
   const defaultNameBorderColor = hasAvailability
     ? "border-emerald-500"
@@ -56,7 +62,6 @@ export default function TripMarker({
     ? "bg-emerald-600"
     : "bg-rose-600";
 
-  // In selected state (isSelected true), we will update border and label colors to black
   const nameBorderStyle = isSelected ? "border-black" : defaultNameBorderColor;
   const textStyle = defaultTextColor;
   const indicatorStyle = defaultIndicatorColor;
@@ -75,7 +80,6 @@ export default function TripMarker({
         {/* Map image with outer ring */}
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
           <View className="relative shadow-xl">
-            {/* Outer container (ring) */}
             <View
               style={{
                 width: containerSize,
