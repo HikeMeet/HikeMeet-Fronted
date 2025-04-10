@@ -198,7 +198,12 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
 
   return (
     <SafeAreaView className="bg-white flex-1">
-      <ScrollView contentContainerStyle={{ padding: 16 }} className="bg-white">
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="always"
+        contentContainerStyle={{ padding: 16 }}
+        className="bg-white"
+      >
         <Text className="text-2xl font-bold mb-4 text-center">
           Create a Post
         </Text>

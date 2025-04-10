@@ -244,7 +244,7 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
 
   return (
     <>
-      <SafeAreaView className="flex-1 bg-gray-50">
+      <SafeAreaView className="flex-auto bg-gray-50 ">
         <FlatList
           data={displayedComments}
           keyExtractor={(item) => item._id}
@@ -261,63 +261,63 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
           onEndReachedThreshold={0.1}
           contentContainerStyle={{ paddingBottom: 180 }}
         />
-      </SafeAreaView>
 
-      {/* Sticky Input for New Comment */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex-row items-center p-4"
-      >
-        <MentionTextInput
-          placeholder="Write a comment..."
-          value={newCommentText}
-          onChangeText={setNewCommentText}
-          inputStyle={{
-            flex: 1,
-            borderWidth: 1,
-            borderColor: "#ccc",
-            borderRadius: 8,
-            padding: 8,
-            fontSize: 16,
-            color: "#374151",
-          }}
-          containerStyle={{ flex: 1 }}
-        />
-        <TouchableOpacity
-          onPress={handlePostComment}
-          className="ml-2 bg-blue-500 rounded-lg p-2"
+        {/* Sticky Input for New Comment */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex-row items-center p-4"
         >
-          <Text className="text-white">Send</Text>
-        </TouchableOpacity>
-      </KeyboardAvoidingView>
+          <MentionTextInput
+            placeholder="Write a comment..."
+            value={newCommentText}
+            onChangeText={setNewCommentText}
+            inputStyle={{
+              flex: 1,
+              borderWidth: 1,
+              borderColor: "#ccc",
+              borderRadius: 8,
+              padding: 8,
+              fontSize: 16,
+              color: "#374151",
+            }}
+            containerStyle={{ flex: 1 }}
+          />
+          <TouchableOpacity
+            onPress={handlePostComment}
+            className="ml-2 bg-blue-500 rounded-lg p-2"
+          >
+            <Text className="text-white">Send</Text>
+          </TouchableOpacity>
+        </KeyboardAvoidingView>
 
-      {/* Fullscreen Modal for Media Preview */}
-      <Modal
-        visible={mediaModalVisible}
-        animationType="slide"
-        onRequestClose={() => setMediaModalVisible(false)}
-      >
-        <FullScreenMediaModal
-          media={mediaItems}
-          initialIndex={selectedMediaIndex}
-          onClose={() => setMediaModalVisible(false)}
+        {/* Fullscreen Modal for Media Preview */}
+        <Modal
+          visible={mediaModalVisible}
+          animationType="slide"
+          onRequestClose={() => setMediaModalVisible(false)}
+        >
+          <FullScreenMediaModal
+            media={mediaItems}
+            initialIndex={selectedMediaIndex}
+            onClose={() => setMediaModalVisible(false)}
+          />
+        </Modal>
+
+        {/* Options Modal for Post Options (Edit/Delete/Report) */}
+        <PostOptionsModal
+          visible={optionsVisible}
+          onClose={() => setOptionsVisible(false)}
+          post={post}
+          navigation={navigation}
+          onEdit={() => {
+            setIsEditing(true);
+            setOptionsVisible(false);
+          }}
+          onPostUpdated={(deletedPost) => {
+            navigation.goBack();
+          }}
         />
-      </Modal>
-
-      {/* Options Modal for Post Options (Edit/Delete/Report) */}
-      <PostOptionsModal
-        visible={optionsVisible}
-        onClose={() => setOptionsVisible(false)}
-        post={post}
-        navigation={navigation}
-        onEdit={() => {
-          setIsEditing(true);
-          setOptionsVisible(false);
-        }}
-        onPostUpdated={(deletedPost) => {
-          navigation.goBack();
-        }}
-      />
+      </SafeAreaView>
     </>
   );
 };
