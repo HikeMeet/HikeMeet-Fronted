@@ -4,6 +4,8 @@ import Constants from "expo-constants";
 import { NavigationContainer } from "@react-navigation/native";
 import MainLayout from "./MainLayout";
 import { AuthProvider } from "./contexts/auth-context";
+import "react-native-gesture-handler";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // Only import and configure Mapbox if not running in Expo Go
 let Mapbox;
@@ -22,7 +24,9 @@ export default function App() {
   return (
     <AuthProvider>
       <NavigationContainer>
-        <MainLayout />
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <MainLayout />
+        </GestureHandlerRootView>
       </NavigationContainer>
     </AuthProvider>
   );

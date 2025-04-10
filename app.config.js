@@ -4,6 +4,10 @@ export default ({ config }) => ({
     ...config.expo,
     name: "expo-react-native-w-tailwind",
     slug: "expo-react-native-w-tailwind",
+    extra: {
+      GOOGLEMAP_API_KEY: process.env.GOOGLEMAP_API_KEY,
+    },
+
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",

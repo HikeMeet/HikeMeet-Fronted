@@ -10,6 +10,7 @@ interface CustomTextInputProps extends TextInputProps {
   onChangeText: (text: string) => void;
   onPress?: () => void; // Add an optional onFocus prop
   keyboardType?: "default" | "email-address" | "numeric" | "phone-pad";
+  testID?: string;
 }
 
 const CustomTextInput: React.FC<CustomTextInputProps> = ({
@@ -20,6 +21,7 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
   onChangeText,
   onPress,
   keyboardType = "default",
+  testID,
   ...rest
 }) => {
   return (
@@ -34,6 +36,7 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
         onPress={onPress}
         keyboardType={keyboardType}
         placeholderTextColor="#aaa"
+        testID={testID}
         {...rest} // Spread other props for flexibility
       />
     </View>

@@ -9,6 +9,7 @@ interface GroupRowProps {
   navigation: any;
   onAction?: () => void;
   onPress: () => void;
+  showAvailability?: boolean;
 }
 
 const GroupRow: React.FC<GroupRowProps> = ({
@@ -16,8 +17,11 @@ const GroupRow: React.FC<GroupRowProps> = ({
   navigation,
   onAction,
   onPress,
+  showAvailability = false,
 }) => {
   const currentMembers = group.members ? group.members.length : 0;
+  const spotsLeft = group.max_members - currentMembers;
+  const isFull = spotsLeft <= 0;
 
   return (
     <>
@@ -71,6 +75,16 @@ const GroupRow: React.FC<GroupRowProps> = ({
                 <Text className="text-sm text-gray-500">
                   {currentMembers}/{group.max_members}
                 </Text>
+                {/* how much place in group left*/}
+                {showAvailability && (
+                  <Text
+                    className={`text-s font-semibold mt-1 ${
+                      isFull ? "text-red-600" : "text-emerald-600"
+                    }`}
+                  >
+                    {isFull ? "• Full" : `• ${spotsLeft} left`}
+                  </Text>
+                )}
               </View>
             </View>
           </View>
