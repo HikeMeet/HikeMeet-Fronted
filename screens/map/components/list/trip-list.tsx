@@ -1,7 +1,7 @@
 import React from "react";
 import { ScrollView, Text } from "react-native";
-import TripRow from "../../../../components/trip-row";
 import { Trip } from "../../../../interfaces/trip-interface";
+import TripRow from "../../../trips/component/trip-row";
 
 type Props = {
   trips: Trip[];

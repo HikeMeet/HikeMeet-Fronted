@@ -272,7 +272,7 @@ export default function MapPage({ navigation }: MapPageProps) {
     const resp = await fetch(`${process.env.EXPO_LOCAL_SERVER}/api/group/list`);
     const raw = await resp.json();
     return raw
-      .filter((g: any) => g.status !== "completed")
+      .filter((g: any) => g.status !== "complete")
       .map((g: any) => ({
         ...g,
         membersCount: Array.isArray(g.members) ? g.members.length : 0,

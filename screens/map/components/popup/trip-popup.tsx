@@ -4,8 +4,8 @@ import Icon from "react-native-vector-icons/Ionicons";
 
 import { Trip } from "../../../../interfaces/trip-interface";
 import { Group } from "../../../../interfaces/group-interface";
-import GroupRow from "../../../../components/group-row";
-import TripRow from "../../../../components/trip-row";
+import TripRow from "../../../trips/component/trip-row";
+import GroupRow from "../../../groups/components/group-row";
 
 type TripPopupProps = {
   trip: Trip;
@@ -78,6 +78,12 @@ export default function TripPopup({
               navigation={navigation}
               showAvailability
               onAction={() => onGroupPress(group._id, "join")}
+              onPress={() =>
+                navigation.navigate("GroupsStack", {
+                  screen: "GroupPage",
+                  params: { groupId: group._id },
+                })
+              }
             />
           ))
         )}
