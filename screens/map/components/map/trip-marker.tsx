@@ -12,7 +12,6 @@ import { Trip } from "../../../../interfaces/trip-interface";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-// נטען את Mapbox רק אם לא ב-Expo Go
 let Mapbox: any = null;
 if (Constants.appOwnership !== "expo") {
   Mapbox = require("@rnmapbox/maps").default;

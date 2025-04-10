@@ -7,14 +7,13 @@ import Buildings3D from "./buildings-3D";
 import MarkersLayer from "./markers-layer";
 import { Trip } from "../../../../interfaces/trip-interface";
 
-// רק אם לא ב-Expo Go נטען את Mapbox
 let Mapbox: any = null;
 if (Constants.appOwnership !== "expo") {
   Mapbox = require("@rnmapbox/maps").default;
 }
 
 type Props = {
-  cameraRef: React.RefObject<any>; // אי אפשר לייבא Camera ישירות כאן - נטפל בזה דרך Mapbox.Camera
+  cameraRef: React.RefObject<any>;
   trips: Trip[];
   centerCoordinate: [number, number];
   onCenterOnMe: () => void;
