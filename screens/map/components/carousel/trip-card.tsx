@@ -40,7 +40,9 @@ export default function TripCard({
         onPress={onOpenPopup}
         className="bg-emerald-600 rounded-md py-2 px-4 mt-3"
       >
-        <Text className="text-white text-center font-semibold">View Group</Text>
+        <Text className="text-white text-center font-semibold">
+          View Groups
+        </Text>
       </TouchableOpacity>
     </View>
   );

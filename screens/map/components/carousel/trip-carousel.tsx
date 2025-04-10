@@ -1,6 +1,6 @@
-import React, { useRef } from "react";
+import React from "react";
 import {
-  ScrollView,
+  FlatList,
   View,
   Dimensions,
   NativeSyntheticEvent,
@@ -10,6 +10,8 @@ import TripCard from "./trip-card";
 import { Trip } from "../../../../interfaces/trip-interface";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const CARD_WIDTH = SCREEN_WIDTH * 0.85;
+const SIDE_PADDING = (SCREEN_WIDTH - CARD_WIDTH) / 2;
 
 export default function TripCarousel({
   trips,
@@ -20,28 +22,24 @@ export default function TripCarousel({
   onOpenPopup: (t: Trip) => void;
   onScrollEnd: (e: NativeSyntheticEvent<NativeScrollEvent>) => void;
 }) {
-  const scrollViewRef = useRef<ScrollView>(null);
-
   return (
     <View className="pb-3">
-      <ScrollView
-        ref={scrollViewRef}
+      <FlatList
+        data={trips}
         horizontal
-        pagingEnabled={false}
+        pagingEnabled
         showsHorizontalScrollIndicator={false}
-        snapToInterval={SCREEN_WIDTH * 0.85 + 10}
+        keyExtractor={(item) => item._id}
+        renderItem={({ item }) => (
+          <TripCard trip={item} onOpenPopup={() => onOpenPopup(item)} />
+        )}
+        contentContainerStyle={{
+          paddingHorizontal: SIDE_PADDING,
+        }}
+        snapToAlignment="center"
         decelerationRate="fast"
         onMomentumScrollEnd={onScrollEnd}
-        contentContainerStyle={{ paddingHorizontal: 10 }}
-      >
-        {trips.map((trip) => (
-          <TripCard
-            key={trip._id}
-            trip={trip}
-            onOpenPopup={() => onOpenPopup(trip)}
-          />
-        ))}
-      </ScrollView>
+      />
     </View>
   );
 }
