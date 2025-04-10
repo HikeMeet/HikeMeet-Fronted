@@ -70,6 +70,10 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
 
   const { endpoint, label, color } = getEndpointAndStyle();
 
+  useEffect(() => {
+    setCurrentStatus(status);
+  }, [status]);
+
   // Handle primary (short press) action.
   const handlePress = async () => {
     try {
