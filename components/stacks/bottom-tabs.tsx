@@ -15,6 +15,7 @@ const BottomTabs = () => {
   return (
     <Provider>
       <Tab.Navigator
+        backBehavior="history"
         initialRouteName="Home" // Set the default page here
         screenOptions={{
           headerShown: false,

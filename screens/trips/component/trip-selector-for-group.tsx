@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   Modal,
 } from "react-native";
-import { Trip } from "../interfaces/trip-interface";
+import { Trip } from "../../../interfaces/trip-interface";
 
 interface TripSelectorProps {
   onSelectTrip: (tripId: string) => void;

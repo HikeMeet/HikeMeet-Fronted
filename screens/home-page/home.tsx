@@ -4,14 +4,14 @@ import {
   Text,
   TouchableOpacity,
   ActivityIndicator,
-  ScrollView,
   RefreshControl,
   FlatList,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styled } from "nativewind";
 import CreatePostButton from "../posts/components/create-post-buton";
-import SearchInput from "../../components/search-input";
 import PostCard from "../posts/components/post-card-on-feeds";
 import { useFocusEffect } from "@react-navigation/native";
 import { IPost } from "../../interfaces/post-interface";
@@ -67,68 +67,65 @@ const Home = ({ navigation }: any) => {
     fetchPosts();
   }, [showFriendsOnly]);
 
-  return (
-    <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 bg-white">
-        {/* Header */}
-        <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
-          <Text className="text-xl font-bold">Hikemeet</Text>
-          <TouchableOpacity onPress={() => navigation.navigate("SearchPage")}>
-            <Ionicons name="search" size={24} color="black" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Filters Toggle */}
-        <View className="flex-row justify-around py-2 border-b border-gray-300 mt-4">
-          <TouchableOpacity
-            onPress={() => setShowFriendsOnly(true)}
-            className={`px-4 py-2 rounded-lg ${
-              showFriendsOnly ? "bg-blue-500" : "bg-gray-100"
-            }`}
+  // Render the header for the FlatList.
+  // Here we combine all header sections into one component so they scroll together.
+  const renderHeader = () => (
+    <View className="bg-white">
+      {/* Header Section */}
+      <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
+        <Text className="text-xl font-bold">Hikemeet</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("SearchPage")}>
+          <Ionicons name="search" size={24} color="black" />
+        </TouchableOpacity>
+      </View>
+      {/* Filters Toggle */}
+      <View className="flex-row justify-around py-2 border-b border-gray-300 bg-white">
+        <TouchableOpacity
+          onPress={() => setShowFriendsOnly(true)}
+          className={`px-4 py-2 rounded-lg ${showFriendsOnly ? "bg-blue-500" : "bg-gray-100"}`}
+        >
+          <Text
+            className={`text-sm font-medium ${showFriendsOnly ? "text-white" : "text-gray-700"}`}
           >
-            <Text
-              className={`text-sm font-medium ${
-                showFriendsOnly ? "text-white" : "text-gray-700"
-              }`}
-            >
-              Friends Only
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setShowFriendsOnly(false)}
-            className={`px-4 py-2 rounded-lg ${
-              !showFriendsOnly ? "bg-blue-500" : "bg-gray-100"
-            }`}
+            Friends Only
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setShowFriendsOnly(false)}
+          className={`px-4 py-2 rounded-lg ${!showFriendsOnly ? "bg-blue-500" : "bg-gray-100"}`}
+        >
+          <Text
+            className={`text-sm font-medium ${!showFriendsOnly ? "text-white" : "text-gray-700"}`}
           >
-            <Text
-              className={`text-sm font-medium ${
-                !showFriendsOnly ? "text-white" : "text-gray-700"
-              }`}
-            >
-              All
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Create Post */}
+            All
+          </Text>
+        </TouchableOpacity>
+      </View>
+      {/* Create Post Button */}
+      <View className="bg-white py-2">
         <CreatePostButton
           navigation={navigation}
           location="home"
           onPress={() => console.log("create post clicked")}
         />
+      </View>
+    </View>
+  );
 
-        {/* Posts Feed */}
-        {loading ? (
-          <ActivityIndicator
-            size="large"
-            color="#0000ff"
-            style={{ marginTop: 20 }}
-          />
-        ) : (
-          <FlatList
-            data={posts.slice(0, postsToShow)}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <FlatList
+          keyboardShouldPersistTaps="always"
+          keyboardDismissMode="none"
+          // When loading, pass an empty array so the list shows only the header and the empty view.
+          data={!loading ? posts.slice(0, postsToShow) : []}
+          keyExtractor={(item) => item._id}
+          renderItem={({ item }) => (
+            <View style={{ padding: 8 }}>
               <PostCard
                 post={item}
                 navigation={navigation}
@@ -137,7 +134,7 @@ const Home = ({ navigation }: any) => {
                     prevPosts.filter((p) => p._id !== deletedPost._id)
                   );
                 }}
-                onPostLiked={(updatedPost: IPost) => {
+                onPostLiked={(updatedPost) => {
                   setPosts((prevPosts) =>
                     prevPosts.map((p) =>
                       p._id === updatedPost._id ? updatedPost : p
@@ -145,17 +142,32 @@ const Home = ({ navigation }: any) => {
                   );
                 }}
               />
-            )}
-            onEndReached={handleLoadMorePosts}
-            onEndReachedThreshold={0.1}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-            contentContainerStyle={{ paddingBottom: 20 }}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-      </View>
+            </View>
+          )}
+          ListHeaderComponent={renderHeader}
+          // When there are no posts (e.g., loading is true), show a loading indicator only in the list area.
+          ListEmptyComponent={
+            loading ? (
+              <View
+                style={{
+                  height: 200,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <ActivityIndicator size="large" color="#0000ff" />
+              </View>
+            ) : null
+          }
+          onEndReached={handleLoadMorePosts}
+          onEndReachedThreshold={0.1}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
+        />
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

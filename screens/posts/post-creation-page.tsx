@@ -22,6 +22,17 @@ import SelectedMediaList, {
 } from "../../components/media-list-in-before-uploading";
 import ConfirmationModal from "../../components/confirmation-modal";
 import MentionTextInput from "../../components/metion-with-text-input";
+import { Group } from "../../interfaces/group-interface";
+import { Trip } from "../../interfaces/trip-interface";
+import TripRow from "../trips/component/trip-row";
+import GroupRow from "../groups/components/group-row";
+import { fetchTrips } from "../../components/requests/fetch-trips";
+import { fetchGroups } from "../../components/requests/fetch-groups";
+import GroupSelectionModal from "../groups/components/group-selection-modal";
+import TripSelectionModal from "../trips/component/trip-selection-modal";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import SelectedGroupsList from "./components/attached-group-preview";
+import SelectedTripsList from "./components/attached-trip-preview";
 
 interface CreatePostPageProps {
   navigation: any;
@@ -46,6 +57,14 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
   const { mongoId } = useAuth();
   const [confirmationVisible, setConfirmationVisible] = useState(false);
   const [postId, setPostId] = useState<String>("");
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [showGroupModal, setShowGroupModal] = useState(false);
+  const [showTripModal, setShowTripModal] = useState(false);
+  // Change single selection to multiple selections
+  const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
+  const [selectedTrips, setSelectedTrips] = useState<Trip[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // Allow multiple selection from gallery.
   const pickMedia = async () => {
@@ -75,6 +94,43 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
     setSelectedMedia((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // Fetch trips or groups and show modal
+  const openAttachmentModal = async (type: "trip" | "group") => {
+    if (type === "trip") {
+      try {
+        setLoading(true);
+        const response = await fetchTrips();
+        setTrips(response);
+        setShowTripModal(true);
+      } catch (error) {
+        console.error("Error fetching trips:", error);
+      } finally {
+        setLoading(false);
+      }
+    } else if (type === "group") {
+      try {
+        setLoading(true);
+        const response = await fetchGroups();
+        setGroups(response);
+        setShowGroupModal(true);
+      } catch (error) {
+        console.error("Error fetching groups:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  // Remove an attached group from the selectedGroups array.
+  const removeGroup = (groupId: string) => {
+    setSelectedGroups((prev) => prev.filter((group) => group._id !== groupId));
+  };
+
+  // Remove an attached trip from the selectedTrips array.
+  const removeTrip = (tripId: string) => {
+    setSelectedTrips((prev) => prev.filter((trip) => trip._id !== tripId));
+  };
+
   // Submit the post and upload media.
   const submitPost = async () => {
     setUploading(true);
@@ -101,8 +157,9 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
         author: mongoId,
         content,
         images: uploadedItems || [],
-        attached_trip: null,
-        attached_group: null,
+        // Here you can send arrays of ids if your backend supports it.
+        attached_trips: selectedTrips.map((trip) => trip._id),
+        attached_groups: selectedGroups.map((group) => group._id),
         is_shared: false,
         privacy: in_group ? "private" : privacy, // include privacy option in the postData
         in_group: in_group ? groupId : undefined,
@@ -127,7 +184,7 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
         if (uploadedItems.length > 0) {
           for (const item of uploadedItems) {
             deleteImageFromCloudinary(item.delete_token!);
-          } // Add this closing bracket
+          }
         }
         Alert.alert("Error", result.error || "Failed to create post.");
       }
@@ -141,7 +198,12 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
 
   return (
     <SafeAreaView className="bg-white flex-1">
-      <ScrollView contentContainerStyle={{ padding: 16 }} className="bg-white">
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="always"
+        contentContainerStyle={{ padding: 16 }}
+        className="bg-white"
+      >
         <Text className="text-2xl font-bold mb-4 text-center">
           Create a Post
         </Text>
@@ -165,12 +227,46 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
               }}
               containerStyle={{ flex: 1 }}
             />
-            {/* You may add a Send button here if needed */}
           </View>
         </KeyboardAvoidingView>
         <SelectedMediaList
           media={selectedMedia}
           onRemove={removeSelectedMedia}
+        />
+
+        {/* Attachment Selector Section */}
+        <View className="mb-4 p-4 bg-gray-50 rounded">
+          <Text className="text-lg font-semibold mb-2">Attach</Text>
+          <View className="flex-row">
+            {!in_group && (
+              <TouchableOpacity
+                className="bg-blue-500 p-3 rounded mr-2"
+                onPress={() => openAttachmentModal("group")}
+              >
+                <Text className="text-white">Attach Group</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              className="bg-green-500 p-3 rounded"
+              onPress={() => openAttachmentModal("trip")}
+            >
+              <Text className="text-white">Attach Trip</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Preview of attached groups */}
+        <SelectedGroupsList
+          groups={selectedGroups}
+          navigation={navigation}
+          onRemove={(groupId) => removeGroup(groupId)}
+        />
+
+        {/* Preview of attached trips */}
+        <SelectedTripsList
+          trips={selectedTrips}
+          onRemove={(tripId) => removeTrip(tripId)}
+          navigation={navigation}
         />
         {/* Privacy Option */}
         {!in_group && (
@@ -233,12 +329,41 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
         message="Post created successfully!"
         onConfirm={() => {
           setConfirmationVisible(false);
-          // Navigate to the PostPage using the created post's ID
-          // (Assuming you have stored it or retrieved it as needed.)
           navigation.replace("PostPage", { postId: postId });
         }}
         onCancel={() => setConfirmationVisible(false)}
       />
+
+      {showGroupModal && (
+        <GroupSelectionModal
+          visible={showGroupModal}
+          groups={groups}
+          onSelect={(group) => {
+            // Add the selected group only if it isn’t already added.
+            setSelectedGroups((prev) =>
+              prev.find((g) => g._id === group._id) ? prev : [...prev, group]
+            );
+            setShowGroupModal(false);
+          }}
+          onClose={() => setShowGroupModal(false)}
+          navigation={navigation}
+        />
+      )}
+
+      {showTripModal && (
+        <TripSelectionModal
+          visible={showTripModal}
+          trips={trips}
+          onSelect={(trip) => {
+            // Add the selected trip only if it isn’t already added.
+            setSelectedTrips((prev) =>
+              prev.find((t) => t._id === trip._id) ? prev : [...prev, trip]
+            );
+            setShowTripModal(false);
+          }}
+          onClose={() => setShowTripModal(false)}
+        />
+      )}
     </SafeAreaView>
   );
 };

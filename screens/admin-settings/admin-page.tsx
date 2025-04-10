@@ -10,7 +10,7 @@ import {
 import { MongoUser } from "../../interfaces/user-interface";
 import UserSearchList from "../../components/user-search-in-admin";
 import { useAuth } from "../../contexts/auth-context";
-import TripsManage from "../../components/trip-manage-admin";
+import TripsManage from "../trips/component/trip-manage-admin";
 import { useFocusEffect } from "@react-navigation/native";
 
 interface Tab {

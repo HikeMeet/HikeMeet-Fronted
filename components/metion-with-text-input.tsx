@@ -66,14 +66,15 @@ const MentionTextInput: React.FC<MentionTextInputProps> = ({
 
   return (
     <View style={containerStyle}>
-      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+      {/* <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}> */}
+      <View className="flex-1">
         <TextInput
           ref={textInputRef}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
           style={inputStyle}
-          multiline={true} // Allow newline/enter key input.
+          multiline={true}
           {...props}
         />
         {mentionMatch && (
@@ -83,7 +84,8 @@ const MentionTextInput: React.FC<MentionTextInputProps> = ({
             mentionQuery={mentionQuery}
           />
         )}
-      </KeyboardAvoidingView>
+      </View>
+      {/* </KeyboardAvoidingView> */}
     </View>
   );
 };

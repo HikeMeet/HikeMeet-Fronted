@@ -2,6 +2,7 @@ import React from "react";
 import { TouchableOpacity, View, Text, Image, ScrollView } from "react-native";
 import { getPostWithParam, IPost } from "../../../interfaces/post-interface";
 import ProfileHeaderLink from "../../my-profile/components/profile-image-name-button";
+import ParsedMentionText from "./parsed-mention-text";
 
 interface InnerPostCardProps {
   post?: IPost; // Allow post to be optional for this check.
@@ -42,7 +43,10 @@ const InnerPostCard: React.FC<InnerPostCardProps> = ({ post, navigation }) => {
         profileImage={author.profile_picture.url}
       />
       {post.content ? (
-        <Text className="text-sm text-gray-700 mb-1">{post.content}</Text>
+        <ParsedMentionText
+          text={post.content || "No content."}
+          navigation={navigation}
+        />
       ) : null}
       {post.images && post.images.length > 0 && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>

@@ -26,7 +26,7 @@ const MediaList: React.FC<MediaListProps> = ({ media, onPressItem }) => {
             <View style={{ position: "relative", marginRight: 8 }}>
               <Image
                 source={{ uri }}
-                style={{ width: 256, height: 256, borderRadius: 8 }}
+                style={{ width: 150, height: 150, borderRadius: 8 }}
                 resizeMode="cover"
               />
               {item.type === "video" && (

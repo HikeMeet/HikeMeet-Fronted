@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   SafeAreaView,
   FlatList,
   StatusBar,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import BioSection from "./components/profile-bio-section";
 import { useAuth } from "../../contexts/auth-context";
@@ -27,7 +29,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   const { userId } = route.params; // ID of the user to fetch
   const [user, setUser] = useState<MongoUser | null>(null); // User data
   const [friendStatus, setFriendStatus] = useState<string>("none"); // Friend status
-  const [loading, setLoading] = useState<boolean>(true); // Loading state
+  const [loading, setLoading] = useState<boolean>(true); // Loading state for user
   const [showHikers, setShowHikers] = useState<boolean>(false); // Toggle for hikers list
   const { mongoId, mongoUser } = useAuth(); // Current user's ID
   const [posts, setPosts] = useState<IPost[]>([]);
@@ -39,7 +41,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
 
   const fetchPosts = async () => {
     setLoadingPosts(true);
-    await fetchPostsForUser(user!).then((posts) => setPosts(posts));
+    if (user) {
+      await fetchPostsForUser(user).then((fetchedPosts) =>
+        setPosts(fetchedPosts)
+      );
+    }
     setLoadingPosts(false);
   };
 
@@ -61,27 +67,22 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
         const data = await response.json();
         setUser(data);
 
-        // Now fetch friend status by
+        // Now fetch friend status from current user's friends.
         if (mongoUser) {
           interface FriendObject {
             id: string;
             status: string;
           }
-
           type Friend = FriendObject | string;
-
           const friendData = mongoUser.friends as Friend[];
-
           const friend = friendData.find((f: Friend) => {
             if (typeof f === "object") {
               return f.id === userId;
             }
             return false;
           });
-
           const status =
             friend && typeof friend === "object" ? friend.status : "none";
-
           setFriendStatus(status);
         }
       } catch (error) {
@@ -93,85 +94,100 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
     fetchUser();
   }, [userId, mongoId]);
 
-  // Handlers for tooltip options
-
+  // Render header that stays at the top of the list.
   const renderPostsHeader = () => (
-    <View className="p-4">
-      <BioSection bio={user!.bio} />
-      <View className="h-px bg-gray-300 my-4" />
-    </View>
+    <>
+      <StatusBar barStyle="dark-content" backgroundColor="white" />
+      {user && (
+        <View className="bg-white">
+          {/* Profile Info Row */}
+          <View className="flex-row items-center p-4">
+            <ProfileImage
+              initialImage={user.profile_picture}
+              size={80}
+              id={user._id}
+              uploadType={"profile"}
+              editable={false}
+            />
+            <View className="flex-1 ml-2">
+              <Text className="text-xl font-bold">
+                {`${user.username} ${user.last_name}`}
+              </Text>
+              <Text className="text-sm font-bold">
+                {`${user.first_name} ${user.last_name}`}
+              </Text>
+              <Text className="text-sm text-gray-500">Rank: Adventurer</Text>
+              <HikerButton
+                showHikers={showHikers}
+                toggleHikers={toggleHikers}
+                user={user}
+              />
+              {mongoId && (
+                <View className="flex-row items-center">
+                  <FriendActionButton
+                    targetUserId={userId}
+                    status={friendStatus}
+                    onStatusChange={(newStatus: string) =>
+                      setFriendStatus(newStatus)
+                    }
+                  />
+                </View>
+              )}
+            </View>
+          </View>
+          {/* Bio Section Row */}
+          <View className="p-4 bg-white">
+            <View className="h-px bg-gray-300 my-2" />
+            <BioSection bio={user!.bio} />
+          </View>
+        </View>
+      )}
+    </>
+  );
+
+  // Memoize the header so that it's only computed once per dependency change.
+  const memoizedHeader = useMemo(
+    () => renderPostsHeader(),
+    [user, friendStatus, showHikers]
   );
 
   if (loading) {
+    // Full-page spinner only when the user data hasn't loaded yet.
     return (
-      <View className="flex-1 justify-center items-center bg-white">
+      <SafeAreaView className="flex-1 justify-center items-center bg-white">
         <ActivityIndicator size="large" color="#0000ff" />
         <Text>Loading user profile...</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (!user) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
+      <SafeAreaView className="flex-1 justify-center items-center bg-white">
         <Text>User not found.</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white ">
-      <StatusBar barStyle="dark-content" backgroundColor="white" />
-
-      {/* User Details */}
-      <View className="flex-row items-center mb-4">
-        <ProfileImage
-          initialImage={user.profile_picture}
-          size={80}
-          id={user._id}
-          uploadType={"profile"}
-          editable={false} // Only editable if the current user is the creator
-        />
-        <View className="flex-1 ml-5">
-          <Text className="text-xl font-bold">{`${user.username} ${user.last_name}`}</Text>
-          <Text className="text-sm font-bold">{`${user.first_name} ${user.last_name}`}</Text>
-          <Text className="text-sm text-gray-500">Rank: Adventurer</Text>
-          {/* Hiker Button moved under the name and rank */}
-          <HikerButton
-            showHikers={showHikers}
-            toggleHikers={toggleHikers}
-            user={user}
-          />
-          {mongoId && (
-            <View className="flex-row items-center">
-              <FriendActionButton
-                targetUserId={userId}
-                status={friendStatus}
-                onStatusChange={(newStatus: string) =>
-                  setFriendStatus(newStatus)
-                }
-              />
-            </View>
-          )}
-        </View>
-      </View>
-
-      {/* Friend Action Button and Tooltip */}
-
-      {/* Conditional Rendering: Hikers List vs. Bio and Posts */}
+    <SafeAreaView className="flex-1 bg-white">
       {showHikers ? (
+        // Pass the memoized header to HikersList.
         <HikersList
           isMyProfile={false}
           navigation={navigation}
           profileId={userId}
+          headerComponent={memoizedHeader}
         />
       ) : (
-        <>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
           <FlatList
             data={posts}
             keyExtractor={(item) => item._id}
             renderItem={({ item }) => (
-              // Replace with your actual PostCard component that displays a post.
               <View className="p-4">
                 <PostCard
                   post={item}
@@ -191,13 +207,21 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
                 />
               </View>
             )}
-            ListHeaderComponent={renderPostsHeader}
+            ListHeaderComponent={memoizedHeader}
+            // Show a spinner below the header if posts are loading (and posts array is empty)
+            ListEmptyComponent={
+              loadingPosts ? (
+                <View style={{ marginTop: 20, alignItems: "center" }}>
+                  <ActivityIndicator size="large" color="#0000ff" />
+                </View>
+              ) : null
+            }
             refreshing={loadingPosts}
             onRefresh={fetchPosts}
             contentContainerStyle={{ paddingBottom: 220 }}
             showsVerticalScrollIndicator={false}
           />
-        </>
+        </KeyboardAvoidingView>
       )}
     </SafeAreaView>
   );

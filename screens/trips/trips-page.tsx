@@ -10,8 +10,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Trip } from "../../interfaces/trip-interface";
-import TripRow from "../../components/trip-row";
+import TripRow from "./component/trip-row";
 import { useAuth } from "../../contexts/auth-context";
+import { fetchTrips } from "../../components/requests/fetch-trips";
 
 const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -23,16 +24,10 @@ const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [tripsToShow, setTripsToShow] = useState<number>(5);
   const { mongoUser } = useAuth();
 
-  const fetchTrips = async () => {
+  const handleFetchTrips = async () => {
     try {
-      const response = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/trips/all`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch trips");
-      }
-      const data: Trip[] = await response.json();
-      setTrips(data);
+      const response = await fetchTrips();
+      setTrips(response);
     } catch (error) {
       console.error("Error fetching trips:", error);
     } finally {
@@ -41,7 +36,7 @@ const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   useEffect(() => {
-    fetchTrips();
+    handleFetchTrips();
   }, []);
 
   // Function to fetch trips from the user's trip history.
@@ -79,7 +74,7 @@ const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
       fetchTripHistory();
     } else {
       // Show all trips.
-      fetchTrips();
+      handleFetchTrips();
     }
     setShowHistory(!showHistory);
   };
@@ -140,40 +135,46 @@ const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
     <SafeAreaView className="flex-1 bg-white p-4">
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
-      ) : filteredTrips.length === 0 ? (
-        <View className="flex-1 justify-center items-center mt-20">
-          <Text className="text-lg">No trips found.</Text>
-        </View>
       ) : (
-        <FlatList
-          data={displayedTrips}
-          keyExtractor={(item, index) => `${item._id}-${index}`}
-          renderItem={({ item, index }) => {
-            // Use the index to access the corresponding trip history entry.
-            const completedAt = tripsHistory[index]?.completed_at;
-            return (
-              <TripRow
-                key={`${item._id}-${index}`}
-                trip={item}
-                completedAt={completedAt}
-                onPress={() =>
-                  navigation.navigate("TripsStack", {
-                    screen: "TripPage",
-                    params: { tripId: item._id },
-                  })
-                }
+        <>
+          {renderListHeader()}
+          <FlatList
+            data={displayedTrips}
+            keyExtractor={(item, index) => `${item._id}-${index}`}
+            renderItem={({ item, index }) => {
+              // Use the index to access the corresponding trip history entry.
+              const completedAt = tripsHistory[index]?.completed_at;
+              return (
+                <TripRow
+                  key={`${item._id}-${index}`}
+                  trip={item}
+                  completedAt={completedAt}
+                  onPress={() =>
+                    navigation.navigate("TripsStack", {
+                      screen: "TripPage",
+                      params: { tripId: item._id },
+                    })
+                  }
+                />
+              );
+            }}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.1}
+            ListEmptyComponent={
+              <View className="mt-10">
+                <Text className="text-lg text-center">No trips found.</Text>
+              </View>
+            }
+            refreshControl={
+              <RefreshControl
+                refreshing={loading}
+                onRefresh={handleFetchTrips}
               />
-            );
-          }}
-          ListHeaderComponent={renderListHeader}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.1}
-          refreshControl={
-            <RefreshControl refreshing={loading} onRefresh={fetchTrips} />
-          }
-          contentContainerStyle={{ paddingBottom: 20 }}
-          showsVerticalScrollIndicator={false}
-        />
+            }
+            contentContainerStyle={{ paddingBottom: 20 }}
+            showsVerticalScrollIndicator={false}
+          />
+        </>
       )}
     </SafeAreaView>
   );

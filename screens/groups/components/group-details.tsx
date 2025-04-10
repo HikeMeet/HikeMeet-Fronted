@@ -5,7 +5,7 @@ import MapDirectionButton from "../../../components/get-direction";
 import { Group } from "../../../interfaces/group-interface";
 import { formatDateToHHMM } from "./edit-page-components";
 import { DateDisplay } from "../../../components/date-present";
-import TripRow from "../../../components/trip-row";
+import TripRow from "../../trips/component/trip-row";
 import { Trip } from "../../../interfaces/trip-interface";
 import HikersSwitcher from "../../../components/hiker-button-list-group-combined";
 

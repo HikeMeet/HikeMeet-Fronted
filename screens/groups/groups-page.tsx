@@ -6,37 +6,29 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   FlatList,
-  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { styled } from "nativewind";
-import CreatePostButton from "../posts/components/create-post-buton";
-import GroupRow from "../../components/group-row";
+import GroupRow from "./components/group-row";
 import { useFocusEffect } from "@react-navigation/native";
 import { Group } from "../../interfaces/group-interface";
 import { useAuth } from "../../contexts/auth-context";
+import { fetchGroups } from "../../components/requests/fetch-groups";
 
 const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { mongoId } = useAuth();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
   const [showMyGroups, setShowMyGroups] = useState<boolean>(false);
   // Only show 5 groups initially.
   const [groupsToShow, setGroupsToShow] = useState<number>(5);
 
-  const fetchGroups = useCallback(async () => {
+  const handleFetchGroups = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/group/list`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch groups");
-      }
-      const data: Group[] = await response.json();
-      setGroups(data);
+      const response = await fetchGroups();
+      setGroups(response);
     } catch (error) {
       console.error("Error fetching groups:", error);
     } finally {
@@ -46,8 +38,8 @@ const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchGroups();
-    }, [fetchGroups])
+      handleFetchGroups();
+    }, [handleFetchGroups])
   );
 
   const handleAction = useCallback(
@@ -59,10 +51,10 @@ const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
           )
         );
       } else {
-        fetchGroups();
+        handleFetchGroups();
       }
     },
-    [fetchGroups]
+    [handleFetchGroups]
   );
 
   // Filter groups based on search text.
@@ -144,6 +136,12 @@ const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
               group={item}
               navigation={navigation}
               onAction={handleAction}
+              onPress={() =>
+                navigation.navigate("GroupsStack", {
+                  screen: "GroupPage",
+                  params: { groupId: item._id },
+                })
+              }
             />
           )}
           onEndReached={handleLoadMore}
