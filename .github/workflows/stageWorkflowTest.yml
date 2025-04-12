@@ -20,7 +20,8 @@ jobs:
       - name: Clone Public Backend Repo
         uses: actions/checkout@v4
         with:
-          repository: HikeMeet/HikeMeet-Backend.git # ⬅️ Replace with actual backend repo name
+          repository: HikeMeet/HikeMeet-Backend.gi
+          ref: main
           path: backend
 
       - name: Set up Node.js
