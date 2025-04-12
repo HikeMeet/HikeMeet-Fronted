@@ -1,0 +1,69 @@
+name: Expo React Native CI with Local Backend
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  boot-backend:
+    runs-on: ubuntu-latest
+    environment: backend-test # 🔐 Uses secrets like DB_URI, JWT_SECRET stored in frontend repo
+
+    steps:
+      - name: Checkout Frontend Repo
+        uses: actions/checkout@v4
+
+      - name: Clone Public Backend Repo
+        uses: actions/checkout@v4
+        with:
+          repository: https://github.com/HikeMeet/HikeMeet-Backend.git # ⬅️ Replace with actual backend repo name
+          path: backend
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.x
+
+      - name: Install Backend Dependencies
+        working-directory: backend
+        run: npm install
+
+      - name: Start Backend Locally
+        working-directory: backend
+        run: |
+          nohup npm run start &
+
+      - name: Wait for Backend
+        run: |
+          echo "Waiting for backend to boot..."
+          sleep 5  # Optional: use health check
+
+  test-frontend:
+    needs: boot-backend
+    runs-on: ubuntu-latest
+    environment: stage # 🔐 Frontend secrets: MAPBOX_TOKEN, FRONTEND_API_URL, etc.
+
+    steps:
+      - name: Checkout Frontend Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.x
+          cache: "npm"
+
+      - name: Install Frontend Dependencies
+        run: npm install
+
+      - name: Run Linter
+        run: npm run lint
+
+      - name: Run Tests
+        env:
+          API_URL: http://localhost:3000
+        run: npm run test
