@@ -20,7 +20,7 @@ jobs:
       - name: Clone Public Backend Repo
         uses: actions/checkout@v4
         with:
-          repository: HikeMeet/HikeMeet-Backend.gi
+          repository: HikeMeet/HikeMeet-Backend.git
           ref: main
           path: backend
 
