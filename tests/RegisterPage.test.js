@@ -7,7 +7,6 @@ const mockNavigate = jest.fn();
 const mockNavigation = { navigate: mockNavigate, goBack: jest.fn() };
 
 jest.mock("../contexts/auth-context", () => ({
-
   useAuth: () => ({
     setUser: jest.fn(),
     setIsVerified: jest.fn(),
@@ -44,7 +43,10 @@ describe("RegisterPage", () => {
 
   it("should show error if user is under 18", async () => {
     const { getByText, getByPlaceholderText, getByTestId } = render(
-      <RegisterPage navigation={mockNavigation} />
+      <RegisterPage
+        navigation={mockNavigation}
+        // ✅ Add this if `route` is used in the screen
+      />
     );
 
     fireEvent.changeText(getByPlaceholderText("Username"), "younguser");
