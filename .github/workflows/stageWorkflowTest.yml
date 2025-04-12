@@ -2,25 +2,24 @@ name: Expo React Native CI with Local Backend
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  boot-backend:
+  test:
     runs-on: ubuntu-latest
-    environment: backend-test # 🔐 Uses secrets like DB_URI, JWT_SECRET stored in frontend repo
+    environment: stage # 👈 This environment must contain all needed secrets
 
     steps:
-      - name: Checkout Frontend Repo
-        uses: actions/checkout@v4
+      # Checkout frontend repo
+      - uses: actions/checkout@v4
 
-      - name: Clone Public Backend Repo
+      # Clone backend repo into subfolder
+      - name: Clone Backend Repo
         uses: actions/checkout@v4
         with:
-          repository: HikeMeet/HikeMeet-Backend.git
+          repository: HikeMeet/HikeMeet-Backend
           ref: main
           path: backend
 
@@ -28,36 +27,46 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 22.x
+          cache: npm
 
+      # ✅ Load both frontend + backend secrets
+      - name: Set ENV Vars
+        run: |
+          echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_PRIVATE_KEY_ID=${{ secrets.FIREBASE_PRIVATE_KEY_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}" >> $GITHUB_ENV
+          echo "FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}" >> $GITHUB_ENV
+          echo "FIREBASE_CLIENT_ID=${{ secrets.FIREBASE_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_AUTH_URI=${{ secrets.FIREBASE_AUTH_URI }}" >> $GITHUB_ENV
+          echo "FIREBASE_TOKEN_URI=${{ secrets.FIREBASE_TOKEN_URI }}" >> $GITHUB_ENV
+          echo "FIREBASE_AUTH_PROVIDER_CERT_URL=${{ secrets.FIREBASE_AUTH_PROVIDER_CERT_URL }}" >> $GITHUB_ENV
+          echo "FIREBASE_CLIENT_CERT_URL=${{ secrets.FIREBASE_CLIENT_CERT_URL }}" >> $GITHUB_ENV
+          echo "FIREBASE_TYPE=${{ secrets.FIREBASE_TYPE }}" >> $GITHUB_ENV
+          echo "FIREBASE_UNIVERSE_DOMAIN=${{ secrets.FIREBASE_UNIVERSE_DOMAIN }}" >> $GITHUB_ENV
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> $GITHUB_ENV
+          echo "PORT=${{ secrets.PORT }}" >> $GITHUB_ENV
+          echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> $GITHUB_ENV
+          echo "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}" >> $GITHUB_ENV
+          echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> $GITHUB_ENV
+          echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}" >> $GITHUB_ENV
+      # Start backend
       - name: Install Backend Dependencies
         working-directory: backend
         run: npm install
 
-      - name: Start Backend Locally
+      - name: Start Backend in Background
         working-directory: backend
+        run: nohup npm run start &
+
+      - name: Wait for Backend to Respond
         run: |
-          nohup npm run start &
+          for i in {1..10}; do
+            curl -s http://localhost:3000/api && break
+            echo "Waiting for backend..."
+            sleep 2
+          done
 
-      - name: Wait for Backend
-        run: |
-          echo "Waiting for backend to boot..."
-          sleep 5  # Optional: use health check
-
-  test-frontend:
-    needs: boot-backend
-    runs-on: ubuntu-latest
-    environment: stage # 🔐 Frontend secrets: MAPBOX_TOKEN, FRONTEND_API_URL, etc.
-
-    steps:
-      - name: Checkout Frontend Code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 22.x
-          cache: "npm"
-
+      # Frontend stuff
       - name: Install Frontend Dependencies
         run: npm install
 
@@ -65,6 +74,4 @@ jobs:
         run: npm run lint
 
       - name: Run Tests
-        env:
-          EXPO_LOCAL_SERVER: http://localhost:3000
         run: npm run test
