@@ -36,7 +36,7 @@ jest.mock("../contexts/auth-context", () => ({
 
 describe("LoginPage Integration Test with Firebase", () => {
   it("should login successfully with real credentials", async () => {
-    const { getByTestId, getByPlaceholderText, getByText } = render(
+    const { getByTestId, getByText } = render(
       <LoginPage
         navigation={mockNavigation}
         route={{ params: { toResetPassword: false } }}
