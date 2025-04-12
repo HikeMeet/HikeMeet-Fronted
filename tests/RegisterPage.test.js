@@ -7,6 +7,7 @@ const mockNavigate = jest.fn();
 const mockNavigation = { navigate: mockNavigate, goBack: jest.fn() };
 
 jest.mock("../contexts/auth-context", () => ({
+
   useAuth: () => ({
     setUser: jest.fn(),
     setIsVerified: jest.fn(),
