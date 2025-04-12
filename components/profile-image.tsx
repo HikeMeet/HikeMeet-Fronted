@@ -17,12 +17,9 @@ import { deleteImageFromCloudinary, uploadMedia } from "./cloudinary-upload";
 import { IImageModel } from "../interfaces/image-interface";
 
 // Default image URLs for profile, trip, and group (adjust as needed)
-const DEFAULT_PROFILE_IMAGE_URL =
-  "https://res.cloudinary.com/dyebkjnoc/image/upload/v1742156351/profile_images/tpyngwygeoykeur0hgre.jpg";
-const DEFAULT_TRIP_IMAGE_URL =
-  "https://res.cloudinary.com/dyebkjnoc/image/upload/v1742664563/trip_images/pxn2u29twifmjcjq7whv.png";
-const DEFAULT_GROUP_IMAGE_URL =
-  "https://res.cloudinary.com/dyebkjnoc/image/upload/v1743157838/group_images/o1onsa093hqedz3ti7fo.webp";
+const DEFAULT_PROFILE_IMAGE_URL = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/v1742156351/profile_images/tpyngwygeoykeur0hgre.jpg`;
+const DEFAULT_TRIP_IMAGE_URL = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/v1742664563/trip_images/pxn2u29twifmjcjq7whv.png`;
+const DEFAULT_GROUP_IMAGE_URL = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/v1743157838/group_images/o1onsa093hqedz3ti7fo.webp`;
 const DEFAULT_PROFILE_IMAGE_ID = "profile_images/tpyngwygeoykeur0hgre";
 
 const DEFAULT_TRIP_IMAGE_ID = "trip_images/pxn2u29twifmjcjq7whv";
@@ -212,7 +209,6 @@ const ProfileImage: React.FC<MainImageProps> = ({
         };
       }
       console.log("Updating backend with URL:", requestUrl);
-
 
       // Send update request to backend
       const updatePayload =

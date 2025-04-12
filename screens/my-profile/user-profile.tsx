@@ -138,7 +138,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
           {/* Bio Section Row */}
           <View className="p-4 bg-white">
             <View className="h-px bg-gray-300 my-2" />
-            <BioSection bio={user!.bio} />
+            <BioSection bio={user!.bio} editable={false} />
           </View>
         </View>
       )}

@@ -43,7 +43,7 @@ export const uploadMedia = async (
   formData.append("resource_type", "auto");
   formData.append("return_delete_token", "true");
 
-  const cloudinaryUrl = "https://api.cloudinary.com/v1_1/dyebkjnoc/upload";
+  const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/upload`;
   try {
     const uploadResponse = await fetch(cloudinaryUrl, {
       method: "POST",
@@ -74,11 +74,9 @@ export const uploadMedia = async (
   }
 };
 
-
 export const deleteImageFromCloudinary = async (deleteToken: string) => {
   try {
-    const cloudinaryUrl =
-      "https://api.cloudinary.com/v1_1/dyebkjnoc/delete_by_token";
+    const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/delete_by_token`;
     const response = await fetch(cloudinaryUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
