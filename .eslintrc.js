@@ -1,5 +1,8 @@
 // https://docs.expo.dev/guides/using-eslint/
 module.exports = {
+  env: {
+    jest: true, // 👈 Add this to recognize Jest globals
+  },
   extends: "expo",
   ignorePatterns: ["/dist/*"],
   rules: {
