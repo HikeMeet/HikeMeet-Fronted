@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    environment: stage # 👈 This environment must contain all needed secrets
+    environment: stage # 👈 This environment must contain ALL frontend & backend secrets
 
     steps:
       # Checkout frontend repo
@@ -29,9 +29,10 @@ jobs:
           node-version: 22.x
           cache: npm
 
-      # ✅ Load both frontend + backend secrets
-      - name: Set ENV Vars
+      # ✅ Load all needed env vars
+      - name: Set Environment Variables
         run: |
+          echo "EXPO_PUBLIC_API_URL=http://localhost:3000" >> $GITHUB_ENV
           echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> $GITHUB_ENV
           echo "FIREBASE_PRIVATE_KEY_ID=${{ secrets.FIREBASE_PRIVATE_KEY_ID }}" >> $GITHUB_ENV
           echo "FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}" >> $GITHUB_ENV
@@ -49,6 +50,7 @@ jobs:
           echo "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}" >> $GITHUB_ENV
           echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> $GITHUB_ENV
           echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}" >> $GITHUB_ENV
+
       # Start backend
       - name: Install Backend Dependencies
         working-directory: backend
@@ -66,12 +68,12 @@ jobs:
             sleep 2
           done
 
-      # Frontend stuff
+      # Frontend build & test
       - name: Install Frontend Dependencies
         run: npm install
 
-      - name: Run Linter
-        run: npm run lint
+      - name: Run Linter (skip backend folder)
+        run: npm run lint -- --ignore-pattern backend/
 
       - name: Run Tests
         run: npm run test
