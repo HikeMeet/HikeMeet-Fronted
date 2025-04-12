@@ -66,5 +66,5 @@ jobs:
 
       - name: Run Tests
         env:
-          API_URL: http://localhost:3000
+          EXPO_LOCAL_SERVER: http://localhost:3000
         run: npm run test
