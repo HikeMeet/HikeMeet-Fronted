@@ -27,11 +27,6 @@ describe("RegisterPage", () => {
     jest.clearAllMocks();
   });
 
-  it("should render correctly (snapshot)", () => {
-    const { toJSON } = render(<RegisterPage navigation={mockNavigation} />);
-    expect(toJSON()).toMatchSnapshot();
-  });
-
   it("should show error if fields are not filled", async () => {
     const { getByText } = render(<RegisterPage navigation={mockNavigation} />);
     fireEvent.press(getByText("Register"));

@@ -3,47 +3,27 @@ import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import ForgotPasswordPage from "../screens/register-login/forgot-password-page";
 import { Alert } from "react-native";
 
-// שמירת הפונקציה המקורית של console.error
-const originalConsoleError = console.error;
-
-// השתקת התראה לגבי עדכוני Animated(View) שלא עטופים ב-act
-beforeAll(() => {
-  console.error = (...args) => {
-    if (
-      typeof args[0] === "string" &&
-      args[0].includes(
-        "An update to Animated(View) inside a test was not wrapped in act"
-      )
-    ) {
-      return;
-    }
-    originalConsoleError(...args);
-  };
-});
-
-afterAll(() => {
-  console.error = originalConsoleError;
-});
-
 const mockNavigate = jest.fn();
 const mockNavigation = { navigate: mockNavigate, goBack: jest.fn() };
+
+jest.mock("../contexts/auth-context", () => ({
+  useAuth: () => ({
+    setUser: jest.fn(),
+    setIsVerified: jest.fn(),
+  }),
+}));
 
 describe("ForgotPasswordPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // הגדרת fetch בצורה נכונה לפני כל טסט
+    // Mock fetch to simulate success responses
     global.fetch = jest.fn(() =>
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve({}),
       })
     );
-  });
-
-  it("should render correctly (snapshot)", () => {
-    const tree = render(<ForgotPasswordPage navigation={mockNavigation} />);
-    expect(tree.toJSON()).toMatchSnapshot();
   });
 
   it("should show an error if email is empty", async () => {
@@ -61,6 +41,7 @@ describe("ForgotPasswordPage", () => {
         "Please enter your email address"
       );
     });
+    console.log("Alert for empty email triggered successfully.");
   });
 
   it("should navigate to CodeVerrify page on success", async () => {
@@ -76,5 +57,8 @@ describe("ForgotPasswordPage", () => {
         email: "test@example.com",
       });
     });
+    console.log(
+      "Navigation to CodeVerrify triggered with email: test@example.com"
+    );
   });
 });

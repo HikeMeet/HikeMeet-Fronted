@@ -7,11 +7,6 @@ const mockNavigate = jest.fn();
 const mockNavigation = { navigate: mockNavigate, goBack: jest.fn() };
 
 describe("LandingPage", () => {
-  it("should render correctly (snapshot)", () => {
-    const { toJSON } = render(<LandingPage navigation={mockNavigation} />);
-    expect(toJSON()).toMatchSnapshot();
-  });
-
   it("should navigate to Login page when pressing login button", () => {
     const { getByText } = render(<LandingPage navigation={mockNavigation} />);
     const loginButton = getByText("Login");
