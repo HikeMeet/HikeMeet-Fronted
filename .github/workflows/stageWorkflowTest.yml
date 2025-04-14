@@ -57,38 +57,11 @@ jobs:
             --network host \
             hikemeet-backend:test
 
-      # ✅ Debug container state working
-      - name: Show running containers
-        run: docker ps -a
-
-      # ✅ Print backend logs
-      - name: 🔍 Print env inside backend container
-        run: docker exec backend printenv
-
       - name: Wait for App to be Ready
         run: |
-          for i in {1..10}; do
+          for i in {1..15}; do
             curl -s http://localhost:3000/api && break || sleep 5
           done
-
-      - name: Curl /api for Health Check
-        run: curl -v http://localhost:3000/api
-
-      # ✅ Wait for backend
-      - name: Wait for Backend
-        run: |
-          echo "⏳ Waiting for backend to respond on /api..."
-          for i in {1..15}; do
-            status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api)
-            if [ "$status" = "200" ]; then
-              echo "✅ Backend is up!"
-              exit 0
-            fi
-            echo "❌ Not ready (HTTP $status), retrying in 3s..."
-            sleep 3
-          done
-          echo "❌ Backend did not respond in time"
-          exit 1
 
       - name: Set Frontend API URL
         run: echo "EXPO_LOCAL_SERVER=http://localhost:3000" >> $GITHUB_ENV
