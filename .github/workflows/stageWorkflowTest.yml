@@ -53,8 +53,8 @@ jobs:
         run: |
           docker run -d \
             --name backend \
-            --env-file=backend/.env.local \
-            -p 3000:3000 \
+            --env-file backend/.env.local \
+            --network host \
             hike-meet-backend:test
 
       # ✅ Debug container state working
