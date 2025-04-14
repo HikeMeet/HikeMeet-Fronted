@@ -16,12 +16,10 @@ jobs:
       - uses: actions/checkout@v4
 
       # ✅ Clone backend repo into `./backend` folder
+      # ✅ Clone backend repo into `./backend` folder
       - name: Clone Backend Repo
-        uses: actions/checkout@v4
-        with:
-          repository: HikeMeet/HikeMeet-Backend
-          path: backend
-          ref: main
+        run: |
+          git clone https://github.com/HikeMeet/HikeMeet-Backend.git backend
 
       # ✅ Set up Node.js for both backend & frontend
       - name: Set up Node.js
