@@ -188,6 +188,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           />
           {showDatePicker && (
             <DateTimePicker
+              testID="birthdate-picker"
               value={birthdate || new Date()}
               mode="date"
               display="default"

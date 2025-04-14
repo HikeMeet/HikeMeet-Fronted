@@ -1,0 +1,76 @@
+name: Expo React Native CI with Backend in Docker
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    environment: stage
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Clone Backend Repo
+        run: git clone https://github.com/HikeMeet/HikeMeet-Backend.git backend
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - name: Write backend .env file
+        working-directory: backend
+        run: |
+          echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> .env
+          echo "EXPO_LOCAL_SERVER=http://localhost:3000" >> .env.local
+          echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> .env.local
+          echo "FIREBASE_PRIVATE_KEY_ID=${{ secrets.FIREBASE_PRIVATE_KEY_ID }}" >> .env.local
+          echo "FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}" >> .env.local
+          echo "FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}" >> .env.local
+          echo "FIREBASE_CLIENT_ID=${{ secrets.FIREBASE_CLIENT_ID }}" >> .env.local
+          echo "FIREBASE_AUTH_URI=${{ secrets.FIREBASE_AUTH_URI }}" >> .env.local
+          echo "FIREBASE_TOKEN_URI=${{ secrets.FIREBASE_TOKEN_URI }}" >> .env.local
+          echo "FIREBASE_AUTH_PROVIDER_CERT_URL=${{ secrets.FIREBASE_AUTH_PROVIDER_CERT_URL }}" >> .env.local
+          echo "FIREBASE_CLIENT_CERT_URL=${{ secrets.FIREBASE_CLIENT_CERT_URL }}" >> .env.local
+          echo "FIREBASE_TYPE=${{ secrets.FIREBASE_TYPE }}" >> .env.local
+          echo "FIREBASE_UNIVERSE_DOMAIN=${{ secrets.FIREBASE_UNIVERSE_DOMAIN }}" >> .env.local
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env.local
+          echo "PORT=3000" >> .env.local
+          echo "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}" >> .env.local
+          echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> .env.local
+          echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}" >> .env.local
+
+      - name: Build Backend Docker Image
+        working-directory: backend
+        run: docker build -t hikemeet-backend:test .
+
+      - name: Run Backend Container
+        run: |
+          docker run -d \
+            --name backend \
+            --env-file backend/.env.local \
+            --network host \
+            hikemeet-backend:test
+
+      - name: Wait for App to be Ready
+        run: |
+          for i in {1..15}; do
+            curl -s http://localhost:3000/api && break || sleep 5
+          done
+
+      - name: Set Frontend API URL
+        run: echo "EXPO_LOCAL_SERVER=http://localhost:3000" >> $GITHUB_ENV
+
+      - name: Install Frontend Deps
+        run: npm install
+
+      - name: Run Tests
+        run: npm run test
+
+      - name: Run Linter
+        run: npm run lint -- --ignore-pattern backend/

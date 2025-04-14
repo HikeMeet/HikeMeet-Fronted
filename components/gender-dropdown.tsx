@@ -38,6 +38,7 @@ const GenderDropdown: React.FC<GenderDropdownProps> = ({
           style={{ marginRight: 6 }}
         />
         <Picker
+          testID="gender-picker"
           selectedValue={value}
           onValueChange={(itemValue) => {
             if (itemValue !== "other") {

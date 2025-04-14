@@ -7,6 +7,7 @@ import ChatListPage from "../../screens/chats/caht-list";
 import CustomTabBar from "../custom-tab-bar";
 import { Provider } from "react-native-paper";
 import TripsPage from "../../screens/trips/trips-page";
+// import MapPage from "../../screens/map/map-page";
 
 const Tab = createBottomTabNavigator();
 
@@ -27,6 +28,7 @@ const BottomTabs = () => {
         <Tab.Screen name="Groups" component={GroupsPage} />
         <Tab.Screen name="Trips" component={TripsPage} />
         <Tab.Screen name="Chats" component={ChatListPage} />
+        {/* <Tab.Screen name="Map" component={MapPage} /> */}
       </Tab.Navigator>
     </Provider>
   );

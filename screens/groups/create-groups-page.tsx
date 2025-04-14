@@ -1,5 +1,5 @@
 // CreateGroupPage.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollView, TouchableOpacity, Text, Alert, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import GroupCreatedModal from "../../components/post-group-creatonal";
@@ -15,7 +15,8 @@ import {
   TripSelectorField,
 } from "./components/edit-page-components";
 
-const CreateGroupPage: React.FC<any> = ({ navigation }) => {
+const CreateGroupPage: React.FC<any> = ({ navigation, route }) => {
+  const { trip } = route.params || {};
   // Form states
   const [groupName, setGroupName] = useState<string>("");
   const [selectedTrip, setSelectedTrip] = useState<string>("");
@@ -38,6 +39,13 @@ const CreateGroupPage: React.FC<any> = ({ navigation }) => {
   // Helper function to format date for backend (ISO string)
   const formatDateForBackend = (date: Date) => date.toISOString();
 
+  // נשתמש בטיול כדי למלא שדות מראש
+  useEffect(() => {
+    if (trip) {
+      setSelectedTrip(trip._id);
+      // תוכל להוסיף כאן מילוי נוסף כמו: setLocation(trip.location) וכו'
+    }
+  }, [trip]);
   // Handler for creating group
   const handleCreateGroup = async () => {
     if (!groupName || !selectedTrip || !maxMembers) {

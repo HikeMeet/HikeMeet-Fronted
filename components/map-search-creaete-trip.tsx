@@ -172,7 +172,7 @@ const MapSearch: React.FC<MapSearchProps> = ({
                     centerCoordinate={
                       selectedCoords || initialLocation || [0, 0]
                     }
-                    zoomLevel={14}
+                    zoomLevel={13}
                   />
                   {selectedCoords && (
                     <Mapbox.PointAnnotation
