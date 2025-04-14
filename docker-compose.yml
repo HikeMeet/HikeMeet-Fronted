@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ../hikemeet-backend
+      dockerfile: Dockerfile
+    container_name: hikemeet-backend
+    ports:
+      - "5000:3000"
+    env_file:
+      - .env.backend
+    networks:
+      - hikemeet-net
+
+  frontend:
+    build:
+      context: . # התיקייה הראשית של הפרונט
+      dockerfile: Dockerfile
+    container_name: hikemeet-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - EXPO_LOCAL_SERVER=http://backend:3000
+    env_file:
+      - .env
+    networks:
+      - hikemeet-net
+
+networks:
+  hikemeet-net:
+    driver: bridge
