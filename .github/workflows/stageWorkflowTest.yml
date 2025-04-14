@@ -57,7 +57,7 @@ jobs:
             -p 3000:3000 \
             hike-meet-backend:test
 
-      # ✅ Debug container state
+      # ✅ Debug container state working
       - name: Show running containers
         run: docker ps -a
 
