@@ -62,8 +62,8 @@ jobs:
         run: docker ps -a
 
       # ✅ Print backend logs
-      - name: Print backend logs
-        run: docker logs backend
+      - name: 🔍 Print env inside backend container
+        run: docker exec backend printenv
 
       - name: Curl /api for Health Check
         run: curl -v http://localhost:3000/api
