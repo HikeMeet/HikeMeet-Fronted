@@ -65,18 +65,18 @@ jobs:
 
       - name: Set Frontend API URL
         run: echo "EXPO_LOCAL_SERVER=http://localhost:3000" >> $GITHUB_ENV
-          echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> .env
-          echo "FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN }}" >> .env
-          echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> .env
-          echo "FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_STORAGE_BUCKET }}" >> .env
-          echo "FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}" >> .env
-          echo "FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }}" >> .env
-          echo "FIREBASE_MEASUREMENT_ID=${{ secrets.FIREBASE_MEASUREMENT_ID }}" >> .env
-          echo "EXPO_LOCAL_SERVER=${{ secrets.EXPO_LOCAL_SERVER }}" >> .env
-          echo "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}" >> .env
-          echo "MAPBOX_TOKEN=${{ secrets.MAPBOX_TOKEN }}" >> .env
-          echo "MAPBOX_TOKEN_PUBLIC=${{ secrets.MAPBOX_TOKEN_PUBLIC }}" >> .env
-          echo "GOOGLEMAP_API_KEKY=${{ secrets.GOOGLEMAP_API_KEKY }}" >> .env
+          echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> $GITHUB_ENV
+          echo "FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN }}" >> $GITHUB_ENV
+          echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_STORAGE_BUCKET }}" >> $GITHUB_ENV
+          echo "FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }}" >> $GITHUB_ENV
+          echo "FIREBASE_MEASUREMENT_ID=${{ secrets.FIREBASE_MEASUREMENT_ID }}" >> $GITHUB_ENV
+          echo "EXPO_LOCAL_SERVER=${{ secrets.EXPO_LOCAL_SERVER }}" >> $GITHUB_ENV
+          echo "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}" >> $GITHUB_ENV
+          echo "MAPBOX_TOKEN=${{ secrets.MAPBOX_TOKEN }}" >> $GITHUB_ENV
+          echo "MAPBOX_TOKEN_PUBLIC=${{ secrets.MAPBOX_TOKEN_PUBLIC }}" >> $GITHUB_ENV
+          echo "GOOGLEMAP_API_KEKY=${{ secrets.GOOGLEMAP_API_KEKY }}" >> $GITHUB_ENV
 
       - name: Install Frontend Deps
         run: npm install
