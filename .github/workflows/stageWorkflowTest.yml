@@ -65,7 +65,6 @@ jobs:
 
       - name: Set Frontend API URL
         run: echo "EXPO_LOCAL_SERVER=http://localhost:3000" >> $GITHUB_ENV
-          echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> .env
 
       - name: Install Frontend Deps
         run: npm install
