@@ -53,7 +53,7 @@ jobs:
         run: |
           docker run -d \
             --name backend \
-            --env-file backend/.env.local \ # ✅ fixed to use the correct env
+            --env-file backend/.env.local \ 
             -p 3000:3000 \
             hike-meet-backend:test
 
