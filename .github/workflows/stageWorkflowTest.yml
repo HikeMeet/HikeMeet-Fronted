@@ -27,7 +27,7 @@ jobs:
         working-directory: backend
         run: |
           echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> .env
-          echo "EXPO_PUBLIC_API_URL=http://localhost:3000" >> .env.local
+          echo "EXPO_LOCAL_SERVER=http://localhost:3000" >> .env.local
           echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> .env.local
           echo "FIREBASE_PRIVATE_KEY_ID=${{ secrets.FIREBASE_PRIVATE_KEY_ID }}" >> .env.local
           echo "FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}" >> .env.local
