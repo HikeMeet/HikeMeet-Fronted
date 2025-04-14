@@ -26,7 +26,7 @@ jobs:
       - name: Write backend .env file
         working-directory: backend
         run: |
-          echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> .env.local
+          echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> .env
           echo "EXPO_LOCAL_SERVER=http://localhost:3000" >> .env.local
           echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> .env.local
           echo "FIREBASE_PRIVATE_KEY_ID=${{ secrets.FIREBASE_PRIVATE_KEY_ID }}" >> .env.local
@@ -65,6 +65,18 @@ jobs:
 
       - name: Set Frontend API URL
         run: echo "EXPO_LOCAL_SERVER=http://localhost:3000" >> $GITHUB_ENV
+          echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> .env
+          echo "FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN }}" >> .env
+          echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> .env
+          echo "FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_STORAGE_BUCKET }}" >> .env
+          echo "FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}" >> .env
+          echo "FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }}" >> .env
+          echo "FIREBASE_MEASUREMENT_ID=${{ secrets.FIREBASE_MEASUREMENT_ID }}" >> .env
+          echo "EXPO_LOCAL_SERVER=${{ secrets.EXPO_LOCAL_SERVER }}" >> .env
+          echo "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}" >> .env
+          echo "MAPBOX_TOKEN=${{ secrets.MAPBOX_TOKEN }}" >> .env
+          echo "MAPBOX_TOKEN_PUBLIC=${{ secrets.MAPBOX_TOKEN_PUBLIC }}" >> .env
+          echo "GOOGLEMAP_API_KEKY=${{ secrets.GOOGLEMAP_API_KEKY }}" >> .env
 
       - name: Install Frontend Deps
         run: npm install
