@@ -9,31 +9,24 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    environment: stage # <-- Must contain all needed secrets
+    environment: stage
 
     steps:
-      # ✅ Checkout frontend repo
       - uses: actions/checkout@v4
 
-      # ✅ Clone backend repo into `./backend` folder
-      # ✅ Clone backend repo into `./backend` folder
       - name: Clone Backend Repo
-        run: |
-          git clone https://github.com/HikeMeet/HikeMeet-Backend.git backend
+        run: git clone https://github.com/HikeMeet/HikeMeet-Backend.git backend
 
-      # ✅ Set up Node.js for both backend & frontend
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 22.x
           cache: npm
 
-      # ✅ Load backend secrets into a .env file
       - name: Write backend .env file
         working-directory: backend
         run: |
           echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> .env
-          echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> .env.local
           echo "EXPO_PUBLIC_API_URL=http://localhost:3000" >> .env.local
           echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> .env.local
           echo "FIREBASE_PRIVATE_KEY_ID=${{ secrets.FIREBASE_PRIVATE_KEY_ID }}" >> .env.local
@@ -47,12 +40,11 @@ jobs:
           echo "FIREBASE_TYPE=${{ secrets.FIREBASE_TYPE }}" >> .env.local
           echo "FIREBASE_UNIVERSE_DOMAIN=${{ secrets.FIREBASE_UNIVERSE_DOMAIN }}" >> .env.local
           echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env.local
-          echo "PORT=${{ secrets.PORT }}" >> .env.local
+          echo "PORT=3000" >> .env.local
           echo "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}" >> .env.local
           echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> .env.local
           echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}" >> .env.local
 
-      # ✅ Build and run backend container with secrets
       - name: Build Backend Docker Image
         working-directory: backend
         run: docker build -t hike-meet-backend:test .
@@ -61,11 +53,19 @@ jobs:
         run: |
           docker run -d \
             --name backend \
-            --env-file backend/.env \
+            --env-file backend/.env.local \ # ✅ fixed to use the correct env
             -p 3000:3000 \
             hike-meet-backend:test
 
-      # ✅ Wait for backend to be ready
+      # ✅ Debug container state
+      - name: Show running containers
+        run: docker ps -a
+
+      # ✅ Print backend logs
+      - name: Print backend logs
+        run: docker logs backend
+
+      # ✅ Wait for backend
       - name: Wait for Backend
         run: |
           for i in {1..10}; do
@@ -74,18 +74,14 @@ jobs:
             sleep 3
           done
 
-      # ✅ Set frontend env variable so it knows the backend URL
       - name: Set Frontend API URL
         run: echo "EXPO_LOCAL_SERVER=http://localhost:3000" >> $GITHUB_ENV
 
-      # ✅ Install frontend dependencies
       - name: Install Frontend Deps
         run: npm install
 
-      # ✅ Run tests
       - name: Run Tests
         run: npm run test
 
-      # ✅ Run linter (ignore backend dir)
       - name: Run Linter
         run: npm run lint -- --ignore-pattern backend/
