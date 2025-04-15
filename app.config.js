@@ -2,7 +2,7 @@ export default ({ config }) => ({
   ...config,
   expo: {
     ...config.expo,
-    name: "expo-react-native-w-tailwind",
+    name: "HikeMeet",
     slug: "expo-react-native-w-tailwind",
     extra: {
       GOOGLEMAP_API_KEY: process.env.GOOGLEMAP_API_KEY,
@@ -10,10 +10,10 @@ export default ({ config }) => ({
 
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/icon.png",
+    icon: "./assets/Logo2.png",
     userInterfaceStyle: "light",
     splash: {
-      image: "./assets/splash.png",
+      image: "./assets/Logo2.png",
       resizeMode: "contain",
       backgroundColor: "#ffffff",
     },
@@ -24,7 +24,7 @@ export default ({ config }) => ({
     android: {
       softwareKeyboardLayoutMode: "pan",
       adaptiveIcon: {
-        foregroundImage: "./assets/adaptive-icon.png",
+        foregroundImage: "./assets/Logo2.png",
         backgroundColor: "#ffffff",
       },
       package: "com.wooozai.exporeactnativewtailwind",
