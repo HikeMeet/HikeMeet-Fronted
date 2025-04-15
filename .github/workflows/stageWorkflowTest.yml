@@ -75,7 +75,7 @@ jobs:
           echo "EXPO_LOCAL_SERVER=http://localhost:3000" >> $GITHUB_ENV
           echo "MAPBOX_TOKEN=${{ secrets.MAPBOX_TOKEN }}" >> $GITHUB_ENV
           echo "MAPBOX_TOKEN_PUBLIC=${{ secrets.MAPBOX_TOKEN_PUBLIC }}" >> $GITHUB_ENV
-          echo "GOOGLEMAP_API_KEKY=${{ secrets.GOOGLEMAP_API_KEKY }}" >> $GITHUB_ENV
+          echo "GOOGLEMAP_API_KEY=${{ secrets.GOOGLEMAP_API_KEY }}" >> $GITHUB_ENV
 
       - name: Install Frontend Deps
         run: npm install

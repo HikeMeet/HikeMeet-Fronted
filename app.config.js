@@ -3,7 +3,7 @@ export default ({ config }) => ({
   expo: {
     ...config.expo,
     name: "Hikemeet",
-    slug: "expo-react-native-w-tailwind",
+    slug: "hikemeetteam",
 
     version: "1.0.0",
     orientation: "portrait",
@@ -57,9 +57,9 @@ export default ({ config }) => ({
         origin: false,
       },
       eas: {
-        projectId: "592acf0b-41b8-40a2-b973-b21fbcbd4e8e",
+        projectId: "ad9fccb4-c086-4de8-aef4-8d3a23e5a2b0",
       },
     },
-    owner: "wooozai",
+    owner: "hikemeetteam",
   },
 });

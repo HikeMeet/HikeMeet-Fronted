@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    environment: production
     steps:
       # Checkout the React Native repository
       - uses: actions/checkout@v4
@@ -29,15 +29,12 @@ jobs:
       - name: Run linter
         run: npm run lint
 
-        # Step 4: Set APP_ENV for production
-      - name: Set APP_ENV to production
-        run: echo "APP_ENV=stage" >> $GITHUB_ENV
       # Step 5: Install Expo CLI
       - name: Install Expo CLI
         run: npm install -g expo eas-cli
 
       # Step 6: Build the Android app
-      # - name: Build Android App
-      #   env:
-      #     EXPO_TOKEN: ${{ secrets.CI_CD_TOKEN }}
-      #   run: npx eas build --platform android --non-interactive
+      - name: Build Android App
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: npx eas build --platform android --non-interactive
