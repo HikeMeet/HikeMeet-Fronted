@@ -24,7 +24,7 @@ export default {
         EXPO_LOCAL_SERVER: process.env.EXPO_LOCAL_SERVER,
         MAPBOX_TOKEN: process.env.MAPBOX_TOKEN,
         MAPBOX_TOKEN_PUBLIC: process.env.MAPBOX_TOKEN_PUBLIC,
-        GOOGLEMAP_API_KEKY: process.env.GOOGLEMAP_API_KEY,
+        GOOGLEMAP_API_KEY: process.env.GOOGLEMAP_API_KEY,
       },
     },
   },
