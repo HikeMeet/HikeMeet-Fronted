@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import { render, fireEvent } from "@testing-library/react-native";
 import LandingPage from "../screens/landing/landing-page";
 

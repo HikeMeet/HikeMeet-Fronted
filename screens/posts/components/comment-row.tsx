@@ -1,5 +1,6 @@
 // CommentRow.tsx
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import React = require("react");
 import { View, Text, TouchableOpacity } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import ProfileHeaderLink from "../../my-profile/components/profile-image-name-button";

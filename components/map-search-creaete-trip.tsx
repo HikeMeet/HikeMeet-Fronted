@@ -1,9 +1,10 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { View, TextInput, TouchableOpacity, Text } from "react-native";
 import Constants from "expo-constants";
 import * as Location from "expo-location";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
+import React = require("react");
 
 // Only import Mapbox if not running in Expo Go
 let Mapbox = null;

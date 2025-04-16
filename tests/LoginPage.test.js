@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import LoginPage from "../screens/register-login/login-page";
 

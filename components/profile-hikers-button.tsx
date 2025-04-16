@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import { TouchableOpacity, Text } from "react-native";
 import { MongoUser } from "../interfaces/user-interface";
 

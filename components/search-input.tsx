@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import { View, TextInput, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -20,7 +20,12 @@ const SearchInput: React.FC<SearchInputProps> = ({
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={editable ? 1 : 0.8}>
       <View className="flex-row items-center bg-gray-200 rounded-full px-6 py-3 shadow-lg">
-        <Ionicons name="search" size={28} color="gray" style={{ marginRight: 12 }} />
+        <Ionicons
+          name="search"
+          size={28}
+          color="gray"
+          style={{ marginRight: 12 }}
+        />
         <TextInput
           placeholder={placeholder}
           onChangeText={onChangeText}

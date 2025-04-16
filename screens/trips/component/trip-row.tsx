@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { Trip } from "../../../interfaces/trip-interface";
 

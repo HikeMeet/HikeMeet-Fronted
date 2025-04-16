@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import React = require("react");
 import { Modal, View, Text, TouchableOpacity } from "react-native";
 import tw from "twrnc";
 import InviteFriendsModal from "./invite-list-in-group-modal";

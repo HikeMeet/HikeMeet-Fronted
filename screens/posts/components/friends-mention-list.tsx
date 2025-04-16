@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import { View, ScrollView, TouchableOpacity, Image, Text } from "react-native";
 import { Friend } from "../../../interfaces/user-interface";
 

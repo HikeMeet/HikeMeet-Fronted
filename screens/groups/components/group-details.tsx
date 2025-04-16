@@ -1,5 +1,5 @@
 // GroupDetails.tsx
-import React from "react";
+import React = require("react");
 import { View, Text, ScrollView } from "react-native";
 import MapDirectionButton from "../../../components/get-direction";
 import { Group } from "../../../interfaces/group-interface";

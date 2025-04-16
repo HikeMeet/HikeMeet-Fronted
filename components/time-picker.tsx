@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 interface TimePickerPopupProps {

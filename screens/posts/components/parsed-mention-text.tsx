@@ -1,5 +1,5 @@
 // ParsedMentionText.tsx
-import React from "react";
+import React = require("react");
 import { Text } from "react-native";
 import { useAuth } from "../../../contexts/auth-context";
 
@@ -14,8 +14,7 @@ const ParsedMentionText: React.FC<ParsedMentionTextProps> = ({
 }) => {
   const { mongoUser, Users } = useAuth();
   const regex = /@(\w+)/g;
-  const parts: { text: string; isMention: boolean; friendId?: string }[] =
-    [];
+  const parts: { text: string; isMention: boolean; friendId?: string }[] = [];
   let lastIndex = 0;
   let match;
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import { View, Text } from "react-native";
 
 interface ErrorAlertProps {
@@ -14,4 +14,3 @@ const ErrorAlertComponent: React.FC<ErrorAlertProps> = ({ message }) => {
 };
 
 export default ErrorAlertComponent;
-

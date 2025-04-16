@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import { Text } from "react-native";
 
 export function evaluatePasswordStrength(

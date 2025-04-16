@@ -1,5 +1,6 @@
 // PostDetailPage.tsx
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
+import React = require("react");
 import {
   ActivityIndicator,
   FlatList,

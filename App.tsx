@@ -1,5 +1,5 @@
 // App.tsx
-import React from "react";
+import React = require("react");
 import Constants from "expo-constants";
 import { NavigationContainer } from "@react-navigation/native";
 import MainLayout from "./MainLayout";

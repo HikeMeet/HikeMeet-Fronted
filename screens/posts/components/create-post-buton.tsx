@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import { Text, TouchableOpacity, GestureResponderEvent } from "react-native";
 
 interface CreatePostButtonProps {

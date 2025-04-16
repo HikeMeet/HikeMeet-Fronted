@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 // Import your trip-related screens
@@ -10,7 +10,6 @@ const Stack = createNativeStackNavigator();
 const TripsStack = () => {
   return (
     <Stack.Navigator initialRouteName="CreateTripPage">
-     
       <Stack.Screen
         name="CreateTripPage"
         component={CreateTripPage}

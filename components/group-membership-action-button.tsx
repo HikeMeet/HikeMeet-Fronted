@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import React = require("react");
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import tw from "twrnc";
 import { MongoUser } from "../interfaces/user-interface";
