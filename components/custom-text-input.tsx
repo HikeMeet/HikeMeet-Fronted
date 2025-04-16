@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import { View, TextInput, TextInputProps } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 

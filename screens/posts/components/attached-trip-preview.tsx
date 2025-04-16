@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import { View, Text, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import TripRow from "../../trips/component/trip-row";

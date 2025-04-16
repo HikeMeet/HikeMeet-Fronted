@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import { TouchableOpacity, Text, ActivityIndicator } from "react-native";
 
 interface ButtonProps {
@@ -9,7 +9,13 @@ interface ButtonProps {
   disabled?: boolean;
 }
 
-const Button: React.FC<ButtonProps> = ({ title, onPress, isLoading, color = "bg-blue-500", disabled }) => {
+const Button: React.FC<ButtonProps> = ({
+  title,
+  onPress,
+  isLoading,
+  color = "bg-blue-500",
+  disabled,
+}) => {
   return (
     <TouchableOpacity
       className={`w-full py-4 rounded-lg ${color} ${disabled ? "opacity-50" : ""}`}
@@ -19,7 +25,9 @@ const Button: React.FC<ButtonProps> = ({ title, onPress, isLoading, color = "bg-
       {isLoading ? (
         <ActivityIndicator color="#fff" />
       ) : (
-        <Text className="text-center text-white text-lg font-bold">{title}</Text>
+        <Text className="text-center text-white text-lg font-bold">
+          {title}
+        </Text>
       )}
     </TouchableOpacity>
   );

@@ -1,5 +1,5 @@
 // LikesModal.tsx
-import React from "react";
+import React = require("react");
 import {
   Modal,
   View,

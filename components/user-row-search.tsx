@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import FriendActionButton from "./friend-button";
 import { useAuth } from "../contexts/auth-context";

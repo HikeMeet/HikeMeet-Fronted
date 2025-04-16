@@ -1,5 +1,6 @@
 // PostCard.tsx
-import React, { useState } from "react";
+import { useState } from "react";
+import React = require("react");
 import {
   ScrollView,
   TouchableOpacity,
@@ -185,20 +186,20 @@ const PostCard: React.FC<PostCardProps> = ({
 
   const CardContent = () => (
     <>
-        {renderHeader()}
-        {renderContent()}
-        {renderMeta()}
-        {renderFooter()}
-        {optionsVisible && (
-          <PostOptionsModal
-            visible={optionsVisible}
-            onClose={() => setOptionsVisible(false)}
-            post={post}
-            navigation={navigation}
-            onEdit={() => setIsEditing(true)}
-            onPostUpdated={onPostUpdated}
-          />
-        )}
+      {renderHeader()}
+      {renderContent()}
+      {renderMeta()}
+      {renderFooter()}
+      {optionsVisible && (
+        <PostOptionsModal
+          visible={optionsVisible}
+          onClose={() => setOptionsVisible(false)}
+          post={post}
+          navigation={navigation}
+          onEdit={() => setIsEditing(true)}
+          onPostUpdated={onPostUpdated}
+        />
+      )}
     </>
   );
 

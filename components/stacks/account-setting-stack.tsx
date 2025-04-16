@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 // Import the account-related screens

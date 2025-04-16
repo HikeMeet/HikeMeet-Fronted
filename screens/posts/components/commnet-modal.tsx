@@ -1,5 +1,5 @@
 // CommentModal.tsx
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Modal,
   View,
@@ -16,6 +16,7 @@ import { IComment } from "../../../interfaces/post-interface";
 import { createComment } from "../../../components/requests/post-comment-requests";
 import { useAuth } from "../../../contexts/auth-context";
 import MentionTextInput from "../../../components/metion-with-text-input";
+import React = require("react");
 
 interface CommentModalProps {
   visible: boolean;
