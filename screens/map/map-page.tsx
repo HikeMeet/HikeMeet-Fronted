@@ -27,6 +27,7 @@ import { ActiveFilter } from "./components/header/filters-bar";
 // Load Mapbox dynamically
 let Mapbox: any = null;
 let Camera: any = null;
+
 if (Constants.appOwnership !== "expo") {
   Mapbox = require("@rnmapbox/maps").default;
   Camera = require("@rnmapbox/maps").Camera;
@@ -52,16 +53,6 @@ function distanceMeters(
 }
 
 export default function MapPage({ navigation }: MapPageProps) {
-  if (!Mapbox || !Camera) {
-    return (
-      <View className="flex-1 items-center justify-center p-4">
-        <Text className="text-center text-gray-600">
-          Maps are disabled in Expo Go. Please use a custom dev client to view
-          maps.
-        </Text>
-      </View>
-    );
-  }
   /* ---------- state ---------- */
   const [trips, setTrips] = useState<Trip[]>([]);
   const [allTrips, setAllTrips] = useState<Trip[]>([]);
@@ -106,7 +97,19 @@ export default function MapPage({ navigation }: MapPageProps) {
 
   const controlsDisabled =
     popupTrip !== null || showTripFilter || showGroupFilter;
+
   /* ---------- effects ---------- */
+  if (!Mapbox || !Camera) {
+    return (
+      <View className="flex-1 items-center justify-center p-4">
+        <Text className="text-center text-gray-600">
+          Maps are disabled in Expo Go. Please use a custom dev client to view
+          maps.
+        </Text>
+      </View>
+    );
+  }
+
   useEffect(() => {
     fetchAllData({});
     getUserLocation();

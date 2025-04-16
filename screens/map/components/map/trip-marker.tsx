@@ -10,8 +10,6 @@ import {
 import Constants from "expo-constants";
 import { Trip } from "../../../../interfaces/trip-interface";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
 let Mapbox: any = null;
 if (Constants.appOwnership !== "expo") {
   Mapbox = require("@rnmapbox/maps").default;
@@ -34,12 +32,8 @@ export default function TripMarker({
   isSelected = false,
   onPressMarker,
 }: TripMarkerProps) {
-  if (!Mapbox) return null;
-
-  const groupCount = (trip.groups || []).length;
-  const imageSize = Math.max(50, Math.min(50, SCREEN_WIDTH * 0.14));
-  const ringSize = 4;
-  const containerSize = imageSize + ringSize * 1;
+  /* ---------- hooks ---------- */
+  const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
   const scaleAnim = useRef(new Animated.Value(isSelected ? 1.1 : 1)).current;
   useEffect(() => {
@@ -48,7 +42,15 @@ export default function TripMarker({
       duration: 300,
       useNativeDriver: true,
     }).start();
-  }, [isSelected]);
+  }, [isSelected, scaleAnim]);
+
+  if (!Mapbox) return null;
+
+  /* ---------- derived values ---------- */
+  const groupCount = (trip.groups || []).length;
+  const imageSize = Math.max(50, Math.min(50, SCREEN_WIDTH * 0.14));
+  const ringSize = 4;
+  const containerSize = imageSize + ringSize * 1;
 
   const defaultNameBgColor = hasAvailability ? "bg-emerald-100" : "bg-rose-100";
   const defaultNameBorderColor = hasAvailability
@@ -62,9 +64,8 @@ export default function TripMarker({
     : "bg-rose-600";
 
   const nameBorderStyle = isSelected ? "border-black" : defaultNameBorderColor;
-  const textStyle = defaultTextColor;
-  const indicatorStyle = defaultIndicatorColor;
 
+  /* ---------- JSX ---------- */
   return (
     <Mapbox.MarkerView
       coordinate={[longitude, latitude]}
@@ -73,40 +74,38 @@ export default function TripMarker({
       <TouchableOpacity
         onPress={() => onPressMarker(trip)}
         activeOpacity={0.9}
-        className="items-center"
-        style={{ gap: 6 }}
+        className="items-center gap-[6px]"
       >
         {/* Map image with outer ring */}
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
           <View className="relative shadow-xl">
             <View
+              className="items-center justify-center"
               style={{
                 width: containerSize,
                 height: containerSize,
                 borderRadius: containerSize / 2,
                 backgroundColor: isSelected ? "black" : "#ffffff",
-                alignItems: "center",
-                justifyContent: "center",
               }}
             >
               {trip.main_image?.url ? (
                 <Image
                   source={{ uri: trip.main_image.url }}
+                  resizeMode="cover"
                   style={{
                     width: imageSize,
                     height: imageSize,
                     borderRadius: imageSize / 2,
                   }}
-                  resizeMode="cover"
                 />
               ) : (
                 <View
+                  className="items-center justify-center bg-gradient-to-br from-gray-400 to-gray-500"
                   style={{
                     width: imageSize,
                     height: imageSize,
                     borderRadius: imageSize / 2,
                   }}
-                  className="bg-gradient-to-br from-gray-400 to-gray-500 items-center justify-center"
                 >
                   <Text className="text-white font-extrabold text-lg">
                     {trip.name?.charAt(0).toUpperCase()}
@@ -116,7 +115,7 @@ export default function TripMarker({
             </View>
 
             {groupCount > 0 && (
-              <View className="absolute -top-22 -left-1 bg-green-700 rounded-full w-6 h-6 items-center justify-center border border-white shadow-md">
+              <View className="absolute -top-22 -left-1 w-6 h-6 items-center justify-center rounded-full bg-green-700 border border-white shadow-md">
                 <Text className="text-white text-xs font-bold">
                   {groupCount}
                 </Text>
@@ -129,9 +128,11 @@ export default function TripMarker({
         <View
           className={`flex-row items-center px-3 py-[6px] rounded-full border shadow-sm ${defaultNameBgColor} ${nameBorderStyle}`}
         >
-          <View className={`w-2 h-2 rounded-full mr-2 ${indicatorStyle}`} />
+          <View
+            className={`w-2 h-2 mr-2 rounded-full ${defaultIndicatorColor}`}
+          />
           <Text
-            className={`text-[13px] font-semibold ${textStyle}`}
+            className={`text-[13px] font-semibold ${defaultTextColor}`}
             numberOfLines={1}
           >
             {trip.name}
