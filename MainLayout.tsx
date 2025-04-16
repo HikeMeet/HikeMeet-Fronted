@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
+import React = require("react");
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "./contexts/auth-context";
 import SignInLandingStack from "./components/stacks/signin-landing-stack";

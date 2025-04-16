@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
+import React = require("react");
 import {
   View,
   Text,

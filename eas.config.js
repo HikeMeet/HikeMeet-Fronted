@@ -7,11 +7,18 @@ export default {
     development: {
       developmentClient: true,
       distribution: "internal",
+      android: {
+        buildType: "apk",
+        gradleCommand: ":app:assembleDebug",
+      },
     },
     preview: {
       distribution: "internal",
     },
     production: {
+      android: {
+        buildType: "apk",
+      },
       autoIncrement: true,
       env: {
         FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,

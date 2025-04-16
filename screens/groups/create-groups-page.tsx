@@ -1,5 +1,6 @@
 // CreateGroupPage.tsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import React = require("react");
 import { ScrollView, TouchableOpacity, Text, Alert, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import GroupCreatedModal from "../../components/post-group-creatonal";

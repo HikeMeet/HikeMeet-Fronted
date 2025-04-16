@@ -1,5 +1,5 @@
 // GroupFormFields.tsx
-import React, { useState } from "react";
+import React = require("react");
 import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import TripSelector from "../../trips/component/trip-selector-for-group";
 import DateRangePicker from "../../../components/schedual-time-group";

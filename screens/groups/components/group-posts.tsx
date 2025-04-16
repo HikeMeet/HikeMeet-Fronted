@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import React = require("react");
 import { View, Text, ActivityIndicator, FlatList } from "react-native";
 import CreatePostButton from "../../posts/components/create-post-buton";
 import PostCard from "../../posts/components/post-card-on-feeds";

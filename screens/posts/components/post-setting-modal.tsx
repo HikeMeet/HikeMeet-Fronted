@@ -1,5 +1,6 @@
 // PostOptionsModal.tsx
-import React, { useState } from "react";
+import { useState } from "react";
+import React = require("react");
 import { TouchableOpacity, Text, View, ActivityIndicator } from "react-native";
 import Modal from "react-native-modal";
 import { useAuth } from "../../../contexts/auth-context";

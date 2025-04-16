@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import { TouchableOpacity, View, Text, Image, ScrollView } from "react-native";
 import { getPostWithParam, IPost } from "../../../interfaces/post-interface";
 import ProfileHeaderLink from "../../my-profile/components/profile-image-name-button";

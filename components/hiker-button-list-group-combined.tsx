@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from "react";
+import  { useState, useCallback } from "react";
+import React = require("react");
 import { View, TouchableOpacity, Text } from "react-native";
 import { Group } from "../interfaces/group-interface";
 import InviteFriendsModal from "./invite-list-in-group-modal";

@@ -1,4 +1,4 @@
-import React from "react";
+import React = require("react");
 import { TouchableOpacity, View, Text } from "react-native";
 
 interface CustomCheckboxProps {

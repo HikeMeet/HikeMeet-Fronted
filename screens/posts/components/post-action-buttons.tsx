@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
+import React = require("react");
 import { View, TouchableOpacity, Text, Modal, ScrollView } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { IComment, IPost, IUser } from "../../../interfaces/post-interface";

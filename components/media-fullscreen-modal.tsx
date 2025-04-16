@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import {
   Dimensions,
   ScrollView,
@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import FullScreenVideo from "./fullscreen-video";
 import { IImageModel } from "../interfaces/image-interface";
+import React = require("react");
 
 interface FullScreenMediaModalProps {
   media: IImageModel[];
