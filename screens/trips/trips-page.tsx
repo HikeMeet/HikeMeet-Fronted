@@ -134,7 +134,7 @@ const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white p-4">
-      {loading ? (
+      {false ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <>
@@ -161,10 +161,12 @@ const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
             }}
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.1}
-            ListEmptyComponent={
-              <View className="mt-10">
-                <Text className="text-lg text-center">No trips found.</Text>
-              </View>
+            ListEmptyComponent={() =>
+              !loading ? (
+                <View className="mt-10">
+                  <Text className="text-lg text-center">No trips found.</Text>
+                </View>
+              ) : null
             }
             refreshControl={
               <RefreshControl
