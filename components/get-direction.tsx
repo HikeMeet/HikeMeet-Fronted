@@ -1,4 +1,4 @@
-import React = require("react");
+import React from "react";
 import { Alert, Linking, TouchableOpacity, Text } from "react-native";
 
 interface MapDirectionButtonProps {

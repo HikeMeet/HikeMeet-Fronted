@@ -1,5 +1,5 @@
 import { useMemo, useRef } from "react";
-import React = require("react");
+import React from "react";
 import {
   TextInput,
   View,

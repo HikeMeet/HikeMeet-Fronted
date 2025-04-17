@@ -1,5 +1,5 @@
 import { View, Text } from "react-native";
-import React = require("react");
+import React from "react";
 
 const ChatListPage = () => {
   return (

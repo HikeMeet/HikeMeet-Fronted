@@ -1,4 +1,4 @@
-import React = require("react");
+import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Home from "../../screens/home-page/home";
 import ProfilePage from "../../screens/my-profile/my-profile";

@@ -1,5 +1,5 @@
 // ParsedMentionText.tsx
-import React = require("react");
+import React from "react";
 import { Text } from "react-native";
 import { useAuth } from "../../../contexts/auth-context";
 

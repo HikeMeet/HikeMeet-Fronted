@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import React = require("react");
+import React from "react";
 import { View, Text, Image } from "react-native";
 import {
   onAuthStateChanged,

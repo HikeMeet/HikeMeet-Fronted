@@ -1,4 +1,4 @@
-import React = require("react");
+import React from "react";
 import { ScrollView, View, Text, TouchableOpacity, Modal } from "react-native";
 
 interface TermsPopupProps {

@@ -1,6 +1,6 @@
 // FullScreenVideo.tsx
 import { useEffect } from "react";
-import React = require("react");
+import React from "react";
 import { TouchableOpacity, Text, View, Dimensions } from "react-native";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { useEvent } from "expo";

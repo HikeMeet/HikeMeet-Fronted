@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import React = require("react");
+import React from "react";
 import {
   Modal,
   View,

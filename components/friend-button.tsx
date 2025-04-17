@@ -1,8 +1,8 @@
-import  { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { TouchableOpacity, Text, View, Modal } from "react-native";
 import tw from "twrnc";
 import { useAuth } from "../contexts/auth-context";
-import React = require("react");
+import React from "react";
 
 interface FriendActionButtonProps {
   status: string; // "accepted", "request_sent", "request_received", "blocked", or "none"

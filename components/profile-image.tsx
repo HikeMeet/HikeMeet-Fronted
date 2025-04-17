@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import React = require("react");
+import React from "react";
 import {
   Image,
   Pressable,
@@ -163,6 +163,7 @@ const ProfileImage: React.FC<MainImageProps> = ({
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const asset = result.assets[0];
       console.log("Image selected:", asset.uri);
+      await handleRemovePhoto();
       await uploadMediaToBackend(asset.uri);
     } else {
       console.log("No image selected.");
@@ -337,7 +338,7 @@ const ProfileImage: React.FC<MainImageProps> = ({
                 className="py-2"
                 onPress={() => {
                   setTooltipVisible(false);
-                  handleRemovePhoto();
+
                   handleImageChange();
                 }}
               >

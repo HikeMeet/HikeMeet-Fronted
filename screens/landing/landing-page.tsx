@@ -1,4 +1,4 @@
-import React = require("react");
+import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 
 export default function LandingPage({ navigation }: { navigation: any }) {

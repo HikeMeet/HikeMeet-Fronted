@@ -1,4 +1,4 @@
-import React = require("react");
+import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import VerifyEmailPage from "../../screens/register-login/email-verification-page";
 import LandingPage from "../../screens/landing/landing-page";

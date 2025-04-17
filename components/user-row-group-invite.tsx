@@ -1,4 +1,4 @@
-import React = require("react");
+import React from "react";
 import { View, Text, Image } from "react-native";
 import { MongoUser } from "../interfaces/user-interface";
 import { Group } from "../interfaces/group-interface";

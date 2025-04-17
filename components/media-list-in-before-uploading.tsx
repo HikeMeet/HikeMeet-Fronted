@@ -1,4 +1,4 @@
-import React = require("react");
+import React from "react";
 import { View, Image, TouchableOpacity, Text } from "react-native";
 
 export interface ILocalMedia {
