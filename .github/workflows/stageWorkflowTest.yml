@@ -1,4 +1,4 @@
-name: Expo React Native CI with Backend in Docker
+name: Run tests with backend on docker
 
 on:
   push:

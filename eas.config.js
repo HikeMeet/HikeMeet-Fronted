@@ -21,6 +21,7 @@ export default {
       distribution: "internal",
     },
     production: {
+      channel: "production",
       android: {
         buildType: "apk",
       },
