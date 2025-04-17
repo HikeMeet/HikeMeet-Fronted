@@ -41,6 +41,7 @@ const CommentModal: React.FC<CommentModalProps> = ({
   const [tempComments, setTempComments] = useState<IComment[]>([]);
   const [newCommentText, setNewCommentText] = useState<string>("");
   const [commentsToShow, setCommentsToShow] = useState<number>(5);
+  const [isPosting, setIsPosting] = useState<boolean>(false);
   const { mongoId } = useAuth();
   const flatListRef = useRef<FlatList>(null);
 
@@ -52,7 +53,8 @@ const CommentModal: React.FC<CommentModalProps> = ({
 
   // Function to post a new comment.
   const handlePostComment = async () => {
-    if (!newCommentText.trim()) return;
+    if (!newCommentText.trim() || isPosting) return;
+    setIsPosting(true);
     try {
       const addedComment: IComment = await createComment(
         postId,
@@ -70,6 +72,8 @@ const CommentModal: React.FC<CommentModalProps> = ({
         "Error",
         "There was an error posting your comment. Please try again."
       );
+    } finally {
+      setIsPosting(false);
     }
   };
 

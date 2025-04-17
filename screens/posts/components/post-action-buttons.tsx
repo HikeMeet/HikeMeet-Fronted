@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import React from "react";
 import { View, TouchableOpacity, Text, Modal, ScrollView } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
@@ -46,6 +46,9 @@ const PostActions: React.FC<PostActionsProps> = ({
   const [shareCount, setShareCount] = useState(post.shares.length);
   const [modalVisible, setModalVisible] = useState(false);
   const [likesModalVisible, setLikesModalVisible] = useState(false);
+  useEffect(() => {
+    setCommentCount(post.comments.length);
+  }, [post.comments]);
 
   // Flag to avoid multiple simultaneous like/unlike requests
   const [isLikeProcessing, setIsLikeProcessing] = useState(false);
