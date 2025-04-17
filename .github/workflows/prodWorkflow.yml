@@ -1,4 +1,4 @@
-name: Expo React Native CI with Node.js Backend
+name: Build and upload to production 
 
 on:
   push:
