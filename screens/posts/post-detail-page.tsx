@@ -3,15 +3,10 @@ import { useEffect, useState, useCallback } from "react";
 import React from "react";
 import {
   ActivityIndicator,
-  FlatList,
   Text,
   View,
   Modal,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  TextInput,
-  Platform,
-  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -27,15 +22,13 @@ import InnerPostCard from "./components/inner-post-card";
 import ProfileHeaderLink from "../my-profile/components/profile-image-name-button";
 import PostOptionsModal from "./components/post-setting-modal";
 import EditableText from "./components/editable-text-for-posts";
-import { useAuth } from "../../contexts/auth-context";
-import { createComment } from "../../components/requests/post-comment-requests";
-import CommentRow from "./components/comment-row";
+
 import ParsedMentionText from "./components/parsed-mention-text";
-import MentionTextInput from "../../components/metion-with-text-input";
 import SelectedGroupsList from "./components/attached-group-preview";
 import SelectedTripsList from "./components/attached-trip-preview";
 import { Group } from "../../interfaces/group-interface";
 import { Trip } from "../../interfaces/trip-interface";
+import { ScrollView } from "react-native-gesture-handler";
 
 const getUri = (data: any): string => {
   if (typeof data === "string") return data;
@@ -66,9 +59,7 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
   const [optionsVisible, setOptionsVisible] = useState(false);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState<number>(0);
   const [isEditing, setIsEditing] = useState(false);
-  const [newCommentText, setNewCommentText] = useState<string>("");
   const [commentsToShow, setCommentsToShow] = useState<number>(5);
-  const { mongoId } = useAuth();
 
   const fetchPost = async () => {
     try {
@@ -89,40 +80,6 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
   }, [postId]);
 
   // When a comment is updated (e.g., liked), update it in the post's comments list.
-  const handleCommentUpdated = (updatedComment: IComment) => {
-    if (!post) return;
-
-    let updatedComments;
-    // If the comment is marked as deleted, filter it out
-    if ((updatedComment as any).deleted) {
-      updatedComments = post.comments.filter(
-        (c) => c._id !== updatedComment._id
-      );
-    } else {
-      // Otherwise update the existing comment object.
-      updatedComments = post.comments.map((c) =>
-        c._id === updatedComment._id ? updatedComment : c
-      );
-    }
-    setPost({ ...post, comments: updatedComments });
-  };
-
-  // Handle posting a new comment
-  const handlePostComment = async () => {
-    if (!newCommentText.trim() || !post) return;
-    try {
-      const addedComment: IComment = await createComment(
-        post._id,
-        mongoId!,
-        newCommentText
-      );
-      const updatedComments = [...post.comments, addedComment];
-      setPost({ ...post, comments: updatedComments });
-      setNewCommentText("");
-    } catch (error) {
-      console.error("Error posting comment:", error);
-    }
-  };
 
   const openFullScreen = (index: number) => {
     setSelectedMediaIndex(index);
@@ -233,92 +190,50 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
         post={post}
         navigation={navigation}
         onLikeChange={fetchPost}
+        onCommentsUpdated={(updatedComments: IComment[]) => {
+          setPost((prev) =>
+            prev ? { ...prev, comments: updatedComments } : prev
+          );
+          // Optionally adjust commentsToShow if needed
+        }}
       />
-      {/* Comments Section Title */}
-      {/* <View className="mt-4 mb-2 px-4">
-        <Text className="text-base font-semibold text-gray-800">Comments:</Text>
-      </View> */}
     </View>
   );
-
-  // Data for FlatList: paginated comments
-  const displayedComments = post.comments.slice(0, commentsToShow);
 
   return (
     <>
       <SafeAreaView className="flex-1 bg-gray-50 ">
-        {/* <FlatList
-          data={displayedComments}
-          keyExtractor={(item) => item._id}
-          renderItem={({ item }) => (
-            <CommentRow
-              comment={item}
-              postId={post._id}
-              navigation={navigation}
-              onCommentUpdated={handleCommentUpdated}
-            />
-          )}
-          ListHeaderComponent={ListHeader}
-          onEndReached={loadMoreComments}
-          onEndReachedThreshold={0.1}
-          contentContainerStyle={{ paddingBottom: 180 }}
-        /> */}
-        {ListHeader()}
-        {/* Sticky Input for New Comment */}
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex-row items-center p-4"
-        >
-          <MentionTextInput
-            placeholder="Write a comment..."
-            value={newCommentText}
-            onChangeText={setNewCommentText}
-            inputStyle={{
-              flex: 1,
-              borderWidth: 1,
-              borderColor: "#ccc",
-              borderRadius: 8,
-              padding: 8,
-              fontSize: 16,
-              color: "#374151",
-            }}
-            containerStyle={{ flex: 1 }}
-          />
-          <TouchableOpacity
-            onPress={handlePostComment}
-            className="ml-2 bg-blue-500 rounded-lg p-2"
+        <ScrollView className="flex-1">
+          {ListHeader()}
+
+          {/* Fullscreen Modal for Media Preview */}
+          <Modal
+            visible={mediaModalVisible}
+            animationType="slide"
+            onRequestClose={() => setMediaModalVisible(false)}
           >
-            <Text className="text-white">Send</Text>
-          </TouchableOpacity>
-        </KeyboardAvoidingView>
+            <FullScreenMediaModal
+              media={mediaItems}
+              initialIndex={selectedMediaIndex}
+              onClose={() => setMediaModalVisible(false)}
+            />
+          </Modal>
 
-        {/* Fullscreen Modal for Media Preview */}
-        <Modal
-          visible={mediaModalVisible}
-          animationType="slide"
-          onRequestClose={() => setMediaModalVisible(false)}
-        >
-          <FullScreenMediaModal
-            media={mediaItems}
-            initialIndex={selectedMediaIndex}
-            onClose={() => setMediaModalVisible(false)}
+          {/* Options Modal for Post Options (Edit/Delete/Report) */}
+          <PostOptionsModal
+            visible={optionsVisible}
+            onClose={() => setOptionsVisible(false)}
+            post={post}
+            navigation={navigation}
+            onEdit={() => {
+              setIsEditing(true);
+              setOptionsVisible(false);
+            }}
+            onPostUpdated={(deletedPost) => {
+              navigation.goBack();
+            }}
           />
-        </Modal>
-
-        {/* Options Modal for Post Options (Edit/Delete/Report) */}
-        <PostOptionsModal
-          visible={optionsVisible}
-          onClose={() => setOptionsVisible(false)}
-          post={post}
-          navigation={navigation}
-          onEdit={() => {
-            setIsEditing(true);
-            setOptionsVisible(false);
-          }}
-          onPostUpdated={(deletedPost) => {
-            navigation.goBack();
-          }}
-        />
+        </ScrollView>
       </SafeAreaView>
     </>
   );
