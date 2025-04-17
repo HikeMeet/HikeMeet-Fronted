@@ -1,5 +1,5 @@
 import { useState } from "react";
-import React = require("react");
+import React from "react";
 import { View, TextInput, TouchableOpacity } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";

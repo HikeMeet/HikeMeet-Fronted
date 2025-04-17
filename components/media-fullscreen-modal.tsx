@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import FullScreenVideo from "./fullscreen-video";
 import { IImageModel } from "../interfaces/image-interface";
-import React = require("react");
+import React from "react";
 
 interface FullScreenMediaModalProps {
   media: IImageModel[];

@@ -1,4 +1,4 @@
-import React = require("react");
+import React from "react";
 import { View, Text, Button, Modal } from "react-native";
 
 interface ConfirmationModalProps {

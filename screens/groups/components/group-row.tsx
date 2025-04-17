@@ -1,4 +1,4 @@
-import React = require("react");
+import React from "react";
 import { TouchableOpacity, View, Text, Image } from "react-native";
 import { Group } from "../../../interfaces/group-interface";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";

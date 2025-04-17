@@ -1,4 +1,4 @@
-import React = require("react");
+import React from "react";
 import { TouchableOpacity, Image, View, Text } from "react-native";
 import { useAuth } from "../../../contexts/auth-context";
 

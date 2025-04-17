@@ -1,5 +1,5 @@
-import  { useState } from "react";
-import React = require("react");
+import { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -29,7 +29,7 @@ const DeleteConfirmPopup: React.FC<ConfirmPopupProps> = ({
   navigation,
 }) => {
   const [password, setPassword] = useState("");
-  const { mongoId } = useAuth(); 
+  const { mongoId } = useAuth();
 
   const handleDeleteAccount = async (): Promise<boolean> => {
     try {

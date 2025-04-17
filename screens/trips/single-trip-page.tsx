@@ -1,6 +1,6 @@
 // TripDetailPage.tsx
 import { useState, useEffect } from "react";
-import React = require("react");
+import React from "react";
 import {
   ScrollView,
   View,

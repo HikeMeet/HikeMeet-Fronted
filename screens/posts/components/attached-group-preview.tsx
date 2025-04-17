@@ -1,8 +1,8 @@
-import React = require("react");
 import { View, Text, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import GroupRow from "../../groups/components/group-row";
 import { Group } from "../../../interfaces/group-interface";
+import React from "react";
 
 interface SelectedGroupsListProps {
   groups: Group[];

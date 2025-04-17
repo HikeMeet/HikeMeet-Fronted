@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import React = require("react");
+import React from "react";
 import {
   View,
   Text,
