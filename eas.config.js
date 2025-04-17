@@ -3,6 +3,11 @@ export default {
     version: ">= 15.0.14",
     appVersionSource: "remote",
   },
+  updates: {
+    enabled: true,
+    checkAutomatically: "ON_LOAD",
+    fallbackToCacheTimeout: 0,
+  },
   build: {
     development: {
       developmentClient: true,

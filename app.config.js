@@ -1,5 +1,7 @@
 export default ({ config }) => ({
   ...config,
+  // EAS Update settings:
+
   expo: {
     ...config.expo,
     name: "Hikemeet",
@@ -17,6 +19,15 @@ export default ({ config }) => ({
     assetBundlePatterns: ["**/*"],
     ios: {
       supportsTablet: true,
+    },
+    updates: {
+      url: "https://u.expo.dev/ad9fccb4-c086-4de8-aef4-8d3a23e5a2b0",
+      fallbackToCacheTimeout: 0,
+      checkAutomatically: "ON_LOAD",
+    },
+    // Ensure only matching appVersion clients receive the update
+    runtimeVersion: {
+      policy: "appVersion",
     },
     android: {
       softwareKeyboardLayoutMode: "pan",
