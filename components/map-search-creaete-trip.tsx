@@ -21,6 +21,9 @@ type MapSearchProps = {
   onMapTouchEnd?: () => void;
 };
 
+const StyledMapView: any = styled(Mapbox.MapView as any);
+const StyledCamera: any = styled(Mapbox.Camera as any);
+
 const MapSearch: React.FC<MapSearchProps> = ({
   onLocationSelect,
   initialLocation,
@@ -164,8 +167,6 @@ const MapSearch: React.FC<MapSearchProps> = ({
               define the styled components.
             */}
             {(() => {
-              const StyledMapView: any = styled(Mapbox.MapView as any);
-              const StyledCamera: any = styled(Mapbox.Camera as any);
               return (
                 <StyledMapView className="flex-1" onPress={handleMapPress}>
                   <StyledCamera
