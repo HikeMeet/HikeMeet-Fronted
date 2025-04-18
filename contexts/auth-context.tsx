@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
   const waitForBackend = async (
     intervalMs = 2000,
-    maxRetries = 15
+    maxRetries = 35
   ): Promise<void> => {
     let attempts = 0;
     while (attempts < maxRetries) {
@@ -222,7 +222,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       <StyledView className="flex-1 justify-center items-center bg-white p-5">
         <StyledActivityIndicator size="large" color="#007AFF" />
         <StyledText className="mt-4 text-lg text-gray-600 text-center">
-          Waiting for backend to load…
+          Waiting for server to load…
         </StyledText>
       </StyledView>
     );
