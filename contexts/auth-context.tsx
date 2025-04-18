@@ -1,33 +1,101 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, User } from "firebase/auth";
+import { ActivityIndicator, View, Text } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { onAuthStateChanged, User } from "firebase/auth";
 import { FIREBASE_AUTH } from "../firebaseconfig";
-import { ActivityIndicator, View } from "react-native";
 import { MongoUser } from "../interfaces/user-interface";
-
+import { IUser } from "../interfaces/post-interface";
+import { styled } from "nativewind";
+const StyledView = styled(View);
+const StyledText = styled(Text);
+const StyledActivityIndicator = styled(ActivityIndicator);
 interface AuthContextProps {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   isVerified: boolean;
   setIsVerified: React.Dispatch<React.SetStateAction<boolean>>;
-  userId: string | null; // firebase_id
-  mongoId: string | null; // MongoDB _id
+  userId: string | null;
+  mongoId: string | null;
+  setMongoId: React.Dispatch<React.SetStateAction<string | null>>;
   mongoUser: MongoUser | null;
   setMongoUser: React.Dispatch<React.SetStateAction<MongoUser | null>>;
-  setMongoId: React.Dispatch<React.SetStateAction<string | null>>;
+  Users: IUser[];
+  setUsers: React.Dispatch<React.SetStateAction<IUser[]>>;
+  userFriendsMinDetail: MongoUser[];
+  setUserFriendsMinDetail: React.Dispatch<React.SetStateAction<MongoUser[]>>;
+  fetchMongoUser: (mongoIdToFetch: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  // — your existing state
   const [user, setUser] = useState<User | null>(null);
-  const [isVerified, setIsVerified] = useState<boolean>(false);
+  const [isVerified, setIsVerified] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [mongoId, setMongoId] = useState<string | null>(null);
   const [mongoUser, setMongoUser] = useState<MongoUser | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [Users, setUsers] = useState<IUser[]>([]);
+  const [userFriendsMinDetail, setUserFriendsMinDetail] = useState<MongoUser[]>(
+    []
+  );
 
-  // Function to fetch Mongo user by mongoId or firebase id if necessary.
+  // — loading & coordination flags
+  const [loading, setLoading] = useState(true);
+  const [cacheLoaded, setCacheLoaded] = useState(false);
+  const [authHandled, setAuthHandled] = useState(false);
+
+  // — ping your backend root or health
+  // 1) A utility that aborts fetch after `timeoutMs`
+  const fetchWithTimeout = async (
+    url: string,
+    options: RequestInit = {},
+    timeoutMs = 3_000
+  ): Promise<Response> => {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+      clearTimeout(id);
+    }
+  };
+
+  // 2) Use it in your pingBackend
+  const pingBackend = async (): Promise<boolean> => {
+    try {
+      const res = await fetchWithTimeout(
+        `${process.env.EXPO_LOCAL_SERVER}/api`,
+        {},
+        1_000 // give up after 1 second
+      );
+      return res.ok;
+    } catch (err: any) {
+      // if it was aborted or network‑down, we get here fast
+      console.warn("Health check error:", err.name || err);
+      return false;
+    }
+  };
+  const waitForBackend = async (
+    intervalMs = 2000,
+    maxRetries = 15
+  ): Promise<void> => {
+    let attempts = 0;
+    while (attempts < maxRetries) {
+      if (await pingBackend()) {
+        return;
+      }
+      attempts++;
+      console.warn(`Health-check retry #${attempts}`);
+      await new Promise((r) => setTimeout(r, intervalMs));
+    }
+    console.error(`Backend unreachable after ${maxRetries} attempts.`);
+    // optionally throw here to stop startup
+  };
+
+  // — fetch Mongo user helper
   const fetchMongoUser = async (mongoIdToFetch: string) => {
     try {
       const response = await fetch(
@@ -38,102 +106,125 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       const data: MongoUser = await response.json();
       setMongoUser(data);
-      // Optionally update mongoId if needed.
       setMongoId(data._id);
       await AsyncStorage.setItem("mongoId", data._id);
     } catch (error) {
-      console.log("Error updating Mongo user:", error);
+      console.error("Error updating Mongo user:", error);
     }
   };
 
-  useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        const storedUser = await AsyncStorage.getItem("user");
-        const storedMongoId = await AsyncStorage.getItem("mongoId");
+  // — load cached user & mongoId, then flag cacheLoaded
+  const initializeAuth = async () => {
+    await waitForBackend();
+    try {
+      const storedUser = await AsyncStorage.getItem("user");
+      const storedMongoId = await AsyncStorage.getItem("mongoId");
 
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          setUser(parsedUser);
-          setIsVerified(parsedUser.emailVerified || false);
-          setUserId(parsedUser.uid || null);
-          if (storedMongoId) {
-            setMongoId(storedMongoId);
-            fetchMongoUser(storedMongoId);
-          }
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser) as User;
+        setUser(parsedUser);
+        setIsVerified(parsedUser.emailVerified || false);
+        setUserId(parsedUser.uid || null);
+
+        if (storedMongoId) {
+          setMongoId(storedMongoId);
+          fetchMongoUser(storedMongoId);
         }
-      } catch (error) {
-        console.error("Error loading user from AsyncStorage:", error);
-      } finally {
-        setLoading(false);
       }
-    };
-    initializeAuth();
+    } catch (err) {
+      console.error("Error loading user from AsyncStorage:", err);
+    } finally {
+      setCacheLoaded(true);
+    }
+  };
 
-    const unsubscribe = onAuthStateChanged(
-      FIREBASE_AUTH,
-      async (currentUser) => {
+  // — main effect: bootstrap cache load then auth subscription
+  useEffect(() => {
+    let isMounted = true;
+    let unsubscribe: (() => void) | null = null;
+
+    const bootstrap = async () => {
+      await initializeAuth();
+
+      unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (currentUser) => {
+        if (!isMounted) return;
+
         if (currentUser) {
           setUser(currentUser);
           setIsVerified(currentUser.emailVerified);
           setUserId(currentUser.uid);
+          await AsyncStorage.setItem("user", JSON.stringify(currentUser));
 
           if (currentUser.emailVerified) {
             try {
-              console.log("Fetching user from MongoDB...");
-              // This endpoint fetches Mongo user using the firebase_id
-              const response = await fetch(
+              // fetch Mongo user via firebase_id
+              const resp = await fetch(
                 `${process.env.EXPO_LOCAL_SERVER}/api/user/${currentUser.uid}?firebase=true`
               );
-              if (!response.ok) {
-                throw new Error(`Error fetching user data: ${response.status}`);
+              if (!resp.ok) {
+                throw new Error(`Fetch error: ${resp.status}`);
               }
-              const data: MongoUser = await response.json();
-              console.log("MongoDB User Data:", data);
+              const data: MongoUser = await resp.json();
               setMongoId(data._id);
               setMongoUser(data);
-              await AsyncStorage.setItem("user", JSON.stringify(currentUser));
               await AsyncStorage.setItem("mongoId", data._id);
+
+              // fetch partial-all users
+              const usersResp = await fetch(
+                `${process.env.EXPO_LOCAL_SERVER}/api/user/partial-all`
+              );
+              if (!usersResp.ok) {
+                throw new Error(`Fetch error: ${usersResp.status}`);
+              }
+              setUsers(await usersResp.json());
             } catch (error) {
-              console.error("Error fetching user:", error);
+              console.error("Error fetching user data:", error);
             }
           }
-
-          await AsyncStorage.setItem("user", JSON.stringify(currentUser));
         } else {
+          // no user
           console.log("No user is logged in");
           setUser(null);
           setIsVerified(false);
           setUserId(null);
           setMongoId(null);
           setMongoUser(null);
+          setUsers([]);
+          setUserFriendsMinDetail([]);
           await AsyncStorage.removeItem("user");
           await AsyncStorage.removeItem("mongoId");
         }
-      }
-    );
 
-    return () => unsubscribe();
+        // only on the first auth event do we mark it handled
+        if (!authHandled) {
+          setAuthHandled(true);
+        }
+      });
+    };
+
+    bootstrap();
+
+    return () => {
+      isMounted = false;
+      unsubscribe?.();
+    };
   }, []);
 
-  // Polling effect to update the Mongo user every 10 seconds if the user is verified and a mongoId exists.
+  // — turn off the spinner once both cache load & authHandled are true
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isVerified && mongoId) {
-      interval = setInterval(() => {
-        fetchMongoUser(mongoId);
-      }, 30000); // every 10 seconds
+    if (cacheLoaded && authHandled) {
+      setLoading(false);
     }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isVerified, mongoId]);
+  }, [cacheLoaded, authHandled]);
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
+      <StyledView className="flex-1 justify-center items-center bg-white p-5">
+        <StyledActivityIndicator size="large" color="#007AFF" />
+        <StyledText className="mt-4 text-lg text-gray-600 text-center">
+          Waiting for backend to load…
+        </StyledText>
+      </StyledView>
     );
   }
 
@@ -149,6 +240,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setMongoId,
         mongoUser,
         setMongoUser,
+        Users,
+        setUsers,
+        userFriendsMinDetail,
+        setUserFriendsMinDetail,
+        fetchMongoUser,
       }}
     >
       {children}
@@ -156,7 +252,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextProps => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");

@@ -1,15 +1,18 @@
 export default ({ config }) => ({
   ...config,
+  // EAS Update settings:
+
   expo: {
     ...config.expo,
-    name: "expo-react-native-w-tailwind",
-    slug: "expo-react-native-w-tailwind",
+    name: "Hikemeet",
+    slug: "hikemeetteam",
+
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/icon.png",
+    icon: "./assets/Logo2.png",
     userInterfaceStyle: "light",
     splash: {
-      image: "./assets/splash.png",
+      image: "./assets/Logo2.png",
       resizeMode: "contain",
       backgroundColor: "#ffffff",
     },
@@ -17,9 +20,19 @@ export default ({ config }) => ({
     ios: {
       supportsTablet: true,
     },
+    updates: {
+      url: "https://u.expo.dev/ad9fccb4-c086-4de8-aef4-8d3a23e5a2b0",
+      fallbackToCacheTimeout: 0,
+      checkAutomatically: "ON_LOAD",
+    },
+    // Ensure only matching appVersion clients receive the update
+    runtimeVersion: {
+      policy: "appVersion",
+    },
     android: {
+      softwareKeyboardLayoutMode: "pan",
       adaptiveIcon: {
-        foregroundImage: "./assets/adaptive-icon.png",
+        foregroundImage: "./assets/Logo2.png",
         backgroundColor: "#ffffff",
       },
       package: "com.wooozai.exporeactnativewtailwind",
@@ -42,15 +55,22 @@ export default ({ config }) => ({
           RNMapboxMapsDownloadToken: process.env.MAPBOX_TOKEN,
         },
       ],
+      [
+        "expo-video",
+        {
+          supportsBackgroundPlayback: true,
+          supportsPictureInPicture: true,
+        },
+      ],
     ],
     extra: {
       router: {
         origin: false,
       },
       eas: {
-        projectId: "592acf0b-41b8-40a2-b973-b21fbcbd4e8e",
+        projectId: "ad9fccb4-c086-4de8-aef4-8d3a23e5a2b0",
       },
     },
-    owner: "wooozai",
+    owner: "hikemeetteam",
   },
 });

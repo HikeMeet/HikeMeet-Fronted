@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -188,6 +189,7 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
           />
           {showDatePicker && (
             <DateTimePicker
+              testID="birthdate-picker"
               value={birthdate || new Date()}
               mode="date"
               display="default"

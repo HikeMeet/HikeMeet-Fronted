@@ -3,15 +3,28 @@ export default {
     version: ">= 15.0.14",
     appVersionSource: "remote",
   },
+  updates: {
+    enabled: true,
+    checkAutomatically: "ON_LOAD",
+    fallbackToCacheTimeout: 0,
+  },
   build: {
     development: {
       developmentClient: true,
       distribution: "internal",
+      android: {
+        buildType: "apk",
+        gradleCommand: ":app:assembleDebug",
+      },
     },
     preview: {
       distribution: "internal",
     },
     production: {
+      channel: "production",
+      android: {
+        buildType: "apk",
+      },
       autoIncrement: true,
       env: {
         FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,
@@ -24,7 +37,7 @@ export default {
         EXPO_LOCAL_SERVER: process.env.EXPO_LOCAL_SERVER,
         MAPBOX_TOKEN: process.env.MAPBOX_TOKEN,
         MAPBOX_TOKEN_PUBLIC: process.env.MAPBOX_TOKEN_PUBLIC,
-        GOOGLEMAP_API_KEKY: process.env.GOOGLEMAP_API_KEY,
+        GOOGLEMAP_API_KEY: process.env.GOOGLEMAP_API_KEY,
       },
     },
   },

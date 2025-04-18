@@ -10,7 +10,6 @@ const Stack = createNativeStackNavigator();
 const TripsStack = () => {
   return (
     <Stack.Navigator initialRouteName="CreateTripPage">
-     
       <Stack.Screen
         name="CreateTripPage"
         component={CreateTripPage}

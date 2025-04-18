@@ -1,19 +1,17 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
+import React from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
-  TextInput,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { MongoUser } from "../../interfaces/user-interface";
 import UserSearchList from "../../components/user-search-in-admin";
 import { useAuth } from "../../contexts/auth-context";
-import TripsManage from "../../components/trip-manage-admin";
+import TripsManage from "../trips/component/trip-manage-admin";
 import { useFocusEffect } from "@react-navigation/native";
 
 interface Tab {

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import React from "react";
 import { TouchableOpacity, Text, Alert } from "react-native";
 import ConfirmationModal from "./confirmation-modal";
 

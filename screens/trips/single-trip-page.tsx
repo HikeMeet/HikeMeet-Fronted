@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+// TripDetailPage.tsx
+import { useState, useEffect } from "react";
+import React from "react";
 import {
   ScrollView,
   View,
@@ -7,13 +9,45 @@ import {
   Linking,
   Alert,
 } from "react-native";
-import Mapbox from "@rnmapbox/maps";
+import Constants from "expo-constants";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
-import ImageUploadPhotos from "../../components/insert-images-create-trip";
+import ProfileImage from "../../components/profile-image";
+import { Trip } from "../../interfaces/trip-interface";
+import { useAuth } from "../../contexts/auth-context";
+import TripImagesUploader from "./component/trip-image-gallery";
+import MapDirectionButton from "../../components/get-direction";
 
-const StyledMapView = styled(Mapbox.MapView);
-const StyledCamera = styled(Mapbox.Camera);
+// Determine if native Mapbox code is available (i.e. not running in Expo Go)
+const MapboxAvailable = Constants.appOwnership !== "expo";
+
+let Mapbox: any;
+let StyledMapView: any;
+let StyledCamera: any;
+
+if (MapboxAvailable) {
+  // Import and configure Mapbox if available
+  Mapbox = require("@rnmapbox/maps").default;
+  StyledMapView = styled(Mapbox.MapView as any);
+  StyledCamera = styled(Mapbox.Camera as any);
+} else {
+  // Fallback components for when Mapbox is unavailable (Expo Go)
+  StyledMapView = (props: any) => (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#f0f0f0",
+      }}
+    >
+      <Text style={{ fontSize: 14, color: "#666" }}>
+        Map is not available in Expo Go.
+      </Text>
+    </View>
+  );
+  StyledCamera = () => null;
+}
 
 type TripDetailProps = {
   route: {
@@ -25,6 +59,7 @@ type TripDetailProps = {
 const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   // States for trip details
   const [tripName, setTripName] = useState<string>("");
+  const [tripData, setTripData] = useState<Trip>();
   const [rating, setRating] = useState<number>(0);
   const [locationText, setLocationText] = useState<string>("");
   // Use trip coordinates from backend, not the user's location.
@@ -34,6 +69,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   // State to control ScrollView scrolling
   const [scrollEnabled, setScrollEnabled] = useState<boolean>(true);
   const { tripId, fromCreate = false, isArchived = false } = route.params;
+  const { mongoId } = useAuth(); // current user's mongoId
 
   // Fetch trip data from the backend using the tripId parameter.
   useEffect(() => {
@@ -48,6 +84,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
           throw new Error("Failed to fetch trip data");
         }
         const data = await response.json();
+        setTripData(data);
         // Update state with the fetched data
         setTripName(data.name);
         setLocationText(data.location.address);
@@ -65,7 +102,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
     if (tripId) {
       fetchTripData();
     }
-  }, [tripId]);
+  }, [tripId, isArchived]);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e: any) => {
@@ -99,51 +136,59 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
         );
       }
     }
-    return <View className="flex-row">{stars}</View>;
-  };
-
-  const handleGetDirection = () => {
-    const [longitude, latitude] = coordinates;
-    console.log("Coordinates:", coordinates);
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
-    Linking.openURL(url).catch(() =>
-      Alert.alert("Error", "Could not open the map.")
-    );
+    return <View style={{ flexDirection: "row" }}>{stars}</View>;
   };
 
   return (
     <ScrollView
       scrollEnabled={scrollEnabled}
-      className="flex-1 bg-white p-4"
+      style={{ flex: 1, backgroundColor: "white", padding: 16 }}
       contentContainerStyle={{ paddingBottom: 40 }}
     >
-      {/* Title */}
-      <Text className="text-lg font-bold">{tripName}</Text>
-      {/* Star Rating below title */}
-      <View className="flex-row items-center mb-4">
-        {renderStars()}
-        <Text className="ml-1 text-sm">{rating.toFixed(1)}</Text>
+      <View className="flex-row items-center p-4">
+        {tripData && tripData.main_image && (
+          <ProfileImage
+            initialImage={tripData.main_image}
+            size={60}
+            id={tripId}
+            uploadType="trip"
+            editable={mongoId === tripData.createdBy} // Only editable if the current user is the creator
+          />
+        )}
+        <View className="ml-2">
+          {/* Title */}
+          <Text className="text-lg font-bold">{tripName}</Text>
+          {/* Star Rating */}
+          <View className="flex-row items-center mb-4">
+            {renderStars()}
+            <Text className="ml-1 text-sm">{rating.toFixed(1)}</Text>
+          </View>
+        </View>
       </View>
 
       {/* Location */}
-      <Text className="mb-2">{locationText}</Text>
+      <Text style={{ marginBottom: 8 }}>{locationText}</Text>
 
       {/* Map snippet showing the trip's location */}
       <View
-        className="w-full h-48 bg-gray-200 mb-2 relative"
+        style={{
+          width: "100%",
+          height: 192,
+          backgroundColor: "#e5e5e5",
+          marginBottom: 8,
+          position: "relative",
+        }}
         onTouchStart={() => setScrollEnabled(false)}
         onTouchEnd={() => setScrollEnabled(true)}
         onTouchCancel={() => setScrollEnabled(true)}
       >
-        <StyledMapView className="flex-1">
+        <StyledMapView style={{ flex: 1 }} onPress={() => {}}>
           <StyledCamera centerCoordinate={coordinates} zoomLevel={12} />
         </StyledMapView>
-        <TouchableOpacity
-          className="absolute bottom-2 right-2 bg-blue-600 p-2 rounded items-center"
-          onPress={handleGetDirection}
-        >
-          <Text className="text-white text-xs">Get Direction</Text>
-        </TouchableOpacity>
+        <MapDirectionButton
+          latitude={coordinates[1]}
+          longitude={coordinates[0]}
+        />
       </View>
 
       {/* Tags */}
@@ -151,7 +196,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
         {tags.map((tag, index) => (
           <View
             key={index}
-            className="border border-blue-500 rounded-full px-3 py-1 mr-2 mb-2"
+            className="border border-blue-500 rounded-[20px] px-3 py-1 mr-2 mb-2"
           >
             <Text className="text-blue-500 text-sm">{tag}</Text>
           </View>
@@ -163,19 +208,28 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
       <Text className="mb-4">{bio ? bio : "No description provided."}</Text>
 
       {/* "Upload your own images" */}
-      <Text className="text-base font-semibold mb-2">
+      <Text style={{ fontSize: 16, fontWeight: "600", marginBottom: 8 }}>
         Upload your own images:
       </Text>
-      <ImageUploadPhotos />
-
+      {tripData && (
+        <TripImagesUploader
+          tripId={tripId}
+          enabled={mongoId === tripData.createdBy}
+          initialImages={tripData.images ?? []}
+          onImagesUpdated={(imgs) =>
+            setTripData((prevTripData) => {
+              if (!prevTripData) return { images: imgs } as any;
+              return { ...prevTripData, images: imgs };
+            })
+          }
+        />
+      )}
       {/* Back to Trips Button */}
       <TouchableOpacity
         onPress={() => navigation.navigate("Tabs", { screen: "Trips" })}
-        className="mt-4 bg-blue-500 px-4 py-2 rounded"
+        className="mt-4 bg-blue-600 px-4 py-3 rounded-lg items-center"
       >
-        <Text className="text-white text-center font-semibold">
-          Back to Trips
-        </Text>
+        <Text className="text-white font-semibold">Back to Trips</Text>
       </TouchableOpacity>
     </ScrollView>
   );

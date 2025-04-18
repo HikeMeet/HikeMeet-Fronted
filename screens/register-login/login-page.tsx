@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -58,7 +59,6 @@ export default function LoginPage({
         setIsVerified(true);
         Alert.alert("Success", "Login successful!");
         if (toResetPassword !== undefined) {
-          console.log(toResetPassword);
           navigation.navigate(toResetPassword ? "ResetPassword" : "Home");
         } else {
           // Handle the case when toResetPassword is undefined
@@ -93,13 +93,16 @@ export default function LoginPage({
           keyboardType="email-address"
           value={email}
           onChangeText={setEmail}
+          testID="email_text_field_in_login"
         />
+
         <CustomTextInput
           iconName="lock"
           placeholder="Password"
           secureTextEntry
           value={password}
           onChangeText={setPassword}
+          testID="Password_text_field_in_login"
         />
 
         <Button title="Login" onPress={handleLogin} isLoading={loading} />

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import React from "react";
 import { View, TextInput, TouchableOpacity } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -38,6 +39,7 @@ const GenderDropdown: React.FC<GenderDropdownProps> = ({
           style={{ marginRight: 6 }}
         />
         <Picker
+          testID="gender-picker"
           selectedValue={value}
           onValueChange={(itemValue) => {
             if (itemValue !== "other") {

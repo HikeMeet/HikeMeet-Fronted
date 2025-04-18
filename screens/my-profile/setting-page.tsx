@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import React from "react";
 import { View, SafeAreaView } from "react-native";
 import SettingsButton from "../../components/settings-buttons";
 import LogoutConfirmPopup from "../../components/logout-confirm-popup";
@@ -10,7 +11,6 @@ const SettingsScreen = ({ navigation }: any) => {
   const [deletePopupVisible, setDeleteLogoutPopupVisible] = useState(false);
   const { mongoUser } = useAuth();
   const isAdmin = mongoUser?.role === "admin" ? true : false;
-  console.log(isAdmin);
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 bg-white p-4">
@@ -19,10 +19,6 @@ const SettingsScreen = ({ navigation }: any) => {
 
         {/* Buttons */}
         <View className="flex-1">
-          <SettingsButton
-            title="Button 1"
-            onPress={() => console.log("Button 1 clicked")}
-          />
           {isAdmin ? (
             <SettingsButton
               title="Admin settings"
@@ -34,8 +30,16 @@ const SettingsScreen = ({ navigation }: any) => {
             onPress={() => navigation.navigate("ResetPasswordInside")}
           />
           <SettingsButton
-            title="Comunity guidlines"
+            title="Community guidlines"
             onPress={() => navigation.navigate("ComunitiyGuidlined")}
+          />
+          <SettingsButton
+            title="Saved posts"
+            onPress={() => navigation.navigate("SavedPosts")}
+          />
+          <SettingsButton
+            title="Liked posts"
+            onPress={() => navigation.navigate("LikedPosts")}
           />
         </View>
 

@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import React from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
-import { useAuth } from "../contexts/auth-context";
+import { useAuth } from "../../../contexts/auth-context";
 
 interface BioSectionProps {
   bio: string;
-  editable?: boolean; // New prop to control editability
+  editable?: boolean;
 }
 
-const BioSection: React.FC<BioSectionProps> = ({ bio: initialBio, editable = true }) => {
+const BioSection: React.FC<BioSectionProps> = ({
+  bio: initialBio,
+  editable = true,
+}) => {
   const [bio, setBio] = useState<string>(initialBio);
   const [editingBio, setEditingBio] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
@@ -20,9 +24,7 @@ const BioSection: React.FC<BioSectionProps> = ({ bio: initialBio, editable = tru
         `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoId}/update`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ bio }),
         }
       );
@@ -40,8 +42,15 @@ const BioSection: React.FC<BioSectionProps> = ({ bio: initialBio, editable = tru
   };
 
   return (
-    <View className="mt-4">
-      <Text className="text-sm font-bold mb-2">Bio</Text>
+    <View>
+      <View className="flex-row items-center justify-between">
+        <Text className="text-sm font-bold mb-1">Bio</Text>
+        {editable && !editingBio && (
+          <TouchableOpacity onPress={() => setEditingBio(true)}>
+            <Text className="text-blue-500">Edit</Text>
+          </TouchableOpacity>
+        )}
+      </View>
       {editable && editingBio ? (
         <View className="relative">
           <TextInput
@@ -68,18 +77,10 @@ const BioSection: React.FC<BioSectionProps> = ({ bio: initialBio, editable = tru
           </View>
         </View>
       ) : (
-        <View className="flex-row items-center justify-between">
-          <Text className="text-sm text-gray-700 flex-1">
+        <View>
+          <Text className="text-sm text-gray-700">
             {bio || "No bio provided."}
           </Text>
-          {editable && (
-            <TouchableOpacity
-              onPress={() => setEditingBio(true)}
-              className="ml-2 bg-blue-500 px-3 py-1 rounded"
-            >
-              <Text className="text-white">Edit</Text>
-            </TouchableOpacity>
-          )}
         </View>
       )}
     </View>

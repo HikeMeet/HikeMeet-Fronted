@@ -14,4 +14,3 @@ const ErrorAlertComponent: React.FC<ErrorAlertProps> = ({ message }) => {
 };
 
 export default ErrorAlertComponent;
-

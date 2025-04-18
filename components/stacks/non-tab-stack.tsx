@@ -2,11 +2,12 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import BottomTabs from "./bottom-tabs";
 import Home from "../../screens/home-page/home";
-import CreatePostPage from "../../screens/post-creation/post-creation-page";
 import SearchPage from "../../screens/search/search-page";
 import AccountStack from "./account-setting-stack";
 import TripsStack from "./trip-proccess-stack";
+import GroupsStack from "./group-proccess-stack";
 import { Provider } from "react-native-paper";
+import PostStack from "./posts-proccess-stack";
 
 // Import the new AccountStack
 
@@ -42,6 +43,11 @@ const NonTabScreensStack = () => {
           component={TripsStack}
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="GroupsStack"
+          component={GroupsStack}
+          options={{ headerShown: false }}
+        />
 
         {/* Other Screens */}
         <Stack.Screen
@@ -53,11 +59,10 @@ const NonTabScreensStack = () => {
           }}
         />
         <Stack.Screen
-          name="CreatePost"
-          component={CreatePostPage}
+          name="PostStack"
+          component={PostStack}
           options={{
-            headerShown: true,
-            title: "Create Post",
+            headerShown: false,
           }}
         />
         <Stack.Screen

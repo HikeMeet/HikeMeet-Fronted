@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -8,7 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Trip } from "../interfaces/trip-interface";
+import { Trip } from "../../../interfaces/trip-interface";
 import TripRow from "./trip-row-manage-admin";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
@@ -91,7 +92,6 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
         throw new Error("Failed to archive trip");
       }
       const data = await response.json();
-      console.log("Trip archived successfully:", data);
       setTrips((prevTrips) => prevTrips.filter((trip) => trip._id !== tripId));
       setArchivedTrips((prev) => [data.archivedTrip, ...prev]);
     } catch (error) {
@@ -127,7 +127,6 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
         throw new Error("Failed to unarchive trip");
       }
       const data = await response.json();
-      console.log("Trip unarchived successfully:", data);
       setArchivedTrips((prev) => prev.filter((trip) => trip._id !== tripId));
       setTrips((prev) => [data.trip, ...prev]);
     } catch (error) {

@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Trip } from "../interfaces/trip-interface";
-import ConfirmationModal from "./confirmation-modal";
+import { Trip } from "../../../interfaces/trip-interface";
+import ConfirmationModal from "../../../components/confirmation-modal";
 
 interface TripRowProps {
   trip: Trip;
@@ -49,9 +50,9 @@ const TripRow: React.FC<TripRowProps> = ({
         onPress={() => onNavigate(trip._id, activeTab === "archived")}
         className="flex-row flex-1 items-center"
       >
-        {trip.images && trip.images.length > 0 ? (
+        {trip.main_image ? (
           <Image
-            source={{ uri: trip.images[0] }}
+            source={{ uri: trip.main_image?.url }}
             className="w-16 h-16 mr-4 rounded"
           />
         ) : (
