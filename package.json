@@ -17,7 +17,7 @@
     "@rnmapbox/maps": "^10.1.37",
     "axios": "^1.7.9",
     "expo": "~52.0.46",
-    "expo-dev-client": "~5.0.19",
+    "expo-dev-client": "~5.0.20",
     "expo-file-system": "~18.0.11",
     "expo-image-picker": "~16.0.6",
     "expo-location": "~18.0.10",
@@ -34,7 +34,10 @@
     "react-native-modal-datetime-picker": "^18.0.0",
     "react-native-svg-transformer": "^1.5.0",
     "react-native-web": "~0.19.13",
-    "twrnc": "^4.6.1"
+    "twrnc": "^4.6.1",
+    "expo-device": "~7.0.3",
+    "expo-notifications": "~0.29.14",
+    "expo-constants": "~17.0.8"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
