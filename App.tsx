@@ -17,7 +17,7 @@ if (Constants.appOwnership !== "expo") {
 }
 
 if (!process.env.EXPO_LOCAL_SERVER) {
-  console.error("API_URL is not defined. Check your .env file.");
+  console.error("EXPO_LOCAL_SERVER is not defined. Check your .env file.");
 }
 
 export default function App() {
