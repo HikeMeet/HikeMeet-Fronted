@@ -27,7 +27,6 @@ import { ActiveFilter } from "./components/header/filters-bar";
 // Load Mapbox dynamically
 let Mapbox: any = null;
 let Camera: any = null;
-
 if (Constants.appOwnership !== "expo") {
   Mapbox = require("@rnmapbox/maps").default;
   Camera = require("@rnmapbox/maps").Camera;
@@ -36,6 +35,13 @@ if (Constants.appOwnership !== "expo") {
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 type TripFilter = { city?: string; category?: string };
 type MapPageProps = { navigation: any; route: any };
+
+// Load Mapbox dynamically
+
+if (Constants.appOwnership !== "expo") {
+  Mapbox = require("@rnmapbox/maps").default;
+  Camera = require("@rnmapbox/maps").Camera;
+}
 
 function distanceMeters(
   [lon1, lat1]: [number, number],
@@ -97,18 +103,9 @@ export default function MapPage({ navigation }: MapPageProps) {
 
   const controlsDisabled =
     popupTrip !== null || showTripFilter || showGroupFilter;
-
-  /* ---------- effects ---------- */
-  if (!Mapbox || !Camera) {
-    return (
-      <View className="flex-1 items-center justify-center p-4">
-        <Text className="text-center text-gray-600">
-          Maps are disabled in Expo Go. Please use a custom dev client to view
-          maps.
-        </Text>
-      </View>
-    );
-  }
+  /* ---------- carousel scroll sync ---------- */
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAllData({});
@@ -137,6 +134,18 @@ export default function MapPage({ navigation }: MapPageProps) {
   useEffect(() => {
     if (viewMode === "map" && !popupTrip) showCarousel();
   }, [viewMode, popupTrip]);
+
+  /* ---------- effects ---------- */
+  if (!Mapbox || !Camera) {
+    return (
+      <View className="flex-1 items-center justify-center p-4">
+        <Text className="text-center text-gray-600">
+          Maps are disabled in Expo Go. Please use a custom dev client to view
+          maps.
+        </Text>
+      </View>
+    );
+  }
 
   /* ---------- helpers ---------- */
   function hideCarousel() {
@@ -472,10 +481,6 @@ export default function MapPage({ navigation }: MapPageProps) {
       if (viewMode === "map") showCarousel();
     });
   }
-
-  /* ---------- carousel scroll sync ---------- */
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
 
   function handleScrollEnd(e: NativeSyntheticEvent<NativeScrollEvent>) {
     const offsetX = e.nativeEvent.contentOffset.x;
