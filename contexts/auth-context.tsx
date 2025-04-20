@@ -6,6 +6,7 @@ import { FIREBASE_AUTH } from "../firebaseconfig";
 import { MongoUser } from "../interfaces/user-interface";
 import { IUser } from "../interfaces/post-interface";
 import { styled } from "nativewind";
+
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledActivityIndicator = styled(ActivityIndicator);

@@ -1,36 +1,23 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 /android
-google-services.json
-# local env files
 .env
 .env*
-# dependencies
 node_modules/
 .eslintignore
-# Expo
 .expo/
 dist/
 web-build/
-
-# Native
 *.orig.*
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
-
-# Metro
 .metro-health-check*
-
-# debug
 npm-debug.*
 yarn-debug.*
 yarn-error.*
 
-# macOS
 .DS_Store
 *.pem
 
-# typescript
 *.tsbuildinfo
