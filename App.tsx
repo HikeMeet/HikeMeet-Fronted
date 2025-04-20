@@ -1,5 +1,5 @@
 // App.tsx
-import React = require("react");
+import React from "react";
 import Constants from "expo-constants";
 import { NavigationContainer } from "@react-navigation/native";
 import MainLayout from "./MainLayout";
@@ -17,7 +17,7 @@ if (Constants.appOwnership !== "expo") {
 }
 
 if (!process.env.EXPO_LOCAL_SERVER) {
-  console.error("API_URL is not defined. Check your .env file.");
+  console.error("EXPO_LOCAL_SERVER is not defined. Check your .env file.");
 }
 
 export default function App() {

@@ -4,12 +4,16 @@ import Constants from "expo-constants";
 import * as Location from "expo-location";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
-import React = require("react");
+import React from "react";
 
 // Only import Mapbox if not running in Expo Go
 let Mapbox = null;
+let StyledMapView: any;
+let StyledCamera: any;
 if (Constants.appOwnership !== "expo") {
   Mapbox = require("@rnmapbox/maps").default;
+  StyledMapView = styled(Mapbox.MapView as any);
+  StyledCamera = styled(Mapbox.Camera as any);
 }
 
 const StyledIonicons = styled(Ionicons);
@@ -164,8 +168,6 @@ const MapSearch: React.FC<MapSearchProps> = ({
               define the styled components.
             */}
             {(() => {
-              const StyledMapView: any = styled(Mapbox.MapView as any);
-              const StyledCamera: any = styled(Mapbox.Camera as any);
               return (
                 <StyledMapView className="flex-1" onPress={handleMapPress}>
                   <StyledCamera

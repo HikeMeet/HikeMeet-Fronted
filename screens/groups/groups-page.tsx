@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import React = require("react");
+import React from "react";
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   FlatList,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { styled } from "nativewind";
@@ -145,6 +146,12 @@ const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
               }
             />
           )}
+          refreshControl={
+            <RefreshControl
+              refreshing={loading}
+              onRefresh={handleFetchGroups}
+            />
+          }
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.1}
           contentContainerStyle={{ paddingBottom: 20 }}

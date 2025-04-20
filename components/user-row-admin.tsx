@@ -1,5 +1,5 @@
 import { useState } from "react";
-import React = require("react");
+import React from "react";
 import { View, Text, Image, TouchableOpacity, Alert } from "react-native";
 import { useAuth } from "../contexts/auth-context";
 import { MongoUser } from "../interfaces/user-interface";

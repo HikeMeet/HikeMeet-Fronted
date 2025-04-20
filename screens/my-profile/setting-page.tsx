@@ -1,5 +1,5 @@
 import { useState } from "react";
-import React = require("react");
+import React from "react";
 import { View, SafeAreaView } from "react-native";
 import SettingsButton from "../../components/settings-buttons";
 import LogoutConfirmPopup from "../../components/logout-confirm-popup";

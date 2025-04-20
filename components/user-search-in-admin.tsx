@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import React = require("react");
+import React from "react";
 import {
   ScrollView,
   Text,

@@ -1,6 +1,6 @@
 // PostCard.tsx
 import { useState } from "react";
-import React = require("react");
+import React from "react";
 import {
   ScrollView,
   TouchableOpacity,

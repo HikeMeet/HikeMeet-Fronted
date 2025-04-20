@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import React = require("react");
+import React from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { Group } from "../interfaces/group-interface";
 import { useAuth } from "../contexts/auth-context";

@@ -1,4 +1,4 @@
-import React = require("react");
+import React from "react";
 import { ScrollView, TouchableOpacity, View, Image } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { IImageModel } from "../interfaces/image-interface";

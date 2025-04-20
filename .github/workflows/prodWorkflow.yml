@@ -1,10 +1,7 @@
-name: Expo React Native CI with Node.js Backend
+name: Build and upload to production
 
 on:
   push:
-    branches:
-      - production
-  pull_request:
     branches:
       - production
 jobs:
