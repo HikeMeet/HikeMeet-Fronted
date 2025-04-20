@@ -5,15 +5,15 @@ import { Alert } from "react-native";
 import ForgotPasswordPage from "../screens/register-login/forgot-password-page";
 
 type RootStackParamList = {
-  ResetPassword: undefined;
-  CodeVerify:    { email: string };
+  ForgotPassword: undefined;
+  CodeVerrify: { email: string };
 };
 
 const mockNavigate = jest.fn();
 const mockNavigation = {
   navigate: mockNavigate,
   goBack:  jest.fn(),
-} as unknown as NavigationProp<RootStackParamList, "ResetPassword">;
+} as unknown as NavigationProp<RootStackParamList, "ForgotPassword">;
 
 jest.mock("../contexts/auth-context", () => ({
   useAuth: () => ({
@@ -22,22 +22,27 @@ jest.mock("../contexts/auth-context", () => ({
   }),
 }));
 
-jest.mock("firebase/auth", () => ({
-  confirmPasswordReset: jest.fn(() => Promise.resolve()),
-}));
-
-describe("ResetPasswordPage", () => {
+describe("ForgotPasswordPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(Alert, "alert").mockImplementation(() => {});
+
+    // Mock fetch to simulate success responses
+    (global as any).fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      })
+    );
   });
 
-  it("should show error if email is empty", async () => {
+  it("should show an error if email is empty", async () => {
     const alertSpy = jest.spyOn(Alert, "alert");
+
     const { getByText } = render(
       <ForgotPasswordPage navigation={mockNavigation} />
     );
-    fireEvent.press(getByText("Send Reset Link"));
+
+    fireEvent.press(getByText("Send Verification Code"));
 
     await waitFor(() => {
       expect(alertSpy).toHaveBeenCalledWith(
@@ -45,19 +50,24 @@ describe("ResetPasswordPage", () => {
         "Please enter your email address"
       );
     });
+    console.log("Alert for empty email triggered successfully.");
   });
 
-  it("should navigate to CodeVerify page on success", async () => {
+  it("should navigate to CodeVerrify page on success", async () => {
     const { getByText, getByPlaceholderText } = render(
       <ForgotPasswordPage navigation={mockNavigation} />
     );
+
     fireEvent.changeText(getByPlaceholderText("Email"), "test@example.com");
-    fireEvent.press(getByText("Send Reset Link"));
+    fireEvent.press(getByText("Send Verification Code"));
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("CodeVerify", {
+      expect(mockNavigate).toHaveBeenCalledWith("CodeVerrify", {
         email: "test@example.com",
       });
     });
+    console.log(
+      "Navigation to CodeVerrify triggered with email: test@example.com"
+    );
   });
 });
