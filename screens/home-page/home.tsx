@@ -18,6 +18,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { IPost } from "../../interfaces/post-interface";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/auth-context";
+import * as Notifications from "expo-notifications";
 
 const Home = ({ navigation }: any) => {
   const { mongoId } = useAuth();
@@ -75,9 +76,18 @@ const Home = ({ navigation }: any) => {
       {/* Header Section */}
       <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
         <Text className="text-xl font-bold">Hikemeet</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("SearchPage")}>
-          <Ionicons name="search" size={24} color="black" />
-        </TouchableOpacity>
+        <View className="flex-row items-center space-x-4">
+          {/* Search button */}
+          <TouchableOpacity onPress={() => navigation.navigate("SearchPage")}>
+            <Ionicons name="search" size={24} color="black" />
+          </TouchableOpacity>
+          {/* Notifications button */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate("NotificationsPage")}
+          >
+            <Ionicons name="notifications-outline" size={24} color="black" />
+          </TouchableOpacity>
+        </View>
       </View>
       {/* Filters Toggle */}
       <View className="flex-row justify-around py-2 border-b border-gray-300 bg-white">

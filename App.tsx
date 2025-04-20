@@ -8,6 +8,7 @@ import "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { NotificationProvider } from "./contexts/notification-context";
 import * as Notifications from "expo-notifications";
+import { navigationRef } from "./root-navigation";
 
 // Only import and configure Mapbox if not running in Expo Go
 let Mapbox;
@@ -34,7 +35,7 @@ export default function App() {
   return (
     <NotificationProvider>
       <AuthProvider>
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef} >
           <GestureHandlerRootView style={{ flex: 1 }}>
             <MainLayout />
           </GestureHandlerRootView>

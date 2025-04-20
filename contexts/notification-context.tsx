@@ -8,6 +8,8 @@ import React, {
 } from "react";
 import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "../utils/register-for-pushnotification-async";
+import { navigate, navigationRef } from "../root-navigation";
+import { CommonActions } from "@react-navigation/native";
 export type Subscription = ReturnType<
   typeof Notifications.addNotificationReceivedListener
 >;
@@ -46,12 +48,48 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   const notificationListener = useRef<Subscription>();
   const responseListener = useRef<Subscription>();
 
+  // Helper to navigate based on the notification’s data
+  function handleNotificationResponse(
+    response: Notifications.NotificationResponse
+  ) {
+    const { name, params } = response.notification.request.content.data as {
+      name: string;
+      params?: Record<string, any>;
+    };
+
+    if (!navigationRef.isReady()) return;
+    navigationRef.dispatch(
+      CommonActions.navigate({ name, params: params ?? {} })
+    );
+
+    // If it’s a nested PostPage, go into your PostStack
+  }
+
   useEffect(() => {
+    // 1) Cold‐start: if app was opened by tapping a notification
+    (async () => {
+      const lastResponse =
+        await Notifications.getLastNotificationResponseAsync();
+      if (lastResponse) {
+        // wait until navigationRef.isReady() before firing
+        const waitForNav = () => {
+          if (navigationRef.isReady()) {
+            handleNotificationResponse(lastResponse);
+          } else {
+            setTimeout(waitForNav, 50);
+          }
+        };
+        waitForNav();
+      }
+    })();
+
+    // 2) Register token
     registerForPushNotificationsAsync().then(
       (token: any) => setExpoPushToken(token),
       (error: any) => setError(error)
     );
 
+    // 3) In‐app arrival listener (optional: shows receipt in console)
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
         console.log(
@@ -61,16 +99,13 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
         setNotification(notification);
       });
 
+    // 4) In‐app tap listener
     responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log(
-          "🔔 Notification Response: user interacts with a notification ",
-          JSON.stringify(response, null, 2),
-          JSON.stringify(response.notification.request.content.data, null, 2)
-        );
-        // Handle the notification response here
-      });
+      Notifications.addNotificationResponseReceivedListener(
+        handleNotificationResponse
+      );
 
+    // 5) Cleanup
     return () => {
       if (notificationListener.current) {
         Notifications.removeNotificationSubscription(

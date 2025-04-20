@@ -25,6 +25,7 @@ interface AuthContextProps {
   userFriendsMinDetail: MongoUser[];
   setUserFriendsMinDetail: React.Dispatch<React.SetStateAction<MongoUser[]>>;
   fetchMongoUser: (mongoIdToFetch: string) => Promise<void>;
+  getToken: () => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -218,6 +219,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [cacheLoaded, authHandled]);
 
+  // — getToken
+  const getToken = async () => {
+    if (user) {
+      const token = await user.getIdToken(true);
+      return token;
+    }
+    return null;
+  };
+
   if (loading) {
     return (
       <StyledView className="flex-1 justify-center items-center bg-white p-5">
@@ -246,6 +256,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         userFriendsMinDetail,
         setUserFriendsMinDetail,
         fetchMongoUser,
+        getToken,
       }}
     >
       {children}
