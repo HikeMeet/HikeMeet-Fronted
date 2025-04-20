@@ -1,9 +1,6 @@
-// tests/RegisterPage.test.tsx
-
 import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { NavigationProp } from '@react-navigation/native';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import RegisterPage from '../screens/register-login/register-page';
 
 type RootStackParamList = {
