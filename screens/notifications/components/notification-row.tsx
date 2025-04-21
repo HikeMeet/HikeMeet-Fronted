@@ -131,14 +131,14 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
               {actor?.username && group?.name ? (
                 <>
                   <Text
-                    className="font-bold text-blue-500"
+                    className="font-bold text-purple-500"
                     onPress={() => handleProfilePress("profile")}
                   >
                     {actor.username}{" "}
                   </Text>
                   <Text>{item.body}</Text>
                   <Text
-                    className="font-bold text-blue-500"
+                    className="font-bold text-purple-500"
                     onPress={() => handleProfilePress("group")}
                   >
                     {group.name}
@@ -147,7 +147,7 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
               ) : actor?.username ? (
                 <>
                   <Text
-                    className="font-bold text-blue-500"
+                    className="font-bold text-purple-500"
                     onPress={() => handleProfilePress("profile")}
                   >
                     {actor.username}{" "}
@@ -157,7 +157,7 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
               ) : group?.name ? (
                 <>
                   <Text
-                    className="font-bold text-blue-500"
+                    className="font-bold text-purple-500"
                     onPress={() => handleProfilePress("group")}
                   >
                     {group.name}{" "}
