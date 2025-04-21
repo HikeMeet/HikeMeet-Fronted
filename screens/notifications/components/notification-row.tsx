@@ -7,6 +7,7 @@ import { useAuth } from "../../../contexts/auth-context";
 import { markNotificationAsRead } from "../../../components/requests/notification-requsts";
 import { NotificationModel } from "../../../interfaces/notification-interface";
 import { timeAgo } from "./time-ago";
+import { getNotificationIconName } from "./notification-icon-const";
 
 interface NotificationRowProps {
   item: NotificationModel;
@@ -28,23 +29,7 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
     setIsRead(item.read);
   }, [item.read]);
 
-  // decide which icon to show in the title
-  let iconName: React.ComponentProps<typeof Ionicons>["name"] =
-    "notifications-outline";
-
-  const type = item.type.toLowerCase(); // safety for casing
-
-  if (type.includes("like")) {
-    iconName = "heart-outline";
-  } else if (type.includes("share")) {
-    iconName = "share-social-outline";
-  } else if (type.includes("comment")) {
-    iconName = "chatbubble-ellipses-outline";
-  } else if (type.includes("post")) {
-    iconName = "document-text-outline";
-  } else if (type.includes("group")) {
-    iconName = "people-outline";
-  }
+  let iconName = getNotificationIconName(item.type);
 
   // avatar: actor first, then group, else placeholder
   const avatarSource = actor?.profileImage
@@ -117,7 +102,7 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
       >
         {/* Title with icon */}
         <View className="flex-row items-center mb-2">
-          <Ionicons name={iconName} size={18} color="#3B82F6" />
+          <Ionicons name={iconName as any} size={18} color="#3B82F6" />
           <Text className="ml-2 text-base font-bold text-blue-500">
             {item.title}
           </Text>
