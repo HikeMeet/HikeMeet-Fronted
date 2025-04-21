@@ -118,10 +118,7 @@ const ProfilePage = ({ navigation }: any) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
+      <View style={{ flex: 1 }}>
         {showHikers ? (
           <HikersList
             isMyProfile={true}
@@ -183,7 +180,7 @@ const ProfilePage = ({ navigation }: any) => {
             showsVerticalScrollIndicator={false}
           />
         )}
-      </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 };

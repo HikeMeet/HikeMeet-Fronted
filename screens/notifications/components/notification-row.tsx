@@ -80,13 +80,13 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
     }
   };
 
-  const handleProfilePress = () => {
-    if (actor?.id) {
+  const handleProfilePress = (type: string) => {
+    if (type === "profile" && actor?.id) {
       navigation.navigate("AccountStack", {
         screen: "UserProfile",
         params: { userId: actor.id },
       });
-    } else if (group?.id) {
+    } else if (type === "group" && group?.id) {
       navigation.navigate("GroupsStack", {
         screen: "GroupPage",
         params: { groupId: group.id },
@@ -98,7 +98,7 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
     <TouchableOpacity onPress={handleNotificationPress} activeOpacity={0.8}>
       <View
         className={`
-          bg-${isRead ? "blue-50" : "white"} 
+          bg-${isRead ? "white" : "blue-50"} 
           rounded-lg 
           mx-4 mb-1
           p-4 
@@ -117,7 +117,7 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
         {/* Content */}
         <View className="flex-row">
           {/* Avatar */}
-          <TouchableOpacity onPress={handleProfilePress}>
+          <TouchableOpacity onPress={() => handleProfilePress("profile")}>
             <Image
               source={avatarSource}
               className="w-10 h-10 rounded-full mr-3"
@@ -126,23 +126,45 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
 
           {/* Message */}
           <View className="flex-1">
-            <Text className="text-sm text-gray-700 mb-1">
-              {actor?.username ? (
-                <Text
-                  className="font-bold text-blue-500"
-                  onPress={handleProfilePress}
-                >
-                  {actor.username}{" "}
-                </Text>
+            <Text className="mt-1 text-sm text-gray-700">
+              {/* actor name, if any */}
+              {actor?.username && group?.name ? (
+                <>
+                  <Text
+                    className="font-bold text-blue-500"
+                    onPress={() => handleProfilePress("profile")}
+                  >
+                    {actor.username}{" "}
+                  </Text>
+                  <Text>{item.body}</Text>
+                  <Text
+                    className="font-bold text-blue-500"
+                    onPress={() => handleProfilePress("group")}
+                  >
+                    {group.name}
+                  </Text>
+                </>
+              ) : actor?.username ? (
+                <>
+                  <Text
+                    className="font-bold text-blue-500"
+                    onPress={() => handleProfilePress("profile")}
+                  >
+                    {actor.username}{" "}
+                  </Text>
+                  <Text>{item.body}</Text>
+                </>
               ) : group?.name ? (
-                <Text
-                  className="font-bold text-blue-500"
-                  onPress={handleProfilePress}
-                >
-                  {group.name}{" "}
-                </Text>
+                <>
+                  <Text
+                    className="font-bold text-blue-500"
+                    onPress={() => handleProfilePress("group")}
+                  >
+                    {group.name}{" "}
+                  </Text>
+                  <Text>{item.body}</Text>
+                </>
               ) : null}
-              <Text>{item.body}</Text>
             </Text>
             <Text className="text-xs text-gray-500">{ago}</Text>
           </View>
