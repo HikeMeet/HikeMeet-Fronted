@@ -31,11 +31,20 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
   // decide which icon to show in the title
   let iconName: React.ComponentProps<typeof Ionicons>["name"] =
     "notifications-outline";
-  if (item.type.startsWith("group_")) iconName = "people-outline";
-  else if (item.type.startsWith("post_"))
+
+  const type = item.type.toLowerCase(); // safety for casing
+
+  if (type.includes("like")) {
+    iconName = "heart-outline";
+  } else if (type.includes("share")) {
+    iconName = "share-social-outline";
+  } else if (type.includes("comment")) {
     iconName = "chatbubble-ellipses-outline";
-  else if (item.type.startsWith("friend_") || item.type.startsWith("user_"))
-    iconName = "person-add-outline";
+  } else if (type.includes("post")) {
+    iconName = "document-text-outline";
+  } else if (type.includes("group")) {
+    iconName = "people-outline";
+  }
 
   // avatar: actor first, then group, else placeholder
   const avatarSource = actor?.profileImage
