@@ -9,7 +9,10 @@ import React, {
 import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "../utils/register-for-pushnotification-async";
 import { navigate, navigationRef } from "../root-navigation";
-import { CommonActions } from "@react-navigation/native";
+import { CommonActions, StackActions } from "@react-navigation/native";
+import { markNotificationAsRead } from "../components/requests/notification-requsts";
+import { useAuth } from "./auth-context";
+import { IUser } from "../interfaces/post-interface";
 export type Subscription = ReturnType<
   typeof Notifications.addNotificationReceivedListener
 >;
@@ -47,24 +50,37 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
 
   const notificationListener = useRef<Subscription>();
   const responseListener = useRef<Subscription>();
-
-  // Helper to navigate based on the notification’s data
-  function handleNotificationResponse(
+  const { getToken } = useAuth(); // Helper to navigate based on the notification’s data
+  async function handleNotificationResponse(
     response: Notifications.NotificationResponse
   ) {
-    const { name, params } = response.notification.request.content.data as {
-      name: string;
-      params?: Record<string, any>;
+    const { navigation, id, actor } = response.notification.request.content
+      .data as {
+      navigation: { name: string; params?: Record<string, any> };
+      id?: string;
+      actor?: IUser;
     };
 
     if (!navigationRef.isReady()) return;
-    navigationRef.dispatch(
-      CommonActions.navigate({ name, params: params ?? {} })
-    );
+    // *******************************
+    //// regular vs push
+    navigationRef.dispatch(CommonActions.navigate(navigation));
+    StackActions.push(navigation.name, navigation.params ?? {});
+    // *******************************
 
     // If it’s a nested PostPage, go into your PostStack
-  }
+    // 3) Mark as read
 
+    if (id) {
+      try {
+        const token = await getToken();
+
+        if (token) await markNotificationAsRead(token, id);
+      } catch (err) {
+        console.error("Error marking notification read:", err);
+      }
+    }
+  }
   useEffect(() => {
     // 1) Cold‐start: if app was opened by tapping a notification
     (async () => {

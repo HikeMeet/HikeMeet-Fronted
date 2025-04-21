@@ -124,7 +124,7 @@ const Home = ({ navigation }: any) => {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+    <View style={{ flex: 1, backgroundColor: "white" }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -179,7 +179,7 @@ const Home = ({ navigation }: any) => {
           showsVerticalScrollIndicator={false}
         />
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 };
 

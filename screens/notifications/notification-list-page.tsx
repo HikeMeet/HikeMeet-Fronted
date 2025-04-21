@@ -8,43 +8,32 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
-import Constants from "expo-constants";
-
-import { styled } from "nativewind";
 import { useAuth } from "../../contexts/auth-context";
-import { NotificationRow } from "./components/notification-row";
+
 import { NotificationModel } from "../../interfaces/notification-interface";
+import { fetchNotifications } from "../../components/requests/notification-requsts";
+import { NotificationRow } from "./components/notification-row";
 
-const StyledView = styled(View);
-const StyledText = styled(Text);
+interface NotificationsPageProps {
+  navigation: any;
+}
 
-export default function NotificationsPage() {
+export default function NotificationsPage({
+  navigation,
+}: NotificationsPageProps) {
   const [notifications, setNotifications] = useState<NotificationModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [itemsToShow, setItemsToShow] = useState(5);
+
   const { getToken } = useAuth();
 
-  const fetchNotifications = async () => {
+  const loadNotifications = async () => {
     try {
       const token = await getToken();
-      if (!token) {
-        console.warn("No Firebase user logged in—cannot fetch notifications");
-        return;
-      }
-      const response = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/notification/`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      if (!response.ok) throw new Error(`Error ${response.status}`);
-      const json = await response.json();
-      setNotifications(json.notifications);
+      if (!token) return;
+      const notifs = await fetchNotifications(token);
+      setNotifications(notifs);
     } catch (err) {
       console.error("Error fetching notifications:", err);
     } finally {
@@ -54,13 +43,13 @@ export default function NotificationsPage() {
   };
 
   useEffect(() => {
-    fetchNotifications();
+    loadNotifications();
   }, []);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setItemsToShow(5);
-    fetchNotifications();
+    loadNotifications();
   }, []);
 
   const handleLoadMore = () => {
@@ -71,26 +60,28 @@ export default function NotificationsPage() {
 
   if (loading) {
     return (
-      <StyledView className="flex-1 justify-center items-center">
+      <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" />
-      </StyledView>
+      </View>
     );
   }
 
   return (
     <FlatList
       data={notifications.slice(0, itemsToShow)}
-      keyExtractor={(item: NotificationModel) => item._id}
-      renderItem={({ item }) => <NotificationRow item={item} />}
+      keyExtractor={(item) => item._id}
+      renderItem={({ item }) => (
+        <NotificationRow item={item} navigation={navigation} />
+      )}
       onEndReached={handleLoadMore}
       onEndReachedThreshold={0.5}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
       ListEmptyComponent={() => (
-        <StyledView className="flex-1 justify-center items-center">
-          <StyledText className="text-gray-500">No notifications</StyledText>
-        </StyledView>
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-gray-500">No notifications</Text>
+        </View>
       )}
       contentContainerStyle={{ flexGrow: 1 }}
     />

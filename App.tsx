@@ -33,14 +33,14 @@ Notifications.setNotificationHandler({
 
 export default function App() {
   return (
-    <NotificationProvider>
-      <AuthProvider>
-        <NavigationContainer ref={navigationRef} >
+    <AuthProvider>
+      <NotificationProvider>
+        <NavigationContainer ref={navigationRef}>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <MainLayout />
           </GestureHandlerRootView>
         </NavigationContainer>
-      </AuthProvider>
-    </NotificationProvider>
+      </NotificationProvider>
+    </AuthProvider>
   );
 }
