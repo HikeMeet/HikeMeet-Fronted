@@ -145,6 +145,7 @@ const ProfilePage = ({ navigation }: any) => {
           visible={showRankModal}
           rankInfo={rankInfo}
           onClose={() => setShowRankModal(false)}
+          isMyProfile={true}
         />
       )}
 

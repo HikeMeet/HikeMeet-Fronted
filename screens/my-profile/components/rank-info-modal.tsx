@@ -6,9 +6,15 @@ interface Props {
   visible: boolean;
   rankInfo: RankInfo;
   onClose: () => void;
+  isMyProfile: boolean;
 }
 
-const RankInfoModal: React.FC<Props> = ({ visible, rankInfo, onClose }) => {
+const RankInfoModal: React.FC<Props> = ({
+  visible,
+  rankInfo,
+  onClose,
+  isMyProfile,
+}) => {
   return (
     <Modal
       visible={visible}
@@ -41,19 +47,21 @@ const RankInfoModal: React.FC<Props> = ({ visible, rankInfo, onClose }) => {
           <Text className="text-gray-500 mb-2 text-sm">
             Total EXP: <Text className="font-semibold">{rankInfo.exp}</Text>
           </Text>
-          {rankInfo.nextRank !== Infinity ? (
-            <Text className="text-gray-600 text-sm text-center">
-              You need{" "}
-              <Text className="font-bold">
-                {rankInfo.nextRank - rankInfo.exp}
-              </Text>{" "}
-              more EXP to reach the next rank!
-            </Text>
-          ) : (
-            <Text className="text-green-600 font-medium text-sm">
-              You reached the highest rank! 🎉
-            </Text>
-          )}
+          {isMyProfile ? (
+            rankInfo.nextRank !== Infinity ? (
+              <Text className="text-gray-600 text-sm text-center">
+                You need{" "}
+                <Text className="font-bold">
+                  {rankInfo.nextRank - rankInfo.exp}
+                </Text>{" "}
+                more EXP to reach the next rank!
+              </Text>
+            ) : (
+              <Text className="text-green-600 font-medium text-sm">
+                You reached the highest rank! 🎉
+              </Text>
+            )
+          ) : null}
 
           <TouchableOpacity
             className="mt-5 bg-blue-600 px-6 py-2 rounded-full"

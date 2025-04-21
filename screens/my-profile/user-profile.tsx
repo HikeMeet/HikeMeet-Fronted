@@ -202,6 +202,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
           visible={showRankModal}
           rankInfo={rankInfo}
           onClose={() => setShowRankModal(false)}
+          isMyProfile={false}
         />
       )}
 
