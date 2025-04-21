@@ -4,6 +4,49 @@ import LoginPage from "../screens/register-login/login-page";
 
 const mockNavigate = jest.fn();
 const mockNavigation = { navigate: mockNavigate, goBack: jest.fn() };
+jest.mock("expo-modules-core", () => ({
+  EventEmitter: class {
+    addListener() {}
+    removeAllListeners() {}
+  },
+  // stub whatever else your code might touch
+  NativeModulesProxy: {},
+}));
+//  Stub out expo-device
+jest.mock("expo-device", () => ({
+  isDevice: true,
+}));
+//  Stub out expo‑constants (default export)
+jest.mock("expo-constants", () => ({
+  __esModule: true,
+  default: {
+    expoConfig: { extra: { eas: { projectId: "test-project" } } },
+    easConfig: { projectId: "test-project" },
+  },
+}));
+
+// Stub out expo‑notifications so none of its native logic runs
+jest.mock("expo-notifications", () => ({
+  setNotificationHandler: jest.fn(),
+  getPermissionsAsync: jest.fn().mockResolvedValue({ status: "granted" }),
+  requestPermissionsAsync: jest.fn().mockResolvedValue({ status: "granted" }),
+  getExpoPushTokenAsync: jest.fn().mockResolvedValue({ data: "test-token" }),
+  addNotificationReceivedListener: jest
+    .fn()
+    .mockReturnValue({ remove: jest.fn() }),
+  addNotificationResponseReceivedListener: jest
+    .fn()
+    .mockReturnValue({ remove: jest.fn() }),
+  removeNotificationSubscription: jest.fn(),
+}));
+
+jest.mock("../contexts/notification-context", () => ({
+  useNotification: () => ({
+    expoPushToken: "test-token",
+    notification: null,
+    error: null,
+  }),
+}));
 
 jest.mock("../contexts/auth-context", () => ({
   useAuth: () => ({
