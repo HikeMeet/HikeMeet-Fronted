@@ -59,10 +59,10 @@ const ProfilePage = ({ navigation }: any) => {
   };
 
   const rankInfo: RankInfo | null = useMemo(
-    () => mongoUser ? checkRankLevel(mongoUser.exp) : null,
+    () => (mongoUser ? checkRankLevel(mongoUser.exp) : null),
     [mongoUser]
   );
-  
+
   useEffect(() => {
     if (mongoUser) {
       fetchPosts();
@@ -87,20 +87,20 @@ const ProfilePage = ({ navigation }: any) => {
             <Text className="text-lg font-bold">{mongoUser.username}</Text>
             <Text className="text-sm font-bold">{`${mongoUser.first_name} ${mongoUser.last_name}`}</Text>
             {rankInfo && (
-  <TouchableOpacity
-    onPress={() => setShowRankModal(true)}
-    className="flex-row items-center"
-  >
-    <Text className="text-sm text-gray-500 mr-2">
-      Rank: {rankInfo.rankName}
-    </Text>
-    {rankInfo?.rankImageUrl && (
-      <rankInfo.rankImageUrl width={24} height={24} />
-    )}
-  </TouchableOpacity>
-)}
-          
-              <HikerButton
+              <TouchableOpacity
+                onPress={() => setShowRankModal(true)}
+                className="flex-row items-center"
+              >
+                <Text className="text-sm text-gray-500 mr-2">
+                  Rank: {rankInfo.rankName}
+                </Text>
+                {rankInfo?.rankImageUrl && (
+                  <rankInfo.rankImageUrl width={24} height={24} />
+                )}
+              </TouchableOpacity>
+            )}
+
+            <HikerButton
               showHikers={showHikers}
               toggleHikers={toggleHikers}
               user={mongoUser}
@@ -114,7 +114,7 @@ const ProfilePage = ({ navigation }: any) => {
           >
             <Icon name="settings" size={24} color="black" />
           </TouchableOpacity>
-     </View>
+        </View>
         {/* Bio and Create Post Section */}
         <View className="p-4 bg-white">
           <BioSection bio={mongoUser.bio} />
@@ -145,7 +145,7 @@ const ProfilePage = ({ navigation }: any) => {
           visible={showRankModal}
           rankInfo={rankInfo}
           onClose={() => setShowRankModal(false)}
-          />
+        />
       )}
 
       <KeyboardAvoidingView

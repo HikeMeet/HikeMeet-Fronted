@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  Pressable,
-} from "react-native";
+import { Modal, View, Text, TouchableOpacity, Pressable } from "react-native";
 import { RankInfo } from "../../../interfaces/rank-info";
 
 interface Props {
@@ -24,11 +18,11 @@ const RankInfoModal: React.FC<Props> = ({ visible, rankInfo, onClose }) => {
     >
       <Pressable
         onPress={onClose}
-        className="flex-1 justify-center items-center bg-white/40"
+        className="flex-1 justify-center items-center bg-black/20"
       >
         <Pressable
           onPress={() => {}}
-          className="bg-white rounded-2xl w-11/12 max-w-md p-6 items-center shadow-lg"
+          className="bg-white rounded-2xl w-11/16 max-w-md p-6 items-center shadow-lg"
           style={{
             elevation: 8, // for Android shadow
             shadowColor: "#000",
@@ -37,13 +31,12 @@ const RankInfoModal: React.FC<Props> = ({ visible, rankInfo, onClose }) => {
             shadowRadius: 8,
           }}
         >
-<View className="flex-row items-center mb-1 space-x-2">
-  <Text className="text-xl font-extrabold text-gray-800">
-    {rankInfo.rankName}
-  </Text>
-  <rankInfo.rankImageUrl width={28} height={28} />
-
-</View>
+          <View className="flex-row items-center mb-1 space-x-2">
+            <Text className="text-xl font-extrabold text-gray-800">
+              {rankInfo.rankName}
+            </Text>
+            <rankInfo.rankImageUrl width={28} height={28} />
+          </View>
 
           <Text className="text-gray-500 mb-2 text-sm">
             Total EXP: <Text className="font-semibold">{rankInfo.exp}</Text>

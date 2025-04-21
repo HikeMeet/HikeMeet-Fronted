@@ -41,13 +41,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
   const [showRankModal, setShowRankModal] = useState(false);
 
-
   // Compute rank info once user is loaded
   const rankInfo: RankInfo | null = useMemo(
-    () => user ? checkRankLevel(user.exp) : null,
+    () => (user ? checkRankLevel(user.exp) : null),
     [user]
   );
-
 
   const toggleHikers = useCallback(() => {
     setShowHikers((prev) => !prev);
@@ -131,21 +129,20 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
                 {`${user.first_name} ${user.last_name}`}
               </Text>
 
-              
               {rankInfo && (
-  <TouchableOpacity
-    onPress={() => setShowRankModal(true)}
-    className="flex-row items-center"
-  >
-    <Text className="text-sm text-gray-500 mr-2">
-      Rank: {rankInfo.rankName}
-    </Text>
-    {rankInfo?.rankImageUrl && (
-      <rankInfo.rankImageUrl width={24} height={24} />
-    )}
-  </TouchableOpacity>
-                )}
-        
+                <TouchableOpacity
+                  onPress={() => setShowRankModal(true)}
+                  className="flex-row items-center"
+                >
+                  <Text className="text-sm text-gray-500 mr-2">
+                    Rank: {rankInfo.rankName}
+                  </Text>
+                  {rankInfo?.rankImageUrl && (
+                    <rankInfo.rankImageUrl width={24} height={24} />
+                  )}
+                </TouchableOpacity>
+              )}
+
               <HikerButton
                 showHikers={showHikers}
                 toggleHikers={toggleHikers}
@@ -205,7 +202,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
           visible={showRankModal}
           rankInfo={rankInfo}
           onClose={() => setShowRankModal(false)}
-          />
+        />
       )}
 
       {showHikers ? (
