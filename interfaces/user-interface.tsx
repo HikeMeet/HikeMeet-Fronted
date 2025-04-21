@@ -26,6 +26,7 @@ export interface MongoUser {
   facebook_link: string;
   instagram_link: string;
   role: string;
+  exp:number;
   social: {
     posts_saved: IPost[] | string[];
     posts_liked: IPost[] | string[];

@@ -24,12 +24,16 @@ import { IPost } from "../../interfaces/post-interface";
 import PostCard from "../posts/components/post-card-on-feeds";
 import { fetchPostsForUser } from "../../components/requests/fetch-posts";
 import HikersList from "../../components/hikers-list-in-profile";
+import { checkRankLevel } from "./components/check-rank-level";
+import { RankInfo } from "../../interfaces/rank-info";
+import RankInfoModal from "./components/rank-info-modal";
 
 const ProfilePage = ({ navigation }: any) => {
   const { mongoUser } = useAuth();
   const [showHikers, setShowHikers] = useState<boolean>(false);
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
+  const [showRankModal, setShowRankModal] = useState(false);
 
   const toggleHikers = () => {
     setShowHikers((prev) => !prev);
@@ -54,6 +58,11 @@ const ProfilePage = ({ navigation }: any) => {
     }
   };
 
+  const rankInfo: RankInfo | null = useMemo(
+    () => mongoUser ? checkRankLevel(mongoUser.exp) : null,
+    [mongoUser]
+  );
+  
   useEffect(() => {
     if (mongoUser) {
       fetchPosts();
@@ -77,8 +86,21 @@ const ProfilePage = ({ navigation }: any) => {
           <View className="flex-1 ml-5">
             <Text className="text-lg font-bold">{mongoUser.username}</Text>
             <Text className="text-sm font-bold">{`${mongoUser.first_name} ${mongoUser.last_name}`}</Text>
-            <Text className="text-sm text-gray-500">Rank: Adventurer</Text>
-            <HikerButton
+            {rankInfo && (
+  <TouchableOpacity
+    onPress={() => setShowRankModal(true)}
+    className="flex-row items-center"
+  >
+    <Text className="text-sm text-gray-500 mr-2">
+      Rank: {rankInfo.rankName}
+    </Text>
+    {rankInfo?.rankImageUrl && (
+      <rankInfo.rankImageUrl width={24} height={24} />
+    )}
+  </TouchableOpacity>
+)}
+          
+              <HikerButton
               showHikers={showHikers}
               toggleHikers={toggleHikers}
               user={mongoUser}
@@ -92,7 +114,7 @@ const ProfilePage = ({ navigation }: any) => {
           >
             <Icon name="settings" size={24} color="black" />
           </TouchableOpacity>
-        </View>
+     </View>
         {/* Bio and Create Post Section */}
         <View className="p-4 bg-white">
           <BioSection bio={mongoUser.bio} />
@@ -118,6 +140,14 @@ const ProfilePage = ({ navigation }: any) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
+      {rankInfo && (
+        <RankInfoModal
+          visible={showRankModal}
+          rankInfo={rankInfo}
+          onClose={() => setShowRankModal(false)}
+          />
+      )}
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
