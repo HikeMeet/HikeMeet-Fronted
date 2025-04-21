@@ -1,33 +1,16 @@
 // src/components/NotificationRow.tsx
 
-import React, { useState } from "react";
-import { TouchableOpacity, View, Text, Image } from "react-native";
+import React, { useEffect, useState } from "react";
+import { TouchableOpacity, View, Text, Image, Platform } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../../contexts/auth-context";
 import { markNotificationAsRead } from "../../../components/requests/notification-requsts";
 import { NotificationModel } from "../../../interfaces/notification-interface";
+import { timeAgo } from "./time-ago";
 
 interface NotificationRowProps {
   item: NotificationModel;
   navigation: any;
-}
-
-// Utility to format “time ago”
-function timeAgo(dateString: string): string {
-  const now = Date.now();
-  const past = new Date(dateString).getTime();
-  const diff = now - past;
-
-  const seconds = Math.floor(diff / 1000);
-  if (seconds < 60) return `${seconds}s ago`;
-
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
 }
 
 export const NotificationRow: React.FC<NotificationRowProps> = ({
@@ -37,13 +20,55 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
   const [isRead, setIsRead] = useState(item.read);
   const data = item.data ?? {};
   const actor = data.actor;
+  const group = data.group;
   const { getToken } = useAuth();
+  const ago = timeAgo(item.created_on);
+
+  useEffect(() => {
+    setIsRead(item.read);
+  }, [item.read]);
+
+  // decide which icon to show in the title
+  let iconName: React.ComponentProps<typeof Ionicons>["name"] =
+    "notifications-outline";
+  if (item.type.startsWith("group_")) iconName = "people-outline";
+  else if (item.type.startsWith("post_"))
+    iconName = "chatbubble-ellipses-outline";
+  else if (item.type.startsWith("friend_") || item.type.startsWith("user_"))
+    iconName = "person-add-outline";
+
+  // avatar: actor first, then group, else placeholder
+  const avatarSource = actor?.profileImage
+    ? { uri: actor.profileImage }
+    : group?.imageUrl
+      ? { uri: group.imageUrl }
+      : require("../../../assets/Logo2.png");
 
   const handleNotificationPress = async () => {
-    const nav = data.navigation;
-    if (nav?.name) {
-      navigation.push(nav.name, nav.params ?? {});
+    const type = item.type;
+
+    if (type.startsWith("group_") && group?.id) {
+      navigation.push("GroupsStack", {
+        screen: "GroupPage",
+        params: { groupId: group.id },
+      });
+    } else if (type.startsWith("post_") && data.navigation?.params?.postId) {
+      navigation.push("PostStack", {
+        screen: "PostPage",
+        params: { postId: data.navigation.params.postId },
+      });
+    } else if (
+      (type.startsWith("friend_") || type.startsWith("user_")) &&
+      actor?.id
+    ) {
+      navigation.push("AccountStack", {
+        screen: "UserProfile",
+        params: { userId: actor.id },
+      });
+    } else if (data.navigation?.name) {
+      navigation.push(data.navigation.name, data.navigation.params ?? {});
     }
+
     if (!isRead) setIsRead(true);
     if (data.id) {
       try {
@@ -56,52 +81,71 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
   };
 
   const handleProfilePress = () => {
-    if (!actor?.id) return;
-    navigation.navigate("AccountStack", {
-      screen: "UserProfile",
-      params: { userId: actor.id },
-    });
+    if (actor?.id) {
+      navigation.navigate("AccountStack", {
+        screen: "UserProfile",
+        params: { userId: actor.id },
+      });
+    } else if (group?.id) {
+      navigation.navigate("GroupsStack", {
+        screen: "GroupPage",
+        params: { groupId: group.id },
+      });
+    }
   };
 
-  // compute relative time once
-  const ago = timeAgo(item.created_on);
   return (
-    <TouchableOpacity onPress={handleNotificationPress}>
+    <TouchableOpacity onPress={handleNotificationPress} activeOpacity={0.8}>
       <View
-        className={`flex-row items-start px-4 py-3 border-b border-gray-200 ${
-          isRead ? "bg-gray-100" : "bg-blue-100"
-        }`}
+        className={`
+          bg-${isRead ? "blue-50" : "white"} 
+          rounded-lg 
+          mx-4 mb-1
+          p-4 
+          border border-gray-200
+          ${Platform.OS === "ios" ? "shadow-lg" : "elevation-2"}
+        `}
       >
-        {/* Avatar */}
-        <TouchableOpacity onPress={handleProfilePress}>
-          <Image
-            source={
-              actor?.profileImage
-                ? { uri: actor.profileImage }
-                : require("../../../assets/Logo2.png")
-            }
-            className="w-10 h-10 rounded-full mr-3"
-          />
-        </TouchableOpacity>
-
-        <View className="flex-1">
-          {/* Title */}
-          <Text className="text-base font-bold text-blue-500">
+        {/* Title with icon */}
+        <View className="flex-row items-center mb-2">
+          <Ionicons name={iconName} size={18} color="#3B82F6" />
+          <Text className="ml-2 text-base font-bold text-blue-500">
             {item.title}
           </Text>
+        </View>
 
-          {/* Body + bold username + inline “time ago” */}
-          <Text className="mt-1 text-sm text-gray-700">
-            {actor?.username && (
-              <>
-                <Text className="font-bold" onPress={handleProfilePress}>
+        {/* Content */}
+        <View className="flex-row">
+          {/* Avatar */}
+          <TouchableOpacity onPress={handleProfilePress}>
+            <Image
+              source={avatarSource}
+              className="w-10 h-10 rounded-full mr-3"
+            />
+          </TouchableOpacity>
+
+          {/* Message */}
+          <View className="flex-1">
+            <Text className="text-sm text-gray-700 mb-1">
+              {actor?.username ? (
+                <Text
+                  className="font-bold text-blue-500"
+                  onPress={handleProfilePress}
+                >
                   {actor.username}{" "}
                 </Text>
-              </>
-            )}
-            <Text>{item.body}</Text>
-            <Text className="text-xs text-gray-500"> {ago}</Text>
-          </Text>
+              ) : group?.name ? (
+                <Text
+                  className="font-bold text-blue-500"
+                  onPress={handleProfilePress}
+                >
+                  {group.name}{" "}
+                </Text>
+              ) : null}
+              <Text>{item.body}</Text>
+            </Text>
+            <Text className="text-xs text-gray-500">{ago}</Text>
+          </View>
         </View>
       </View>
     </TouchableOpacity>
