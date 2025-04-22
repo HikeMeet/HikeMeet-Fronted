@@ -50,17 +50,14 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
     setLoadingPosts(false);
   };
 
-  // whenever our auth context knows our mongoId, re‐fetch the up‑to‑date MongoUser
   useEffect(() => {
-    if (mongoId) {
-      fetchMongoUser(mongoId);
-    }
-  }, [mongoId, fetchMongoUser]);
-  useEffect(() => {
+    fetchMongoUser(mongoId!);
     fetchPosts();
   }, [user]);
 
   useEffect(() => {
+    fetchMongoUser(mongoId!);
+
     const fetchUser = async () => {
       setLoading(true);
       try {
