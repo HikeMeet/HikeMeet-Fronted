@@ -108,10 +108,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     // 3) In‐app arrival listener (optional: shows receipt in console)
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
-        console.log(
-          "🔔 Notification received while the app is running.: ",
-          notification
-        );
         setNotification(notification);
       });
 
