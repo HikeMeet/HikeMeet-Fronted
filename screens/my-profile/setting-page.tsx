@@ -33,6 +33,12 @@ const SettingsScreen = ({ navigation }: any) => {
             title="Community guidlines"
             onPress={() => navigation.navigate("ComunitiyGuidlined")}
           />
+
+          <SettingsButton
+            title="About ranking system"
+            onPress={() => navigation.navigate("AboutRankingSystem")}
+          />
+
           <SettingsButton
             title="Saved posts"
             onPress={() => navigation.navigate("SavedPosts")}

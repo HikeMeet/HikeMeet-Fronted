@@ -15,7 +15,7 @@ const SettingsButton: React.FC<SettingsButtonProps> = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={`${color} px-4 py-3 rounded mb-3`} // Use the color in the className
+      className={`${color} px-4 py-3 rounded-xl mb-3`} // Use the color in the className
     >
       <Text className="text-lg">{title}</Text>
     </TouchableOpacity>
