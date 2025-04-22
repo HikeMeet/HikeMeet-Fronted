@@ -32,7 +32,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   const [friendStatus, setFriendStatus] = useState<string>("none"); // Friend status
   const [loading, setLoading] = useState<boolean>(true); // Loading state for user
   const [showHikers, setShowHikers] = useState<boolean>(false); // Toggle for hikers list
-  const { mongoId, mongoUser } = useAuth(); // Current user's ID
+  const { mongoId, mongoUser, fetchMongoUser } = useAuth(); // Current user's ID
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
 
@@ -50,6 +50,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
     setLoadingPosts(false);
   };
 
+  // whenever our auth context knows our mongoId, re‐fetch the up‑to‑date MongoUser
+  useEffect(() => {
+    if (mongoId) {
+      fetchMongoUser(mongoId);
+    }
+  }, [mongoId, fetchMongoUser]);
   useEffect(() => {
     fetchPosts();
   }, [user]);

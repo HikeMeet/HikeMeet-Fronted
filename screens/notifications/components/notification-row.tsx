@@ -92,7 +92,7 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
     <TouchableOpacity onPress={handleNotificationPress} activeOpacity={0.8}>
       <View
         className={`
-          bg-${isRead ? "white" : "blue-50"} 
+          bg-${isRead ? "white" : "blue-200"} 
           rounded-lg 
           mx-4 mb-1
           p-4 
