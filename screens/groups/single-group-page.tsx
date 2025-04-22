@@ -168,7 +168,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             isAdmin={isAdmin}
           />
           <TouchableOpacity
-            onPress={() => navigation.navigate("Tabs", { screen: "Groups" })}
+            onPress={() => navigation.push("Tabs", { screen: "Groups" })}
             className="bg-purple-500 px-4 py-3 rounded mt-6"
           >
             <Text className="text-white text-center font-semibold">
@@ -186,7 +186,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
           />
           <View className="px-4 pb-4">
             <TouchableOpacity
-              onPress={() => navigation.navigate("Tabs", { screen: "Groups" })}
+              onPress={() => navigation.push("Tabs", { screen: "Groups" })}
               className="bg-purple-500 px-4 py-3 rounded mt-2"
             >
               <Text className="text-white text-center font-semibold">
