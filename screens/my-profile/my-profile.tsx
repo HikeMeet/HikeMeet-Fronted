@@ -26,7 +26,7 @@ import { fetchPostsForUser } from "../../components/requests/fetch-posts";
 import HikersList from "../../components/hikers-list-in-profile";
 
 const ProfilePage = ({ navigation }: any) => {
-  const { mongoUser } = useAuth();
+  const { mongoUser, mongoId, fetchMongoUser } = useAuth();
   const [showHikers, setShowHikers] = useState<boolean>(false);
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);

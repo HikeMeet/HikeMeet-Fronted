@@ -36,6 +36,13 @@ export async function markNotificationAsRead(
     method: "PATCH",
     headers: buildHeaders(token),
   });
+  // if the notification was already deleted, the server will 404:
+  if (res.status === 405) {
+    console.warn(
+      `Notification ${notificationId} not found on server, skipping`
+    );
+    return;
+  }
   if (!res.ok) {
     throw new Error(`Error marking notification read: ${res.status}`);
   }

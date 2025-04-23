@@ -33,7 +33,7 @@ export default function NotificationsPage({
   const [refreshing, setRefreshing] = useState(false);
   const [itemsToShow, setItemsToShow] = useState(10);
 
-  const { getToken } = useAuth();
+  const { getToken, fetchMongoUser, mongoId } = useAuth();
 
   const loadNotifications = async () => {
     try {
@@ -70,7 +70,10 @@ export default function NotificationsPage({
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     try {
       const token = await getToken();
-      if (token) await markAllNotificationsAsRead(token);
+      if (token) {
+        await markAllNotificationsAsRead(token);
+        fetchMongoUser(mongoId!);
+      }
     } catch (err) {
       console.error("Error marking all read:", err);
     }

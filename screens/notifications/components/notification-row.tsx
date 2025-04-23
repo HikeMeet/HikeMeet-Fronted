@@ -22,7 +22,7 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
   const data = item.data ?? {};
   const actor = data.actor;
   const group = data.group;
-  const { getToken } = useAuth();
+  const { getToken, fetchMongoUser, mongoId } = useAuth();
   const ago = timeAgo(item.created_on);
 
   useEffect(() => {
@@ -32,12 +32,19 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
   let iconName = getNotificationIconName(item.type);
 
   // avatar: actor first, then group, else placeholder
-  const avatarSource = actor?.profileImage
-    ? { uri: actor.profileImage }
-    : group?.imageUrl
+  const avatarType =
+    item.data!.imageType === "group"
+      ? "group"
+      : item.data!.imageType === "user"
+        ? "profile"
+        : "logo";
+  const avatarSource =
+    item.data!.imageType === "group"
       ? { uri: group.imageUrl }
-      : require("../../../assets/Logo2.png");
-
+      : item.data!.imageType === "user"
+        ? { uri: actor.profileImage }
+        : require("../../../assets/Logo2.png");
+  console.log("Avatar source:", avatarSource);
   const handleNotificationPress = async () => {
     const type = item.type;
 
@@ -67,7 +74,10 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
     if (data.id) {
       try {
         const token = await getToken();
-        if (token) await markNotificationAsRead(token, data.id);
+        if (token) {
+          await markNotificationAsRead(token, data.id);
+          fetchMongoUser(mongoId!);
+        }
       } catch (err) {
         console.error("Error marking notification read:", err);
       }
@@ -111,7 +121,7 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
         {/* Content */}
         <View className="flex-row">
           {/* Avatar */}
-          <TouchableOpacity onPress={() => handleProfilePress("profile")}>
+          <TouchableOpacity onPress={() => handleProfilePress(avatarType)}>
             <Image
               source={avatarSource}
               className="w-10 h-10 rounded-full mr-3"

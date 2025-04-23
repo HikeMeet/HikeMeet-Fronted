@@ -74,8 +74,9 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     if (id) {
       try {
         const token = await getToken();
-
-        if (token) await markNotificationAsRead(token, id);
+        if (token) {
+          await markNotificationAsRead(token, id);
+        }
       } catch (err) {
         console.error("Error marking notification read:", err);
       }
