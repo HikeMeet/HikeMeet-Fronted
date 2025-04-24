@@ -12,7 +12,6 @@ import {
 import { timeAgo } from "./time-ago";
 import { getNotificationIconName } from "./notification-icon-const";
 import FriendActionButton from "../../../components/friend-button";
-import { NotificationAvatar } from "./notification-avatar";
 
 interface NotificationRowProps {
   item: NotificationModel;
@@ -145,15 +144,7 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
               className="w-10 h-10 rounded-full mr-3"
             />
           </TouchableOpacity>
-          {/* <NotificationAvatar
-            groupImageUrl={
-              item.data!.imageType === "group" ? group?.imageUrl : undefined
-            }
-            profileImageUrl={
-              item.data!.imageType === "user" ? actor?.profileImage : undefined
-            }
-          /> */}
-          {/* Message */}
+
           <View className="flex-1">
             <Text className="mt-1 text-sm text-gray-700">
               {/* actor name, if any */}
