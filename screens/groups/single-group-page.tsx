@@ -56,7 +56,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
     try {
       const data = await fetchGroupDetails(groupId, true);
       setGroup(data.group);
-      setTrip(data.trip!);
+      setTrip(data.trip ?? null);
     } catch (error) {
       console.error("Error fetching group:", error);
     } finally {
@@ -79,7 +79,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
   if (!group) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-white">
-        <Text className="text-lg">Group not found.</Text>
+        <Text className="text-lg">Group not available or deleted.</Text>
       </SafeAreaView>
     );
   }
@@ -94,7 +94,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
       <View className="flex-row items-center justify-between mb-4">
         {group.main_image && (
           <ProfileImage
-            initialImage={group.main_image}
+            initialImage={group.main_image!}
             size={60}
             id={group._id}
             uploadType="group"

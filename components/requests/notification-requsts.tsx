@@ -22,6 +22,7 @@ export async function fetchNotifications(token: string): Promise<any[]> {
     throw new Error(`Error fetching notifications: ${res.status}`);
   }
   const { notifications } = await res.json();
+
   return notifications;
 }
 

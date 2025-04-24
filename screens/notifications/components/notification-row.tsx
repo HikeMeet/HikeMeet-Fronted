@@ -5,10 +5,14 @@ import { TouchableOpacity, View, Text, Image, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../../contexts/auth-context";
 import { markNotificationAsRead } from "../../../components/requests/notification-requsts";
-import { NotificationModel } from "../../../interfaces/notification-interface";
+import {
+  IfromUser,
+  NotificationModel,
+} from "../../../interfaces/notification-interface";
 import { timeAgo } from "./time-ago";
 import { getNotificationIconName } from "./notification-icon-const";
 import FriendActionButton from "../../../components/friend-button";
+import { NotificationAvatar } from "./notification-avatar";
 
 interface NotificationRowProps {
   item: NotificationModel;
@@ -21,8 +25,8 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
 }) => {
   const [isRead, setIsRead] = useState(item.read);
   const data = item.data ?? {};
-  const actor = data.actor;
-  const group = data.group;
+  const actor = item.from as IfromUser;
+  const group = data.groupId;
   const { getToken, fetchMongoUser, mongoId, mongoUser } = useAuth();
   const ago = timeAgo(item.created_on);
 
@@ -40,10 +44,10 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
         ? "profile"
         : "logo";
   const avatarSource =
-    item.data!.imageType === "group"
-      ? { uri: group.imageUrl }
-      : item.data!.imageType === "user"
-        ? { uri: actor.profileImage }
+    item.data!.imageType === "group" && group
+      ? { uri: group.main_image.url }
+      : item.data!.imageType === "user" && actor
+        ? { uri: actor.profile_picture.url }
         : require("../../../assets/Logo2.png");
 
   const handleNotificationPress = async () => {
@@ -61,37 +65,37 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
       });
     } else if (
       (type.startsWith("friend_") || type.startsWith("user_")) &&
-      actor?.id
+      actor?._id
     ) {
       navigation.push("AccountStack", {
         screen: "UserProfile",
-        params: { userId: actor.id },
+        params: { userId: actor._id },
       });
     } else if (data.navigation?.name) {
       navigation.push(data.navigation.name, data.navigation.params ?? {});
     }
 
-    if (!isRead) setIsRead(true);
-    if (data.id) {
-      try {
-        const token = await getToken();
-        if (token) {
-          await markNotificationAsRead(token, data.id);
-          fetchMongoUser(mongoId!);
-        }
-      } catch (err) {
-        console.error("Error marking notification read:", err);
+    console.log("Notification ID:", item._id);
+    try {
+      const token = await getToken();
+      if (token) {
+        await markNotificationAsRead(token, item._id);
+        fetchMongoUser(mongoId!);
       }
+    } catch (err) {
+      console.error("Error marking notification read:", err);
     }
+
+    if (!isRead) setIsRead(true);
   };
 
   const handleProfilePress = (type: string) => {
-    if (type === "profile" && actor?.id) {
+    if (type === "profile" && actor?._id) {
       navigation.navigate("AccountStack", {
         screen: "UserProfile",
-        params: { userId: actor.id },
+        params: { userId: actor._id },
       });
-    } else if (type === "group" && group?.id) {
+    } else if (type === "group" && group?._id) {
       navigation.navigate("GroupsStack", {
         screen: "GroupPage",
         params: { groupId: group.id },
@@ -106,8 +110,14 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
       // mark read on backend if you like
     }
   };
+
+  const handleNotificationLongPress = () => {};
   return (
-    <TouchableOpacity onPress={handleNotificationPress} activeOpacity={0.8}>
+    <TouchableOpacity
+      onPress={handleNotificationPress}
+      activeOpacity={0.8}
+      onLongPress={handleNotificationLongPress}
+    >
       <View
         className={`
           bg-${isRead ? "white" : "blue-200"} 
@@ -135,7 +145,14 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
               className="w-10 h-10 rounded-full mr-3"
             />
           </TouchableOpacity>
-
+          {/* <NotificationAvatar
+            groupImageUrl={
+              item.data!.imageType === "group" ? group?.imageUrl : undefined
+            }
+            profileImageUrl={
+              item.data!.imageType === "user" ? actor?.profileImage : undefined
+            }
+          /> */}
           {/* Message */}
           <View className="flex-1">
             <Text className="mt-1 text-sm text-gray-700">
@@ -181,11 +198,11 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
             <Text className="text-xs text-gray-500">{ago}</Text>
           </View>
           {/* ---- HERE: FriendActionButton for new requests ---- */}
-          {item.type === "friend_request" && actor?.id && (
+          {item.type === "friend_request" && actor?._id && (
             <FriendActionButton
-              targetUserId={actor.id}
+              targetUserId={actor._id}
               status={
-                mongoUser?.friends?.find((friend) => friend.id === actor.id)
+                mongoUser?.friends?.find((friend) => friend.id === actor._id)
                   ?.status || "none"
               }
               onStatusChange={handleStatusChange}
