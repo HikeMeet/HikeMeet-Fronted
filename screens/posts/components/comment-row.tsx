@@ -123,7 +123,7 @@ const CommentRow: React.FC<CommentRowProps> = ({
         <ProfileHeaderLink
           userId={author._id}
           username={author.username}
-          profileImage={author.profile_picture.url}
+          profileImage={author.profile_picture!.url}
           navigation={navigation}
         />
         <ParsedMentionText

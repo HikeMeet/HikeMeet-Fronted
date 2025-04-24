@@ -9,6 +9,7 @@ import { NotificationModel } from "../../../interfaces/notification-interface";
 import { timeAgo } from "./time-ago";
 import { getNotificationIconName } from "./notification-icon-const";
 import FriendActionButton from "../../../components/friend-button";
+import { NotificationAvatar } from "./notification-avatar";
 
 interface NotificationRowProps {
   item: NotificationModel;
@@ -33,18 +34,18 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
   let iconName = getNotificationIconName(item.type);
 
   // avatar: actor first, then group, else placeholder
-  const avatarType =
-    item.data!.imageType === "group"
-      ? "group"
-      : item.data!.imageType === "user"
-        ? "profile"
-        : "logo";
-  const avatarSource =
-    item.data!.imageType === "group"
-      ? { uri: group.imageUrl }
-      : item.data!.imageType === "user"
-        ? { uri: actor.profileImage }
-        : require("../../../assets/Logo2.png");
+  // const avatarType =
+  //   item.data!.imageType === "group"
+  //     ? "group"
+  //     : item.data!.imageType === "user"
+  //       ? "profile"
+  //       : "logo";
+  // const avatarSource =
+  //   item.data!.imageType === "group" && group.imageUrl
+  //     ? { uri: group.imageUrl }
+  //     : item.data!.imageType === "user" && actor.profileImage
+  //       ? { uri: actor.profileImage }
+  //       : require("../../../assets/Logo2.png");
 
   const handleNotificationPress = async () => {
     const type = item.type;
@@ -75,7 +76,7 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
     if (data.id) {
       try {
         const token = await getToken();
-        if (token) {
+        if (token && !isRead) {
           await markNotificationAsRead(token, data.id);
           fetchMongoUser(mongoId!);
         }
@@ -106,8 +107,14 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
       // mark read on backend if you like
     }
   };
+
+  const handleNotificationLongPress = () => {};
   return (
-    <TouchableOpacity onPress={handleNotificationPress} activeOpacity={0.8}>
+    <TouchableOpacity
+      onPress={handleNotificationPress}
+      activeOpacity={0.8}
+      onLongPress={handleNotificationLongPress}
+    >
       <View
         className={`
           bg-${isRead ? "white" : "blue-200"} 
@@ -129,13 +136,20 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
         {/* Content */}
         <View className="flex-row">
           {/* Avatar */}
-          <TouchableOpacity onPress={() => handleProfilePress(avatarType)}>
+          {/* <TouchableOpacity onPress={() => handleProfilePress(avatarType)}>
             <Image
               source={avatarSource}
               className="w-10 h-10 rounded-full mr-3"
             />
-          </TouchableOpacity>
-
+          </TouchableOpacity> */}
+          <NotificationAvatar
+            groupImageUrl={
+              item.data!.imageType === "group" ? group?.imageUrl : undefined
+            }
+            profileImageUrl={
+              item.data!.imageType === "user" ? actor?.profileImage : undefined
+            }
+          />
           {/* Message */}
           <View className="flex-1">
             <Text className="mt-1 text-sm text-gray-700">
