@@ -52,7 +52,7 @@ const Home = ({ navigation }: any) => {
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
-      fetchMongoUser(mongoId);
+      fetchMongoUser(mongoId!);
       fetchPosts();
     }, [showFriendsOnly]) // Re-fetch posts when filter changes.
   );
@@ -86,7 +86,10 @@ const Home = ({ navigation }: any) => {
           </TouchableOpacity>
           {/* notifications button with badge */}
           <TouchableOpacity
-            onPress={() => navigation.navigate("NotificationsPage")}
+            onPress={() => {
+              navigation.navigate("NotificationsPage");
+              fetchMongoUser(mongoId!);
+            }}
             className="relative"
           >
             <Ionicons name="notifications-outline" size={24} color="black" />

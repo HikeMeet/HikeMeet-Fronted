@@ -8,6 +8,7 @@ import { markNotificationAsRead } from "../../../components/requests/notificatio
 import { NotificationModel } from "../../../interfaces/notification-interface";
 import { timeAgo } from "./time-ago";
 import { getNotificationIconName } from "./notification-icon-const";
+import FriendActionButton from "../../../components/friend-button";
 
 interface NotificationRowProps {
   item: NotificationModel;
@@ -22,7 +23,7 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
   const data = item.data ?? {};
   const actor = data.actor;
   const group = data.group;
-  const { getToken, fetchMongoUser, mongoId } = useAuth();
+  const { getToken, fetchMongoUser, mongoId, mongoUser } = useAuth();
   const ago = timeAgo(item.created_on);
 
   useEffect(() => {
@@ -44,7 +45,7 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
       : item.data!.imageType === "user"
         ? { uri: actor.profileImage }
         : require("../../../assets/Logo2.png");
-  console.log("Avatar source:", avatarSource);
+
   const handleNotificationPress = async () => {
     const type = item.type;
 
@@ -98,6 +99,13 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
     }
   };
 
+  const handleStatusChange = (newStatus: string) => {
+    // e.g. remove this notification row or mark read
+    setIsRead(true);
+    if (data.id) {
+      // mark read on backend if you like
+    }
+  };
   return (
     <TouchableOpacity onPress={handleNotificationPress} activeOpacity={0.8}>
       <View
@@ -172,6 +180,17 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
             </Text>
             <Text className="text-xs text-gray-500">{ago}</Text>
           </View>
+          {/* ---- HERE: FriendActionButton for new requests ---- */}
+          {item.type === "friend_request" && actor?.id && (
+            <FriendActionButton
+              targetUserId={actor.id}
+              status={
+                mongoUser?.friends?.find((friend) => friend.id === actor.id)
+                  ?.status || "none"
+              }
+              onStatusChange={handleStatusChange}
+            />
+          )}
         </View>
       </View>
     </TouchableOpacity>
