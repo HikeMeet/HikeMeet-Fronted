@@ -54,11 +54,9 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   async function handleNotificationResponse(
     response: Notifications.NotificationResponse
   ) {
-    const { navigation, id, actor } = response.notification.request.content
-      .data as {
+    const { navigation, id } = response.notification.request.content.data as {
       navigation: { name: string; params?: Record<string, any> };
       id?: string;
-      actor?: IUser;
     };
 
     if (!navigationRef.isReady()) return;
