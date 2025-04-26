@@ -25,7 +25,7 @@ export default function LoginPage({
   navigation: any;
   route: any;
 }) {
-  const { setUser, setIsVerified } = useAuth();
+  const { setUser, setIsVerified, fetchMongoUser } = useAuth();
   const { toResetPassword } = route.params || {};
 
   const [email, setEmail] = useState("");
@@ -64,6 +64,7 @@ export default function LoginPage({
         );
       } else {
         setIsVerified(true);
+        await fetchMongoUser(result.user.uid, true);
         // 2) register push token with your backend
         if (expoPushToken) {
           await fetch(
@@ -80,6 +81,9 @@ export default function LoginPage({
         }
         Alert.alert("Success", "Login successful!");
         if (toResetPassword !== undefined) {
+          if (!toResetPassword) {
+            await fetchMongoUser(result.user.uid, true);
+          }
           navigation.navigate(toResetPassword ? "ResetPassword" : "Home");
         } else {
           // Handle the case when toResetPassword is undefined
