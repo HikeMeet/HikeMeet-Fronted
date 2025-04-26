@@ -16,17 +16,17 @@ import CreatePostButton from "../posts/components/create-post-buton";
 import PostCard from "../posts/components/post-card-on-feeds";
 import { useFocusEffect } from "@react-navigation/native";
 import { IPost } from "../../interfaces/post-interface";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/auth-context";
 
 const Home = ({ navigation }: any) => {
-  const { mongoId } = useAuth();
+  const { mongoId, mongoUser, fetchMongoUser } = useAuth();
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   // Toggle state: true for Friends Only, false for All.
   const [showFriendsOnly, setShowFriendsOnly] = useState(false);
   const [postsToShow, setPostsToShow] = useState<number>(5);
+  const unread = mongoUser?.unreadNotifications ?? 0;
 
   // Function to fetch posts.
   const fetchPosts = async () => {
@@ -52,6 +52,7 @@ const Home = ({ navigation }: any) => {
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
+      fetchMongoUser(mongoId!);
       fetchPosts();
     }, [showFriendsOnly]) // Re-fetch posts when filter changes.
   );
@@ -66,6 +67,8 @@ const Home = ({ navigation }: any) => {
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchPosts();
+    console.log(mongoId);
+    fetchMongoUser(mongoId!);
   }, [showFriendsOnly]);
 
   // Render the header for the FlatList.
@@ -75,9 +78,44 @@ const Home = ({ navigation }: any) => {
       {/* Header Section */}
       <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
         <Text className="text-xl font-bold">Hikemeet</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("SearchPage")}>
-          <Ionicons name="search" size={24} color="black" />
-        </TouchableOpacity>
+        <View className="flex-row items-center space-x-4">
+          {/* Search button */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate("SearchPage")}
+            className="flex flex-row items-center"
+          >
+            <Ionicons name="search" size={24} color="black" />
+          </TouchableOpacity>
+          {/* notifications button with badge */}
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate("NotificationsPage");
+              fetchMongoUser(mongoId!);
+            }}
+            className="relative"
+          >
+            <Ionicons name="notifications-outline" size={24} color="black" />
+            {unread > 0 && (
+              <View
+                className="
+                absolute 
+                -top-1 
+                -right-1 
+                bg-red-500 
+                rounded-full 
+                w-5 
+                h-5 
+                items-center 
+                justify-center
+              "
+              >
+                <Text className="text-white text-xs font-bold">
+                  {unread > 9 ? "9+" : unread}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
       {/* Filters Toggle */}
       <View className="flex-row justify-around py-2 border-b border-gray-300 bg-white">
@@ -114,7 +152,7 @@ const Home = ({ navigation }: any) => {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+    <View style={{ flex: 1, backgroundColor: "white" }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -169,7 +207,7 @@ const Home = ({ navigation }: any) => {
           showsVerticalScrollIndicator={false}
         />
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 };
 

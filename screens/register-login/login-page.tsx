@@ -15,6 +15,8 @@ import { useAuth } from "../../contexts/auth-context";
 import CustomTextInput from "../../components/custom-text-input";
 import BackButton from "../../components/back-button";
 import Button from "../../components/Button";
+import { useNotification } from "../../contexts/notification-context";
+import { deleteMongoUser } from "../../components/requests/user-actions";
 
 export default function LoginPage({
   navigation,
@@ -23,12 +25,14 @@ export default function LoginPage({
   navigation: any;
   route: any;
 }) {
-  const { setUser, setIsVerified } = useAuth();
+  const { setUser, setIsVerified, fetchMongoUser } = useAuth();
   const { toResetPassword } = route.params || {};
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const { expoPushToken } = useNotification();
+
   const auth = FIREBASE_AUTH;
 
   const handleLogin = async () => {
@@ -40,11 +44,14 @@ export default function LoginPage({
     try {
       setLoading(true);
       const result = await signInWithEmailAndPassword(auth, email, password);
+
+      // 1) get and store Firebase ID token
       const token = await result.user.getIdToken();
       await AsyncStorage.setItem("token", token);
       setUser(result.user);
       if (!result.user.emailVerified) {
         setIsVerified(false);
+
         Alert.alert(
           "Verify Email",
           "Please verify your email before proceeding.",
@@ -57,8 +64,26 @@ export default function LoginPage({
         );
       } else {
         setIsVerified(true);
+        await fetchMongoUser(result.user.uid, true);
+        // 2) register push token with your backend
+        if (expoPushToken) {
+          await fetch(
+            `${process.env.EXPO_LOCAL_SERVER}/api/user/register-token`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`, // the same ID token you just saved
+              },
+              body: JSON.stringify({ token: expoPushToken }),
+            }
+          );
+        }
         Alert.alert("Success", "Login successful!");
         if (toResetPassword !== undefined) {
+          if (!toResetPassword) {
+            await fetchMongoUser(result.user.uid, true);
+          }
           navigation.navigate(toResetPassword ? "ResetPassword" : "Home");
         } else {
           // Handle the case when toResetPassword is undefined

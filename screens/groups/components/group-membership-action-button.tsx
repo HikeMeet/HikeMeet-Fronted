@@ -2,15 +2,14 @@ import { useState, useEffect } from "react";
 import React from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import tw from "twrnc";
-import { MongoUser } from "../interfaces/user-interface";
-import { Group } from "../interfaces/group-interface";
-import { useAuth } from "../contexts/auth-context";
-import ConfirmationModal from "./confirmation-modal";
+import { Group } from "../../../interfaces/group-interface";
+import { useAuth } from "../../../contexts/auth-context";
+import ConfirmationModal from "../../../components/confirmation-modal";
 
 type StatusType = "none" | "invited" | "member" | "requested";
 
 interface GroupActionButtonProps {
-  friend: MongoUser;
+  friend: { _id: string; username: string };
   group: Group;
 }
 
@@ -206,7 +205,7 @@ const GroupActionButton: React.FC<GroupActionButtonProps> = ({
         );
       case "requested":
         return (
-          <View style={tw`flex-row space-x-2`}>
+          <View style={tw`flex-col space-x-2`}>
             <TouchableOpacity
               onPress={handleAcceptRequest}
               style={tw`bg-green-500 px-3 py-2 rounded`}

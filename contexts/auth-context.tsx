@@ -6,6 +6,7 @@ import { FIREBASE_AUTH } from "../firebaseconfig";
 import { MongoUser } from "../interfaces/user-interface";
 import { IUser } from "../interfaces/post-interface";
 import { styled } from "nativewind";
+
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledActivityIndicator = styled(ActivityIndicator);
@@ -23,7 +24,8 @@ interface AuthContextProps {
   setUsers: React.Dispatch<React.SetStateAction<IUser[]>>;
   userFriendsMinDetail: MongoUser[];
   setUserFriendsMinDetail: React.Dispatch<React.SetStateAction<MongoUser[]>>;
-  fetchMongoUser: (mongoIdToFetch: string) => Promise<void>;
+  fetchMongoUser: (id: string, byFirebase?: boolean) => Promise<void>;
+  getToken: () => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -96,21 +98,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // — fetch Mongo user helper
-  const fetchMongoUser = async (mongoIdToFetch: string) => {
-    try {
-      const response = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoIdToFetch}`
-      );
-      if (!response.ok) {
-        throw new Error(`Error fetching user data: ${response.status}`);
-      }
-      const data: MongoUser = await response.json();
-      setMongoUser(data);
-      setMongoId(data._id);
-      await AsyncStorage.setItem("mongoId", data._id);
-    } catch (error) {
-      console.error("Error updating Mongo user:", error);
+  const fetchMongoUser = async (id: string, byFirebase = false) => {
+    const suffix = byFirebase ? "?firebase=true" : "";
+    const url = `${process.env.EXPO_LOCAL_SERVER}/api/user/${id}${suffix}`;
+    const resp = await fetch(url);
+    if (!resp.ok) {
+      throw new Error(`Error fetching user data: ${resp.status}`);
     }
+    const data: MongoUser = await resp.json();
+    setMongoUser(data);
+    setMongoId(data._id);
+    await AsyncStorage.setItem("mongoId", data._id);
   };
 
   // — load cached user & mongoId, then flag cacheLoaded
@@ -217,6 +215,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [cacheLoaded, authHandled]);
 
+  // — getToken
+  const getToken = async () => {
+    if (user) {
+      const token = await user.getIdToken(true);
+      return token;
+    }
+    return null;
+  };
+
   if (loading) {
     return (
       <StyledView className="flex-1 justify-center items-center bg-white p-5">
@@ -245,6 +252,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         userFriendsMinDetail,
         setUserFriendsMinDetail,
         fetchMongoUser,
+        getToken,
       }}
     >
       {children}

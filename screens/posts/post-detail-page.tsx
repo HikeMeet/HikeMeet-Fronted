@@ -103,7 +103,9 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
   if (!post) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-gray-50">
-        <Text className="text-lg text-gray-700">Post not found.</Text>
+        <Text className="text-lg text-gray-700">
+          Post not available or deleted.
+        </Text>
       </SafeAreaView>
     );
   }
