@@ -9,6 +9,7 @@ import UserProfile from "../../screens/my-profile/user-profile";
 import CommunityGuidelines from "../../screens/my-profile/comunity-guid-page";
 import SavedPosts from "../../screens/my-profile/my-saved-posts";
 import LikedPosts from "../../screens/my-profile/my-liked-posts";
+import ManageNotifications from "../../screens/my-profile/manage-notificaitons";
 
 const Stack = createNativeStackNavigator();
 
@@ -49,6 +50,11 @@ const AccountStack = () => {
         name="LikedPosts"
         component={LikedPosts}
         options={{ headerShown: true, title: "Liked Posts" }}
+      />
+      <Stack.Screen
+        name="ManageNotifications"
+        component={ManageNotifications}
+        options={{ headerShown: true, title: "Manage Notifications" }}
       />
     </Stack.Navigator>
   );
