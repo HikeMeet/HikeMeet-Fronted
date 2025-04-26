@@ -17,7 +17,7 @@ import { useAuth } from "../../contexts/auth-context";
 import { fetchGroupDetails } from "../../components/requests/fetch-group-and-users-data";
 
 import ProfileImage from "../../components/profile-image";
-import JoinGroupActionButton from "../../components/group-join-action-button";
+import JoinGroupActionButton from "./components/group-join-action-button";
 import GroupDetails from "./components/group-details";
 import GroupPostList from "./components/group-posts";
 

@@ -1,9 +1,9 @@
 import React from "react";
 import { View, Text, Image } from "react-native";
-import { MongoUser } from "../interfaces/user-interface";
-import { Group } from "../interfaces/group-interface";
+import { MongoUser } from "../../../interfaces/user-interface";
+import { Group } from "../../../interfaces/group-interface";
 import GroupActionButton from "./group-membership-action-button";
-import { useAuth } from "../contexts/auth-context";
+import { useAuth } from "../../../contexts/auth-context";
 
 interface InviteUserRowProps {
   friend: MongoUser;

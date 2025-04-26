@@ -67,6 +67,8 @@ const Home = ({ navigation }: any) => {
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchPosts();
+    console.log(mongoId);
+    fetchMongoUser(mongoId!);
   }, [showFriendsOnly]);
 
   // Render the header for the FlatList.

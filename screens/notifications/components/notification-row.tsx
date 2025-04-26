@@ -188,17 +188,18 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
             </Text>
             <Text className="text-xs text-gray-500">{ago}</Text>
           </View>
-          {/* ---- HERE: FriendActionButton for new requests ---- */}
-          {item.type === "friend_request" && actor?._id && (
-            <FriendActionButton
-              targetUserId={actor._id}
-              status={
-                mongoUser?.friends?.find((friend) => friend.id === actor._id)
-                  ?.status || "none"
-              }
-              onStatusChange={handleStatusChange}
-            />
-          )}
+          {/* FriendActionButton for new requests */}
+          {["friend_request", "friend_accept"].includes(item.type) &&
+            actor?._id && (
+              <FriendActionButton
+                targetUserId={actor._id}
+                status={
+                  mongoUser?.friends?.find((friend) => friend.id === actor._id)
+                    ?.status || "none"
+                }
+                onStatusChange={handleStatusChange}
+              />
+            )}
         </View>
       </View>
     </TouchableOpacity>

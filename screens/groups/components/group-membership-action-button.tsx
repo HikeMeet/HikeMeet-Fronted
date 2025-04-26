@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import React from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import tw from "twrnc";
-import { MongoUser } from "../interfaces/user-interface";
-import { Group } from "../interfaces/group-interface";
-import { useAuth } from "../contexts/auth-context";
-import ConfirmationModal from "./confirmation-modal";
+import { MongoUser } from "../../../interfaces/user-interface";
+import { Group } from "../../../interfaces/group-interface";
+import { useAuth } from "../../../contexts/auth-context";
+import ConfirmationModal from "../../../components/confirmation-modal";
 
 type StatusType = "none" | "invited" | "member" | "requested";
 
