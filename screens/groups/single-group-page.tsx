@@ -157,27 +157,34 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             />
           </View>
         </View>
-        <TouchableOpacity onPress={toggleMute} className="p-2">
-          <Ionicons
-            name={isMuted ? "notifications-off" : "notifications"}
-            size={24}
-            color={isMuted ? "#EF4444" : "#3B82F6"}
-          />
-        </TouchableOpacity>
+
+        {/* Right-side controls */}
+        <View className="flex-row items-center space-x-2">
+          {/* Mute/Unmute */}
+          <TouchableOpacity onPress={toggleMute} className="p-2">
+            <Ionicons
+              name={isMuted ? "notifications-off" : "notifications"}
+              size={24}
+              color={isMuted ? "#EF4444" : "#3B82F6"}
+            />
+          </TouchableOpacity>
+
+          {/* Edit (only for group creator) */}
+          {mongoId === group.created_by && (
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("GroupsStack", {
+                  screen: "EditGroupPage",
+                  params: { group },
+                })
+              }
+              className="px-2 py-1 bg-blue-600 rounded-md"
+            >
+              <Text className="text-white font-semibold text-sm">Edit</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
-      {mongoId === group.created_by && (
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("GroupsStack", {
-              screen: "EditGroupPage",
-              params: { group },
-            })
-          }
-          className="ml-2 p-2 bg-blue-500 rounded"
-        >
-          <Text className="text-white font-semibold">Edit</Text>
-        </TouchableOpacity>
-      )}
 
       {/* Tab buttons */}
       <View className="flex-row justify-around mt-4 mb-2">
