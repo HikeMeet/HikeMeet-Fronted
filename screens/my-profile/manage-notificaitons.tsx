@@ -75,7 +75,7 @@ export default function ManageNotifications() {
         } finally {
           setSaving(false);
         }
-      }, 300),
+      }, 700),
     [mongoUser, setMongoUser]
   );
 
@@ -98,12 +98,28 @@ export default function ManageNotifications() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <View className="px-4 py-2 border-b border-gray-200">
-        <Text className="text-xl font-semibold">Notification Settings</Text>
-        {saving && (
-          <ActivityIndicator size="small" color="#3B82F6" className="mt-2" />
-        )}
+      {saving && (
+        <ActivityIndicator size="small" color="#3B82F6" className="mt-2" />
+      )}
+
+      <View className="flex-row justify-between items-center px-4 py-2 bg-gray-200 border-b border-gray-200">
+        <Text className="text-base font-medium">Mute All</Text>
+        <Switch
+          value={mutedTypes.length === ALL_NOTIFICATION_TYPES.length}
+          onValueChange={(on) => {
+            const newMuted = on ? [...ALL_NOTIFICATION_TYPES] : [];
+            setMutedTypes(newMuted);
+            debouncedSave(newMuted);
+          }}
+          thumbColor={
+            mutedTypes.length === ALL_NOTIFICATION_TYPES.length
+              ? "#EF4444"
+              : "#fff"
+          }
+          trackColor={{ true: "#FCA5A5", false: "#D1D5DB" }}
+        />
       </View>
+
       <ScrollView className="px-4">
         {ALL_NOTIFICATION_TYPES.map((type) => {
           // cast to string so .replace is available
