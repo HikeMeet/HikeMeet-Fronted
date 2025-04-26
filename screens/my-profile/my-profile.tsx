@@ -58,7 +58,7 @@ const ProfilePage = ({ navigation }: any) => {
     if (mongoUser) {
       fetchPosts();
     }
-  }, [mongoUser]);
+  }, []);
 
   // Always call useMemo, even if mongoUser is null.
   const memoizedHeader = useMemo(() => {
