@@ -33,7 +33,10 @@ const InviteUserRow: React.FC<InviteUserRowProps> = ({
         </Text>
       </View>
       {mongoId !== friend._id && (
-        <GroupActionButton friend={friend} group={group} />
+        <GroupActionButton
+          friend={{ _id: friend._id, username: friend.username }}
+          group={group}
+        />
       )}
     </View>
   );

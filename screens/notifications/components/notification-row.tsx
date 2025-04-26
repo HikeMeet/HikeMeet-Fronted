@@ -26,6 +26,7 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
   const data = item.data ?? {};
   const actor = item.from as IfromUser;
   const group = data.groupId;
+  // const groupFullData = data.group; // for future use to add group buttons on row
   const { getToken, fetchMongoUser, mongoId, mongoUser } = useAuth();
   const ago = timeAgo(item.created_on);
 
@@ -189,6 +190,7 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
             <Text className="text-xs text-gray-500">{ago}</Text>
           </View>
           {/* FriendActionButton for new requests */}
+
           {["friend_request", "friend_accept"].includes(item.type) &&
             actor?._id && (
               <FriendActionButton

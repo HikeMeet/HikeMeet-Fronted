@@ -26,7 +26,6 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
   const [showDeclineConfirmModal, setShowDeclineConfirmModal] = useState(false);
   const [showLeaveConfirmModal, setShowLeaveConfirmModal] = useState(false);
   const { mongoId } = useAuth();
-
   // Compute initial join status (simplified)
   useEffect(() => {
     if (group.members.some((m) => m.user === mongoId)) {
