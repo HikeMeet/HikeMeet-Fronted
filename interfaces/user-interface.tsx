@@ -39,4 +39,6 @@ export interface MongoUser {
   _id: string;
   friends: Friend[]; // Now each friend has an id and a status.
   __v: number;
+  mutedGroups: string[];
+  mutedNotificationTypes: string[];
 }
