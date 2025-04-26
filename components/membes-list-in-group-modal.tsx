@@ -13,7 +13,7 @@ import {
 import tw from "tailwind-react-native-classnames";
 import { Group } from "../interfaces/group-interface";
 import UserRow from "./user-row-search"; // Regular user row
-import InviteUserRow from "./user-row-group-invite";
+import InviteUserRow from "../screens/groups/components/user-row-group-invite";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   fetchGroupDetails,

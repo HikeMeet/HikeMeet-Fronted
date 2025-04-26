@@ -17,7 +17,7 @@ import { useAuth } from "../../contexts/auth-context";
 import { fetchGroupDetails } from "../../components/requests/fetch-group-and-users-data";
 
 import ProfileImage from "../../components/profile-image";
-import JoinGroupActionButton from "../../components/group-join-action-button";
+import JoinGroupActionButton from "./components/group-join-action-button";
 import GroupDetails from "./components/group-details";
 import GroupPostList from "./components/group-posts";
 
@@ -56,7 +56,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
     try {
       const data = await fetchGroupDetails(groupId, true);
       setGroup(data.group);
-      setTrip(data.trip!);
+      setTrip(data.trip ?? null);
     } catch (error) {
       console.error("Error fetching group:", error);
     } finally {
@@ -79,7 +79,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
   if (!group) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-white">
-        <Text className="text-lg">Group not found.</Text>
+        <Text className="text-lg">Group not available or deleted.</Text>
       </SafeAreaView>
     );
   }
@@ -94,7 +94,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
       <View className="flex-row items-center justify-between mb-4">
         {group.main_image && (
           <ProfileImage
-            initialImage={group.main_image}
+            initialImage={group.main_image!}
             size={60}
             id={group._id}
             uploadType="group"
@@ -168,7 +168,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             isAdmin={isAdmin}
           />
           <TouchableOpacity
-            onPress={() => navigation.navigate("Tabs", { screen: "Groups" })}
+            onPress={() => navigation.push("Tabs", { screen: "Groups" })}
             className="bg-purple-500 px-4 py-3 rounded mt-6"
           >
             <Text className="text-white text-center font-semibold">
@@ -186,7 +186,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
           />
           <View className="px-4 pb-4">
             <TouchableOpacity
-              onPress={() => navigation.navigate("Tabs", { screen: "Groups" })}
+              onPress={() => navigation.push("Tabs", { screen: "Groups" })}
               className="bg-purple-500 px-4 py-3 rounded mt-2"
             >
               <Text className="text-white text-center font-semibold">

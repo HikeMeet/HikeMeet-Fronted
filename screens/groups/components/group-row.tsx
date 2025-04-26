@@ -2,7 +2,7 @@ import React from "react";
 import { TouchableOpacity, View, Text, Image } from "react-native";
 import { Group } from "../../../interfaces/group-interface";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import JoinGroupActionButton from "../../../components/group-join-action-button";
+import JoinGroupActionButton from "./group-join-action-button";
 
 interface GroupRowProps {
   group: Group;

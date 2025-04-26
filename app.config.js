@@ -1,4 +1,3 @@
-
 export default ({ config }) => ({
   ...config,
   // EAS Update settings:
@@ -37,6 +36,7 @@ export default ({ config }) => ({
         backgroundColor: "#ffffff",
       },
       package: "com.wooozai.exporeactnativewtailwind",
+      googleServicesFile: "./google-services.json",
     },
     web: {
       favicon: "./assets/favicon.png",

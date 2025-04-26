@@ -1,9 +1,9 @@
 import React from "react";
 import { View, Text, Image } from "react-native";
-import { MongoUser } from "../interfaces/user-interface";
-import { Group } from "../interfaces/group-interface";
+import { MongoUser } from "../../../interfaces/user-interface";
+import { Group } from "../../../interfaces/group-interface";
 import GroupActionButton from "./group-membership-action-button";
-import { useAuth } from "../contexts/auth-context";
+import { useAuth } from "../../../contexts/auth-context";
 
 interface InviteUserRowProps {
   friend: MongoUser;
@@ -33,7 +33,10 @@ const InviteUserRow: React.FC<InviteUserRowProps> = ({
         </Text>
       </View>
       {mongoId !== friend._id && (
-        <GroupActionButton friend={friend} group={group} />
+        <GroupActionButton
+          friend={{ _id: friend._id, username: friend.username }}
+          group={group}
+        />
       )}
     </View>
   );
