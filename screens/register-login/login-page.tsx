@@ -16,6 +16,7 @@ import CustomTextInput from "../../components/custom-text-input";
 import BackButton from "../../components/back-button";
 import Button from "../../components/Button";
 import { useNotification } from "../../contexts/notification-context";
+import { deleteMongoUser } from "../../components/requests/user-actions";
 
 export default function LoginPage({
   navigation,
@@ -24,7 +25,7 @@ export default function LoginPage({
   navigation: any;
   route: any;
 }) {
-  const { setUser, setIsVerified } = useAuth();
+  const { setUser, setIsVerified, fetchMongoUser } = useAuth();
   const { toResetPassword } = route.params || {};
 
   const [email, setEmail] = useState("");
@@ -50,6 +51,7 @@ export default function LoginPage({
       setUser(result.user);
       if (!result.user.emailVerified) {
         setIsVerified(false);
+
         Alert.alert(
           "Verify Email",
           "Please verify your email before proceeding.",
@@ -62,7 +64,7 @@ export default function LoginPage({
         );
       } else {
         setIsVerified(true);
-
+        await fetchMongoUser(result.user.uid, true);
         // 2) register push token with your backend
         if (expoPushToken) {
           await fetch(
@@ -79,6 +81,9 @@ export default function LoginPage({
         }
         Alert.alert("Success", "Login successful!");
         if (toResetPassword !== undefined) {
+          if (!toResetPassword) {
+            await fetchMongoUser(result.user.uid, true);
+          }
           navigation.navigate(toResetPassword ? "ResetPassword" : "Home");
         } else {
           // Handle the case when toResetPassword is undefined

@@ -14,7 +14,7 @@ import tw from "twrnc";
 import { MongoUser } from "../interfaces/user-interface";
 import { useAuth } from "../contexts/auth-context";
 import { Group } from "../interfaces/group-interface";
-import InviteUserRow from "./user-row-group-invite";
+import InviteUserRow from "../screens/groups/components/user-row-group-invite";
 import { fetchGroupDetails } from "./requests/fetch-group-and-users-data";
 
 interface InviteFriendsModalProps {

@@ -54,18 +54,16 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   async function handleNotificationResponse(
     response: Notifications.NotificationResponse
   ) {
-    const { navigation, id, actor } = response.notification.request.content
-      .data as {
+    const { navigation, id } = response.notification.request.content.data as {
       navigation: { name: string; params?: Record<string, any> };
       id?: string;
-      actor?: IUser;
     };
 
     if (!navigationRef.isReady()) return;
     // *******************************
     //// regular vs push
     navigationRef.dispatch(CommonActions.navigate(navigation));
-    StackActions.push(navigation.name, navigation.params ?? {});
+    // await StackActions.push(navigation.name, navigation.params ?? {});
     // *******************************
 
     // If it’s a nested PostPage, go into your PostStack
@@ -74,8 +72,9 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     if (id) {
       try {
         const token = await getToken();
-
-        if (token) await markNotificationAsRead(token, id);
+        if (token) {
+          await markNotificationAsRead(token, id);
+        }
       } catch (err) {
         console.error("Error marking notification read:", err);
       }
@@ -108,10 +107,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     // 3) In‐app arrival listener (optional: shows receipt in console)
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
-        console.log(
-          "🔔 Notification received while the app is running.: ",
-          notification
-        );
         setNotification(notification);
       });
 
