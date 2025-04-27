@@ -147,7 +147,7 @@ const CommentRow: React.FC<CommentRowProps> = ({
         </TouchableOpacity>
       </View>
       {/* Only show the delete icon if the comment belongs to the current user */}
-      {author._id === mongoId && (
+      {(author._id === mongoId || mongoUser?.role === "admin") && (
         <TouchableOpacity
           onPress={() => setShowDeleteModal(true)}
           className="self-center ml-4"
