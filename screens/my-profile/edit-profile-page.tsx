@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { styled } from "nativewind";
-import Icon from "react-native-vector-icons/MaterialIcons";
 import { useAuth } from "../../contexts/auth-context";
 
 const EditProfilePage = ({ navigation }: any) => {
