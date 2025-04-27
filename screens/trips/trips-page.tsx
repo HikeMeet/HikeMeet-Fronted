@@ -126,7 +126,6 @@ const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
     else handleFetchTrips();
   };
 
-  // 7) Header (search + tabs + “Add trip”)
   const renderListHeader = () => (
     <>
       {/* Search bar */}
@@ -139,9 +138,15 @@ const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
             onChangeText={setSearchText}
           />
         </View>
-        <TouchableOpacity className="p-2 bg-gray-200 rounded-full">
-          <Text className="text-sm">Filter</Text>
-        </TouchableOpacity>
+        {/* Add Trip button */}
+        <View className="flex-row">
+          <TouchableOpacity
+            onPress={() => navigation.navigate("TripsStack")}
+            className="bg-green-500 px-4 py-2 rounded"
+          >
+            <Text className="text-white font-semibold">+ Add trip</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Tabs */}
@@ -170,16 +175,6 @@ const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
             </TouchableOpacity>
           );
         })}
-      </View>
-
-      {/* Add Trip button */}
-      <View className="flex-row justify-end mb-4">
-        <TouchableOpacity
-          onPress={() => navigation.navigate("TripsStack")}
-          className="bg-green-500 px-4 py-2 rounded"
-        >
-          <Text className="text-white font-semibold">+ Add trip</Text>
-        </TouchableOpacity>
       </View>
     </>
   );

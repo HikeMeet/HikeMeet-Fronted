@@ -187,32 +187,41 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
       style={{ flex: 1, backgroundColor: "white", padding: 16 }}
       contentContainerStyle={{ paddingBottom: 40 }}
     >
-      <View className="flex-row items-center p-4">
-        {tripData && tripData.main_image && (
-          <ProfileImage
-            initialImage={tripData.main_image}
-            size={60}
-            id={tripId}
-            uploadType="trip"
-            editable={mongoId === tripData.createdBy} // Only editable if the current user is the creator
-          />
-        )}
-        <View className="ml-2">
-          {/* Title */}
-          <Text className="text-lg font-bold">{tripName}</Text>
-          {/* Star Rating */}
-          <View className="flex-row items-center mb-4">
-            {renderStars()}
-            <Text className="ml-1 text-sm">{rating.toFixed(1)}</Text>
+      {/* Header: image, title, rating, and action icons */}
+      <View className="flex-row items-center justify-between p-4">
+        {/* Left side: image + title */}
+        <View className="flex-row items-center">
+          {tripData && tripData.main_image && (
+            <ProfileImage
+              initialImage={tripData.main_image}
+              size={60}
+              id={tripId}
+              uploadType="trip"
+              editable={mongoId === tripData.createdBy}
+            />
+          )}
+          <View className="ml-2">
+            <Text className="text-lg font-bold">{tripName}</Text>
+            <View className="flex-row items-center mt-1">
+              {renderStars()}
+              <Text className="ml-1 text-sm">{rating.toFixed(1)}</Text>
+            </View>
           </View>
         </View>
-        <TouchableOpacity onPress={toggleFavorite} className="ml-auto">
-          <Ionicons
-            name={isFavorite ? "heart" : "heart-outline"}
-            size={24}
-            color={isFavorite ? "red" : "gray"}
-          />
-        </TouchableOpacity>
+
+        {/* Right side: vertical icons aligned to far right */}
+        <View className="flex-col items-end space-y-2">
+          <TouchableOpacity onPress={toggleFavorite}>
+            <Ionicons
+              name={isFavorite ? "heart" : "heart-outline"}
+              size={24}
+              color={isFavorite ? "red" : "gray"}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => console.log("share")}>
+            <Ionicons name="share-social" size={24} color="gray" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Location */}
