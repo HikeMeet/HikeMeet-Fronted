@@ -8,8 +8,7 @@ import {
   ActivityIndicator,
   StatusBar,
   RefreshControl,
-  KeyboardAvoidingView,
-  Platform,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { styled } from "nativewind";
@@ -24,6 +23,7 @@ import { IPost } from "../../interfaces/post-interface";
 import PostCard from "../posts/components/post-card-on-feeds";
 import { fetchPostsForUser } from "../../components/requests/fetch-posts";
 import HikersList from "../../components/hikers-list-in-profile";
+import { FontAwesome } from "@expo/vector-icons";
 
 const ProfilePage = ({ navigation }: any) => {
   const { mongoUser, mongoId, fetchMongoUser } = useAuth();
@@ -95,6 +95,22 @@ const ProfilePage = ({ navigation }: any) => {
         </View>
         {/* Bio and Create Post Section */}
         <View className="p-4 bg-white">
+          <View style={{ flexDirection: "row", gap: 16 }}>
+            {mongoUser.facebook_link && (
+              <TouchableOpacity
+                onPress={() => Linking.openURL(mongoUser.facebook_link)}
+              >
+                <FontAwesome name="facebook-square" size={32} />
+              </TouchableOpacity>
+            )}
+            {mongoUser.instagram_link && (
+              <TouchableOpacity
+                onPress={() => Linking.openURL(mongoUser.instagram_link)}
+              >
+                <FontAwesome name="instagram" size={32} />
+              </TouchableOpacity>
+            )}
+          </View>
           <BioSection bio={mongoUser.bio} />
         </View>
       </>
