@@ -1,14 +1,7 @@
 // TripDetailPage.tsx
 import { useState, useEffect } from "react";
 import React from "react";
-import {
-  ScrollView,
-  View,
-  Text,
-  TouchableOpacity,
-  Linking,
-  Alert,
-} from "react-native";
+import { ScrollView, View, Text, TouchableOpacity, Alert } from "react-native";
 import Constants from "expo-constants";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,6 +11,8 @@ import { useAuth } from "../../contexts/auth-context";
 import TripImagesUploader from "./component/trip-image-gallery";
 import MapDirectionButton from "../../components/get-direction";
 import ShareTripModal from "./component/share-trip-to-post-modal";
+import StarRating from "./component/starts-rating";
+import TripStarRating from "./component/starts-rating";
 // Determine if native Mapbox code is available (i.e. not running in Expo Go)
 const MapboxAvailable = Constants.appOwnership !== "expo";
 
@@ -60,7 +55,9 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   // States for trip details
   const [tripName, setTripName] = useState<string>("");
   const [tripData, setTripData] = useState<Trip>();
-  const [rating, setRating] = useState<number>(0);
+  // const [rating, setRating] = useState<number>(0);
+  const [avgRating, setAvgRating] = useState<number>(0);
+
   const [locationText, setLocationText] = useState<string>("");
   // Use trip coordinates from backend, not the user's location.
   const [coordinates, setCoordinates] = useState<[number, number]>([0, 0]);
@@ -94,7 +91,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
         setTags(data.tags || []);
         setBio(data.description || "");
         // For demo purposes, we assume rating is returned (or default it)
-        setRating(data.rating || 4.5);
+        setAvgRating(data.avg_rating ?? 0);
       } catch (error) {
         console.error("Error fetching trip data:", error);
         Alert.alert("Error", "Failed to load trip data.");
@@ -162,27 +159,6 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
     return unsubscribe;
   }, [navigation, fromCreate]);
 
-  const renderStars = () => {
-    const stars = [];
-    let remaining = rating;
-    for (let i = 0; i < 5; i++) {
-      if (remaining >= 1) {
-        stars.push(<Ionicons key={i} name="star" size={16} color="#FFD700" />);
-        remaining -= 1;
-      } else if (remaining >= 0.5) {
-        stars.push(
-          <Ionicons key={i} name="star-half" size={16} color="#FFD700" />
-        );
-        remaining = 0;
-      } else {
-        stars.push(
-          <Ionicons key={i} name="star-outline" size={16} color="#FFD700" />
-        );
-      }
-    }
-    return <View style={{ flexDirection: "row" }}>{stars}</View>;
-  };
-
   return (
     <>
       <ScrollView
@@ -205,10 +181,17 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
             )}
             <View className="ml-2">
               <Text className="text-lg font-bold">{tripName}</Text>
-              <View className="flex-row items-center mt-1">
-                {renderStars()}
-                <Text className="ml-1 text-sm">{rating.toFixed(1)}</Text>
-              </View>
+              {tripData && (
+                <TripStarRating
+                  tripId={tripId}
+                  avgRating={tripData.avg_rating ?? 0}
+                  totalRatings={tripData.ratings?.length ?? 0}
+                  yourRating={
+                    tripData.ratings?.find((r) => r.user === mongoUser!._id)
+                      ?.value ?? 0
+                  }
+                />
+              )}
             </View>
           </View>
 
@@ -228,7 +211,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
         </View>
 
         {/* Location */}
-        <Text style={{ marginBottom: 8 }}>{locationText}</Text>
+        <Text style={{ marginBottom: 8 }}>Address: {locationText}</Text>
 
         {/* Map snippet showing the trip's location */}
         <View

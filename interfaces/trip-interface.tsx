@@ -13,6 +13,7 @@ export interface Trip {
   tags?: string[];
   description?: string;
   createdBy: string;
-
+  avg_rating: number;
+  ratings: { user: string; value: number }[];
   groups?: Group[];
 }
