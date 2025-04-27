@@ -41,4 +41,5 @@ export interface MongoUser {
   __v: number;
   mutedGroups: string[];
   mutedNotificationTypes: string[];
+  favorite_trips: string[];
 }

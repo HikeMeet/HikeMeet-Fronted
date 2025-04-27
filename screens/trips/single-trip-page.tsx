@@ -69,8 +69,8 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   // State to control ScrollView scrolling
   const [scrollEnabled, setScrollEnabled] = useState<boolean>(true);
   const { tripId, fromCreate = false, isArchived = false } = route.params;
-  const { mongoId } = useAuth(); // current user's mongoId
-
+  const { mongoId, mongoUser, setMongoUser } = useAuth(); // current user's mongoId
+  const [isFavorite, setIsFavorite] = useState(false);
   // Fetch trip data from the backend using the tripId parameter.
   useEffect(() => {
     const fetchTripData = async () => {
@@ -103,6 +103,48 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
       fetchTripData();
     }
   }, [tripId, isArchived]);
+
+  useEffect(() => {
+    if (mongoUser?.favorite_trips) {
+      setIsFavorite(mongoUser.favorite_trips.includes(tripId));
+    }
+  }, [mongoUser, tripId]);
+  const toggleFavorite = async () => {
+    // 1) build the new array
+    const newFavs = isFavorite
+      ? mongoUser!.favorite_trips.filter((id) => id !== tripId)
+      : [...mongoUser!.favorite_trips, tripId];
+
+    try {
+      // 2) call your update endpoint (use PATCH if that's what your router expects)
+      const res = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/user/${mongoId}/update`,
+        {
+          method: "POST", // ← switch to PATCH if needed
+          headers: {
+            "Content-Type": "application/json",
+            // 'Authorization': `Bearer ${yourJwtToken}`,  // include if your API uses auth headers
+          },
+          body: JSON.stringify({ favorite_trips: newFavs }),
+        }
+      );
+
+      const body = await res.json();
+      console.log("📋 Response:", res.status, body);
+
+      // 3) bail on a non-OK status
+      if (!res.ok) {
+        throw new Error(body.error || `Status ${res.status}`);
+      }
+
+      // 4) update context and local state
+      setMongoUser(body); // or body.user if your API wraps it
+      setIsFavorite((prev) => !prev);
+    } catch (err: any) {
+      console.error("❌ toggleFavorite failed:", err);
+      Alert.alert("Error", err.message || "Could not update favorites");
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e: any) => {
@@ -164,6 +206,13 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
             <Text className="ml-1 text-sm">{rating.toFixed(1)}</Text>
           </View>
         </View>
+        <TouchableOpacity onPress={toggleFavorite} className="ml-auto">
+          <Ionicons
+            name={isFavorite ? "heart" : "heart-outline"}
+            size={24}
+            color={isFavorite ? "red" : "gray"}
+          />
+        </TouchableOpacity>
       </View>
 
       {/* Location */}

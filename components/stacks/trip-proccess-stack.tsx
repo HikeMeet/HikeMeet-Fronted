@@ -18,7 +18,7 @@ const TripsStack = () => {
       <Stack.Screen
         name="TripPage"
         component={TripDetailPage as React.ComponentType<any>}
-        options={{ title: "Trip Page" }}
+        options={{ title: "Trip Page", headerShown: false }}
       />
     </Stack.Navigator>
   );
