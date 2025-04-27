@@ -30,6 +30,7 @@ import { IPost } from "../../../interfaces/post-interface";
 import GroupSelectionModal from "../../groups/components/group-selection-modal";
 import GroupRow from "../../groups/components/group-row";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { fetchUserGroups } from "../../../components/requests/fetch-groups";
 
 interface ShareTripModalProps {
   visible: boolean;
@@ -69,19 +70,14 @@ const ShareTripModal: React.FC<ShareTripModalProps> = ({
     }
   };
   useEffect(() => {
-    const fetchUserGroups = async () => {
+    (async () => {
       try {
-        const res = await fetch(
-          `${process.env.EXPO_LOCAL_SERVER}/api/group/user/${mongoId}`
-        );
-        if (!res.ok) throw new Error("Failed to load groups");
-        const { groups: userGroups } = await res.json();
+        const userGroups = await fetchUserGroups(mongoId!);
         setGroups(userGroups);
       } catch (err) {
         console.error("Error loading groups:", err);
       }
-    };
-    fetchUserGroups();
+    })();
   }, [mongoId]);
   // remove from local list
   const removeLocalMedia = (idx: number) =>
