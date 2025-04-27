@@ -17,7 +17,7 @@ import { Trip } from "../../interfaces/trip-interface";
 import { useAuth } from "../../contexts/auth-context";
 import TripImagesUploader from "./component/trip-image-gallery";
 import MapDirectionButton from "../../components/get-direction";
-
+import ShareTripModal from "./component/share-trip-to-post-modal";
 // Determine if native Mapbox code is available (i.e. not running in Expo Go)
 const MapboxAvailable = Constants.appOwnership !== "expo";
 
@@ -71,6 +71,8 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   const { tripId, fromCreate = false, isArchived = false } = route.params;
   const { mongoId, mongoUser, setMongoUser } = useAuth(); // current user's mongoId
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+
   // Fetch trip data from the backend using the tripId parameter.
   useEffect(() => {
     const fetchTripData = async () => {
@@ -182,114 +184,124 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   };
 
   return (
-    <ScrollView
-      scrollEnabled={scrollEnabled}
-      style={{ flex: 1, backgroundColor: "white", padding: 16 }}
-      contentContainerStyle={{ paddingBottom: 40 }}
-    >
-      {/* Header: image, title, rating, and action icons */}
-      <View className="flex-row items-center justify-between p-4">
-        {/* Left side: image + title */}
-        <View className="flex-row items-center">
-          {tripData && tripData.main_image && (
-            <ProfileImage
-              initialImage={tripData.main_image}
-              size={60}
-              id={tripId}
-              uploadType="trip"
-              editable={mongoId === tripData.createdBy}
-            />
-          )}
-          <View className="ml-2">
-            <Text className="text-lg font-bold">{tripName}</Text>
-            <View className="flex-row items-center mt-1">
-              {renderStars()}
-              <Text className="ml-1 text-sm">{rating.toFixed(1)}</Text>
+    <>
+      <ScrollView
+        scrollEnabled={scrollEnabled}
+        style={{ flex: 1, backgroundColor: "white", padding: 16 }}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
+        {/* Header: image, title, rating, and action icons */}
+        <View className="flex-row items-center justify-between p-4">
+          {/* Left side: image + title */}
+          <View className="flex-row items-center">
+            {tripData && tripData.main_image && (
+              <ProfileImage
+                initialImage={tripData.main_image}
+                size={60}
+                id={tripId}
+                uploadType="trip"
+                editable={mongoId === tripData.createdBy}
+              />
+            )}
+            <View className="ml-2">
+              <Text className="text-lg font-bold">{tripName}</Text>
+              <View className="flex-row items-center mt-1">
+                {renderStars()}
+                <Text className="ml-1 text-sm">{rating.toFixed(1)}</Text>
+              </View>
             </View>
           </View>
-        </View>
 
-        {/* Right side: vertical icons aligned to far right */}
-        <View className="flex-col items-end space-y-2">
-          <TouchableOpacity onPress={toggleFavorite}>
-            <Ionicons
-              name={isFavorite ? "heart" : "heart-outline"}
-              size={24}
-              color={isFavorite ? "red" : "gray"}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => console.log("share")}>
-            <Ionicons name="share-social" size={24} color="gray" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Location */}
-      <Text style={{ marginBottom: 8 }}>{locationText}</Text>
-
-      {/* Map snippet showing the trip's location */}
-      <View
-        style={{
-          width: "100%",
-          height: 192,
-          backgroundColor: "#e5e5e5",
-          marginBottom: 8,
-          position: "relative",
-        }}
-        onTouchStart={() => setScrollEnabled(false)}
-        onTouchEnd={() => setScrollEnabled(true)}
-        onTouchCancel={() => setScrollEnabled(true)}
-      >
-        <StyledMapView style={{ flex: 1 }} onPress={() => {}}>
-          <StyledCamera centerCoordinate={coordinates} zoomLevel={12} />
-        </StyledMapView>
-        <MapDirectionButton
-          latitude={coordinates[1]}
-          longitude={coordinates[0]}
-        />
-      </View>
-
-      {/* Tags */}
-      <View className="flex-row flex-wrap mb-4">
-        {tags.map((tag, index) => (
-          <View
-            key={index}
-            className="border border-blue-500 rounded-[20px] px-3 py-1 mr-2 mb-2"
-          >
-            <Text className="text-blue-500 text-sm">{tag}</Text>
+          {/* Right side: vertical icons aligned to far right */}
+          <View className="flex-col items-end space-y-2">
+            <TouchableOpacity onPress={toggleFavorite}>
+              <Ionicons
+                name={isFavorite ? "heart" : "heart-outline"}
+                size={24}
+                color={isFavorite ? "red" : "gray"}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowShareModal(true)}>
+              <Ionicons name="share-social" size={24} color="gray" />
+            </TouchableOpacity>
           </View>
-        ))}
-      </View>
+        </View>
 
-      {/* Description */}
-      <Text className="font-bold mb-1">Description:</Text>
-      <Text className="mb-4">{bio ? bio : "No description provided."}</Text>
+        {/* Location */}
+        <Text style={{ marginBottom: 8 }}>{locationText}</Text>
 
-      {/* "Upload your own images" */}
-      <Text style={{ fontSize: 16, fontWeight: "600", marginBottom: 8 }}>
-        Upload your own images:
-      </Text>
+        {/* Map snippet showing the trip's location */}
+        <View
+          style={{
+            width: "100%",
+            height: 192,
+            backgroundColor: "#e5e5e5",
+            marginBottom: 8,
+            position: "relative",
+          }}
+          onTouchStart={() => setScrollEnabled(false)}
+          onTouchEnd={() => setScrollEnabled(true)}
+          onTouchCancel={() => setScrollEnabled(true)}
+        >
+          <StyledMapView style={{ flex: 1 }} onPress={() => {}}>
+            <StyledCamera centerCoordinate={coordinates} zoomLevel={12} />
+          </StyledMapView>
+          <MapDirectionButton
+            latitude={coordinates[1]}
+            longitude={coordinates[0]}
+          />
+        </View>
+
+        {/* Tags */}
+        <View className="flex-row flex-wrap mb-4">
+          {tags.map((tag, index) => (
+            <View
+              key={index}
+              className="border border-blue-500 rounded-[20px] px-3 py-1 mr-2 mb-2"
+            >
+              <Text className="text-blue-500 text-sm">{tag}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Description */}
+        <Text className="font-bold mb-1">Description:</Text>
+        <Text className="mb-4">{bio ? bio : "No description provided."}</Text>
+
+        {/* "Upload your own images" */}
+        <Text style={{ fontSize: 16, fontWeight: "600", marginBottom: 8 }}>
+          Upload your own images:
+        </Text>
+        {tripData && (
+          <TripImagesUploader
+            tripId={tripId}
+            enabled={mongoId === tripData.createdBy}
+            initialImages={tripData.images ?? []}
+            onImagesUpdated={(imgs) =>
+              setTripData((prevTripData) => {
+                if (!prevTripData) return { images: imgs } as any;
+                return { ...prevTripData, images: imgs };
+              })
+            }
+          />
+        )}
+        {/* Back to Trips Button */}
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Tabs", { screen: "Trips" })}
+          className="mt-4 bg-blue-600 px-4 py-3 rounded-lg items-center"
+        >
+          <Text className="text-white font-semibold">Back to Trips</Text>
+        </TouchableOpacity>
+      </ScrollView>
       {tripData && (
-        <TripImagesUploader
-          tripId={tripId}
-          enabled={mongoId === tripData.createdBy}
-          initialImages={tripData.images ?? []}
-          onImagesUpdated={(imgs) =>
-            setTripData((prevTripData) => {
-              if (!prevTripData) return { images: imgs } as any;
-              return { ...prevTripData, images: imgs };
-            })
-          }
+        <ShareTripModal
+          visible={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          navigation={navigation}
+          trip={tripData}
         />
       )}
-      {/* Back to Trips Button */}
-      <TouchableOpacity
-        onPress={() => navigation.navigate("Tabs", { screen: "Trips" })}
-        className="mt-4 bg-blue-600 px-4 py-3 rounded-lg items-center"
-      >
-        <Text className="text-white font-semibold">Back to Trips</Text>
-      </TouchableOpacity>
-    </ScrollView>
+    </>
   );
 };
 
