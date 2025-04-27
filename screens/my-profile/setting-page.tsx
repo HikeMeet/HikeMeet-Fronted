@@ -49,6 +49,10 @@ const SettingsScreen = ({ navigation }: any) => {
             title="Edit profile"
             onPress={() => navigation.navigate("EditProfile")}
           />
+          <SettingsButton
+            title="Stats"
+            onPress={() => navigation.navigate("UserStats")}
+          />
         </View>
 
         {/* Logout Button at the Bottom */}

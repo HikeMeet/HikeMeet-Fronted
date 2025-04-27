@@ -18,7 +18,7 @@ const SelectedTripsList: React.FC<SelectedTripsListProps> = ({
   if (trips.length === 0) return null;
   return (
     <View className="mb-4">
-      <Text className="text-lg font-semibold mb-2">Attached Groups:</Text>
+      <Text className="text-lg font-semibold mb-2">Attached Trips:</Text>
       {trips.map((trip) => (
         <View
           key={trip._id}
