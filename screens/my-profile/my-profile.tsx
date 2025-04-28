@@ -23,6 +23,9 @@ import { IPost } from "../../interfaces/post-interface";
 import PostCard from "../posts/components/post-card-on-feeds";
 import { fetchPostsForUser } from "../../components/requests/fetch-posts";
 import HikersList from "../../components/hikers-list-in-profile";
+import { checkRankLevel } from "./components/check-rank-level";
+import { RankInfo } from "../../interfaces/rank-info";
+import RankInfoModal from "./components/rank-info-modal";
 import { FontAwesome } from "@expo/vector-icons";
 
 const ProfilePage = ({ navigation }: any) => {
@@ -30,6 +33,7 @@ const ProfilePage = ({ navigation }: any) => {
   const [showHikers, setShowHikers] = useState<boolean>(false);
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
+  const [showRankModal, setShowRankModal] = useState(false);
 
   const toggleHikers = () => {
     setShowHikers((prev) => !prev);
@@ -54,6 +58,11 @@ const ProfilePage = ({ navigation }: any) => {
     }
   };
 
+  const rankInfo: RankInfo | null = useMemo(
+    () => (mongoUser ? checkRankLevel(mongoUser.exp) : null),
+    [mongoUser]
+  );
+
   useEffect(() => {
     if (mongoUser) {
       fetchPosts();
@@ -77,7 +86,20 @@ const ProfilePage = ({ navigation }: any) => {
           <View className="flex-1 ml-5">
             <Text className="text-lg font-bold">{mongoUser.username}</Text>
             <Text className="text-sm font-bold">{`${mongoUser.first_name} ${mongoUser.last_name}`}</Text>
-            <Text className="text-sm text-gray-500">Rank: Adventurer</Text>
+            {rankInfo && (
+              <TouchableOpacity
+                onPress={() => setShowRankModal(true)}
+                className="flex-row items-center"
+              >
+                <Text className="text-sm text-gray-500 mr-2">
+                  Rank: {rankInfo.rankName}
+                </Text>
+                {rankInfo?.rankImageUrl && (
+                  <rankInfo.rankImageUrl width={24} height={24} />
+                )}
+              </TouchableOpacity>
+            )}
+
             <HikerButton
               showHikers={showHikers}
               toggleHikers={toggleHikers}
@@ -134,6 +156,15 @@ const ProfilePage = ({ navigation }: any) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
+      {rankInfo && (
+        <RankInfoModal
+          visible={showRankModal}
+          rankInfo={rankInfo}
+          onClose={() => setShowRankModal(false)}
+          isMyProfile={true}
+        />
+      )}
+
       <View style={{ flex: 1 }}>
         {showHikers ? (
           <HikersList

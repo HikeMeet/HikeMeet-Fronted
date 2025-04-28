@@ -9,6 +9,7 @@ import UserProfile from "../../screens/my-profile/user-profile";
 import CommunityGuidelines from "../../screens/my-profile/comunity-guid-page";
 import SavedPosts from "../../screens/my-profile/my-saved-posts";
 import LikedPosts from "../../screens/my-profile/my-liked-posts";
+import RankingSystem from "../../screens/my-profile/ranking-system";
 import ManageNotifications from "../../screens/my-profile/manage-notificaitons";
 import EditProfilePage from "../../screens/my-profile/edit-profile-page";
 import StatsPage from "../../screens/my-profile/user-stats-page";
@@ -42,6 +43,11 @@ const AccountStack = () => {
         name="ComunitiyGuidlined"
         component={CommunityGuidelines}
         options={{ headerShown: false, title: "Comunitiy Guidlined" }}
+      />
+      <Stack.Screen
+        name="AboutRankingSystem"
+        component={RankingSystem}
+        options={{ headerShown: false, title: "Ranking System" }}
       />
       <Stack.Screen
         name="SavedPosts"

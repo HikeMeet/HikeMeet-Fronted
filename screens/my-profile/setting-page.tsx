@@ -1,6 +1,6 @@
 import { useState } from "react";
 import React from "react";
-import { View, SafeAreaView } from "react-native";
+import { View, SafeAreaView, ScrollView } from "react-native";
 import SettingsButton from "../../components/settings-buttons";
 import LogoutConfirmPopup from "../../components/logout-confirm-popup";
 import DeleteConfirmPopup from "../../components/delete-account-confirm-popup";
@@ -13,7 +13,7 @@ const SettingsScreen = ({ navigation }: any) => {
   const isAdmin = mongoUser?.role === "admin" ? true : false;
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 bg-white p-4">
+      <ScrollView className="flex-1 bg-white p-4">
         {/* Header */}
         {/* <Text className="text-lg font-bold mb-4">Settings</Text> */}
 
@@ -33,6 +33,12 @@ const SettingsScreen = ({ navigation }: any) => {
             title="Community guidlines"
             onPress={() => navigation.navigate("ComunitiyGuidlined")}
           />
+
+          <SettingsButton
+            title="About ranking system"
+            onPress={() => navigation.navigate("AboutRankingSystem")}
+          />
+
           <SettingsButton
             title="Saved posts"
             onPress={() => navigation.navigate("SavedPosts")}
@@ -53,10 +59,7 @@ const SettingsScreen = ({ navigation }: any) => {
             title="Stats"
             onPress={() => navigation.navigate("UserStats")}
           />
-        </View>
 
-        {/* Logout Button at the Bottom */}
-        <View className="mb-4">
           <SettingsButton
             title="Logout"
             onPress={() => setLogoutPopupVisible(true)}
@@ -82,7 +85,7 @@ const SettingsScreen = ({ navigation }: any) => {
             onCancel={() => setDeleteLogoutPopupVisible(false)}
           />
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
