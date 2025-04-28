@@ -81,19 +81,21 @@ const EditGroupPage: React.FC<EditGroupPageProps> = ({ navigation, route }) => {
       updateData.difficulty = difficulty;
 
     if (scheduledStart) {
+      const oldDate = new Date(group.scheduled_start || "");
+      const newDate = scheduledStart;
       if (
         !group.scheduled_start ||
-        new Date(group.scheduled_start).toISOString() !==
-          scheduledStart.toISOString()
+        oldDate.toDateString() !== newDate.toDateString()
       ) {
         updateData.scheduled_start = formatDateForBackend(scheduledStart);
       }
     }
     if (scheduledEnd) {
+      const oldDate = new Date(group.scheduled_end || "");
+      const newDate = scheduledEnd;
       if (
         !group.scheduled_end ||
-        new Date(group.scheduled_end).toISOString() !==
-          scheduledEnd.toISOString()
+        oldDate.toDateString() !== newDate.toDateString()
       ) {
         updateData.scheduled_end = formatDateForBackend(scheduledEnd);
       }
@@ -129,7 +131,7 @@ const EditGroupPage: React.FC<EditGroupPageProps> = ({ navigation, route }) => {
       if (response.ok) {
         const updatedGroup = await response.json();
         Alert.alert("Group updated successfully");
-        navigation.navigate("GroupPage", {
+        navigation.push("GroupPage", {
           groupId: updatedGroup._id,
           fromCreate: true,
         });
@@ -149,7 +151,7 @@ const EditGroupPage: React.FC<EditGroupPageProps> = ({ navigation, route }) => {
   const handleModalOk = () => {
     setShowCreatedModal(false);
     if (group) {
-      navigation.navigate("GroupPage", {
+      navigation.push("GroupPage", {
         groupId: group._id,
         fromCreate: true,
       });

@@ -1,14 +1,23 @@
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
-import ForgotPasswordPage from "../screens/register-login/forgot-password-page";
+import { NavigationProp } from "@react-navigation/native";
 import { Alert } from "react-native";
+import ForgotPasswordPage from "../screens/register-login/forgot-password-page";
+
+type RootStackParamList = {
+  ForgotPassword: undefined;
+  CodeVerrify: { email: string };
+};
 
 const mockNavigate = jest.fn();
-const mockNavigation = { navigate: mockNavigate, goBack: jest.fn() };
+const mockNavigation = {
+  navigate: mockNavigate,
+  goBack:  jest.fn(),
+} as unknown as NavigationProp<RootStackParamList, "ForgotPassword">;
 
 jest.mock("../contexts/auth-context", () => ({
   useAuth: () => ({
-    setUser: jest.fn(),
+    setUser:      jest.fn(),
     setIsVerified: jest.fn(),
   }),
 }));
@@ -18,7 +27,7 @@ describe("ForgotPasswordPage", () => {
     jest.clearAllMocks();
 
     // Mock fetch to simulate success responses
-    global.fetch = jest.fn(() =>
+    (global as any).fetch = jest.fn(() =>
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve({}),

@@ -47,6 +47,18 @@ const SettingsScreen = ({ navigation }: any) => {
             title="Liked posts"
             onPress={() => navigation.navigate("LikedPosts")}
           />
+          <SettingsButton
+            title="Manage notifications"
+            onPress={() => navigation.navigate("ManageNotifications")}
+          />
+          <SettingsButton
+            title="Edit profile"
+            onPress={() => navigation.navigate("EditProfile")}
+          />
+          <SettingsButton
+            title="Stats"
+            onPress={() => navigation.navigate("UserStats")}
+          />
         </View>
 
         {/* Logout Button at the Bottom */}

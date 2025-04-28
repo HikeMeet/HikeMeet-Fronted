@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import React from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
-import { Group } from "../interfaces/group-interface";
-import { useAuth } from "../contexts/auth-context";
-import ConfirmationModal from "./confirmation-modal";
+import { Group } from "../../../interfaces/group-interface";
+import { useAuth } from "../../../contexts/auth-context";
+import ConfirmationModal from "../../../components/confirmation-modal";
 
 type JoinStatus = "none" | "member" | "requested" | "invited";
 
@@ -26,7 +26,6 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
   const [showDeclineConfirmModal, setShowDeclineConfirmModal] = useState(false);
   const [showLeaveConfirmModal, setShowLeaveConfirmModal] = useState(false);
   const { mongoId } = useAuth();
-
   // Compute initial join status (simplified)
   useEffect(() => {
     if (group.members.some((m) => m.user === mongoId)) {

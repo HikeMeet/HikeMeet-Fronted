@@ -1,5 +1,6 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 /android
+google-services.json
 # local env files
 .env
 .env*
@@ -30,8 +31,6 @@ yarn-error.*
 # macOS
 .DS_Store
 *.pem
-
-
 
 # typescript
 *.tsbuildinfo

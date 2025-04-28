@@ -15,7 +15,7 @@ export const fetchGroupDetails = async (
   }`;
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error("Failed to fetch group");
+    console.log("Failed to fetch group details");
   }
   return await response.json();
 };

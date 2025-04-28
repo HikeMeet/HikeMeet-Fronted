@@ -8,8 +8,7 @@ import {
   ActivityIndicator,
   StatusBar,
   RefreshControl,
-  KeyboardAvoidingView,
-  Platform,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { styled } from "nativewind";
@@ -27,9 +26,10 @@ import HikersList from "../../components/hikers-list-in-profile";
 import { checkRankLevel } from "./components/check-rank-level";
 import { RankInfo } from "../../interfaces/rank-info";
 import RankInfoModal from "./components/rank-info-modal";
+import { FontAwesome } from "@expo/vector-icons";
 
 const ProfilePage = ({ navigation }: any) => {
-  const { mongoUser } = useAuth();
+  const { mongoUser, mongoId, fetchMongoUser } = useAuth();
   const [showHikers, setShowHikers] = useState<boolean>(false);
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
@@ -67,7 +67,7 @@ const ProfilePage = ({ navigation }: any) => {
     if (mongoUser) {
       fetchPosts();
     }
-  }, [mongoUser]);
+  }, []);
 
   // Always call useMemo, even if mongoUser is null.
   const memoizedHeader = useMemo(() => {
@@ -117,6 +117,22 @@ const ProfilePage = ({ navigation }: any) => {
         </View>
         {/* Bio and Create Post Section */}
         <View className="p-4 bg-white">
+          <View style={{ flexDirection: "row", gap: 16 }}>
+            {mongoUser.facebook_link && (
+              <TouchableOpacity
+                onPress={() => Linking.openURL(mongoUser.facebook_link)}
+              >
+                <FontAwesome name="facebook-square" size={32} />
+              </TouchableOpacity>
+            )}
+            {mongoUser.instagram_link && (
+              <TouchableOpacity
+                onPress={() => Linking.openURL(mongoUser.instagram_link)}
+              >
+                <FontAwesome name="instagram" size={32} />
+              </TouchableOpacity>
+            )}
+          </View>
           <BioSection bio={mongoUser.bio} />
         </View>
       </>
@@ -149,10 +165,7 @@ const ProfilePage = ({ navigation }: any) => {
         />
       )}
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
+      <View style={{ flex: 1 }}>
         {showHikers ? (
           <HikersList
             isMyProfile={true}
@@ -214,7 +227,7 @@ const ProfilePage = ({ navigation }: any) => {
             showsVerticalScrollIndicator={false}
           />
         )}
-      </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 };

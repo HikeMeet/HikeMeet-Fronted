@@ -17,6 +17,22 @@ interface PostOptionsModalProps {
   onPostUpdated?: (deletedPost: IPost) => void;
 }
 
+/*************  ✨ Windsurf Command ⭐  *************/
+/**
+ * PostOptionsModal is a modal component that provides options for interacting with a post.
+ * It allows authors or admins to edit or delete their post and all users to report a post.
+ * It also supports callbacks to notify the parent component of changes.
+ *
+ * Props:
+ * - visible: Controls the visibility of the modal.
+ * - onClose: Callback to close the modal.
+ * - post: The post object for which options are being displayed.
+ * - navigation: Navigation object for navigating between screens.
+ * - onEdit: Callback to trigger inline editing of the post.
+ * - onPostUpdated: Callback to notify parent when the post is updated or deleted.
+ */
+
+/*******  be9f35af-734a-4d9f-b7d0-e893ae80f941  *******/
 const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
   visible,
   onClose,
@@ -25,7 +41,7 @@ const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
   onEdit,
   onPostUpdated,
 }) => {
-  const { mongoId } = useAuth();
+  const { mongoId, mongoUser } = useAuth();
   // Extract author ID whether post.author is an object or a string.
   const authorId =
     typeof post.author === "object" ? post.author._id : post.author;
@@ -106,16 +122,18 @@ const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
                   Edit Post
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={handleDeletePress} className="py-2">
-                <Text className="text-center text-red-500 font-semibold">
-                  Delete Post
-                </Text>
-              </TouchableOpacity>
             </>
           ) : (
             <TouchableOpacity onPress={handleReport} className="py-2">
               <Text className="text-center text-red-500 font-semibold">
                 Report Post
+              </Text>
+            </TouchableOpacity>
+          )}
+          {(mongoUser?.role === "admin" || isAuthor) && (
+            <TouchableOpacity onPress={handleDeletePress} className="py-2">
+              <Text className="text-center text-red-500 font-semibold">
+                Delete Post
               </Text>
             </TouchableOpacity>
           )}
