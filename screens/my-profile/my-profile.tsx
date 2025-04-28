@@ -87,17 +87,19 @@ const ProfilePage = ({ navigation }: any) => {
             <Text className="text-lg font-bold">{mongoUser.username}</Text>
             <Text className="text-sm font-bold">{`${mongoUser.first_name} ${mongoUser.last_name}`}</Text>
             {rankInfo && (
-              <TouchableOpacity
-                onPress={() => setShowRankModal(true)}
-                className="flex-row items-center"
-              >
-                <Text className="text-sm text-gray-500 mr-2">
-                  Rank: {rankInfo.rankName}
-                </Text>
+              <View className="flex-row items-center">
+                <TouchableOpacity onPress={() => setShowRankModal(true)}>
+                  <Text className="text-sm text-gray-500 mr-2">
+                    Rank: {rankInfo.rankName}
+                  </Text>
+                </TouchableOpacity>
+
                 {rankInfo?.rankImageUrl && (
-                  <rankInfo.rankImageUrl width={24} height={24} />
+                  <TouchableOpacity onPress={() => setShowRankModal(true)}>
+                    <rankInfo.rankImageUrl width={24} height={24} />
+                  </TouchableOpacity>
                 )}
-              </TouchableOpacity>
+              </View>
             )}
 
             <HikerButton
