@@ -47,6 +47,17 @@ const SearchPage = ({ navigation }: any) => {
     { id: string; label: string }[]
   >([]);
 
+  const clearAll = () => {
+    setUsers([]);
+    setGroups([]);
+    setSearchGroups([]);
+    setTrips([]);
+    setSearchTrips([]);
+    setAllGroupsBackup([]);
+    setAllTripsBackup([]);
+    setResultsToShow(10);
+  };
+
   //two function that filter after search
   const applyTripFilters = (tripsList: any[]) => {
     let filtered = [...tripsList];
@@ -96,6 +107,8 @@ const SearchPage = ({ navigation }: any) => {
 
   const searchContent = async (query: string, reset = true) => {
     if (!query.trim()) {
+      clearAll();
+      setLastQuery("");
       setUsers([]);
       setGroups([]);
       setTrips([]);
@@ -192,13 +205,18 @@ const SearchPage = ({ navigation }: any) => {
   };
 
   useEffect(() => {
-    if (filter === "Trip") {
-      applyTripFilters(searchTrips);
-    }
-    if (filter === "Groups") {
+    if (!lastQuery.trim()) return;
+    if (filter === "Trip" && searchTrips.length) applyTripFilters(searchTrips);
+    if (filter === "Groups" && searchGroups.length)
       applyGroupFilters(searchGroups);
+  }, [filter, tripFilters, groupFilters, searchTrips, searchGroups, lastQuery]);
+
+  useEffect(() => {
+    if (!lastQuery.trim()) {
+      if (filter === "Trip") setTrips([]);
+      if (filter === "Groups") setGroups([]);
     }
-  }, [filter, tripFilters, groupFilters, searchTrips, searchGroups]);
+  }, [filter, lastQuery]);
 
   useFocusEffect(
     useCallback(() => {
