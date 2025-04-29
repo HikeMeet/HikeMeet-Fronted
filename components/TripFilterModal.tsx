@@ -62,7 +62,7 @@ export default function TripFilterModal({
         tags: initialFilters.tags,
       });
     }
-  }, [visible, initialFilters]);
+  }, [visible]);
 
   if (!visible) return null;
 
@@ -102,7 +102,7 @@ export default function TripFilterModal({
     filters.tags.forEach((tag) => {
       chosenFilters.push({
         id: `tripTag=${tag}`,
-        label: `Trip Tag: ${tag}`,
+        label: tag,
       });
     });
 

@@ -1,5 +1,11 @@
-import React, { useState, useCallback, useRef } from "react";
-import { View, FlatList, ActivityIndicator } from "react-native";
+import React, { useState, useCallback, useRef, useEffect } from "react";
+import {
+  View,
+  FlatList,
+  ActivityIndicator,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import { Text } from "react-native";
 import { useAuth } from "../../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
@@ -10,6 +16,8 @@ import TripRow from "../trips/component/trip-row";
 import SearchFilters from "./components/search-filters";
 import SearchFooter from "./components/see-more-button";
 import EmptyResults from "./components/empty-results";
+import TripFilterModal from "../../components/TripFilterModal";
+import GroupFilterModal from "../../components/GroupFilterModal";
 
 const SearchPage = ({ navigation }: any) => {
   const [users, setUsers] = useState<any[]>([]);
@@ -22,6 +30,69 @@ const SearchPage = ({ navigation }: any) => {
   const [loadingMore, setLoadingMore] = useState(false);
   const { mongoId } = useAuth();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [showTripFilterModal, setShowTripFilterModal] = useState(false);
+  const [showGroupFilterModal, setShowGroupFilterModal] = useState(false);
+
+  const [allTripsBackup, setAllTripsBackup] = useState<any[]>([]);
+  const [allGroupsBackup, setAllGroupsBackup] = useState<any[]>([]);
+
+  const [searchTrips, setSearchTrips] = useState<any[]>([]);
+  const [searchGroups, setSearchGroups] = useState<any[]>([]);
+
+  const [tripFilters, setTripFilters] = useState<
+    { id: string; label: string }[]
+  >([]);
+  const [groupFilters, setGroupFilters] = useState<
+    { id: string; label: string }[]
+  >([]);
+
+  //two function that filter after search
+  const applyTripFilters = (tripsList: any[]) => {
+    let filtered = [...tripsList];
+    tripFilters.forEach((f) => {
+      if (f.id.startsWith("tripTag=")) {
+        const tag = f.id.split("=")[1];
+        filtered = filtered.filter((t) => (t as any).tags?.includes(tag));
+      }
+      if (f.id.startsWith("tripLocation=")) {
+        const loc = f.id.split("=")[1].toLowerCase();
+        filtered = filtered.filter((t) =>
+          t.location.address?.toLowerCase().includes(loc)
+        );
+      }
+    });
+    setTrips(filtered);
+  };
+
+  const applyGroupFilters = (groupsList: any[]) => {
+    let filtered = [...groupsList];
+    groupFilters.forEach((f) => {
+      if (f.id.startsWith("groupDifficulty=")) {
+        const diff = f.id.split("=")[1];
+        filtered = filtered.filter((g: any) => g.difficulty === diff);
+      }
+      if (f.id.startsWith("groupStatus=")) {
+        const status = f.id.split("=")[1].toLowerCase();
+        filtered = filtered.filter((g) => g.status?.toLowerCase() === status);
+      }
+      if (f.id.startsWith("groupMaxMembers=")) {
+        const max = parseInt(f.id.split("=")[1], 10);
+        if (!isNaN(max)) {
+          filtered = filtered.filter((g) => g.max_members <= max);
+        }
+      }
+      if (f.id.startsWith("groupStart=")) {
+        const start = f.id.split("=")[1];
+        filtered = filtered.filter((g: any) => g.scheduled_start >= start);
+      }
+      if (f.id.startsWith("groupEnd=")) {
+        const end = f.id.split("=")[1];
+        filtered = filtered.filter((g: any) => g.scheduled_end <= end);
+      }
+    });
+    setGroups(filtered);
+  };
 
   const searchContent = async (query: string, reset = true) => {
     if (!query.trim()) {
@@ -44,9 +115,16 @@ const SearchPage = ({ navigation }: any) => {
           `${process.env.EXPO_LOCAL_SERVER}/api/search/groups?query=${query}`
         );
         const { groups: groupList = [] } = await res.json();
-        reset
-          ? setGroups(groupList)
-          : setGroups((prev) => [...prev, ...groupList]);
+        if (reset) {
+          setGroups(groupList);
+          setAllGroupsBackup(groupList);
+          setSearchGroups(groupList);
+          if (filter === "Groups") applyGroupFilters(searchGroups);
+        } else {
+          setGroups((prev) => [...prev, ...groupList]);
+          setAllGroupsBackup((prev) => [...prev, ...groupList]);
+          setSearchGroups((prev) => [...prev, ...groupList]);
+        }
       }
 
       if (filter === "All" || filter === "Trip") {
@@ -54,7 +132,16 @@ const SearchPage = ({ navigation }: any) => {
           `${process.env.EXPO_LOCAL_SERVER}/api/search/trips?query=${query}`
         );
         const { trips: tripList = [] } = await res.json();
-        reset ? setTrips(tripList) : setTrips((prev) => [...prev, ...tripList]);
+        if (reset) {
+          setTrips(tripList);
+          setAllTripsBackup(tripList);
+          setSearchTrips(tripList);
+          if (filter === "Trip") applyTripFilters(searchTrips);
+        } else {
+          setTrips((prev) => [...prev, ...tripList]);
+          setAllTripsBackup((prev) => [...prev, ...tripList]);
+          setSearchTrips((prev) => [...prev, ...tripList]);
+        }
       }
 
       if (filter === "All" || filter === "Hikes") {
@@ -104,9 +191,20 @@ const SearchPage = ({ navigation }: any) => {
     );
   };
 
+  useEffect(() => {
+    if (filter === "Trip") {
+      applyTripFilters(searchTrips);
+    }
+    if (filter === "Groups") {
+      applyGroupFilters(searchGroups);
+    }
+  }, [filter, tripFilters, groupFilters, searchTrips, searchGroups]);
+
   useFocusEffect(
     useCallback(() => {
-      if (lastQuery) debouncedSearch(lastQuery);
+      if (lastQuery) {
+        debouncedSearch(lastQuery);
+      }
     }, [lastQuery, filter])
   );
 
@@ -121,6 +219,74 @@ const SearchPage = ({ navigation }: any) => {
 
   const visibleData = allData.slice(0, resultsToShow);
 
+  const removeFilter = (filterId: string) => {
+    if (filter === "Trip") {
+      const newFilters = tripFilters.filter((f) => f.id !== filterId);
+      setTripFilters(newFilters);
+
+      let filteredTrips = [...searchTrips];
+
+      newFilters.forEach((f) => {
+        if (f.id.startsWith("tripTag=")) {
+          const tag = f.id.split("=")[1];
+          filteredTrips = filteredTrips.filter((t) =>
+            (t as any).tags?.includes(tag)
+          );
+        }
+        if (f.id.startsWith("tripLocation=")) {
+          const loc = f.id.split("=")[1].toLowerCase();
+          filteredTrips = filteredTrips.filter((t) =>
+            t.location.address?.toLowerCase().includes(loc)
+          );
+        }
+      });
+
+      setTrips(filteredTrips);
+    }
+
+    if (filter === "Groups") {
+      const newFilters = groupFilters.filter((f) => f.id !== filterId);
+      setGroupFilters(newFilters);
+
+      let filteredGroups = [...searchGroups];
+
+      newFilters.forEach((f) => {
+        if (f.id.startsWith("groupDifficulty=")) {
+          const diff = f.id.split("=")[1];
+          filteredGroups = filteredGroups.filter(
+            (g: any) => g.difficulty === diff
+          );
+        }
+        if (f.id.startsWith("groupStatus=")) {
+          const status = f.id.split("=")[1].toLowerCase();
+          filteredGroups = filteredGroups.filter(
+            (g) => g.status?.toLowerCase() === status
+          );
+        }
+        if (f.id.startsWith("groupMaxMembers=")) {
+          const max = parseInt(f.id.split("=")[1], 10);
+          if (!isNaN(max)) {
+            filteredGroups = filteredGroups.filter((g) => g.max_members <= max);
+          }
+        }
+        if (f.id.startsWith("groupStart=")) {
+          const start = f.id.split("=")[1];
+          filteredGroups = filteredGroups.filter(
+            (g: any) => g.scheduled_start >= start
+          );
+        }
+        if (f.id.startsWith("groupEnd=")) {
+          const end = f.id.split("=")[1];
+          filteredGroups = filteredGroups.filter(
+            (g: any) => g.scheduled_end <= end
+          );
+        }
+      });
+
+      setGroups(filteredGroups);
+    }
+  };
+
   return (
     <View className="flex-1 bg-white">
       {/* Header */}
@@ -132,8 +298,40 @@ const SearchPage = ({ navigation }: any) => {
         />
       </View>
 
-      {/* Filters */}
+      {/* Filters Tabs */}
       <SearchFilters filter={filter} setFilter={setFilter} />
+
+      {/* Active Filters + Filter Button */}
+      {(filter === "Trip" || filter === "Groups") && (
+        <View className="flex-row items-center justify-between px-4 py-2">
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ flexGrow: 1, alignItems: "center" }}
+            className="flex-row"
+          >
+            {(filter === "Trip" ? tripFilters : groupFilters).map((filter) => (
+              <TouchableOpacity
+                key={filter.id}
+                onPress={() => removeFilter(filter.id)}
+                className="bg-gray-200 px-5 py-2.5 rounded-full mr-2"
+              >
+                <Text className="text-gray-700 text-xs">{filter.label} ✕</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          <TouchableOpacity
+            onPress={() => {
+              if (filter === "Trip") setShowTripFilterModal(true);
+              if (filter === "Groups") setShowGroupFilterModal(true);
+            }}
+            className="bg-blue-500 px-4 py-1.5 rounded-full ml-2"
+          >
+            <Text className="text-white text-sm font-semibold">Filter</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Results */}
       {loading && visibleData.length === 0 ? (
@@ -197,6 +395,58 @@ const SearchPage = ({ navigation }: any) => {
           onEndReachedThreshold={0.5}
         />
       )}
+      {/* Trip Filter Modal */}
+      <TripFilterModal
+        visible={showTripFilterModal}
+        onClose={() => setShowTripFilterModal(false)}
+        trips={allTripsBackup}
+        initialFilters={{
+          location:
+            tripFilters
+              .find((f) => f.id.startsWith("tripLocation="))
+              ?.id.split("=")[1] || "",
+          tags: tripFilters
+            .filter((f) => f.id.startsWith("tripTag="))
+            .map((f) => f.id.split("=")[1]),
+        }}
+        onApply={(filteredTrips, chosenFilters) => {
+          setTrips(filteredTrips);
+          setTripFilters(chosenFilters);
+          setShowTripFilterModal(false);
+        }}
+      />
+
+      {/* Group Filter Modal */}
+      <GroupFilterModal
+        visible={showGroupFilterModal}
+        onClose={() => setShowGroupFilterModal(false)}
+        groups={allGroupsBackup}
+        initialFilters={{
+          difficulties: groupFilters
+            .filter((f) => f.id.startsWith("groupDifficulty="))
+            .map((f) => f.id.split("=")[1]),
+          statuses: groupFilters
+            .filter((f) => f.id.startsWith("groupStatus="))
+            .map((f) => f.id.split("=")[1]),
+          maxMembers:
+            groupFilters
+              .find((f) => f.id.startsWith("groupMaxMembers="))
+              ?.id.split("=")[1] || "",
+          scheduledStart:
+            groupFilters
+              .find((f) => f.id.startsWith("groupStart="))
+              ?.id.split("=")[1] || "",
+          scheduledEnd:
+            groupFilters
+              .find((f) => f.id.startsWith("groupEnd="))
+              ?.id.split("=")[1] || "",
+        }}
+        onApply={(filteredGroups, chosenFilters) => {
+          setGroups(filteredGroups);
+          setGroupFilters(chosenFilters);
+          setShowGroupFilterModal(false);
+        }}
+      />
     </View>
   );
 };

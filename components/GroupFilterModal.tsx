@@ -29,7 +29,7 @@ type GroupFilterModalProps = {
 };
 
 const DIFFICULTIES = ["beginner", "intermediate", "advanced", "hardcore"];
-const STATUSES = ["planned", "active"];
+const STATUSES = ["planned", "active", "completed"];
 
 export default function GroupFilterModal({
   visible,
@@ -62,7 +62,7 @@ export default function GroupFilterModal({
         scheduledEnd: initialFilters.scheduledEnd || "",
       });
     }
-  }, [visible, initialFilters]);
+  }, [visible]);
 
   if (!visible) return null;
 
@@ -137,7 +137,7 @@ export default function GroupFilterModal({
     filters.difficulties.forEach((df) => {
       chosenFilters.push({
         id: `groupDifficulty=${df}`,
-        label: `Group Difficulty: ${df}`,
+        label: df,
       });
     });
 
