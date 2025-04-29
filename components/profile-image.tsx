@@ -20,8 +20,8 @@ import { IImageModel } from "../interfaces/image-interface";
 // Default image URLs for profile, trip, and group (adjust as needed)
 const DEFAULT_PROFILE_IMAGE_URL = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/v1742156351/profile_images/tpyngwygeoykeur0hgre.jpg`;
 const DEFAULT_PROFILE_IMAGE_ID = "profile_images/tpyngwygeoykeur0hgre";
-const DEFAULT_GROUP_IMAGE_URL = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/v1745936021/group_images/group-defoult_deek7k.jpg`;
-const DEFAULT_GROUP_IMAGE_ID = "group_images/group-defoult_deek7k";
+const DEFAULT_GROUP_IMAGE_URL = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/v1745951012/group-defoult_m0jeov.jpg`;
+const DEFAULT_GROUP_IMAGE_ID = "group-defoult_m0jeov";
 
 const DEFAULT_TRIP_IMAGE_URL = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/v1742664563/trip_images/pxn2u29twifmjcjq7whv.png`;
 const DEFAULT_TRIP_IMAGE_ID = "trip_images/pxn2u29twifmjcjq7whv";
