@@ -133,17 +133,25 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
               </Text>
 
               {rankInfo && (
-                <TouchableOpacity
-                  onPress={() => setShowRankModal(true)}
-                  className="flex-row items-center"
-                >
-                  <Text className="text-sm text-gray-500 mr-2">
-                    Rank: {rankInfo.rankName}
-                  </Text>
+                <View className="flex-row items-center">
+                  <TouchableOpacity
+                    onPress={() => setShowRankModal(true)}
+                    activeOpacity={0.7}
+                  >
+                    <Text className="text-sm text-gray-500 mr-2">
+                      Rank: {rankInfo.rankName}
+                    </Text>
+                  </TouchableOpacity>
+
                   {rankInfo?.rankImageUrl && (
-                    <rankInfo.rankImageUrl width={24} height={24} />
+                    <TouchableOpacity
+                      onPress={() => setShowRankModal(true)}
+                      activeOpacity={0.7}
+                    >
+                      <rankInfo.rankImageUrl width={24} height={24} />
+                    </TouchableOpacity>
                   )}
-                </TouchableOpacity>
+                </View>
               )}
 
               <HikerButton
