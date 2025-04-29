@@ -9,7 +9,8 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleDebug"
+        "gradleCommand": ":app:assembleDebug",
+        "applicationId": "com.hikemeet.dev"
       }
     },
     "preview": {
@@ -18,7 +19,8 @@
     "production": {
       "channel": "production",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "applicationId": "com.hikemeet"
       },
       "autoIncrement": true,
       "env": {
@@ -32,7 +34,8 @@
         "EXPO_LOCAL_SERVER": "$EXPO_LOCAL_SERVER",
         "MAPBOX_TOKEN": "$MAPBOX_TOKEN",
         "MAPBOX_TOKEN_PUBLIC": "$MAPBOX_TOKEN_PUBLIC",
-        "GOOGLEMAP_API_KEY": "$GOOGLEMAP_API_KEY"
+        "GOOGLEMAP_API_KEY": "$GOOGLEMAP_API_KEY",
+        "EXPO_TOKEN": "$EXPO_TOKEN"
       }
     }
   },
