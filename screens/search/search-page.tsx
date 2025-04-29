@@ -200,7 +200,7 @@ const SearchPage = ({ navigation }: any) => {
                 user={item}
                 navigation={navigation}
                 onStatusChange={function (newStatus: string): void {
-                  throw new Error("Function not implemented.");
+                  console.log("New status:", newStatus);
                 }}
               />
             ) : item.max_members ? (
