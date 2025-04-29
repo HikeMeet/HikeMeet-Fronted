@@ -8,7 +8,7 @@ import UserRow from "../../components/user-row-search";
 import GroupRow from "../groups/components/group-row";
 import TripRow from "../trips/component/trip-row";
 import SearchFilters from "./components/search-filters";
-import SearchFooter from "./components/search-footer";
+import SearchFooter from "./components/see-more-button";
 import EmptyResults from "./components/empty-results";
 
 const SearchPage = ({ navigation }: any) => {
