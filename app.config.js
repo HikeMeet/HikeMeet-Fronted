@@ -1,3 +1,10 @@
+const APP_ENV = process.env.APP_ENV ?? "stage";
+
+// pick the right package:
+const packageName =
+  APP_ENV === "prod"
+    ? "com.hikemeet.app"
+    : "com.wooozai.exporeactnativewtailwind";
 export default ({ config }) => ({
   ...config,
   // EAS Update settings:
@@ -35,8 +42,11 @@ export default ({ config }) => ({
         foregroundImage: "./assets/Logo2.png",
         backgroundColor: "#ffffff",
       },
-      package: "com.wooozai.exporeactnativewtailwind",
-      googleServicesFile: "./google-services.json",
+      package: packageName,
+      googleServicesFile:
+        process.env.APP_ENV === "prod"
+          ? "./google-services.prod.json"
+          : "./google-services.dev.json",
     },
     web: {
       favicon: "./assets/favicon.png",

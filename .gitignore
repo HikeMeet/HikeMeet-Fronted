@@ -1,6 +1,7 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 /android
-google-services.json
+google-services.dev.json
+google-services.prod.json
 # local env files
 .env
 .env*
@@ -11,7 +12,6 @@ node_modules/
 .expo/
 dist/
 web-build/
-google-services.json
 # Native
 *.orig.*
 *.jks
