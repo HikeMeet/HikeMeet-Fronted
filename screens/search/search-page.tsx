@@ -147,9 +147,6 @@ const SearchPage = ({ navigation }: any) => {
       setGroups(filterGroupsByFilters(allGroupsBackup, newFilters));
     }
   };
-  function handleAction(): void {
-    throw new Error("Function not implemented.");
-  }
 
   return (
     <View className="flex-1 px-3 p-2 bg-white">
@@ -215,7 +212,6 @@ const SearchPage = ({ navigation }: any) => {
                     params: { groupId: item._id },
                   })
                 }
-                onAction={handleAction}
                 navigation={undefined}
               />
             ) : (
