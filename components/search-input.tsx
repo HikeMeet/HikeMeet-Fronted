@@ -19,19 +19,19 @@ const SearchInput: React.FC<SearchInputProps> = ({
 }) => {
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={editable ? 1 : 0.8}>
-      <View className="flex-row items-center bg-gray-200 rounded-full px-6 py-3 shadow-lg">
+      <View className="flex-row items-center bg-white rounded-full px-4 py-2 shadow-sm border border-gray-300">
         <Ionicons
           name="search"
-          size={28}
+          size={20}
           color="gray"
-          style={{ marginRight: 12 }}
+          style={{ marginRight: 8 }}
         />
         <TextInput
           placeholder={placeholder}
           onChangeText={onChangeText}
           editable={editable}
           autoFocus={autoFocus}
-          className="flex-1 text-gray-700 text-lg"
+          className="flex-1 text-gray-600 text-sm"
         />
       </View>
     </TouchableOpacity>

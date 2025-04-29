@@ -152,7 +152,7 @@ const SearchPage = ({ navigation }: any) => {
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 px-3 p-2 bg-white">
       <SearchInput
         placeholder="Search..."
         onChangeText={debouncedSearch}
