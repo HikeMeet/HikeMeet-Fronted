@@ -1,181 +1,273 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
-  Text,
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
-  ScrollView,
+  Text,
 } from "react-native";
 import { useAuth } from "../../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
 import SearchInput from "../../components/search-input";
+import SearchFilters from "./components/search-filters";
+import TripFilterModal from "../../components/TripFilterModal";
+import GroupFilterModal from "../../components/GroupFilterModal";
 import UserRow from "../../components/user-row-search";
+import GroupRow from "../groups/components/group-row";
+import TripRow from "../trips/component/trip-row";
+import SearchFooter from "./components/see-more-button";
+import EmptyResults from "./components/empty-results";
+import {
+  filterGroupsByFilters,
+  filterTripsByFilters,
+} from "./components/filters";
+import {
+  fetchAll,
+  fetchGroups,
+  fetchTrips,
+  fetchUsers,
+} from "./components/search-api";
 
 const SearchPage = ({ navigation }: any) => {
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { mongoId, mongoUser } = useAuth();
   const [filter, setFilter] = useState("All");
-  const [lastQuery, setLastQuery] = useState<string>("");
-  const [offset, setOffset] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const { mongoId } = useAuth();
+  const [lastQuery, setLastQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [resultsToShow, setResultsToShow] = useState(10);
+
+  const [users, setUsers] = useState<any[]>([]);
+  const [groups, setGroups] = useState<any[]>([]);
+  const [trips, setTrips] = useState<any[]>([]);
+
+  const [tripFilters, setTripFilters] = useState<
+    { id: string; label: string }[]
+  >([]);
+  const [groupFilters, setGroupFilters] = useState<
+    { id: string; label: string }[]
+  >([]);
+
+  const [showTripFilterModal, setShowTripFilterModal] = useState(false);
+  const [showGroupFilterModal, setShowGroupFilterModal] = useState(false);
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const searchFriends = async (query: string, reset = true) => {
+  const [allTripsBackup, setAllTripsBackup] = useState<any[]>([]);
+  const [allGroupsBackup, setAllGroupsBackup] = useState<any[]>([]);
+
+  const searchContent = async (query: string, reset = true) => {
     if (!query.trim()) {
       setUsers([]);
-      setLastQuery("");
-      setOffset(0);
-      setHasMore(true);
+      setGroups([]);
+      setTrips([]);
       return;
     }
-
-    if (reset) {
-      setLoading(true);
-      setOffset(0);
-    }
+    setLoading(reset);
 
     try {
-      const userResponse = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/search/users?query=${query}&offset=${
-          reset ? 0 : offset
-        }`
-      );
-      if (!userResponse.ok) throw new Error("Failed to fetch search results");
-      const { friends: userList = [] } = await userResponse.json();
+      if (filter === "All") {
+        const { friends, trips, groups } = await fetchAll(query);
 
-      const friendResponse = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/friend/${mongoId}`
-      );
-      const { friends: friendList = [] } = friendResponse.ok
-        ? await friendResponse.json()
-        : { friends: [] };
-
-      const updatedUsers = userList.map((u: any) => {
-        const entry = friendList.find(
-          (f: any) => f.id === u._id || f.id === u._id.toString()
-        );
-        return {
+        const updatedUsers = friends.map((u: any) => ({
           ...u,
-          friendStatus: entry?.status || "none",
-        };
-      });
+          friendStatus:
+            mongoUser?.friends?.find((f) => f.id === u._id)?.status || "none",
+        }));
 
-      if (reset) setUsers(updatedUsers);
-      else setUsers((prev) => [...prev, ...updatedUsers]);
-
-      setOffset((prev) => prev + updatedUsers.length);
-      setHasMore(updatedUsers.length > 0);
-      setLastQuery(query);
-    } catch (err) {
-      console.error(err);
-      if (reset) setUsers([]);
+        setUsers(updatedUsers);
+        setTrips(trips);
+        setGroups(groups);
+        setAllTripsBackup(trips);
+        setAllGroupsBackup(groups);
+      } else if (filter === "Groups") {
+        const groupList = await fetchGroups(query);
+        setGroups(filterGroupsByFilters(groupList, groupFilters));
+        setAllGroupsBackup(groupList);
+      } else if (filter === "Trip") {
+        const tripList = await fetchTrips(query);
+        setTrips(filterTripsByFilters(tripList, tripFilters));
+        setAllTripsBackup(tripList);
+      } else if (filter === "Hikes") {
+        const userList = await fetchUsers(query);
+        const updated = userList.map((u: any) => ({
+          ...u,
+          friendStatus:
+            mongoUser?.friends?.find((f) => f.id === u._id)?.status || "none",
+        }));
+        setUsers(updated);
+      }
+    } catch (e) {
+      console.error(e);
     } finally {
-      if (reset) setLoading(false);
+      setLoading(false);
     }
   };
 
   const debouncedSearch = (text: string) => {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
-      searchFriends(text);
-    }, 750);
+      setLastQuery(text);
+      searchContent(text);
+    }, 600);
   };
 
-  const handleStatusChange = (newStatus: string, id: string) => {
-    setUsers((prev) =>
-      prev.map((u) => (u._id === id ? { ...u, friendStatus: newStatus } : u))
-    );
-  };
+  useEffect(() => {
+    if (lastQuery.trim()) {
+      searchContent(lastQuery);
+    }
+  }, [filter]);
 
   useFocusEffect(
     useCallback(() => {
-      if (lastQuery) searchFriends(lastQuery, true);
-    }, [lastQuery])
+      return () => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+      };
+    }, [])
   );
 
-  const handleEndReached = () => {
-    if (!loading && hasMore && lastQuery) {
-      searchFriends(lastQuery, false);
+  const allData =
+    filter === "Groups"
+      ? groups
+      : filter === "Trip"
+        ? trips
+        : filter === "Hikes"
+          ? users.filter((u) => u._id !== mongoId)
+          : [...users.filter((u) => u._id !== mongoId), ...groups, ...trips];
+
+  const visibleData = allData.slice(0, resultsToShow);
+
+  const removeFilter = (filterId: string) => {
+    if (filter === "Trip") {
+      const newFilters = tripFilters.filter((f) => f.id !== filterId);
+      setTripFilters(newFilters);
+      setTrips(filterTripsByFilters(allTripsBackup, newFilters));
+    } else if (filter === "Groups") {
+      const newFilters = groupFilters.filter((f) => f.id !== filterId);
+      setGroupFilters(newFilters);
+      setGroups(filterGroupsByFilters(allGroupsBackup, newFilters));
     }
   };
+  function handleAction(): void {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <View className="flex-1 bg-white">
-      {/* Search Input */}
-      <View className="px-4 pt-4 pb-2">
-        <SearchInput
-          placeholder="Search Everything..."
-          onChangeText={debouncedSearch}
-          autoFocus
-        />
-      </View>
+      <SearchInput
+        placeholder="Search..."
+        onChangeText={debouncedSearch}
+        autoFocus
+      />
+      <SearchFilters filter={filter} setFilter={setFilter} />
 
-      {/* Filters */}
-      <View className="px-4 pb-2">
-        <ScrollView
-          horizontal
-          contentContainerStyle={{ paddingVertical: 8 }}
-          showsHorizontalScrollIndicator={false}
-        >
-          {["All", "Groups", "Trip", "Hikes", "Posts"].map((item) => (
-            <TouchableOpacity
-              key={item}
-              onPress={() => setFilter(item)}
-              className={`px-3 py-1 rounded-full mx-1 ${
-                filter === item ? "bg-blue-500" : "bg-gray-300"
-              }`}
-            >
-              <Text
-                className={`text-sm font-medium ${
-                  filter === item ? "text-white" : "text-gray-800"
-                }`}
+      {/* Filters Tags */}
+      {(filter === "Trip" || filter === "Groups") && (
+        <View className="flex-row items-center px-4 py-2">
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={filter === "Trip" ? tripFilters : groupFilters}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => removeFilter(item.id)}
+                className="bg-gray-200 px-5 py-2.5 rounded-full mr-2"
               >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
+                <Text className="text-gray-700 text-xs">{item.label} ✕</Text>
+              </TouchableOpacity>
+            )}
+            contentContainerStyle={{ alignItems: "center" }}
+          />
+          <TouchableOpacity
+            onPress={() =>
+              filter === "Trip"
+                ? setShowTripFilterModal(true)
+                : setShowGroupFilterModal(true)
+            }
+          >
+            <Text>Add Filter</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Results */}
-      {loading && users.length === 0 ? (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#0000ff" />
-          <Text className="text-gray-500 mt-2">Loading...</Text>
-        </View>
+      {loading ? (
+        <ActivityIndicator size="large" />
       ) : (
         <FlatList
-          data={users.filter((u) => u._id !== mongoId)}
+          data={visibleData}
           keyExtractor={(item) => item._id}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8 }}
-          renderItem={({ item }) => (
-            <View className="mb-1">
+          renderItem={({ item }) =>
+            item.username ? (
               <UserRow
                 user={item}
-                onStatusChange={(newStatus) =>
-                  handleStatusChange(newStatus, item._id)
-                }
                 navigation={navigation}
+                onStatusChange={function (newStatus: string): void {
+                  throw new Error("Function not implemented.");
+                }}
               />
-            </View>
-          )}
-          onEndReached={handleEndReached}
-          onEndReachedThreshold={0.5}
-          ListEmptyComponent={() =>
-            !loading && (
-              <View className="flex-1 justify-center items-center mt-10">
-                <Text className="text-gray-500">
-                  {users.length === 0
-                    ? "Start typing to search."
-                    : "No users found."}
-                </Text>
-              </View>
+            ) : item.max_members ? (
+              <GroupRow
+                group={item}
+                onPress={() =>
+                  navigation.navigate("GroupsStack", {
+                    screen: "GroupPage",
+                    params: { groupId: item._id },
+                  })
+                }
+                onAction={handleAction}
+                navigation={undefined}
+              />
+            ) : (
+              <TripRow
+                trip={item}
+                onPress={() =>
+                  navigation.push("TripsStack", {
+                    screen: "TripPage",
+                    params: { tripId: item._id },
+                  })
+                }
+              />
             )
+          }
+          ListEmptyComponent={!loading ? <EmptyResults /> : null}
+          ListFooterComponent={
+            <SearchFooter
+              loadingMore={loadingMore}
+              canLoadMore={resultsToShow < allData.length}
+              onPress={() => {
+                setLoadingMore(true);
+                setTimeout(() => {
+                  setResultsToShow((prev) => prev + 10);
+                  setLoadingMore(false);
+                }, 500);
+              }}
+            />
           }
         />
       )}
+
+      {/* Modals */}
+      <TripFilterModal
+        visible={showTripFilterModal}
+        onClose={() => setShowTripFilterModal(false)}
+        trips={trips}
+        onApply={(filtered, filters) => {
+          setTrips(filtered);
+          setTripFilters(filters);
+          setShowTripFilterModal(false);
+        }}
+      />
+      <GroupFilterModal
+        visible={showGroupFilterModal}
+        onClose={() => setShowGroupFilterModal(false)}
+        groups={groups}
+        onApply={(filtered, filters) => {
+          setGroups(filtered);
+          setGroupFilters(filters);
+          setShowGroupFilterModal(false);
+        }}
+      />
     </View>
   );
 };
