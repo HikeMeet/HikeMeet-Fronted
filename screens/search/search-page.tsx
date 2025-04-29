@@ -1,18 +1,15 @@
 import React, { useState, useCallback, useRef } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  ActivityIndicator,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
+import { View, FlatList, ActivityIndicator } from "react-native";
+import { Text } from "react-native";
 import { useAuth } from "../../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
 import SearchInput from "../../components/search-input";
 import UserRow from "../../components/user-row-search";
 import GroupRow from "../groups/components/group-row";
 import TripRow from "../trips/component/trip-row";
+import SearchFilters from "./components/search-filters";
+import SearchFooter from "./components/search-footer";
+import EmptyResults from "./components/empty-results";
 
 const SearchPage = ({ navigation }: any) => {
   const [users, setUsers] = useState<any[]>([]);
@@ -21,8 +18,8 @@ const SearchPage = ({ navigation }: any) => {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("All");
   const [lastQuery, setLastQuery] = useState<string>("");
-  const [offset, setOffset] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const [resultsToShow, setResultsToShow] = useState(10);
+  const [loadingMore, setLoadingMore] = useState(false);
   const { mongoId } = useAuth();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -32,67 +29,57 @@ const SearchPage = ({ navigation }: any) => {
       setGroups([]);
       setTrips([]);
       setLastQuery("");
-      setOffset(0);
-      setHasMore(true);
+      setResultsToShow(10);
       return;
     }
 
     if (reset) {
       setLoading(true);
-      setOffset(0);
+      setResultsToShow(10);
     }
 
     try {
       if (filter === "All" || filter === "Groups") {
-        const groupResponse = await fetch(
+        const res = await fetch(
           `${process.env.EXPO_LOCAL_SERVER}/api/search/groups?query=${query}`
         );
-        if (!groupResponse.ok) throw new Error("Failed to fetch groups");
-        const { groups: groupList = [] } = await groupResponse.json();
-        if (reset) setGroups(groupList);
-        else setGroups((prev) => [...prev, ...groupList]);
+        const { groups: groupList = [] } = await res.json();
+        reset
+          ? setGroups(groupList)
+          : setGroups((prev) => [...prev, ...groupList]);
       }
 
       if (filter === "All" || filter === "Trip") {
-        const tripResponse = await fetch(
+        const res = await fetch(
           `${process.env.EXPO_LOCAL_SERVER}/api/search/trips?query=${query}`
         );
-        if (!tripResponse.ok) throw new Error("Failed to fetch trips");
-        const { trips: tripList = [] } = await tripResponse.json();
-        if (reset) setTrips(tripList);
-        else setTrips((prev) => [...prev, ...tripList]);
+        const { trips: tripList = [] } = await res.json();
+        reset ? setTrips(tripList) : setTrips((prev) => [...prev, ...tripList]);
       }
 
       if (filter === "All" || filter === "Hikes") {
-        const userResponse = await fetch(
+        const userRes = await fetch(
           `${process.env.EXPO_LOCAL_SERVER}/api/search/users?query=${query}`
         );
-        if (!userResponse.ok) throw new Error("Failed to fetch users");
-        const { friends: userList = [] } = await userResponse.json();
-
-        const friendResponse = await fetch(
+        const { friends: userList = [] } = await userRes.json();
+        const friendRes = await fetch(
           `${process.env.EXPO_LOCAL_SERVER}/api/friend/${mongoId}`
         );
-        const { friends: friendList = [] } = friendResponse.ok
-          ? await friendResponse.json()
-          : { friends: [] };
+        const { friends: friendList = [] } = await friendRes.json();
 
         const updatedUsers = userList.map((u: any) => {
-          const entry = friendList.find(
+          const match = friendList.find(
             (f: any) => f.id === u._id || f.id === u._id.toString()
           );
-          return {
-            ...u,
-            friendStatus: entry?.status || "none",
-          };
+          return { ...u, friendStatus: match?.status || "none" };
         });
 
-        if (reset) setUsers(updatedUsers);
-        else setUsers((prev) => [...prev, ...updatedUsers]);
+        reset
+          ? setUsers(updatedUsers)
+          : setUsers((prev) => [...prev, ...updatedUsers]);
       }
 
       setLastQuery(query);
-      setHasMore(false); // Update accordingly if you implement pagination later
     } catch (err) {
       console.error(err);
       if (reset) {
@@ -105,13 +92,10 @@ const SearchPage = ({ navigation }: any) => {
     }
   };
 
+  //debouncedSearch
   const debouncedSearch = (text: string) => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-    timerRef.current = setTimeout(() => {
-      searchContent(text, true);
-    }, 750);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => searchContent(text, true), 750);
   };
 
   const handleStatusChange = (newStatus: string, id: string) => {
@@ -122,45 +106,24 @@ const SearchPage = ({ navigation }: any) => {
 
   useFocusEffect(
     useCallback(() => {
-      if (lastQuery) {
-        debouncedSearch(lastQuery);
-      }
+      if (lastQuery) debouncedSearch(lastQuery);
     }, [lastQuery, filter])
   );
 
-  const handleEndReached = () => {
-    if (!loading && hasMore && lastQuery) {
-      searchContent(lastQuery, false);
-    }
-  };
+  const allData =
+    filter === "Groups"
+      ? groups
+      : filter === "Trip"
+        ? trips
+        : filter === "Hikes"
+          ? users.filter((u) => u._id !== mongoId)
+          : [...users.filter((u) => u._id !== mongoId), ...groups, ...trips];
 
-  const getDataForRender = () => {
-    if (filter === "Groups") return groups;
-    if (filter === "Trip") return trips;
-    if (filter === "Hikes") return users.filter((u) => u._id !== mongoId);
-    if (filter === "All")
-      return [...users.filter((u) => u._id !== mongoId), ...groups, ...trips];
-    return [];
-  };
-
-  const renderFooter = () => {
-    if (!hasMore) return null;
-
-    return (
-      <View className="mt-4 mb-8 items-center">
-        <TouchableOpacity
-          onPress={handleEndReached}
-          className="px-6 py-2 bg-blue-500 rounded-full"
-        >
-          <Text className="text-white font-semibold">Load More</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
+  const visibleData = allData.slice(0, resultsToShow);
 
   return (
     <View className="flex-1 bg-white">
-      {/* Search Input */}
+      {/* Header */}
       <View className="px-4 pt-4 pb-2">
         <SearchInput
           placeholder="Search Everything..."
@@ -170,41 +133,18 @@ const SearchPage = ({ navigation }: any) => {
       </View>
 
       {/* Filters */}
-      <View className="px-4 pb-2">
-        <ScrollView
-          horizontal
-          contentContainerStyle={{ paddingVertical: 8 }}
-          showsHorizontalScrollIndicator={false}
-        >
-          {["All", "Hikes", "Groups", "Trip"].map((item) => (
-            <TouchableOpacity
-              key={item}
-              onPress={() => setFilter(item)}
-              className={`px-3 py-1 rounded-full mx-1 ${
-                filter === item ? "bg-blue-500" : "bg-gray-300"
-              }`}
-            >
-              <Text
-                className={`text-sm font-medium ${
-                  filter === item ? "text-white" : "text-gray-800"
-                }`}
-              >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
+      <SearchFilters filter={filter} setFilter={setFilter} />
 
       {/* Results */}
-      {loading && getDataForRender().length === 0 ? (
+      {loading && visibleData.length === 0 ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#0000ff" />
           <Text className="text-gray-500 mt-2">Loading...</Text>
         </View>
       ) : (
         <FlatList
-          data={getDataForRender()}
+          ListEmptyComponent={!loading ? <EmptyResults /> : null}
+          data={visibleData}
           keyExtractor={(item) => item._id}
           contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8 }}
           renderItem={({ item }) => (
@@ -241,7 +181,19 @@ const SearchPage = ({ navigation }: any) => {
               )}
             </View>
           )}
-          ListFooterComponent={renderFooter}
+          ListFooterComponent={
+            <SearchFooter
+              loadingMore={loadingMore}
+              canLoadMore={resultsToShow < allData.length}
+              onPress={() => {
+                setLoadingMore(true);
+                setTimeout(() => {
+                  setResultsToShow((prev) => prev + 10);
+                  setLoadingMore(false);
+                }, 600);
+              }}
+            />
+          }
           onEndReachedThreshold={0.5}
         />
       )}
