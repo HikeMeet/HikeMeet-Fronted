@@ -8,8 +8,12 @@ import React from "react";
 
 // Only import Mapbox if not running in Expo Go
 let Mapbox = null;
+let StyledMapView: any;
+let StyledCamera: any;
 if (Constants.appOwnership !== "expo") {
   Mapbox = require("@rnmapbox/maps").default;
+  StyledMapView = styled(Mapbox.MapView as any);
+  StyledCamera = styled(Mapbox.Camera as any);
 }
 
 const StyledIonicons = styled(Ionicons);
@@ -20,9 +24,6 @@ type MapSearchProps = {
   onMapTouchStart?: () => void;
   onMapTouchEnd?: () => void;
 };
-
-const StyledMapView: any = styled(Mapbox.MapView as any);
-const StyledCamera: any = styled(Mapbox.Camera as any);
 
 const MapSearch: React.FC<MapSearchProps> = ({
   onLocationSelect,

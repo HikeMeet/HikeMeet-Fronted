@@ -208,7 +208,12 @@ const PostCard: React.FC<PostCardProps> = ({
       onPress={() =>
         navigation.push("PostStack", {
           screen: "PostPage",
-          params: { postId: post._id },
+          params: {
+            postId: post._id,
+            onPostUpdated: (newPost: IPost) => {
+              onPostLiked?.(newPost);
+            },
+          },
         })
       }
       className="bg-white rounded-2xl border border-gray-200 shadow-md mb-4"

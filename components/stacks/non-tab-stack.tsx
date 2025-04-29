@@ -8,6 +8,7 @@ import TripsStack from "./trip-proccess-stack";
 import GroupsStack from "./group-proccess-stack";
 import { Provider } from "react-native-paper";
 import PostStack from "./posts-proccess-stack";
+import NotificationsPage from "../../screens/notifications/notification-list-page";
 
 // Import the new AccountStack
 
@@ -68,6 +69,11 @@ const NonTabScreensStack = () => {
         <Stack.Screen
           name="SearchPage"
           component={SearchPage}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="NotificationsPage"
+          component={NotificationsPage}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

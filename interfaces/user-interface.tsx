@@ -6,10 +6,7 @@ export interface Friend {
   status: string;
   data?: IUser;
 }
-// export interface IProfilePicture {
-//   url: string;
-//   image_id: string;
-// }
+
 export interface ITripHistoryEntry {
   trip: string;
   completed_at: Date;
@@ -26,6 +23,7 @@ export interface MongoUser {
   facebook_link: string;
   instagram_link: string;
   role: string;
+  exp:number;
   social: {
     posts_saved: IPost[] | string[];
     posts_liked: IPost[] | string[];
@@ -35,9 +33,14 @@ export interface MongoUser {
   };
   trip_history: ITripHistoryEntry[];
   firebase_id: string;
+  pushTokens: string[];
+  unreadNotifications: number;
   created_on: string;
   updated_on: string;
   _id: string;
   friends: Friend[]; // Now each friend has an id and a status.
   __v: number;
+  mutedGroups: string[];
+  mutedNotificationTypes: string[];
+  favorite_trips: string[];
 }

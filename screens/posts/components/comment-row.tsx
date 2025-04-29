@@ -123,7 +123,7 @@ const CommentRow: React.FC<CommentRowProps> = ({
         <ProfileHeaderLink
           userId={author._id}
           username={author.username}
-          profileImage={author.profile_picture.url}
+          profileImage={author.profile_picture!.url}
           navigation={navigation}
         />
         <ParsedMentionText
@@ -147,7 +147,7 @@ const CommentRow: React.FC<CommentRowProps> = ({
         </TouchableOpacity>
       </View>
       {/* Only show the delete icon if the comment belongs to the current user */}
-      {author._id === mongoId && (
+      {(author._id === mongoId || mongoUser?.role === "admin") && (
         <TouchableOpacity
           onPress={() => setShowDeleteModal(true)}
           className="self-center ml-4"

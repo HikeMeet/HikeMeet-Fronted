@@ -15,7 +15,7 @@ const UserRow: React.FC<UserRowProps> = ({
   onStatusChange,
   navigation,
 }) => {
-  const { mongoId } = useAuth();
+  const { mongoId, mongoUser } = useAuth();
   const handlePress = () => {
     if (user._id === mongoId) {
       navigation.push("Tabs", { screen: "Profile" });
@@ -45,7 +45,10 @@ const UserRow: React.FC<UserRowProps> = ({
         {mongoId !== user._id && (
           <FriendActionButton
             targetUserId={user._id}
-            status={user.friendStatus || "none"}
+            status={
+              mongoUser?.friends?.find((friend) => friend.id === user._id)
+                ?.status || "none"
+            }
             onStatusChange={onStatusChange}
           />
         )}

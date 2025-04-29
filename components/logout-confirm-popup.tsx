@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, Modal } from "react-native";
 import { FIREBASE_AUTH } from "../firebaseconfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNotification } from "../contexts/notification-context";
 
 interface ConfirmPopupProps {
   visible: boolean;
@@ -18,8 +19,26 @@ const LogoutConfirmPopup: React.FC<ConfirmPopupProps> = ({
   onCancel,
   navigation,
 }) => {
+  const { expoPushToken } = useNotification();
   const handleLogout = async () => {
     try {
+      // 1) Unregister this device token
+      if (expoPushToken && FIREBASE_AUTH.currentUser) {
+        const idToken = await FIREBASE_AUTH.currentUser.getIdToken(true);
+        await fetch(
+          `${process.env.EXPO_LOCAL_SERVER}/api/user/unregister-token`,
+          {
+            method: "DELETE", // or POST if you prefer
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({ token: expoPushToken }),
+          }
+        );
+      }
+
+      // 2) Sign out and clear storage
       await FIREBASE_AUTH.signOut();
       await AsyncStorage.removeItem("user");
       navigation.navigate("Landing");

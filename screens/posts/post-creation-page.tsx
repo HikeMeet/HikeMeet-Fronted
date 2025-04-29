@@ -25,13 +25,14 @@ import ConfirmationModal from "../../components/confirmation-modal";
 import MentionTextInput from "../../components/metion-with-text-input";
 import { Group } from "../../interfaces/group-interface";
 import { Trip } from "../../interfaces/trip-interface";
-import TripRow from "../trips/component/trip-row";
-import GroupRow from "../groups/components/group-row";
+
 import { fetchTrips } from "../../components/requests/fetch-trips";
-import { fetchGroups } from "../../components/requests/fetch-groups";
+import {
+  fetchGroups,
+  fetchUserGroups,
+} from "../../components/requests/fetch-groups";
 import GroupSelectionModal from "../groups/components/group-selection-modal";
 import TripSelectionModal from "../trips/component/trip-selection-modal";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import SelectedGroupsList from "./components/attached-group-preview";
 import SelectedTripsList from "./components/attached-trip-preview";
 
@@ -111,7 +112,7 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
     } else if (type === "group") {
       try {
         setLoading(true);
-        const response = await fetchGroups();
+        const response = await fetchUserGroups(mongoId!);
         setGroups(response);
         setShowGroupModal(true);
       } catch (error) {

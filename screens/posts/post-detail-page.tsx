@@ -44,7 +44,13 @@ const getUri = (data: any): string => {
 };
 
 type PostDetailPageParams = {
-  route: { params: { postId: string; fromCreate?: boolean } };
+  route: {
+    params: {
+      postId: string;
+      fromCreate?: boolean;
+      onPostUpdated?: (p: IPost) => void;
+    };
+  };
   navigation: any;
 };
 
@@ -52,7 +58,7 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
   route,
   navigation,
 }) => {
-  const { postId } = route.params;
+  const { postId,onPostUpdated } = route.params;
   const [post, setPost] = useState<IPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [mediaModalVisible, setMediaModalVisible] = useState(false);
@@ -61,6 +67,8 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [commentsToShow, setCommentsToShow] = useState<number>(5);
 
+  
+
   const fetchPost = async () => {
     try {
       const response = await fetch(
@@ -68,6 +76,7 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
       );
       const data = await response.json();
       setPost(data.post);
+      onPostUpdated?.(data.post);
     } catch (error) {
       console.error("Error fetching post details:", error);
     } finally {
@@ -103,7 +112,9 @@ const PostDetailPage: React.FC<PostDetailPageParams> = ({
   if (!post) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-gray-50">
-        <Text className="text-lg text-gray-700">Post not found.</Text>
+        <Text className="text-lg text-gray-700">
+          Post not available or deleted.
+        </Text>
       </SafeAreaView>
     );
   }

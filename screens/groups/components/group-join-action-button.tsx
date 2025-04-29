@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import React from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
-import { Group } from "../interfaces/group-interface";
-import { useAuth } from "../contexts/auth-context";
-import ConfirmationModal from "./confirmation-modal";
+import { Group } from "../../../interfaces/group-interface";
+import { useAuth } from "../../../contexts/auth-context";
+import ConfirmationModal from "../../../components/confirmation-modal";
 
 type JoinStatus = "none" | "member" | "requested" | "invited";
 
@@ -26,7 +26,6 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
   const [showDeclineConfirmModal, setShowDeclineConfirmModal] = useState(false);
   const [showLeaveConfirmModal, setShowLeaveConfirmModal] = useState(false);
   const { mongoId } = useAuth();
-
   // Compute initial join status (simplified)
   useEffect(() => {
     if (group.members.some((m) => m.user === mongoId)) {
@@ -150,6 +149,36 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
     }
   };
 
+  const handleCancelJoin = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.EXPO_LOCAL_SERVER}/api/group/${group._id}/cancel-join/${mongoId}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cancelled_by: mongoId }),
+        }
+      );
+      if (!res.ok) {
+        const err = await res.json();
+        Alert.alert("Error", err.error || "Failed to cancel join request");
+        return;
+      }
+      Alert.alert("Success", "Your join request has been cancelled");
+      setJoinStatus("none");
+      const updated = { ...group };
+      updated.pending = group.pending.filter(
+        (p) => !(p.user === mongoId && p.origin === "request")
+      );
+      onAction(updated);
+    } catch (e) {
+      console.error("Cancel join error:", e);
+      Alert.alert("Error", "Failed to cancel join request");
+    } finally {
+      setLoading(false);
+    }
+  };
   // Handler for accepting an invitation
   const handleAcceptInvite = async () => {
     setLoading(true);
@@ -272,7 +301,7 @@ const JoinGroupActionButton: React.FC<JoinGroupActionButtonProps> = ({
       case "requested":
         return (
           <TouchableOpacity
-            onPress={handleJoinGroup} // Ideally, use a cancel request endpoint
+            onPress={handleCancelJoin} // Ideally, use a cancel request endpoint
             className="bg-orange-500 px-4 py-2 rounded"
           >
             <Text className="text-white text-sm font-semibold">

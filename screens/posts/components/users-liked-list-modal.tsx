@@ -1,5 +1,5 @@
 // LikesModal.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Modal,
   View,
@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { IUser } from "../../../interfaces/post-interface";
 import UserRow from "../../../components/user-row-search";
+import { useAuth } from "../../../contexts/auth-context";
 
 interface LikesModalProps {
   visible: boolean;
@@ -44,11 +45,13 @@ const LikesModal: React.FC<LikesModalProps> = ({
           <ScrollView>
             {likes.map((like, index) => {
               let user: IUser;
+              console.log("Like is a string:", like);
+
               if (typeof like === "string") {
                 console.log("Like is a string:", like);
                 user = {
                   _id: like,
-                  username: "Unkdfown",
+                  username: "Unkno",
                   profile_picture: {
                     url: "https://via.placeholder.com/150",
                     image_id: "",
@@ -64,7 +67,6 @@ const LikesModal: React.FC<LikesModalProps> = ({
                   onStatusChange={(newStatus: string) =>
                     console.log("Status changed:", newStatus)
                   }
-                  isMyProfile={false}
                   navigation={navigation}
                 />
               );
