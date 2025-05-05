@@ -12,6 +12,7 @@ export interface IUser {
   profile_picture: { url: string; image_id: string };
   first_name?: string;
   last_name?: string;
+  firebase_id?: string;
 }
 
 export interface IComment {

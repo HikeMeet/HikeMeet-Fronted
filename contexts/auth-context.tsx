@@ -20,7 +20,7 @@ interface AuthContextProps {
   setMongoId: React.Dispatch<React.SetStateAction<string | null>>;
   mongoUser: MongoUser | null;
   setMongoUser: React.Dispatch<React.SetStateAction<MongoUser | null>>;
-  Users: IUser[];
+  users: IUser[];
   setUsers: React.Dispatch<React.SetStateAction<IUser[]>>;
   userFriendsMinDetail: MongoUser[];
   setUserFriendsMinDetail: React.Dispatch<React.SetStateAction<MongoUser[]>>;
@@ -39,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [userId, setUserId] = useState<string | null>(null);
   const [mongoId, setMongoId] = useState<string | null>(null);
   const [mongoUser, setMongoUser] = useState<MongoUser | null>(null);
-  const [Users, setUsers] = useState<IUser[]>([]);
+  const [users, setUsers] = useState<IUser[]>([]);
   const [userFriendsMinDetail, setUserFriendsMinDetail] = useState<MongoUser[]>(
     []
   );
@@ -177,13 +177,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               setUsers(await usersResp.json());
 
               try {
-                await setDoc(doc(FIREBASE_DB, "users", currentUser.uid), {
-                  userId: currentUser.uid,
-                  mongoId: data._id,
-                  username: data.username,
-                  email: data.email,
-                });
-                console.log("User document set");
+                const userDoc = await getDoc(
+                  doc(FIREBASE_DB, "users", currentUser.uid)
+                );
+                if (!userDoc.exists()) {
+                  await setDoc(doc(FIREBASE_DB, "users", currentUser.uid), {
+                    userId: currentUser.uid,
+                    mongoId: data._id,
+                    username: data.username,
+                    email: data.email,
+                  });
+                  console.log("User document set");
+                }
               } catch (error) {
                 console.error("Error setting user document:", error);
               }
@@ -259,7 +264,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setMongoId,
         mongoUser,
         setMongoUser,
-        Users,
+        users,
         setUsers,
         userFriendsMinDetail,
         setUserFriendsMinDetail,
