@@ -2,11 +2,11 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { ActivityIndicator, View, Text } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { FIREBASE_AUTH } from "../firebaseconfig";
+import { FIREBASE_AUTH, FIREBASE_DB } from "../firebaseconfig";
 import { MongoUser } from "../interfaces/user-interface";
 import { IUser } from "../interfaces/post-interface";
 import { styled } from "nativewind";
-
+import { doc, getDoc, setDoc } from "firebase/firestore";
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledActivityIndicator = styled(ActivityIndicator);
@@ -175,6 +175,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 throw new Error(`Fetch error: ${usersResp.status}`);
               }
               setUsers(await usersResp.json());
+
+              try {
+                await setDoc(doc(FIREBASE_DB, "users", currentUser.uid), {
+                  userId: currentUser.uid,
+                  mongoId: data._id,
+                  username: data.username,
+                  email: data.email,
+                });
+                console.log("User document set");
+              } catch (error) {
+                console.error("Error setting user document:", error);
+              }
             } catch (error) {
               console.error("Error fetching user data:", error);
             }
