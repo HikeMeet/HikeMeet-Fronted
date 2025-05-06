@@ -21,6 +21,7 @@ import { FIREBASE_DB } from "../../firebaseconfig";
 import { IMessage } from "../../interfaces/chat-interface";
 import { getRoomId } from "../../utils/chat-utils";
 import ChatItem from "./components.tsx/chat-item";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 // Enable LayoutAnimation on Android
 if (
@@ -88,8 +89,13 @@ export default function ChatListPage({ navigation }: any) {
           value={queryText}
           onChangeText={setQueryText}
         />
+        <View className="flex-row items-center mt-1">
+          <Ionicons name="information-circle-outline" size={14} color="#888" />
+          <Text className="text-xs italic text-gray-500 ml-1">
+            Long press to remove chat from the list
+          </Text>
+        </View>
       </View>
-
       <FlatList
         data={filtered}
         keyExtractor={(item) => item._id}

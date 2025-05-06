@@ -8,6 +8,7 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  Pressable,
 } from "react-native";
 import { IUser } from "../../../interfaces/post-interface";
 import { useAuth } from "../../../contexts/auth-context";
@@ -15,6 +16,7 @@ import { formatDate } from "../../../utils/chat-utils";
 import { IMessage } from "../../../interfaces/chat-interface";
 import ConfirmationModal from "../../../components/confirmation-modal";
 import { closeChatroom } from "../../../components/requests/chats-requsts";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 // Enable LayoutAnimation for Android
 if (
@@ -101,12 +103,16 @@ const ChatItem: React.FC<ChatItemProps> = ({
 
   return (
     <View onLayout={handleLayout}>
-      <TouchableOpacity
+      <Pressable
         onPress={onPress}
         onLongPress={confirmDelete}
-        className="flex-row items-center p-4 bg-white border-b border-gray-200"
+        android_ripple={{ color: "#ddd" }}
+        style={({ pressed }) => [
+          { backgroundColor: pressed ? "#f0f0f0" : "white" },
+        ]}
+        className="flex-row items-center p-4 border-b border-gray-200"
       >
-        <TouchableOpacity onPress={handleProfileImagePress}>
+        <Pressable onPress={handleProfileImagePress}>
           {user.profile_picture.url ? (
             <Image
               source={{ uri: user.profile_picture.url }}
@@ -115,7 +121,8 @@ const ChatItem: React.FC<ChatItemProps> = ({
           ) : (
             <View className="w-10 h-10 rounded-full bg-gray-300" />
           )}
-        </TouchableOpacity>
+        </Pressable>
+
         <View className="ml-4 flex-1">
           <View className="flex-row justify-between">
             <Text className="text-base font-semibold text-gray-800">
@@ -125,11 +132,14 @@ const ChatItem: React.FC<ChatItemProps> = ({
               {renderTime()}
             </Text>
           </View>
+
           <Text className="text-sm text-gray-600 mt-1">
             {renderLastMessage()}
           </Text>
+
+          {/* Hint that long‑press deletes */}
         </View>
-      </TouchableOpacity>
+      </Pressable>
 
       <ConfirmationModal
         visible={confirmVisible}
