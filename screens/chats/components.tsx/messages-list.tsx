@@ -21,12 +21,14 @@ interface MessagesListProps {
   messages: IMessage[];
   currntUser: MongoUser;
   otherUserId: string;
+  messagesLimit: number;
 }
 
 const MessagesList: React.FC<MessagesListProps> = ({
   messages,
   currntUser,
   otherUserId,
+  messagesLimit,
 }) => {
   const flatListRef = useRef<FlatList<IMessage>>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -38,10 +40,9 @@ const MessagesList: React.FC<MessagesListProps> = ({
   const [contentHeight, setContentHeight] = useState(0);
   const [prevMessagesLength, setPrevMessagesLength] = useState(0);
 
-  // Initial load of latest 20 messages
   useEffect(() => {
     if (initialLoad && messages.length > 0) {
-      const latestMessages = messages.slice(-20);
+      const latestMessages = messages.slice(-messagesLimit);
       setDisplayedMessages(latestMessages);
 
       if (latestMessages.length > 0) {
@@ -90,12 +91,11 @@ const MessagesList: React.FC<MessagesListProps> = ({
       const docRef = doc(FIREBASE_DB, "rooms", roomId);
       const messagesRef = collection(docRef, "messages");
 
-      // Create a query to get the previous 20 messages
       const q = query(
         messagesRef,
         orderBy("createdAt", "desc"),
         startAfter(oldestMessageDoc),
-        limit(20)
+        limit(messagesLimit)
       );
 
       const snapshot = await getDocs(q);
