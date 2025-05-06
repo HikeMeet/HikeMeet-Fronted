@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { ActivityIndicator, View, Text } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { onAuthStateChanged, User } from "firebase/auth";
@@ -26,6 +26,8 @@ interface AuthContextProps {
   setUserFriendsMinDetail: React.Dispatch<React.SetStateAction<MongoUser[]>>;
   fetchMongoUser: (id: string, byFirebase?: boolean) => Promise<void>;
   getToken: () => Promise<string | null>;
+  chatActivity: Record<string, number>; // partnerId → most recent ts
+  updateChatActivity: (partnerId: string, ts: number) => void;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -48,7 +50,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState(true);
   const [cacheLoaded, setCacheLoaded] = useState(false);
   const [authHandled, setAuthHandled] = useState(false);
+  const [chatActivity, setChatActivity] = useState<Record<string, number>>({});
 
+  const updateChatActivity = useCallback((partnerId: string, ts: number) => {
+    setChatActivity((prev) => ({
+      ...prev,
+      [partnerId]: Math.max(prev[partnerId] || 0, ts),
+    }));
+  }, []);
   // — ping your backend root or health
   // 1) A utility that aborts fetch after `timeoutMs`
   const fetchWithTimeout = async (
@@ -270,6 +279,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUserFriendsMinDetail,
         fetchMongoUser,
         getToken,
+        chatActivity,
+        updateChatActivity,
       }}
     >
       {children}

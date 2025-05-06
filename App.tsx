@@ -9,6 +9,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { NotificationProvider } from "./contexts/notification-context";
 import * as Notifications from "expo-notifications";
 import { navigationRef } from "./root-navigation";
+import { UIManager, Platform } from "react-native";
 
 // Only import and configure Mapbox if not running in Expo Go
 let Mapbox;
@@ -30,7 +31,12 @@ Notifications.setNotificationHandler({
     shouldSetBadge: true,
   }),
 });
-
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 export default function App() {
   return (
     <AuthProvider>

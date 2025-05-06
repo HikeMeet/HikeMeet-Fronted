@@ -20,7 +20,7 @@ interface ChatItemProps {
 }
 
 const ChatItem: React.FC<ChatItemProps> = ({ user, onPress, navigation }) => {
-  const { mongoId, mongoUser } = useAuth();
+  const { mongoId, mongoUser, updateChatActivity } = useAuth();
   const [lastMessageText, setLastMessageText] = useState<
     IMessage | null | undefined
   >(undefined);
@@ -39,6 +39,13 @@ const ChatItem: React.FC<ChatItemProps> = ({ user, onPress, navigation }) => {
     });
     return unsub;
   }, []);
+
+  useEffect(() => {
+    if (lastMessageText) {
+      const ts = lastMessageText.createdAt.toMillis();
+      updateChatActivity(user._id, ts);
+    }
+  }, [lastMessageText]);
 
   const handleProfileImagePress = () => {
     if (user._id === mongoId) {
