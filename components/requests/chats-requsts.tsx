@@ -2,7 +2,6 @@
 import { buildHeaders } from "./notification-requsts";
 
 const API_BASE = `${process.env.EXPO_LOCAL_SERVER}/api/chat`;
-
 export async function fetchChatroomsWith(token: string): Promise<any[]> {
   const res = await fetch(`${API_BASE}/`, {
     method: "GET",
@@ -24,6 +23,7 @@ export async function openChatroom(
     method: "POST",
     headers: buildHeaders(token),
   });
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || "Failed to open chatroom");

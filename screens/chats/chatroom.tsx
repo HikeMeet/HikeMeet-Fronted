@@ -8,13 +8,11 @@ import {
   TouchableOpacity,
   Platform,
   Alert,
-  ScrollView,
   Keyboard,
   InputAccessoryView,
 } from "react-native";
 import { IUser } from "../../interfaces/post-interface";
 import { useAuth } from "../../contexts/auth-context";
-import MessagesList from "./components.tsx/messages-list";
 import { getRoomId } from "../../utils/chat-utils";
 import {
   addDoc,
@@ -26,11 +24,13 @@ import {
   query,
   setDoc,
   Timestamp,
+  limit,
 } from "firebase/firestore";
 import { FIREBASE_DB } from "../../firebaseconfig";
 import { IMessage } from "../../interfaces/chat-interface";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { openChatroom } from "../../components/requests/chats-requsts";
+import MessagesList from "./components.tsx/messages-list";
 
 interface ChatRoomPageProps {
   route: {
@@ -71,16 +71,45 @@ const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
     let roomId = getRoomId(mongoUser!.firebase_id, user.firebase_id!);
     const docRef = doc(FIREBASE_DB, "rooms", roomId);
     const messagesRef = collection(docRef, "messages");
-    const q = query(messagesRef, orderBy("createdAt", "asc"));
+
+    // Only fetch the latest 20 messages initially
+    const q = query(messagesRef, orderBy("createdAt", "desc"), limit(12));
+
     let unsub = onSnapshot(q, (snapshot) => {
-      let allMessages: IMessage[] = snapshot.docs.map((doc) => {
-        return doc.data() as IMessage;
-      });
+      let allMessages: IMessage[] = snapshot.docs
+        .map((doc) => doc.data() as IMessage)
+        .reverse(); // Reverse to show in chronological order
+
       setMessages([...allMessages]);
+    });
+
+    // Add listener for new messages to ensure we get real-time updates
+    const newMessagesQuery = query(
+      messagesRef,
+      orderBy("createdAt", "desc"),
+      limit(1)
+    );
+
+    const newMessageUnsub = onSnapshot(newMessagesQuery, (snapshot) => {
+      if (!snapshot.empty) {
+        const newMessage = snapshot.docs[0].data() as IMessage;
+        const isNewMessage = !messages.some(
+          (msg) =>
+            msg.userId === newMessage.userId &&
+            msg.createdAt.toDate().getTime() ===
+              newMessage.createdAt.toDate().getTime() &&
+            msg.text === newMessage.text
+        );
+
+        if (isNewMessage) {
+          setMessages((prev) => [...prev, newMessage]);
+        }
+      }
     });
 
     return () => {
       unsub();
+      newMessageUnsub();
     };
   }, []);
 
@@ -181,7 +210,11 @@ const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
           return false;
         }}
       >
-        <MessagesList messages={messages} currntUser={mongoUser!} />
+        <MessagesList
+          messages={messages}
+          currntUser={mongoUser!}
+          otherUserId={user.firebase_id!}
+        />
       </View>
 
       {/* Input bar */}
