@@ -169,7 +169,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
         ]);
       }
     }
-  }, [messages]);
+  }, []);
 
   const renderHeader = () => {
     if (isLoadingMore) {
