@@ -24,6 +24,7 @@ const ChatItem: React.FC<ChatItemProps> = ({ user, onPress, navigation }) => {
   const [lastMessageText, setLastMessageText] = useState<
     IMessage | null | undefined
   >(undefined);
+
   useEffect(() => {
     let roomId = getRoomId(mongoUser!.firebase_id, user.firebase_id!);
     const docRef = doc(FIREBASE_DB, "rooms", roomId);

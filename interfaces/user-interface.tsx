@@ -23,7 +23,7 @@ export interface MongoUser {
   facebook_link: string;
   instagram_link: string;
   role: string;
-  exp:number;
+  exp: number;
   social: {
     posts_saved: IPost[] | string[];
     posts_liked: IPost[] | string[];
@@ -33,6 +33,7 @@ export interface MongoUser {
   };
   trip_history: ITripHistoryEntry[];
   firebase_id: string;
+  chatrooms_with: IUser[];
   pushTokens: string[];
   unreadNotifications: number;
   created_on: string;

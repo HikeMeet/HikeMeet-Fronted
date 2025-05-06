@@ -20,6 +20,7 @@ import {
   addDoc,
   collection,
   doc,
+  getDoc,
   onSnapshot,
   orderBy,
   query,
@@ -29,6 +30,7 @@ import {
 import { FIREBASE_DB } from "../../firebaseconfig";
 import { IMessage } from "../../interfaces/chat-interface";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { openChatroom } from "../../components/requests/chats-requsts";
 
 interface ChatRoomPageProps {
   route: {
@@ -39,23 +41,29 @@ interface ChatRoomPageProps {
 
 const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
   const { user } = route.params;
-  const { mongoId, mongoUser } = useAuth();
+  const { mongoId, mongoUser, getToken } = useAuth();
   const [messages, setMessages] = useState<IMessage[]>([]);
   const textRef = useRef("");
   const inputRef = useRef<TextInput | null>(null);
-  const scrollViewRef = useRef<ScrollView>(null);
   const insets = useSafeAreaInsets();
   const inputAccessoryViewID = "uniqueID";
 
   const createRoomIfNotExists = async () => {
-    console.log("Creating room...");
     let roomId = getRoomId(mongoUser!.firebase_id, user.firebase_id!);
-    console.log("Room ID:", roomId);
-    await setDoc(doc(FIREBASE_DB, "rooms", roomId), {
-      roomId,
-      createdAt: Timestamp.fromDate(new Date()),
-    });
-    console.log("Room created:", roomId);
+    const roomSnapshot = await getDoc(doc(FIREBASE_DB, "rooms", roomId));
+
+    if (!roomSnapshot.exists()) {
+      await setDoc(doc(FIREBASE_DB, "rooms", roomId), {
+        roomId,
+        createdAt: Timestamp.fromDate(new Date()),
+      });
+      console.log("Room created:", roomId);
+    } else {
+      console.log("Room already exists:", roomId);
+    }
+    const token = await getToken();
+    if (!token) return;
+    await openChatroom(user._id!, token);
   };
 
   useEffect(() => {
