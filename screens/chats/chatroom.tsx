@@ -38,7 +38,7 @@ interface ChatRoomPageProps {
   };
   navigation: any;
 }
-const messagesLimit = 20;  
+const messagesLimit = 20;
 const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
   const { user } = route.params;
   const { mongoId, mongoUser, getToken } = useAuth();
@@ -73,7 +73,11 @@ const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
     const messagesRef = collection(docRef, "messages");
 
     // Only fetch the latest 20 messages initially
-    const q = query(messagesRef, orderBy("createdAt", "desc"), limit(messagesLimit));
+    const q = query(
+      messagesRef,
+      orderBy("createdAt", "desc"),
+      limit(messagesLimit)
+    );
 
     let unsub = onSnapshot(q, (snapshot) => {
       let allMessages: IMessage[] = snapshot.docs

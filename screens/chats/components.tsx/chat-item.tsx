@@ -1,5 +1,5 @@
 // components/chat/components/chat-item.tsx
-import React, { useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   TouchableOpacity,
   View,
@@ -13,6 +13,8 @@ import { IUser } from "../../../interfaces/post-interface";
 import { useAuth } from "../../../contexts/auth-context";
 import { formatDate } from "../../../utils/chat-utils";
 import { IMessage } from "../../../interfaces/chat-interface";
+import ConfirmationModal from "../../../components/confirmation-modal";
+import { closeChatroom } from "../../../components/requests/chats-requsts";
 
 // Enable LayoutAnimation for Android
 if (
@@ -35,10 +37,9 @@ const ChatItem: React.FC<ChatItemProps> = ({
   onPress,
   navigation,
 }) => {
-  const { mongoId } = useAuth();
-  const ref = useRef<View>(null);
+  const { mongoId, getToken, setMongoUser, mongoUser } = useAuth();
+  const [confirmVisible, setConfirmVisible] = useState(false);
 
-  // Animate when this item is laid out (e.g., moves position)
   const handleLayout = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
   };
@@ -68,10 +69,41 @@ const ChatItem: React.FC<ChatItemProps> = ({
     }
   };
 
+  const confirmDelete = () => {
+    setConfirmVisible(true);
+  };
+
+  const onCancel = () => setConfirmVisible(false);
+
+  const onConfirm = async () => {
+    setConfirmVisible(false);
+    try {
+      const token = await getToken();
+      if (!token) throw new Error("Not authenticated");
+      await closeChatroom(user._id, token);
+      console.log("Chat deleted");
+
+      // Remove chat from context immediately
+      if (mongoUser) {
+        setMongoUser({
+          ...mongoUser,
+          chatrooms_with: mongoUser.chatrooms_with.filter(
+            (u) => u._id !== user._id
+          ),
+        });
+      }
+      // Optionally, navigate or refresh parent list
+    } catch (err) {
+      console.error(err);
+      // Optionally show error feedback
+    }
+  };
+
   return (
-    <View ref={ref} onLayout={handleLayout}>
+    <View onLayout={handleLayout}>
       <TouchableOpacity
         onPress={onPress}
+        onLongPress={confirmDelete}
         className="flex-row items-center p-4 bg-white border-b border-gray-200"
       >
         <TouchableOpacity onPress={handleProfileImagePress}>
@@ -98,6 +130,13 @@ const ChatItem: React.FC<ChatItemProps> = ({
           </Text>
         </View>
       </TouchableOpacity>
+
+      <ConfirmationModal
+        visible={confirmVisible}
+        message={`Delete chat with ${user.username}?`}
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+      />
     </View>
   );
 };
