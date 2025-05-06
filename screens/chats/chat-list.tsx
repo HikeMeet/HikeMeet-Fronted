@@ -1,3 +1,4 @@
+// screens/chat/ChatListPage.tsx
 import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
@@ -9,9 +10,19 @@ import {
   UIManager,
 } from "react-native";
 import { useAuth } from "../../contexts/auth-context";
+import {
+  collection,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
+import { FIREBASE_DB } from "../../firebaseconfig";
+import { IMessage } from "../../interfaces/chat-interface";
+import { getRoomId } from "../../utils/chat-utils";
 import ChatItem from "./components.tsx/chat-item";
 
-// enable LayoutAnimation on Android
+// Enable LayoutAnimation on Android
 if (
   Platform.OS === "android" &&
   UIManager.setLayoutAnimationEnabledExperimental
@@ -20,41 +31,62 @@ if (
 }
 
 export default function ChatListPage({ navigation }: any) {
-  const { mongoUser, chatActivity } = useAuth();
-  const [query, setQuery] = useState("");
+  const { mongoUser } = useAuth();
+  const [queryText, setQueryText] = useState("");
+  const [messagesMap, setMessagesMap] = useState<
+    Record<string, IMessage | null | undefined>
+  >({});
 
-  // animate whenever chatActivity changes
+  // Subscribe to last message per chat room
+  useEffect(() => {
+    if (!mongoUser) return;
+    const unsubscribes = mongoUser.chatrooms_with.map((user) => {
+      const roomId = getRoomId(mongoUser.firebase_id, user.firebase_id!);
+      const docRef = doc(FIREBASE_DB, "rooms", roomId);
+      const messagesRef = collection(docRef, "messages");
+      const q = query(messagesRef, orderBy("createdAt", "desc"));
+      const unsub = onSnapshot(q, (snapshot) => {
+        const first = snapshot.docs[0]?.data() as IMessage | undefined;
+        // Animate list transition on new message
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setMessagesMap((prev) => ({ ...prev, [user._id]: first ?? null }));
+      });
+      return unsub;
+    });
+    return () => unsubscribes.forEach((u) => u());
+  }, [mongoUser]);
+
+  // Animate on messagesMap change
   useEffect(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-  }, [chatActivity]);
+  }, [messagesMap]);
 
-  // sort chats by last‐activity
+  // Sort by last message time
   const sorted = useMemo(() => {
     if (!mongoUser) return [];
     return [...mongoUser.chatrooms_with].sort((a, b) => {
-      const ta = chatActivity[a._id] || 0;
-      const tb = chatActivity[b._id] || 0;
-      return tb - ta;
+      const ma = messagesMap[a._id]?.createdAt?.seconds ?? 0;
+      const mb = messagesMap[b._id]?.createdAt?.seconds ?? 0;
+      return mb - ma;
     });
-  }, [mongoUser, chatActivity]);
+  }, [mongoUser, messagesMap]);
 
-  // filter by username
+  // Filter by username
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = queryText.trim().toLowerCase();
     if (!q) return sorted;
     return sorted.filter((u) => u.username.toLowerCase().includes(q));
-  }, [sorted, query]);
+  }, [sorted, queryText]);
 
   return (
     <View className="flex-1 bg-white">
       <View className="py-4 px-6 border-b border-gray-200">
         <Text className="text-lg font-bold text-gray-800">Chat Rooms</Text>
-        {/* Search bar */}
         <TextInput
           className="mt-2 px-3 py-2 bg-gray-100 rounded-lg"
           placeholder="Search chats..."
-          value={query}
-          onChangeText={setQuery}
+          value={queryText}
+          onChangeText={setQueryText}
         />
       </View>
 
@@ -71,12 +103,13 @@ export default function ChatListPage({ navigation }: any) {
                 params: { user: item },
               })
             }
+            lastMessage={messagesMap[item._id]}
           />
         )}
         ListEmptyComponent={
           <View className="flex-1 justify-center items-center">
             <Text className="text-gray-500">
-              {query ? "No matching chats" : "No chats yet"}
+              {queryText ? "No matching chats" : "No chats yet"}
             </Text>
           </View>
         }

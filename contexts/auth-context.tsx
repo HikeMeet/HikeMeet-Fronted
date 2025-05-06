@@ -1,4 +1,11 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { ActivityIndicator, View, Text } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { onAuthStateChanged, User } from "firebase/auth";
@@ -26,8 +33,7 @@ interface AuthContextProps {
   setUserFriendsMinDetail: React.Dispatch<React.SetStateAction<MongoUser[]>>;
   fetchMongoUser: (id: string, byFirebase?: boolean) => Promise<void>;
   getToken: () => Promise<string | null>;
-  chatActivity: Record<string, number>; // partnerId → most recent ts
-  updateChatActivity: (partnerId: string, ts: number) => void;
+
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -50,14 +56,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState(true);
   const [cacheLoaded, setCacheLoaded] = useState(false);
   const [authHandled, setAuthHandled] = useState(false);
-  const [chatActivity, setChatActivity] = useState<Record<string, number>>({});
 
-  const updateChatActivity = useCallback((partnerId: string, ts: number) => {
-    setChatActivity((prev) => ({
-      ...prev,
-      [partnerId]: Math.max(prev[partnerId] || 0, ts),
-    }));
-  }, []);
+
+
   // — ping your backend root or health
   // 1) A utility that aborts fetch after `timeoutMs`
   const fetchWithTimeout = async (
@@ -107,7 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // — fetch Mongo user helper
-  const fetchMongoUser = async (id: string, byFirebase = false) => {
+  const fetchMongoUser = useCallback(async (id: string, byFirebase = false) => {
     const suffix = byFirebase ? "?firebase=true" : "";
     const url = `${process.env.EXPO_LOCAL_SERVER}/api/user/${id}${suffix}`;
     const resp = await fetch(url);
@@ -118,7 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setMongoUser(data);
     setMongoId(data._id);
     await AsyncStorage.setItem("mongoId", data._id);
-  };
+  }, []);
 
   // — load cached user & mongoId, then flag cacheLoaded
   const initializeAuth = async () => {
@@ -250,6 +251,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return null;
   };
 
+  const authContextValue = useMemo(
+    () => ({
+      user,
+      setUser,
+      isVerified,
+      setIsVerified,
+      userId,
+      mongoId,
+      setMongoId,
+      mongoUser,
+      setMongoUser,
+      users,
+      setUsers,
+      userFriendsMinDetail,
+      setUserFriendsMinDetail,
+      fetchMongoUser,
+      getToken,
+ 
+    }),
+    [
+      user,
+      isVerified,
+      userId,
+      mongoId,
+      mongoUser,
+      users,
+      userFriendsMinDetail,
+      fetchMongoUser,
+      getToken,
+    ]
+  );
   if (loading) {
     return (
       <StyledView className="flex-1 justify-center items-center bg-white p-5">
@@ -262,27 +294,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        setUser,
-        isVerified,
-        setIsVerified,
-        userId,
-        mongoId,
-        setMongoId,
-        mongoUser,
-        setMongoUser,
-        users,
-        setUsers,
-        userFriendsMinDetail,
-        setUserFriendsMinDetail,
-        fetchMongoUser,
-        getToken,
-        chatActivity,
-        updateChatActivity,
-      }}
-    >
+    <AuthContext.Provider value={authContextValue}>
       {children}
     </AuthContext.Provider>
   );
