@@ -15,7 +15,6 @@ import { IMessage } from "../../../interfaces/chat-interface";
 
 interface ChatItemProps {
   user: IUser;
-  lastMessage?: string;
   navigation: any;
   onPress?: () => void;
 }

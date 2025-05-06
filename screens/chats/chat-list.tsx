@@ -16,7 +16,6 @@ const ChatListPage: React.FC<any> = ({ navigation }) => {
         renderItem={({ item }) => (
           <ChatItem
             user={item}
-            lastMessage={"last message"}
             navigation={navigation}
             onPress={() =>
               navigation.push("ChatStack", {
