@@ -13,6 +13,8 @@ import MapDirectionButton from "../../components/get-direction";
 import ShareTripModal from "./component/share-trip-to-post-modal";
 import StarRating from "./component/starts-rating";
 import TripStarRating from "./component/starts-rating";
+import ReportButton from "../admin-settings/components/report-button";
+
 // Determine if native Mapbox code is available (i.e. not running in Expo Go)
 const MapboxAvailable = Constants.appOwnership !== "expo";
 
@@ -197,6 +199,12 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
 
           {/* Right side: vertical icons aligned to far right */}
           <View className="flex-col items-end space-y-2">
+            <ReportButton
+              targetId={tripId}
+              targetType="trip"
+              positionClasses=""
+            />
+
             <TouchableOpacity onPress={toggleFavorite}>
               <Ionicons
                 name={isFavorite ? "heart" : "heart-outline"}

@@ -13,6 +13,7 @@ import UserSearchList from "../../components/user-search-in-admin";
 import { useAuth } from "../../contexts/auth-context";
 import TripsManage from "../trips/component/trip-manage-admin";
 import { useFocusEffect } from "@react-navigation/native";
+import ReportAdminTable from "./report-admin-table";
 
 interface Tab {
   key: string;
@@ -111,11 +112,8 @@ const AdminSettingsPage = ({ navigation }: any) => {
       case "trips":
         return <TripsManage navigation={navigation} />;
       case "reports":
-        return (
-          <Text className="text-center text-gray-700">
-            Reports Settings Content
-          </Text>
-        );
+        return <ReportAdminTable navigation={navigation} />;
+
       default:
         return null;
     }
@@ -127,23 +125,18 @@ const AdminSettingsPage = ({ navigation }: any) => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
     >
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View className="flex-1 bg-white p-4">
-          {/* Header */}
-          <Text className="text-xl font-bold text-center mb-4">
-            Admin Settings
-          </Text>
+      <View className="flex-1 bg-white p-4">
+        {/* Header */}
+        <Text className="text-xl font-bold text-center mb-4">
+          Admin Settings
+        </Text>
 
-          {/* Modular Tab Bar */}
-          <TabBar tabs={tabs} activeTab={activeTab} onTabPress={setActiveTab} />
+        {/* Modular Tab Bar */}
+        <TabBar tabs={tabs} activeTab={activeTab} onTabPress={setActiveTab} />
 
-          {/* Tab Content */}
-          {renderContent()}
-        </View>
-      </ScrollView>
+        {/* Tab Content */}
+        <View style={{ flex: 1 }}>{renderContent()}</View>
+      </View>
     </KeyboardAvoidingView>
   );
 };
