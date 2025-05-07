@@ -37,7 +37,14 @@ export default function ChatListPage({ navigation }: any) {
   const [messagesMap, setMessagesMap] = useState<
     Record<string, IMessage | null | undefined>
   >({});
-
+  const moveOnly = {
+    duration: 300,
+    update: {
+      // pick linear or spring from the correct enum:
+      type: LayoutAnimation.Types.linear,
+      // omit `property` entirely so we animate layout (position) only
+    },
+  };
   // Subscribe to last message per chat room
   useEffect(() => {
     if (!mongoUser) return;
@@ -47,9 +54,9 @@ export default function ChatListPage({ navigation }: any) {
       const messagesRef = collection(docRef, "messages");
       const q = query(messagesRef, orderBy("createdAt", "desc"));
       const unsub = onSnapshot(q, (snapshot) => {
+        LayoutAnimation.configureNext(moveOnly);
         const first = snapshot.docs[0]?.data() as IMessage | undefined;
         // Animate list transition on new message
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         setMessagesMap((prev) => ({ ...prev, [user._id]: first ?? null }));
       });
       return unsub;
@@ -99,6 +106,7 @@ export default function ChatListPage({ navigation }: any) {
       <FlatList
         data={filtered}
         keyExtractor={(item) => item._id}
+        extraData={messagesMap}
         renderItem={({ item }) => (
           <ChatItem
             user={item}
