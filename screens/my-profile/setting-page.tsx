@@ -61,6 +61,11 @@ const SettingsScreen = ({ navigation }: any) => {
           />
 
           <SettingsButton
+            title="Blocked users"
+            onPress={() => navigation.navigate("BlockedUsers")}
+          />
+
+          <SettingsButton
             title="Logout"
             onPress={() => setLogoutPopupVisible(true)}
             color="bg-red-700"
