@@ -199,12 +199,6 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
 
           {/* Right side: vertical icons aligned to far right */}
           <View className="flex-col items-end space-y-2">
-            <ReportButton
-              targetId={tripId}
-              targetType="trip"
-              positionClasses=""
-            />
-
             <TouchableOpacity onPress={toggleFavorite}>
               <Ionicons
                 name={isFavorite ? "heart" : "heart-outline"}
@@ -284,6 +278,13 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
           <Text className="text-white font-semibold">Back to Trips</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <ReportButton
+        targetId={tripId}
+        targetType="trip"
+        positionClasses="absolute top-1 right-6"
+      />
+
       {tripData && (
         <ShareTripModal
           visible={showShareModal}
