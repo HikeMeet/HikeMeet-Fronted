@@ -8,13 +8,11 @@ import { formatDate } from "../../../utils/chat-utils";
 interface MessageItemProps {
   message?: IMessage;
   currentUser?: MongoUser;
-  type: "user" | "group"; // new prop
 }
 
 export default function MessageItem({
   message,
   currentUser,
-  type: chatType,
 }: MessageItemProps) {
   if (!message) return null;
 
@@ -28,13 +26,6 @@ export default function MessageItem({
       }
     >
       <View className="w-4/5">
-        {/* In group chats, show senderName for others */}
-        {chatType === "group" && !isMine && (
-          <Text className="text-xs text-gray-500 mb-1 ml-1">
-            {message.senderName}
-          </Text>
-        )}
-
         {/* Bubble */}
         <View
           className={
@@ -48,7 +39,7 @@ export default function MessageItem({
           </Text>
         </View>
 
-        {/* Timestamp */}
+        {/* Timestamp outside the bubble */}
         <Text
           className={
             (isMine ? "self-end" : "self-start") +

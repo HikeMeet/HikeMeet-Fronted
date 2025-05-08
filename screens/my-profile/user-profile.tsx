@@ -131,7 +131,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
                 onPress={() =>
                   navigation.push("ChatStack", {
                     screen: "ChatRoomPage",
-                    params: { user },
+                    params: { user, type: "user" },
                   })
                 }
                 className="mt-2 flex-row items-center border-2 border-blue-500 p-1 rounded-full bg-blue-500"

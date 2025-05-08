@@ -33,7 +33,6 @@ interface AuthContextProps {
   setUserFriendsMinDetail: React.Dispatch<React.SetStateAction<MongoUser[]>>;
   fetchMongoUser: (id: string, byFirebase?: boolean) => Promise<void>;
   getToken: () => Promise<string | null>;
-
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -56,8 +55,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState(true);
   const [cacheLoaded, setCacheLoaded] = useState(false);
   const [authHandled, setAuthHandled] = useState(false);
-
-
 
   // — ping your backend root or health
   // 1) A utility that aborts fetch after `timeoutMs`
@@ -185,23 +182,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
                 throw new Error(`Fetch error: ${usersResp.status}`);
               }
               setUsers(await usersResp.json());
-
-              try {
-                const userDoc = await getDoc(
-                  doc(FIREBASE_DB, "users", currentUser.uid)
-                );
-                if (!userDoc.exists()) {
-                  await setDoc(doc(FIREBASE_DB, "users", currentUser.uid), {
-                    userId: currentUser.uid,
-                    mongoId: data._id,
-                    username: data.username,
-                    email: data.email,
-                  });
-                  console.log("User document set");
-                }
-              } catch (error) {
-                console.error("Error setting user document:", error);
-              }
             } catch (error) {
               console.error("Error fetching user data:", error);
             }
@@ -268,7 +248,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUserFriendsMinDetail,
       fetchMongoUser,
       getToken,
- 
     }),
     [
       user,

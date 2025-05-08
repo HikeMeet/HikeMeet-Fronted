@@ -16,20 +16,19 @@ import {
 import { FIREBASE_DB } from "../../../firebaseconfig";
 import { getRoomId } from "../../../utils/chat-utils";
 import MessageItem from "./messge-item";
-import { useAuth } from "../../../contexts/auth-context";
 
 interface MessagesListProps {
   messages: IMessage[];
-  roomId: string;
+  currntUser: MongoUser;
+  otherUserId: string;
   messagesLimit: number;
-  type: "group" | "user";
 }
 
 const MessagesList: React.FC<MessagesListProps> = ({
   messages,
-  roomId,
+  currntUser,
+  otherUserId,
   messagesLimit,
-  type,
 }) => {
   const flatListRef = useRef<FlatList<IMessage>>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -40,7 +39,6 @@ const MessagesList: React.FC<MessagesListProps> = ({
   const [maintainPosition, setMaintainPosition] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
   const [prevMessagesLength, setPrevMessagesLength] = useState(0);
-  const { mongoUser } = useAuth();
 
   useEffect(() => {
     if (initialLoad && messages.length > 0) {
@@ -89,6 +87,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
     setPrevMessagesLength(displayedMessages.length);
 
     try {
+      const roomId = getRoomId(currntUser.firebase_id, otherUserId);
       const docRef = doc(FIREBASE_DB, "rooms", roomId);
       const messagesRef = collection(docRef, "messages");
 
@@ -220,7 +219,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
       }
       contentContainerStyle={{ paddingHorizontal: 10, paddingVertical: 15 }}
       renderItem={({ item }) => (
-        <MessageItem message={item} currentUser={mongoUser!} type={type} />
+        <MessageItem message={item} currentUser={currntUser} />
       )}
       ListHeaderComponent={renderHeader}
       onRefresh={() => loadMoreMessages()}

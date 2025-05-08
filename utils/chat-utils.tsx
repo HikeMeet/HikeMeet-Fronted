@@ -4,35 +4,34 @@ export const getRoomId = (userId1: string, userId2: string) => {
   return roomId;
 };
 
-export const formatDate = (date: Date): string => {
+export function formatDate(date: Date): string {
   const now = new Date();
-  const isToday =
+
+  // same-day?
+  if (
     date.getDate() === now.getDate() &&
     date.getMonth() === now.getMonth() &&
-    date.getFullYear() === now.getFullYear();
-
-  if (isToday) {
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
+    date.getFullYear() === now.getFullYear()
+  ) {
     const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
-    return `${pad(hours)}:${pad(minutes)}`;
+    return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
   }
 
-  const day = date.getDate();
-  const monthNames = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  const month = monthNames[date.getMonth()];
-  return `${day} ${month}`;
-};
+  // yesterday?
+  const yesterday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() - 1
+  );
+  if (
+    date.getDate() === yesterday.getDate() &&
+    date.getMonth() === yesterday.getMonth() &&
+    date.getFullYear() === yesterday.getFullYear()
+  ) {
+    return "Yesterday";
+  }
+
+  // older → DD/MM
+  const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}`;
+}

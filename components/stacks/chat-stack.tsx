@@ -14,6 +14,11 @@ const ChatStack = () => {
         component={ChatRoomPage as React.ComponentType<any>}
         options={{ title: "chatroom", headerShown: false }}
       />
+      {/* <Stack.Screen
+        name="GroupChatRoomPage"
+        component={GroupChatRoomPage as React.ComponentType<any>}
+        options={{ title: "group chatroom", headerShown: false }}
+      /> */}
     </Stack.Navigator>
   );
 };
