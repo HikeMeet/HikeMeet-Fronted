@@ -67,7 +67,6 @@ const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
   const inputRef = useRef<TextInput | null>(null);
   const insets = useSafeAreaInsets();
   const inputAccessoryViewID = "uniqueID";
-  console.log(type);
   // compute a single roomId for both types:
   const roomId =
     type === "user"

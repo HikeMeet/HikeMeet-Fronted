@@ -264,7 +264,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
       </View>
     </View>
   );
-  console.log(mongoUser);
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Fixed header */}
