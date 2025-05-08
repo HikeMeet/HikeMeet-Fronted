@@ -6,6 +6,7 @@ import Modal from "react-native-modal";
 import { useAuth } from "../../../contexts/auth-context";
 import { IPost } from "../../../interfaces/post-interface";
 import ConfirmationModal from "../../../components/confirmation-modal";
+import ReportPopup from "../../admin-settings/components/report-popup"; // עדכן לפי המיקום האמיתי
 
 interface PostOptionsModalProps {
   visible: boolean;
@@ -46,6 +47,7 @@ const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
   const authorId =
     typeof post.author === "object" ? post.author._id : post.author;
   const isAuthor = authorId === mongoId;
+  const [showReportPopup, setShowReportPopup] = useState(false);
 
   // Local state for the confirmation modal and deletion loading.
   const [confirmVisible, setConfirmVisible] = useState(false);
@@ -96,8 +98,9 @@ const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
   };
 
   const handleReport = () => {
-    onClose();
-    console.log("Report post");
+    setTimeout(() => {
+      setShowReportPopup(true);
+    }, 250);
   };
 
   return (
@@ -148,6 +151,14 @@ const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
         onConfirm={handleDelete}
         onCancel={handleCancelDelete}
       />
+
+      <ReportPopup
+        visible={showReportPopup}
+        onClose={() => setShowReportPopup(false)}
+        targetId={post._id}
+        targetType="post"
+      />
+
       {deleting && (
         <View className="mt-2">
           <ActivityIndicator size="small" color="#2563EB" />

@@ -5,10 +5,11 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   FlatList,
+  Modal,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker"; // הוספת Picker
 import { useAuth } from "../../contexts/auth-context";
 import { IReport, ReportStatus } from "../../interfaces/report-interface";
+import { Feather } from "@expo/vector-icons";
 
 const STATUS_COLORS: Record<ReportStatus, string> = {
   pending: "bg-yellow-200",
@@ -29,6 +30,9 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<ReportStatus | "all">("all");
   const { getToken } = useAuth();
+  const [openStatusModalId, setOpenStatusModalId] = useState<string | null>(
+    null
+  );
 
   const fetchReports = async () => {
     try {
@@ -43,7 +47,7 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
       const data = await res.json();
       setReports(data.reports || []);
     } catch (err) {
-      console.error("❌ Error loading reports:", err);
+      console.error("\u274C Error loading reports:", err);
     } finally {
       setLoading(false);
     }
@@ -65,7 +69,7 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
       );
       if (res.ok) fetchReports();
     } catch (err) {
-      console.error("❌ Failed to update report:", err);
+      console.error("\u274C Failed to update report:", err);
     }
   };
 
@@ -99,39 +103,74 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
   }, [filter, reports]);
 
   const renderReport = ({ item }: { item: IReport }) => (
-    <TouchableOpacity
-      onPress={() => navigateToTarget(item)}
-      className="border border-gray-300 rounded-xl p-4 mb-3"
-    >
-      <Text className="font-bold text-sm">
-        Reporter: {item.reporter?.username || "Unknown"}
-      </Text>
-      <Text className="text-s">Type: {item.targetType}</Text>
-      <Text className="text-s">Reason: {item.reason}</Text>
-      <View className="flex-row justify-between items-center mt-2">
-        <Text
-          className={`px-2 py-1 rounded-full text-xs ${STATUS_COLORS[item.status]}`}
-        >
-          Status: {item.status}
+    <View className="relative border border-gray-300 rounded-xl p-4 mb-3">
+      <TouchableOpacity
+        onPress={() => navigateToTarget(item)}
+        activeOpacity={0.8}
+      >
+        <Text className="font-bold text-sm">
+          Reporter: {item.reporter?.username || "Unknown"}
         </Text>
+        <Text className="text-s">Type: {item.targetType}</Text>
+        <Text className="text-s">Reason: {item.reason}</Text>
+      </TouchableOpacity>
 
-        {/* Dropdown Status Selector */}
-        <View className="ml-4 border border-gray-300 rounded-md px-1 bg-white">
-          <Picker
-            selectedValue={item.status}
-            onValueChange={(value: ReportStatus) =>
-              updateStatus(item._id, value)
-            }
-            style={{ width: 130, height: 35 }}
-            mode="dropdown"
-          >
-            <Picker.Item label="Pending" value="pending" />
-            <Picker.Item label="In Progress" value="in_progress" />
-            <Picker.Item label="Resolved" value="resolved" />
-          </Picker>
-        </View>
-      </View>
-    </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() =>
+          setOpenStatusModalId((prev) => (prev === item._id ? null : item._id))
+        }
+        className={`absolute top-2 right-2 px-2 py-1 rounded-full flex-row items-center space-x-1 ${STATUS_COLORS[item.status]}`}
+      >
+        <Text className="text-xs capitalize text-black font-semibold">
+          {item.status.replace("_", " ")}
+        </Text>
+        <Feather name="chevron-down" size={14} color="#333" />
+      </TouchableOpacity>
+
+      <Modal
+        visible={openStatusModalId === item._id}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setOpenStatusModalId(null)}
+      >
+        <TouchableOpacity
+          className="flex-1 bg-black/40 justify-center items-center"
+          activeOpacity={1}
+          onPress={() => setOpenStatusModalId(null)}
+        >
+          <View className="bg-white rounded-xl w-64 p-4">
+            {(["pending", "in_progress", "resolved"] as ReportStatus[]).map(
+              (status) => (
+                <TouchableOpacity
+                  key={status}
+                  onPress={() => {
+                    updateStatus(item._id, status);
+                    setOpenStatusModalId(null);
+                  }}
+                  className="py-2"
+                >
+                  <Text
+                    className={`text-sm capitalize text-center ${
+                      status === item.status
+                        ? "text-blue-600 font-bold"
+                        : "text-gray-800"
+                    }`}
+                  >
+                    {status.replace("_", " ")}
+                  </Text>
+                </TouchableOpacity>
+              )
+            )}
+            <TouchableOpacity
+              onPress={() => setOpenStatusModalId(null)}
+              className="mt-2"
+            >
+              <Text className="text-center text-xs text-gray-400">Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </View>
   );
 
   if (loading) {

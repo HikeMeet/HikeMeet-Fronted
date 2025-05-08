@@ -53,6 +53,12 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
   const handleNotificationPress = async () => {
     const type = item.type;
 
+    if (type === "report_submitted" && mongoUser?.role === "admin") {
+      navigation.push("AdminStack", {
+        screen: "ReportAdminPage",
+      });
+    }
+
     if (type.startsWith("group_") && group?.id) {
       navigation.push("GroupsStack", {
         screen: "GroupPage",

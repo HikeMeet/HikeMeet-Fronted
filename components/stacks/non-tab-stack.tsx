@@ -9,6 +9,7 @@ import GroupsStack from "./group-proccess-stack";
 import { Provider } from "react-native-paper";
 import PostStack from "./posts-proccess-stack";
 import NotificationsPage from "../../screens/notifications/notification-list-page";
+import ReportAdminTable from "../../screens/admin-settings/report-admin-table";
 
 // Import the new AccountStack
 
@@ -48,6 +49,11 @@ const NonTabScreensStack = () => {
           name="GroupsStack"
           component={GroupsStack}
           options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="AdminStack"
+          component={ReportAdminTable}
+          options={{ title: "Admin Reports" }}
         />
 
         {/* Other Screens */}
