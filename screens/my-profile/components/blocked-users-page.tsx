@@ -1,8 +1,7 @@
-// src/screens/settings/BlockedUsersPage.tsx
 import React from "react";
 import { View, Text, FlatList } from "react-native";
 import { useAuth } from "../../../contexts/auth-context";
-import UserRow from "../../../components/user-row-search"; // ודא שזה הנתיב הנכון
+import UserRow from "../../../components/user-row-search";
 
 const BlockedUsersPage = ({ navigation }: { navigation: any }) => {
   const { mongoUser } = useAuth();
@@ -13,8 +12,6 @@ const BlockedUsersPage = ({ navigation }: { navigation: any }) => {
 
   return (
     <View className="flex-1 bg-white p-4">
-      <Text className="text-xl font-bold mb-4">Blocked Users</Text>
-
       <FlatList
         data={blockedUsers}
         keyExtractor={(user) => user?._id ?? ""}

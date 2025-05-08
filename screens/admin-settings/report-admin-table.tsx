@@ -86,7 +86,10 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
         params: { postId: targetId },
       });
     } else if (targetType === "user") {
-      navigation.navigate("UserProfile", { userId: targetId });
+      navigation.push("AccountStack", {
+        screen: "UserProfile",
+        params: { userId: targetId },
+      });
     }
   };
 
