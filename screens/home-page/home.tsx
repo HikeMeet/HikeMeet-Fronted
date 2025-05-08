@@ -32,7 +32,7 @@ const Home = ({ navigation }: any) => {
   const fetchPosts = async () => {
     try {
       // Base URL always includes privacy=public.
-      let url = `${process.env.EXPO_LOCAL_SERVER}/api/post/all?privacy=public&userId=${mongoId}`;
+      let url = `${process.env.EXPO_LOCAL_SERVER}/api/post/all?privacy=public&userId`;
       // If Friends Only is selected, append query parameters.
       if (showFriendsOnly) {
         url = `${process.env.EXPO_LOCAL_SERVER}/api/post/all?friendsOnly=true&userId=${mongoId}`;
