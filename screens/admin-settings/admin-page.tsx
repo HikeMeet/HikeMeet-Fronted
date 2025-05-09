@@ -126,10 +126,7 @@ const AdminSettingsPage = ({ navigation }: any) => {
       keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
     >
       <View className="flex-1 bg-white p-4">
-        {/* Header */}
-        <Text className="text-xl font-bold text-center mb-4">
-          Admin Settings
-        </Text>
+    
 
         {/* Modular Tab Bar */}
         <TabBar tabs={tabs} activeTab={activeTab} onTabPress={setActiveTab} />
