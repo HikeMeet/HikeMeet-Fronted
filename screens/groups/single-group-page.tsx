@@ -151,7 +151,11 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
   );
 
   const renderChatButton = () => {
-    if (!mongoUser) return null;
+    if (
+      !mongoUser ||
+      !group?.members.some((member) => member.user === mongoId)
+    )
+      return null;
     const inChat = mongoUser.chatrooms_groups.some((g) => g._id === group!._id);
 
     if (inChat) {

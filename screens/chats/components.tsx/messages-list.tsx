@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { FlatList, View, Text, ActivityIndicator } from "react-native";
 import { IMessage } from "../../../interfaces/chat-interface";
-import { MongoUser } from "../../../interfaces/user-interface";
 import {
   collection,
   doc,
@@ -10,11 +9,8 @@ import {
   limit,
   startAfter,
   getDocs,
-  getDoc,
-  Timestamp,
 } from "firebase/firestore";
 import { FIREBASE_DB } from "../../../firebaseconfig";
-import { getRoomId } from "../../../utils/chat-utils";
 import MessageItem from "./messge-item";
 import { useAuth } from "../../../contexts/auth-context";
 
