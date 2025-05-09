@@ -13,7 +13,6 @@ import RankingSystem from "../../screens/my-profile/ranking-system";
 import ManageNotifications from "../../screens/my-profile/manage-notificaitons";
 import EditProfilePage from "../../screens/my-profile/edit-profile-page";
 import StatsPage from "../../screens/my-profile/user-stats-page";
-import ReportAdminTable from "../../screens/admin-settings/report-admin-table";
 
 const Stack = createNativeStackNavigator();
 
@@ -74,11 +73,6 @@ const AccountStack = () => {
         name="UserStats"
         component={StatsPage}
         options={{ headerShown: true, title: "User Stats" }}
-      />
-      <Stack.Screen
-        name="ReportAdminPage"
-        component={ReportAdminTable}
-        options={{ title: "Admin Reports" }}
       />
     </Stack.Navigator>
   );
