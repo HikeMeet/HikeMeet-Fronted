@@ -58,7 +58,6 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
         screen: "ReportAdminPage",
       });
     }
-
     if (type.startsWith("group_") && group?.id) {
       navigation.push("GroupsStack", {
         screen: "GroupPage",

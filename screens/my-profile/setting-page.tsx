@@ -59,12 +59,6 @@ const SettingsScreen = ({ navigation }: any) => {
             title="Stats"
             onPress={() => navigation.navigate("UserStats")}
           />
-
-          <SettingsButton
-            title="Blocked users"
-            onPress={() => navigation.navigate("BlockedUsers")}
-          />
-
           <SettingsButton
             title="Logout"
             onPress={() => setLogoutPopupVisible(true)}
