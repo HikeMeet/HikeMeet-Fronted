@@ -35,7 +35,7 @@ import {
   openGroupChatroom,
 } from "../../components/requests/chats-requsts";
 import { IUser } from "../../interfaces/post-interface";
-import { IGroup } from "../../interfaces/group-interface";
+import { Group, IGroup } from "../../interfaces/group-interface";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MessagesList from "./components.tsx/messages-list";
 
@@ -60,7 +60,8 @@ const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
   const { type } = route.params;
   const userParam = (route.params as any).user as IUser | undefined;
   const groupParam = (route.params as any).group as IGroup | undefined;
-
+  const [groupData, setGroupData] = useState<Group | null>(null);
+  const [loadingGroup, setLoadingGroup] = useState<boolean>(false);
   const { mongoId, mongoUser, getToken } = useAuth();
   const [messages, setMessages] = useState<IMessage[]>([]);
   const textRef = useRef("");
@@ -73,6 +74,10 @@ const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
       ? getRoomId(mongoUser!.firebase_id, userParam!.firebase_id!)
       : groupParam!._id;
 
+  const isMember =
+    type === "user"
+      ? true
+      : !!groupData?.members.some((m) => m.user === mongoId);
   // create Firestore room + call backend openChatroom/openGroupChatroom
   const createRoomIfNotExists = async () => {
     // Firestore
@@ -92,6 +97,16 @@ const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
       await openGroupChatroom(groupParam!._id, token);
     }
   };
+
+  useEffect(() => {
+    if (type !== "group") return;
+    setLoadingGroup(true);
+    fetch(`${process.env.EXPO_LOCAL_SERVER}/api/group/${roomId}`)
+      .then((res) => res.json())
+      .then((body: { group: Group }) => setGroupData(body.group))
+      .catch(console.error)
+      .finally(() => setLoadingGroup(false));
+  }, [type, roomId]);
 
   // subscribe to messages
   useEffect(() => {
@@ -235,13 +250,17 @@ const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
     return inputBar;
   };
 
-  // header title and avatar
-  const title = type === "user" ? userParam!.username : groupParam!.name;
+  const title =
+    type === "user"
+      ? userParam!.username
+      : loadingGroup
+        ? "Loading…"
+        : (groupData?.name ?? "Unknown Group");
+
   const avatarUrl =
     type === "user"
       ? userParam!.profile_picture.url
-      : groupParam!.main_image?.url;
-
+      : groupData?.main_image?.url;
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
       {/* Header */}
@@ -262,15 +281,42 @@ const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
       </View>
 
       {/* Messages */}
-      <MessagesList
-        messages={messages} // your existing array
-        roomId={roomId} // pass the computed roomId
-        messagesLimit={messagesLimit}
-        type={type}
-      />
+      {type === "group" && !isMember && !loadingGroup ? (
+        <View className="flex-1 justify-center items-center px-4">
+          <Text className="text-gray-500 text-center">
+            You must join this group before you can see its messages.
+          </Text>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("GroupsStack", {
+                screen: "GroupPage",
+                params: { groupId: groupParam!._id },
+              })
+            }
+            className="flex-row items-center bg-blue-600 px-4 py-2 rounded"
+          >
+            <Text className="text-white font-medium ml-2">View Group</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <MessagesList
+          messages={messages}
+          roomId={roomId}
+          messagesLimit={messagesLimit}
+          type={type}
+        />
+      )}
 
       {/* Input */}
-      {renderInputBar()}
+      {type === "group" && !loadingGroup && !isMember ? (
+        <View className="px-4 py-3 bg-gray-200">
+          <Text className="text-center text-gray-600">
+            You must join the group to read or send messages.
+          </Text>
+        </View>
+      ) : (
+        renderInputBar()
+      )}
     </SafeAreaView>
   );
 };
