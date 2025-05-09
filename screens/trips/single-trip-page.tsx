@@ -286,6 +286,6 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
       )}
     </>
   );
-};
+};//
 
 export default TripDetailPage;
