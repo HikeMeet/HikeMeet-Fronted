@@ -70,6 +70,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
       members: group.members,
       main_image: group.main_image,
     };
+
     // Add to local mongoUser.chatrooms_groups
     setMongoUser({
       ...mongoUser!,
@@ -151,10 +152,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
   );
 
   const renderChatButton = () => {
-    if (
-      !mongoUser ||
-      !group?.members.some((member) => member.user === mongoId)
-    )
+    if (!mongoUser || !group?.members.some((member) => member.user === mongoId))
       return null;
     const inChat = mongoUser.chatrooms_groups.some((g) => g._id === group!._id);
 
