@@ -118,7 +118,10 @@ const ChatItem: React.FC<ChatItemProps> = ({
         });
       }
     } else {
-      navigation.push("GroupDetailPage", { group: group! }); // 🚀 NEW: optional group settings
+      navigation.navigate("GroupsStack", {
+        screen: "GroupPage",
+        params: { groupId: group!._id },
+      });
     }
   };
 

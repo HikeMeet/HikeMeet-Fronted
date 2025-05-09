@@ -177,7 +177,10 @@ const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
       }
     } else {
       // maybe open group settings screen
-      navigation.push("GroupDetailPage", { group: groupParam });
+      navigation.navigate("GroupsStack", {
+        screen: "GroupPage",
+        params: { groupId: groupParam!._id },
+      });
     }
   };
 
