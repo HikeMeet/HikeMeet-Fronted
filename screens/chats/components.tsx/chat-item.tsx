@@ -74,7 +74,9 @@ const ChatItem: React.FC<ChatItemProps> = ({
     const prefix =
       lastMessage.userId === mongoUser!.firebase_id
         ? "You: "
-        : `${senderName}: `;
+        : type === "group"
+          ? `${senderName}: `
+          : senderName;
     return prefix + lastMessage.text;
   };
 
