@@ -14,17 +14,21 @@ export const fetchTrips = async (query: string) => {
   return trips;
 };
 
-export const fetchUsers = async (query: string) => {
+export const fetchUsers = async (query: string, userId?: string) => {
   const res = await fetch(
-    `${process.env.EXPO_LOCAL_SERVER}/api/search/users?query=${query}`
+    `${process.env.EXPO_LOCAL_SERVER}/api/search/users?query=${query}${
+      userId ? `&userId=${userId}` : ""
+    }`
   );
   const { friends = [] } = await res.json();
   return friends;
 };
 
-export const fetchAll = async (query: string) => {
+export const fetchAll = async (query: string, userId?: string) => {
   const res = await fetch(
-    `${process.env.EXPO_LOCAL_SERVER}/api/search/all?query=${query}`
+    `${process.env.EXPO_LOCAL_SERVER}/api/search/all?query=${query}${
+      userId ? `&userId=${userId}` : ""
+    }`
   );
   const { friends = [], trips = [], groups = [] } = await res.json();
   return { friends, trips, groups };

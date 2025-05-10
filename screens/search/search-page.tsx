@@ -66,7 +66,7 @@ const SearchPage = ({ navigation }: any) => {
 
     try {
       if (filter === "All") {
-        const { friends, trips, groups } = await fetchAll(query);
+        const { friends, trips, groups } = await fetchAll(query, mongoId ?? "");
 
         const updatedUsers = friends.map((u: any) => ({
           ...u,
@@ -88,7 +88,7 @@ const SearchPage = ({ navigation }: any) => {
         setTrips(filterTripsByFilters(tripList, tripFilters));
         setAllTripsBackup(tripList);
       } else if (filter === "Hikes") {
-        const userList = await fetchUsers(query);
+        const userList = await fetchUsers(query, mongoId ?? "");
         const updated = userList.map((u: any) => ({
           ...u,
           friendStatus:

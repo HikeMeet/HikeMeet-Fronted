@@ -5,6 +5,7 @@ import CreatePostButton from "../../posts/components/create-post-buton";
 import PostCard from "../../posts/components/post-card-on-feeds";
 import { useFocusEffect } from "@react-navigation/native";
 import { IPost } from "../../../interfaces/post-interface";
+import { useAuth } from "../../../contexts/auth-context";
 
 interface GroupPostListProps {
   groupId: string;
@@ -23,12 +24,13 @@ const GroupPostList: React.FC<GroupPostListProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   // New state: how many posts to render
   const [postsToShow, setPostsToShow] = useState<number>(5);
+  const { mongoId } = useAuth();
 
   const fetchGroupPosts = async () => {
     try {
       setLoading(true);
       const res = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/post/all?inGroup=${groupId}`
+        `${process.env.EXPO_LOCAL_SERVER}/api/post/all?inGroup=${groupId}&userId=${mongoId}`
       );
       const data = await res.json();
       setPosts(data.posts);

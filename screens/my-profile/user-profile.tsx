@@ -24,6 +24,7 @@ import { IPost } from "../../interfaces/post-interface";
 import { checkRankLevel } from "./components/check-rank-level";
 import { RankInfo } from "../../interfaces/rank-info";
 import RankInfoModal from "./components/rank-info-modal";
+import ReportButton from "../admin-settings/components/report-button";
 
 interface UserProfileProps {
   route: any;
@@ -124,6 +125,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
               uploadType={"profile"}
               editable={false}
             />
+
             <View className="flex-1 ml-2">
               <Text className="text-xl font-bold">
                 {`${user.username} ${user.last_name}`}
@@ -269,6 +271,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
           />
         </KeyboardAvoidingView>
       )}
+      <ReportButton
+        targetId={userId}
+        targetType="user"
+        positionClasses="absolute top-2 right-4"
+      />
     </SafeAreaView>
   );
 };
