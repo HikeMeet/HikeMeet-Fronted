@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import React from "react";
 import {
   View,
@@ -42,8 +42,9 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, activeTab, onTabPress }) => {
   );
 };
 
-const AdminSettingsPage = ({ navigation }: any) => {
-  const [activeTab, setActiveTab] = useState("user");
+const AdminSettingsPage = ({ navigation, route }: any) => {
+  const initialTab = route?.params?.tab || "user";
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [users, setUsers] = useState<MongoUser[]>([]);
   const [loading, setLoading] = useState(false);
   const { mongoId } = useAuth(); // current user's mongoId
@@ -85,13 +86,19 @@ const AdminSettingsPage = ({ navigation }: any) => {
   };
 
   // Use useFocusEffect to re-fetch users when the screen comes into focus and the user tab is active
-  useFocusEffect(
-    useCallback(() => {
-      if (activeTab === "user") {
-        fetchUsers();
-      }
-    }, [activeTab])
-  );
+useFocusEffect(
+  useCallback(() => {
+    if (activeTab === "user") {
+      fetchUsers();
+    }
+  }, [activeTab])
+);
+
+useEffect(() => {
+  if (route?.params?.tab && route.params.tab !== activeTab) {
+    setActiveTab(route.params.tab);
+  }
+}, [route?.params?.tab]);
 
   // Render tab content based on the active tab
   const renderContent = () => {

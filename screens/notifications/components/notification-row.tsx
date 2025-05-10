@@ -56,7 +56,7 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
     if (type === "report_submitted" && mongoUser?.role === "admin") {
       navigation.push("AccountStack", {
         screen: "AdminSettings",
-        // params: { tab: "reports" },
+        params: { tab: "reports" },
       });
     }
     if (type.startsWith("group_") && group?.id) {

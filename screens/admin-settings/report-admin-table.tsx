@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
   Modal,
+  TextInput,
 } from "react-native";
 import { useAuth } from "../../contexts/auth-context";
 import { IReport, ReportStatus } from "../../interfaces/report-interface";
@@ -33,6 +34,7 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
   const [openStatusModalId, setOpenStatusModalId] = useState<string | null>(
     null
   );
+  const [searchText, setSearchText] = useState<string>("");
 
   const fetchReports = async () => {
     try {
@@ -98,12 +100,28 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
   }, []);
 
   useEffect(() => {
-    if (filter === "all") {
-      setFilteredReports(reports);
+    const baseList =
+      filter === "all"
+        ? reports
+        : reports.filter((r) => r.status === filter);
+
+    if (!searchText.trim()) {
+    setFilteredReports(baseList);
     } else {
-      setFilteredReports(reports.filter((r) => r.status === filter));
+      const filtered = baseList.filter((r) => {
+        const reporter = r.reporter?.username?.toLowerCase() || "";
+        const reason = r.reason?.toLowerCase() || "";
+        const target = r.targetType?.toLowerCase() || "";
+        return (
+          reporter.includes(searchText.toLowerCase()) ||
+          reason.includes(searchText.toLowerCase()) ||
+          target.includes(searchText.toLowerCase())
+        );
+     });
+
+      setFilteredReports(filtered);
     }
-  }, [filter, reports]);
+  }, [filter, reports, searchText]);
 
   const renderReport = ({ item }: { item: IReport }) => (
     <View className="relative border border-gray-300 rounded-xl p-4 mb-3">
@@ -195,6 +213,24 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
           </TouchableOpacity>
         ))}
       </View>
+
+
+
+    <View className="px-4 mb-3">
+      <View className="flex-row items-center bg-gray-200 rounded-lg px-3 py-2">
+        <TextInput
+          placeholder="Search reports..."
+          className="flex-1 text-sm"
+          value={searchText}
+          onChangeText={setSearchText}
+        />
+        {searchText.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchText("")}>
+            <Feather name="x" size={18} color="gray" />
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
 
       <FlatList
         data={filteredReports}
