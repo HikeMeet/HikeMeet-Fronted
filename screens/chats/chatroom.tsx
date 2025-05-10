@@ -27,6 +27,8 @@ import {
   setDoc,
   Timestamp,
   limit,
+  updateDoc,
+  increment,
 } from "firebase/firestore";
 import { FIREBASE_DB } from "../../firebaseconfig";
 import { IMessage } from "../../interfaces/chat-interface";
@@ -66,7 +68,6 @@ const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const textRef = useRef("");
   const inputRef = useRef<TextInput | null>(null);
-  const insets = useSafeAreaInsets();
   const inputAccessoryViewID = "uniqueID";
   // compute a single roomId for both types:
   const roomId =
@@ -80,13 +81,43 @@ const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
       : !!groupData?.members.some((m) => m.user === mongoId);
   // create Firestore room + call backend openChatroom/openGroupChatroom
   const createRoomIfNotExists = async () => {
-    // Firestore
-    const roomSnap = await getDoc(doc(FIREBASE_DB, "rooms", roomId));
+    const roomRef = doc(FIREBASE_DB, "rooms", roomId);
+    const roomSnap = await getDoc(roomRef);
+
+    // make sure we only ever get a string[]
+    const memberIds: string[] =
+      type === "user"
+        ? [mongoUser!.firebase_id, userParam!.firebase_id!]
+        : groupData
+          ? groupData.members.map((m) => m.user)
+          : [];
+
     if (!roomSnap.exists()) {
-      await setDoc(doc(FIREBASE_DB, "rooms", roomId), {
+      // seed participants to zero
+      const initialMap = memberIds.reduce(
+        (acc, uid) => {
+          acc[uid] = 0;
+          return acc;
+        },
+        {} as Record<string, number>
+      );
+
+      await setDoc(roomRef, {
         roomId,
         createdAt: Timestamp.fromDate(new Date()),
+        participants: initialMap,
       });
+    } else {
+      const existing = roomSnap.data()!.participants as Record<string, number>;
+      const toAdd = memberIds.filter((uid) => existing[uid] === null);
+      if (toAdd.length) {
+        // build an update object like { "participants.newUid": 0, ... }
+        const upd: Record<string, any> = {};
+        toAdd.forEach((uid) => {
+          upd[`participants.${uid}`] = 0;
+        });
+        await updateDoc(roomRef, upd);
+      }
     }
     // backend
     const token = await getToken();
@@ -109,47 +140,40 @@ const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
   }, [type, roomId]);
 
   // subscribe to messages
+  // 1) ALWAYS subscribe *first* — this will render cached messages instantly,
+  //    then deliver the initial 20 as soon as Firestore has them.
   useEffect(() => {
-    createRoomIfNotExists();
+    const roomRef = doc(FIREBASE_DB, "rooms", roomId);
+    const messagesRef = collection(roomRef, "messages");
 
-    const docRef = doc(FIREBASE_DB, "rooms", roomId);
-    const messagesRef = collection(docRef, "messages");
-
-    // initial load (latest 20)
     const loadQ = query(
       messagesRef,
       orderBy("createdAt", "desc"),
       limit(messagesLimit)
     );
     const unsubLoad = onSnapshot(loadQ, (snap) => {
-      const all: IMessage[] = snap.docs
-        .map((d) => d.data() as IMessage)
-        .reverse();
+      const all = snap.docs.map((d) => d.data() as IMessage).reverse();
       setMessages(all);
     });
 
-    // new messages listener
     const newQ = query(messagesRef, orderBy("createdAt", "desc"), limit(1));
     const unsubNew = onSnapshot(newQ, (snap) => {
-      if (!snap.empty) {
-        const msg = snap.docs[0].data() as IMessage;
-        // animate insertion
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-        setMessages((prev) => {
-          // avoid dupes
-          if (
-            prev.some(
-              (m) =>
-                m.userId === msg.userId &&
-                m.createdAt.seconds === msg.createdAt.seconds &&
-                m.text === msg.text
-            )
-          ) {
-            return prev;
-          }
-          return [...prev, msg];
-        });
-      }
+      if (snap.empty) return;
+      const msg = snap.docs[0].data() as IMessage;
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setMessages((prev) => {
+        if (
+          prev.some(
+            (m) =>
+              m.userId === msg.userId &&
+              m.createdAt.seconds === msg.createdAt.seconds &&
+              m.text === msg.text
+          )
+        ) {
+          return prev;
+        }
+        return [...prev, msg];
+      });
     });
 
     return () => {
@@ -158,28 +182,88 @@ const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
     };
   }, [roomId]);
 
+  // 2) THEN, in parallel, ensure the room exists and clear your unread:
+  useEffect(() => {
+    (async () => {
+      await createRoomIfNotExists();
+      const roomRef = doc(FIREBASE_DB, "rooms", roomId);
+      updateDoc(roomRef, {
+        [`participants.${mongoUser!.firebase_id}`]: 0,
+      }).catch(console.error);
+    })();
+  }, [roomId]);
+  // inside ChatRoomPage, after you have roomId & mongoId:
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", async () => {
+      try {
+        const roomRef = doc(FIREBASE_DB, "rooms", roomId);
+        // reset your unread count
+        await updateDoc(roomRef, {
+          [`participants.${mongoUser!.firebase_id}`]: 0,
+        });
+      } catch (err) {
+        console.error("Failed to clear unread on leave:", err);
+      }
+      // allow the navigation to proceed
+    });
+
+    return unsubscribe;
+  }, [navigation, roomId, mongoId]);
+
   // handle send
   const handleSendMessage = async () => {
     const text = textRef.current.trim();
     if (!text) return;
 
+    // clear the input immediately
     textRef.current = "";
     inputRef.current?.clear();
 
     try {
-      const docRef = doc(FIREBASE_DB, "rooms", roomId);
-      const messagesRef = collection(docRef, "messages");
+      const roomRef = doc(FIREBASE_DB, "rooms", roomId);
+      const messagesRef = collection(roomRef, "messages");
+
+      // 1) add the actual message
       await addDoc(messagesRef, {
         userId: mongoUser!.firebase_id,
         senderName: mongoUser!.username,
         text,
         createdAt: Timestamp.fromDate(new Date()),
       });
+
+      // 2) fetch the current participants map
+      const snap = await getDoc(roomRef);
+      const parts = snap.data()!.participants as Record<string, number>;
+
+      // 3) build an update object that increments everyone else's counter
+      const updates: Record<string, any> = {};
+      Object.keys(parts).forEach((uid) => {
+        if (uid !== mongoUser!.firebase_id) {
+          updates[`participants.${uid}`] = increment(1);
+        }
+      });
+
+      // 4) apply it
+      await updateDoc(roomRef, updates);
     } catch (err: any) {
-      Alert.alert("Error", err.message);
+      Alert.alert("Error sending message", err.message);
     }
   };
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("blur", async () => {
+      const roomRef = doc(FIREBASE_DB, "rooms", roomId);
+      try {
+        await updateDoc(roomRef, {
+          [`participants.${mongoUser!.firebase_id}`]: 0,
+        });
+      } catch (e) {
+        console.error("Failed to clear unread on blur:", e);
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, roomId, mongoId]);
   const handleProfileImagePress = () => {
     if (type === "user") {
       if (userParam!._id === mongoId) {

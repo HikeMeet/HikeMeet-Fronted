@@ -57,7 +57,7 @@ interface ChatRoom {
 }
 export default function ChatListPage({ navigation }: any) {
   const { mongoUser } = useAuth();
-
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const [queryText, setQueryText] = useState("");
   const [messagesMap, setMessagesMap] = useState<
     Record<string, IMessage | null>
@@ -86,6 +86,35 @@ export default function ChatListPage({ navigation }: any) {
 
     setRooms([...userRooms, ...groupRooms]);
   }, [mongoUser, rooms.length]);
+
+  useEffect(() => {
+    if (!mongoUser || rooms.length === 0) return;
+
+    // build a fresh counts object with zero for each room
+    const counts: Record<string, number> = {};
+    rooms.forEach((r) => {
+      counts[r.key] = 0;
+    });
+    setUnreadCounts(counts);
+
+    // listen to each room document’s participants map
+    const unsubscribers = rooms.map((r) =>
+      onSnapshot(doc(FIREBASE_DB, "rooms", r.roomId), (snap) => {
+        const parts = snap.data()?.participants as
+          | Record<string, number>
+          | undefined;
+        if (!parts) return;
+        setUnreadCounts((prev) => ({
+          ...prev,
+          [r.key]: parts[mongoUser.firebase_id] || 0,
+        }));
+      })
+    );
+
+    return () => {
+      unsubscribers.forEach((u) => u());
+    };
+  }, [rooms, mongoUser]);
 
   // 2) On-focus — merge in any new user or group rooms created elsewhere
   useFocusEffect(
@@ -218,6 +247,7 @@ export default function ChatListPage({ navigation }: any) {
             user={item.type === "user" ? item.data : undefined}
             group={item.type === "group" ? item.data : undefined}
             lastMessage={messagesMap[item.key]}
+            unreadCount={unreadCounts[item.key] || 0}
             navigation={navigation}
             onDelete={() => handleRemoveRoom(item.type, item.key)}
             onPress={() =>

@@ -35,6 +35,7 @@ export interface ChatItemProps {
   navigation: any;
   onPress?: () => void;
   onDelete?: () => void;
+  unreadCount?: number;
 }
 
 const ChatItem: React.FC<ChatItemProps> = ({
@@ -45,6 +46,7 @@ const ChatItem: React.FC<ChatItemProps> = ({
   onDelete,
   navigation,
   onPress,
+  unreadCount = 0,
 }) => {
   const { mongoId, getToken, setMongoUser, mongoUser } = useAuth();
   const [confirmVisible, setConfirmVisible] = useState(false);
@@ -84,10 +86,8 @@ const ChatItem: React.FC<ChatItemProps> = ({
 
     if (type === "user") {
       await closeChatroom(user!._id, token);
-      
     } else {
       await closeGroupChatroom(group!._id, token);
-      
     }
     onDelete?.();
   };
@@ -144,6 +144,14 @@ const ChatItem: React.FC<ChatItemProps> = ({
           <Text className="shrink-0 text-sm font-semibold text-gray-600 ml-2 min-w-[48px] text-right">
             {renderTime()}
           </Text>
+          {/* ─── badge ─── */}
+          {unreadCount > 0 && (
+            <View className="ml-2 bg-red-500 rounded-full w-5 h-5 justify-center items-center">
+              <Text className="text-white text-xs font-bold">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </Text>
+            </View>
+          )}
         </View>
         <Text className="text-sm text-gray-600 mt-1">{renderLast()}</Text>
       </View>
