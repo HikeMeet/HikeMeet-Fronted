@@ -38,7 +38,8 @@
     "react-native-modal-datetime-picker": "^18.0.0",
     "react-native-svg": "15.8.0",
     "react-native-web": "~0.19.13",
-    "twrnc": "^4.6.1"
+    "twrnc": "^4.6.1",
+    "expo-network": "~7.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
