@@ -63,7 +63,6 @@ export default function ChatListPage({ navigation }: any) {
     Record<string, IMessage | null>
   >({});
   const [rooms, setRooms] = useState<ChatRoom[]>([]); // 🚀 NEW: local rooms state
-  const [displayRooms, setDisplayRooms] = useState<ChatRoom[]>(rooms);
 
   // 1) Initial load — run once when mongoUser arrives
   useEffect(() => {
@@ -93,29 +92,6 @@ export default function ChatListPage({ navigation }: any) {
     useCallback(() => {
       if (!mongoUser) return;
 
-      // setRooms((old) => {
-      //   const existingKeys = new Set(old.map((r) => r.key));
-
-      //   const newGroupRooms = mongoUser.chatrooms_groups
-      //     .filter((g) => !existingKeys.has(g._id))
-      //     .map((g) => ({
-      //       type: "group" as const,
-      //       data: g,
-      //       key: g._id,
-      //       roomId: g._id,
-      //     }));
-
-      //   const newUserRooms = mongoUser.chatrooms_with
-      //     .filter((u) => !existingKeys.has(u._id))
-      //     .map((u) => ({
-      //       type: "user" as const,
-      //       data: u,
-      //       key: u._id,
-      //       roomId: getRoomId(mongoUser.firebase_id, u.firebase_id!),
-      //     }));
-
-      //   return [...old, ...newGroupRooms, ...newUserRooms];
-      // });
       setRooms((old) => {
         const existing = new Set(old.map((r) => r.key));
 

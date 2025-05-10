@@ -202,28 +202,11 @@ const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
   // render input bar (same as before)
   const renderInputBar = () => {
     const inputBar = (
-      <View
-        style={{
-          padding: 12,
-          backgroundColor: "white",
-          borderTopWidth: 1,
-          borderColor: "#ddd",
-          paddingBottom: Platform.OS === "ios" ? 0 : insets.bottom,
-        }}
-      >
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            backgroundColor: "#f1f1f1",
-            borderRadius: 24,
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-          }}
-        >
+      <View className="px-3 py-2 bg-white border-t border-gray-200">
+        <View className="flex-row items-center bg-gray-100 rounded-full px-3 py-1">
           <TextInput
             ref={inputRef}
-            style={{ flex: 1, color: "#333" }}
+            className="flex-1 text-gray-700"
             placeholder="Type a message"
             onChangeText={(v) => (textRef.current = v)}
             inputAccessoryViewID={
@@ -231,7 +214,7 @@ const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
             }
           />
           <TouchableOpacity onPress={handleSendMessage}>
-            <Text style={{ color: "#007AFF", fontWeight: "600" }}>Send</Text>
+            <Text className="text-blue-500 font-semibold">Send</Text>
           </TouchableOpacity>
         </View>
       </View>
