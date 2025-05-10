@@ -34,13 +34,27 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 export const MOVE_ONLY = {
-  duration: 200,
+  duration: 300,
+  create: {
+    type: LayoutAnimation.Types.easeIn, // opacity fade-in
+    property: LayoutAnimation.Properties.opacity,
+  },
   update: {
-    type: LayoutAnimation.Types.easeInEaseOut,
-    // no `property` field → animates layout (position) only
+    type: LayoutAnimation.Types.spring, // bouncy reposition
+    springDamping: 0.6,
+  },
+  delete: {
+    type: LayoutAnimation.Types.easeOut, // fade-out on removals
+    property: LayoutAnimation.Properties.opacity,
   },
 };
 
+interface ChatRoom {
+  type: "user" | "group";
+  data: any;
+  key: string;
+  roomId: string;
+}
 export default function ChatListPage({ navigation }: any) {
   const { mongoUser } = useAuth();
 
@@ -48,9 +62,8 @@ export default function ChatListPage({ navigation }: any) {
   const [messagesMap, setMessagesMap] = useState<
     Record<string, IMessage | null>
   >({});
-  const [rooms, setRooms] = useState<
-    { type: "user" | "group"; data: any; key: string; roomId: string }[]
-  >([]); // 🚀 NEW: local rooms state
+  const [rooms, setRooms] = useState<ChatRoom[]>([]); // 🚀 NEW: local rooms state
+  const [displayRooms, setDisplayRooms] = useState<ChatRoom[]>(rooms);
 
   // 1) Initial load — run once when mongoUser arrives
   useEffect(() => {
@@ -80,31 +93,60 @@ export default function ChatListPage({ navigation }: any) {
     useCallback(() => {
       if (!mongoUser) return;
 
+      // setRooms((old) => {
+      //   const existingKeys = new Set(old.map((r) => r.key));
+
+      //   const newGroupRooms = mongoUser.chatrooms_groups
+      //     .filter((g) => !existingKeys.has(g._id))
+      //     .map((g) => ({
+      //       type: "group" as const,
+      //       data: g,
+      //       key: g._id,
+      //       roomId: g._id,
+      //     }));
+
+      //   const newUserRooms = mongoUser.chatrooms_with
+      //     .filter((u) => !existingKeys.has(u._id))
+      //     .map((u) => ({
+      //       type: "user" as const,
+      //       data: u,
+      //       key: u._id,
+      //       roomId: getRoomId(mongoUser.firebase_id, u.firebase_id!),
+      //     }));
+
+      //   return [...old, ...newGroupRooms, ...newUserRooms];
+      // });
       setRooms((old) => {
-        const existingKeys = new Set(old.map((r) => r.key));
+        const existing = new Set(old.map((r) => r.key));
 
-        const newGroupRooms = mongoUser.chatrooms_groups
-          .filter((g) => !existingKeys.has(g._id))
-          .map((g) => ({
-            type: "group" as const,
-            data: g,
-            key: g._id,
-            roomId: g._id,
-          }));
+        // find only the *actual* additions
+        const additions = [
+          ...mongoUser.chatrooms_groups
+            .filter((g) => !existing.has(g._id))
+            .map((g) => ({
+              type: "group" as const,
+              data: g,
+              key: g._id,
+              roomId: g._id,
+            })),
+          ...mongoUser.chatrooms_with
+            .filter((u) => !existing.has(u._id))
+            .map((u) => ({
+              type: "user" as const,
+              data: u,
+              key: u._id,
+              roomId: getRoomId(mongoUser.firebase_id, u.firebase_id!),
+            })),
+        ];
 
-        const newUserRooms = mongoUser.chatrooms_with
-          .filter((u) => !existingKeys.has(u._id))
-          .map((u) => ({
-            type: "user" as const,
-            data: u,
-            key: u._id,
-            roomId: getRoomId(mongoUser.firebase_id, u.firebase_id!),
-          }));
+        // if nothing new, leave state untouched
+        if (additions.length === 0) return old;
 
-        return [...old, ...newGroupRooms, ...newUserRooms];
+        return [...old, ...additions];
       });
     }, [mongoUser])
   );
+
   // subscribe to last‐message of each room; only depends on rooms
   useEffect(() => {
     if (rooms.length === 0) return;

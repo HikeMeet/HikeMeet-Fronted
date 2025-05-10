@@ -55,7 +55,6 @@ const ChatItem: React.FC<ChatItemProps> = ({
   const avatarUrl =
     type === "user" ? user!.profile_picture.url : group!.main_image?.url;
 
-
   const renderTime = (): string => {
     if (lastMessage === undefined) return "…";
     if (lastMessage === null) return "--";
@@ -85,20 +84,10 @@ const ChatItem: React.FC<ChatItemProps> = ({
 
     if (type === "user") {
       await closeChatroom(user!._id, token);
-      setMongoUser({
-        ...mongoUser!,
-        chatrooms_with: mongoUser!.chatrooms_with.filter(
-          (u) => u._id !== user!._id
-        ),
-      });
+      
     } else {
       await closeGroupChatroom(group!._id, token);
-      setMongoUser({
-        ...mongoUser!,
-        chatrooms_groups: mongoUser!.chatrooms_groups.filter(
-          (g) => g._id !== group!._id
-        ),
-      });
+      
     }
     onDelete?.();
   };
@@ -110,7 +99,7 @@ const ChatItem: React.FC<ChatItemProps> = ({
       } else {
         navigation.push("AccountStack", {
           screen: "UserProfile",
-          params: { user: user! },
+          params: { userId: user!._id },
         });
       }
     } else {
