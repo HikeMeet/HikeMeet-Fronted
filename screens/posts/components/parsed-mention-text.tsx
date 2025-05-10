@@ -12,7 +12,7 @@ const ParsedMentionText: React.FC<ParsedMentionTextProps> = ({
   text,
   navigation,
 }) => {
-  const { mongoUser, Users } = useAuth();
+  const { mongoUser, users: Users } = useAuth();
   const regex = /@(\w+)/g;
   const parts: { text: string; isMention: boolean; friendId?: string }[] = [];
   let lastIndex = 0;

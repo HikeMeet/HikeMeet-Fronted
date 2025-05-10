@@ -13,6 +13,12 @@ export interface GroupPending {
   created_at: string; // ISO date string
 }
 
+export interface IGroup {
+  _id: string;
+  name: string;
+  members: GroupMember[];
+  main_image?: IImageModel;
+}
 export interface Group {
   _id: string;
   name: string;

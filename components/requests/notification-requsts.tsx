@@ -3,7 +3,7 @@
 const API_BASE = `${process.env.EXPO_LOCAL_SERVER}/api/notification`;
 
 /** Build headers given a bearer token */
-function buildHeaders(token: string): Record<string, string> {
+export function buildHeaders(token: string): Record<string, string> {
   return {
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,

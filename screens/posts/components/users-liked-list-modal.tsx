@@ -45,10 +45,8 @@ const LikesModal: React.FC<LikesModalProps> = ({
           <ScrollView>
             {likes.map((like, index) => {
               let user: IUser;
-              console.log("Like is a string:", like);
 
               if (typeof like === "string") {
-                console.log("Like is a string:", like);
                 user = {
                   _id: like,
                   username: "Unkno",
