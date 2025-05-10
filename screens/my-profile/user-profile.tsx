@@ -54,12 +54,17 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
 
   const fetchPosts = async () => {
     setLoadingPosts(true);
-    if (user) {
-      await fetchPostsForUser(user).then((fetchedPosts) =>
-        setPosts(fetchedPosts)
-      );
+    try {
+      if (user && mongoId) {
+        await fetchPostsForUser(user, mongoId).then((fetchedPosts) =>
+          setPosts(fetchedPosts)
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      setLoadingPosts(false);
     }
-    setLoadingPosts(false);
   };
 
   useEffect(() => {

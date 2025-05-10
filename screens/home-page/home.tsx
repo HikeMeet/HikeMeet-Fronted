@@ -31,17 +31,20 @@ const Home = ({ navigation }: any) => {
   // Function to fetch posts.
   const fetchPosts = async () => {
     try {
-      // Base URL always includes privacy=public.
-      let url = `${process.env.EXPO_LOCAL_SERVER}/api/post/all?privacy=public&userId`;
-      // If Friends Only is selected, append query parameters.
+      let url = `${process.env.EXPO_LOCAL_SERVER}/api/post/all?privacy=public`;
       if (showFriendsOnly) {
-        url = `${process.env.EXPO_LOCAL_SERVER}/api/post/all?friendsOnly=true&userId=${mongoId}`;
+        url = `${process.env.EXPO_LOCAL_SERVER}/api/post/all?friendsOnly=true`;
       }
-      const response = await fetch(url);
+
+      const headers: HeadersInit | undefined = mongoId
+        ? { "x-current-user": mongoId }
+        : undefined;
+
+      const response = await fetch(url, { headers });
       const data = await response.json();
       setPosts(data.posts);
-    } catch (error) {
-      console.error("Error fetching posts:", error);
+    } catch (err) {
+      console.error("Error fetching posts:", err);
     } finally {
       setLoading(false);
       setRefreshing(false);

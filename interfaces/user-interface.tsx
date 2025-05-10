@@ -23,7 +23,7 @@ export interface MongoUser {
   facebook_link: string;
   instagram_link: string;
   role: string;
-  exp:number;
+  exp: number;
   social: {
     posts_saved: IPost[] | string[];
     posts_liked: IPost[] | string[];
@@ -43,4 +43,7 @@ export interface MongoUser {
   mutedGroups: string[];
   mutedNotificationTypes: string[];
   favorite_trips: string[];
+  privacySettings?: {
+    postVisibility?: "public" | "friends";
+  };
 }
