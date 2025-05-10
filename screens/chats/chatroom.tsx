@@ -40,6 +40,8 @@ import { IUser } from "../../interfaces/post-interface";
 import { Group, IGroup } from "../../interfaces/group-interface";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MessagesList from "./components.tsx/messages-list";
+import { MongoUser } from "../../interfaces/user-interface";
+import { sendPushNotification } from "../../components/requests/notification-requsts";
 
 // Enable LayoutAnimation on Android
 if (
@@ -245,6 +247,41 @@ const ChatRoomPage: React.FC<ChatRoomPageProps> = ({ route, navigation }) => {
 
       // 4) apply it
       await updateDoc(roomRef, updates);
+
+      // ── NEW: send Expo push notifications ──
+      // Determine who should get notified
+      const recipientMongoIds =
+        type === "user"
+          ? [userParam!._id]
+          : groupData!.members.map((m) => m.user);
+      // Exclude sender
+      const targets = recipientMongoIds.filter((id) => id !== mongoUser!._id);
+
+      // Fetch each user’s pushTokens from your Mongo API
+      const fetches = targets.map(async (id) =>
+        fetch(`${process.env.EXPO_LOCAL_SERVER}/api/user/${id}`, {
+          headers: { Authorization: `Bearer ${await getToken()}` },
+        }).then((r) => r.json() as Promise<MongoUser>)
+      );
+      const usersData = await Promise.all(fetches);
+      const expoTokens = usersData.flatMap((u) => u.pushTokens);
+
+      // Fire off the push
+      if (expoTokens.length) {
+        await sendPushNotification(
+          expoTokens,
+          `${mongoUser!.username} sent you a message`,
+          text,
+          {
+            navigation: {
+              name: "Tabs",
+              params: {
+                screen: "Chats",
+              },
+            },
+          }
+        );
+      }
     } catch (err: any) {
       Alert.alert("Error sending message", err.message);
     }

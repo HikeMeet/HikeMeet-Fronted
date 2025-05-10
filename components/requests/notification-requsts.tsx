@@ -91,3 +91,28 @@ export async function clearAllNotifications(token: string): Promise<void> {
     throw new Error(`Error clearing notifications: ${res.status}`);
   }
 }
+
+export const sendPushNotification = async (
+  tokens: string[],
+  title: string,
+  body: string,
+  data: Record<string, any>
+) => {
+  const messages = tokens.map((to) => ({
+    to,
+    sound: "default",
+    title,
+    body,
+    data,
+  }));
+  // Expo push endpoint
+  await fetch("https://exp.host/--/api/v2/push/send", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Accept-encoding": "gzip, deflate",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(messages),
+  });
+};
