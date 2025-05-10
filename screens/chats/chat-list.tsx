@@ -123,31 +123,25 @@ export default function ChatListPage({ navigation }: any) {
 
       setRooms((old) => {
         const existing = new Set(old.map((r) => r.key));
+        const newGroupRooms = mongoUser.chatrooms_groups
+          .filter((g) => !existing.has(g._id))
+          .map((g) => ({
+            type: "group" as const,
+            data: g,
+            key: g._id,
+            roomId: g._id,
+          }));
+        const newUserRooms = mongoUser.chatrooms_with
+          .filter((u) => !existing.has(u._id))
+          .map((u) => ({
+            type: "user" as const,
+            data: u,
+            key: u._id,
+            roomId: getRoomId(mongoUser.firebase_id, u.firebase_id!),
+          }));
 
-        // find only the *actual* additions
-        const additions = [
-          ...mongoUser.chatrooms_groups
-            .filter((g) => !existing.has(g._id))
-            .map((g) => ({
-              type: "group" as const,
-              data: g,
-              key: g._id,
-              roomId: g._id,
-            })),
-          ...mongoUser.chatrooms_with
-            .filter((u) => !existing.has(u._id))
-            .map((u) => ({
-              type: "user" as const,
-              data: u,
-              key: u._id,
-              roomId: getRoomId(mongoUser.firebase_id, u.firebase_id!),
-            })),
-        ];
-
-        // if nothing new, leave state untouched
-        if (additions.length === 0) return old;
-
-        return [...old, ...additions];
+        const additions = [...newGroupRooms, ...newUserRooms];
+        return additions.length ? [...old, ...additions] : old;
       });
     }, [mongoUser])
   );
