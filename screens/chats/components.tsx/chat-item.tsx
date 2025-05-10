@@ -112,7 +112,15 @@ const ChatItem: React.FC<ChatItemProps> = ({
 
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => {
+        navigation.push("ChatStack", {
+          screen: "ChatRoomPage",
+          params: {
+            type: type, // 🚀 NEW
+            ...(type === "user" ? { user: user } : { group: group }),
+          },
+        });
+      }}
       onLongPress={confirmDelete}
       android_ripple={{ color: "#ddd" }}
       style={({ pressed }) => [

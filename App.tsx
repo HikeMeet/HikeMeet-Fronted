@@ -10,6 +10,7 @@ import { NotificationProvider } from "./contexts/notification-context";
 import * as Notifications from "expo-notifications";
 import { navigationRef } from "./root-navigation";
 import { UIManager, Platform } from "react-native";
+import ChatProvider from "./contexts/chat-context";
 
 // Only import and configure Mapbox if not running in Expo Go
 let Mapbox;
@@ -41,11 +42,13 @@ export default function App() {
   return (
     <AuthProvider>
       <NotificationProvider>
-        <NavigationContainer ref={navigationRef}>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <MainLayout />
-          </GestureHandlerRootView>
-        </NavigationContainer>
+        <ChatProvider>
+          <NavigationContainer ref={navigationRef}>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <MainLayout />
+            </GestureHandlerRootView>
+          </NavigationContainer>
+        </ChatProvider>
       </NotificationProvider>
     </AuthProvider>
   );

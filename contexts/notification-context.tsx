@@ -50,7 +50,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
 
   const notificationListener = useRef<Subscription>();
   const responseListener = useRef<Subscription>();
-  const { getToken } = useAuth(); // Helper to navigate based on the notification’s data
+  const { getToken, fetchMongoUser, mongoId } = useAuth(); // Helper to navigate based on the notification’s data
   async function handleNotificationResponse(
     response: Notifications.NotificationResponse
   ) {
@@ -65,7 +65,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     navigationRef.dispatch(CommonActions.navigate(navigation));
     // await StackActions.push(navigation.name, navigation.params ?? {});
     // *******************************
-
+    fetchMongoUser(mongoId!);
     // If it’s a nested PostPage, go into your PostStack
     // 3) Mark as read
 

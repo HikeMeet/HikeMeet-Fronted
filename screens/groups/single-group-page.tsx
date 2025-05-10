@@ -21,10 +21,7 @@ import JoinGroupActionButton from "./components/group-join-action-button";
 import GroupDetails from "./components/group-details";
 import GroupPostList from "./components/group-posts";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import {
-  closeGroupChatroom,
-  openGroupChatroom,
-} from "../../components/requests/chats-requsts";
+import { openGroupChatroom } from "../../components/requests/chats-requsts";
 
 interface SingleGroupProps {
   navigation: any;
@@ -61,6 +58,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
   // Handler to join the chatroom
   const handleJoinChat = async () => {
     const token = await getToken();
+
     if (!token) return;
     await openGroupChatroom(group!._id, token);
     if (!group) return;
@@ -76,8 +74,14 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
       ...mongoUser!,
       chatrooms_groups: [...mongoUser!.chatrooms_groups, iGroup],
     });
+    navigation.push("ChatStack", {
+      screen: "ChatRoomPage",
+      params: {
+        type: "group", // 🚀 NEW
+        group,
+      },
+    });
   };
-
   const toggleMute = async () => {
     if (!mongoUser) return;
 

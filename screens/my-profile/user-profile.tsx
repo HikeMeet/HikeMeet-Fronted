@@ -25,6 +25,7 @@ import { checkRankLevel } from "./components/check-rank-level";
 import { RankInfo } from "../../interfaces/rank-info";
 import RankInfoModal from "./components/rank-info-modal";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { openChatroom } from "../../components/requests/chats-requsts";
 
 interface UserProfileProps {
   route: any;
@@ -128,11 +129,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
                 editable={false}
               />
               <TouchableOpacity
-                onPress={() =>
+                onPress={() =>{
                   navigation.push("ChatStack", {
                     screen: "ChatRoomPage",
                     params: { user, type: "user" },
-                  })
+                  });}
                 }
                 className="mt-2 flex-row items-center border-2 border-blue-500 p-1 rounded-full bg-blue-500"
               >
