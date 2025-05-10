@@ -5,7 +5,6 @@ import {
   View,
   Text,
   Image,
-  LayoutAnimation,
   Platform,
   UIManager,
 } from "react-native";
@@ -55,10 +54,7 @@ const ChatItem: React.FC<ChatItemProps> = ({
   const title = type === "user" ? user!.username : group!.name;
   const avatarUrl =
     type === "user" ? user!.profile_picture.url : group!.main_image?.url;
-  // const renderTime = () =>
-  //   lastMessage
-  //     ? formatDate(new Date(lastMessage.createdAt.seconds * 1000))
-  //     : "";
+
 
   const renderTime = (): string => {
     if (lastMessage === undefined) return "…";

@@ -52,8 +52,7 @@ export default function ChatListPage({ navigation }: any) {
     { type: "user" | "group"; data: any; key: string; roomId: string }[]
   >([]); // 🚀 NEW: local rooms state
 
-  // 1️⃣ If we get a `newRoom` param, append just that one room:
-  // build rooms only on first mount
+  // 1) Initial load — run once when mongoUser arrives
   useEffect(() => {
     if (!mongoUser || rooms.length > 0) return;
 
@@ -76,13 +75,15 @@ export default function ChatListPage({ navigation }: any) {
     setRooms([...userRooms, ...groupRooms]);
   }, [mongoUser, rooms.length]);
 
+  // 2) On-focus — merge in any new user or group rooms created elsewhere
   useFocusEffect(
     useCallback(() => {
       if (!mongoUser) return;
 
       setRooms((old) => {
         const existingKeys = new Set(old.map((r) => r.key));
-        const toAdd = mongoUser.chatrooms_groups
+
+        const newGroupRooms = mongoUser.chatrooms_groups
           .filter((g) => !existingKeys.has(g._id))
           .map((g) => ({
             type: "group" as const,
@@ -90,35 +91,20 @@ export default function ChatListPage({ navigation }: any) {
             key: g._id,
             roomId: g._id,
           }));
-        return toAdd.length ? [...old, ...toAdd] : old;
+
+        const newUserRooms = mongoUser.chatrooms_with
+          .filter((u) => !existingKeys.has(u._id))
+          .map((u) => ({
+            type: "user" as const,
+            data: u,
+            key: u._id,
+            roomId: getRoomId(mongoUser.firebase_id, u.firebase_id!),
+          }));
+
+        return [...old, ...newGroupRooms, ...newUserRooms];
       });
     }, [mongoUser])
   );
-  // 🚀 NEW: initialize rooms once on mount
-  useEffect(() => {
-    if (!mongoUser) return;
-    if (rooms.length > 0) return;
-    // userRooms is fine—each is an IUser
-    const userRooms = mongoUser.chatrooms_with.map((u) => ({
-      type: "user" as const,
-      data: u,
-      key: u._id,
-      roomId: getRoomId(mongoUser.firebase_id, u.firebase_id!),
-    }));
-
-    // Only keep those chatrooms_groups entries that are objects with an _id
-    const groupRooms = mongoUser.chatrooms_groups
-      .filter((g): g is IGroup => typeof g === "object" && !!g._id)
-      .map((g) => ({
-        type: "group" as const,
-        data: g,
-        key: g._id,
-        roomId: g._id,
-      }));
-
-    setRooms([...userRooms, ...groupRooms]);
-  }, [mongoUser]);
-
   // subscribe to last‐message of each room; only depends on rooms
   useEffect(() => {
     if (rooms.length === 0) return;

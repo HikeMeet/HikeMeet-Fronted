@@ -31,7 +31,7 @@ export function formatDate(date: Date): string {
     return "Yesterday";
   }
 
-  // older → DD/MM
-  const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
-  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}`;
+  // older → D MMM
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${date.getDate()} ${monthNames[date.getMonth()]}`;
 }
