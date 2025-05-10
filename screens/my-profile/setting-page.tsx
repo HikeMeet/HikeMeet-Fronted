@@ -58,8 +58,8 @@ const SettingsScreen = ({ navigation }: any) => {
             onPress={() => navigation.navigate("UserStats")}
           />
           <SettingsButton
-            title="Post Privacy"
-            onPress={() => navigation.navigate("PostPrivacySetting")}
+            title="Privacy"
+            onPress={() => navigation.navigate("PrivacySetting")}
           />
 
           <SettingsButton
