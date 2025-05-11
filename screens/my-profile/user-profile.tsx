@@ -23,6 +23,7 @@ import PostCard from "../posts/components/post-card-on-feeds";
 import { IPost } from "../../interfaces/post-interface";
 import { getRankIcon } from "./components/rank-images";
 import RankInfoModal from "./components/rank-info-modal";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 interface UserProfileProps {
   route: any;
@@ -58,7 +59,6 @@ const RankIcon = rankName ? getRankIcon(rankName) : null;
   };
 
   useEffect(() => {
-    fetchMongoUser(mongoId!);
     fetchPosts();
   }, [user]);
 
@@ -103,7 +103,7 @@ const RankIcon = rankName ? getRankIcon(rankName) : null;
       }
     };
     fetchUser();
-  }, [userId, mongoId]);
+  }, [mongoId]);
 
   // Render header that stays at the top of the list.
   const renderPostsHeader = () => (
@@ -112,14 +112,33 @@ const RankIcon = rankName ? getRankIcon(rankName) : null;
       {user && (
         <View className="bg-white">
           {/* Profile Info Row */}
-          <View className="flex-row items-center p-4">
-            <ProfileImage
-              initialImage={user.profile_picture}
-              size={80}
-              id={user._id}
-              uploadType={"profile"}
-              editable={false}
-            />
+          <View className="flex-row items-center p-2">
+            <View className="flex-col items-start p-4 bg-white">
+              {/* Profile Image + Send Message button underneath */}
+              <ProfileImage
+                initialImage={user.profile_picture}
+                size={80}
+                id={user._id}
+                uploadType={"profile"}
+                editable={false}
+              />
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.push("ChatStack", {
+                    screen: "ChatRoomPage",
+                    params: { user, type: "user" },
+                  });
+                }}
+                className="mt-2 flex-row items-center border-2 border-blue-500 p-1 rounded-full bg-blue-500"
+              >
+                <Ionicons
+                  name="chatbubble-ellipses-outline"
+                  size={20}
+                  color="white"
+                />
+                <Text className="ml-1 text-sm text-white">Send Message</Text>
+              </TouchableOpacity>
+            </View>
             <View className="flex-1 ml-2">
               <Text className="text-xl font-bold">
                 {`${user.username} ${user.last_name}`}
@@ -168,7 +187,7 @@ const RankIcon = rankName ? getRankIcon(rankName) : null;
           </View>
           {/* Bio Section Row */}
           <View className="p-4 bg-white">
-            <View className="h-px bg-gray-300 my-2" />
+            <View className="h-1 bg-gray-300 my-2" />
             <BioSection bio={user!.bio} editable={false} />
           </View>
         </View>

@@ -1,3 +1,4 @@
+import { IGroup } from "./group-interface";
 import { IImageModel } from "./image-interface";
 import { IPost, IUser } from "./post-interface";
 
@@ -34,6 +35,8 @@ export interface MongoUser {
   };
   trip_history: ITripHistoryEntry[];
   firebase_id: string;
+  chatrooms_with: IUser[];
+  chatrooms_groups: IGroup[];
   pushTokens: string[];
   unreadNotifications: number;
   created_on: string;
@@ -44,4 +47,5 @@ export interface MongoUser {
   mutedGroups: string[];
   mutedNotificationTypes: string[];
   favorite_trips: string[];
+  muted_chats: string[];
 }

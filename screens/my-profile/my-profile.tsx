@@ -48,6 +48,7 @@ const ProfilePage = ({ navigation }: any) => {
   );
 
   const fetchPosts = async () => {
+    fetchMongoUser(mongoId!);
     setLoadingPosts(true);
     try {
       const fetchedPosts = await fetchPostsForUser(mongoUser!);

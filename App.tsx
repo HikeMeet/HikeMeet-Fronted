@@ -9,6 +9,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { NotificationProvider } from "./contexts/notification-context";
 import * as Notifications from "expo-notifications";
 import { navigationRef } from "./root-navigation";
+import { UIManager, Platform } from "react-native";
+import ChatProvider from "./contexts/chat-context";
 
 // Only import and configure Mapbox if not running in Expo Go
 let Mapbox;
@@ -25,21 +27,28 @@ if (!process.env.EXPO_LOCAL_SERVER) {
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
+    shouldShowAlert: false,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
   }),
 });
-
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 export default function App() {
   return (
     <AuthProvider>
       <NotificationProvider>
-        <NavigationContainer ref={navigationRef}>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <MainLayout />
-          </GestureHandlerRootView>
-        </NavigationContainer>
+        <ChatProvider>
+          <NavigationContainer ref={navigationRef}>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <MainLayout />
+            </GestureHandlerRootView>
+          </NavigationContainer>
+        </ChatProvider>
       </NotificationProvider>
     </AuthProvider>
   );

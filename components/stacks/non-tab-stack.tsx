@@ -9,6 +9,7 @@ import GroupsStack from "./group-proccess-stack";
 import { Provider } from "react-native-paper";
 import PostStack from "./posts-proccess-stack";
 import NotificationsPage from "../../screens/notifications/notification-list-page";
+import ChatStack from "./chat-stack";
 
 // Import the new AccountStack
 
@@ -47,6 +48,11 @@ const NonTabScreensStack = () => {
         <Stack.Screen
           name="GroupsStack"
           component={GroupsStack}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ChatStack"
+          component={ChatStack}
           options={{ headerShown: false }}
         />
 
