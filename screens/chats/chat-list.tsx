@@ -42,16 +42,33 @@ export default function ChatListPage({ navigation }: any) {
 
   return (
     <View className="flex-1 bg-white">
-      <View className="p-4 border-b border-gray-200">
-        <Text className="text-xl font-bold">Chats</Text>
-        <View className="mt-2 flex-row items-center bg-gray-100 rounded-lg px-3">
-          <Ionicons name="search-outline" size={20} color="#888" />
-          <TextInput
-            className="flex-1 px-2 py-1"
-            placeholder="Search chats..."
-            value={query}
-            onChangeText={setQuery}
-          />
+      <View className="bg-white shadow-sm">
+        <View className="px-4 py-2">
+          <Text className="text-2xl font-bold text-gray-900">Chats</Text>
+        </View>
+
+        <View className="px-4 pb-4">
+          <View className="flex-row items-center bg-gray-100 rounded-lg px-3 py-2">
+            <Ionicons name="search-outline" size={20} color="#9CA3AF" />
+            <TextInput
+              className="flex-1 ml-2 text-gray-800"
+              placeholder="Search chats..."
+              placeholderTextColor="#9CA3AF"
+              value={query}
+              onChangeText={setQuery}
+              autoCorrect={false}
+            />
+          </View>
+          <View className="flex-row items-center mt-1 text-xs text-gray-500">
+            <Ionicons
+              name="information-circle-outline"
+              size={14}
+              color="#9CA3AF"
+            />
+            <Text className="ml-1 text-xs text-gray-500">
+              Long press on any chat to remove it
+            </Text>
+          </View>
         </View>
       </View>
       <FlatList

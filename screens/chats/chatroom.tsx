@@ -240,6 +240,7 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
     <SafeAreaView className="flex-1 bg-gray-100">
       <ChatHeader
         title={title}
+        roomId={roomId}
         avatarUrl={avatarUrl}
         onBack={() => navigation.goBack()}
         onAvatarPress={() =>

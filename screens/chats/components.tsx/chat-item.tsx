@@ -23,6 +23,7 @@ import {
 import { useAuth } from "../../../contexts/auth-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { handleProfilePress } from "./user-group-image-press";
+import MuteToggleButton from "./mute-chat-togle";
 
 // Enable LayoutAnimation for Android
 if (
@@ -100,31 +101,6 @@ const ChatItem: React.FC<ChatItemProps> = ({
       await closeGroupChatroom(group!._id, token);
     }
     onDelete?.();
-  };
-
-  const toggleMute = async () => {
-    const token = await getToken();
-
-    try {
-      // call the proper endpoint
-      console.log("isMuted", roomId, isMuted);
-      if (isMuted) {
-        await unmuteChat(token!, roomId);
-        setMongoUser((prev: any) => ({
-          ...prev,
-          muted_chats: prev.muted_chats.filter((id: string) => id !== roomId),
-        }));
-      } else {
-        await muteChat(token!, roomId);
-        setMongoUser((prev: any) => ({
-          ...prev,
-          muted_chats: [...prev.muted_chats, roomId],
-        }));
-      }
-    } catch (e: any) {
-      console.error("Mute toggle error:", e);
-      Alert.alert("Error", e.message);
-    }
   };
 
   return (
@@ -206,19 +182,9 @@ const ChatItem: React.FC<ChatItemProps> = ({
           <Text className="text-xs text-gray-400">{renderTime()}</Text>
 
           {/* Mute Toggle */}
-          <Pressable
-            onPress={toggleMute}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.6 : 1,
-            })}
-          >
-            <Icon
-              name={isMuted ? "bell-off" : "bell"}
-              size={22}
-              color={isMuted ? "#9ca3af" : "#6b7280"}
-            />
-          </Pressable>
+          <View>
+            <MuteToggleButton roomId={roomId} />
+          </View>
         </View>
       </View>
 
