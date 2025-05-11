@@ -4,6 +4,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from "react";
 import {
   collection,
@@ -25,7 +26,6 @@ import { IMessage } from "../interfaces/chat-interface";
 import { getRoomId } from "../utils/chat-utils";
 import { useAuth } from "./auth-context";
 import { LayoutAnimation, Platform, UIManager } from "react-native";
-import { openChatroom } from "../components/requests/chats-requsts";
 
 // Enable LayoutAnimation on Android
 if (
@@ -60,6 +60,8 @@ interface ChatListContextProps {
   unreadCounts: Record<string, number>;
   initializeRooms: () => void;
   removeRoom: (key: string) => void;
+  registerUnsub: (unsub: () => void) => void;
+  clearAllListeners: () => void;
 }
 const ChatListContext = createContext<ChatListContextProps | undefined>(
   undefined
@@ -69,12 +71,25 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { mongoUser, setMongoUser } = useAuth();
+
   const [rooms, setRooms] = useState<ChatListContextProps["rooms"]>([]);
   const [lastMessages, setLastMessages] = useState<
     Record<string, IMessage | null>
   >({});
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  // keep track of every onSnapshot unsub
+  const snapshotUnsubs = useRef<(() => void)[]>([]);
 
+  // helper to register one more unsub
+  const registerUnsub = (unsub: () => void) => {
+    snapshotUnsubs.current.push(unsub);
+  };
+
+  // helper to clear them all at once
+  const clearAllListeners = () => {
+    snapshotUnsubs.current.forEach((u) => u());
+    snapshotUnsubs.current = [];
+  };
   // Initialize rooms once when user data arrives
   const initializeRooms = useCallback(() => {
     if (!mongoUser || rooms.length) return;
@@ -108,6 +123,9 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         }));
       })
     );
+    for (const unsub of unsubs) {
+      registerUnsub(unsub);
+    }
     return () => unsubs.forEach((u) => u());
   }, [rooms, mongoUser]);
 
@@ -130,6 +148,9 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         setLastMessages((prev) => ({ ...prev, [r.key]: msg ?? null }));
       });
     });
+    for (const unsub of unsubs) {
+      registerUnsub(unsub);
+    }
     return () => unsubs.forEach((u) => u());
   }, [rooms]);
 
@@ -186,7 +207,15 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <ChatListContext.Provider
-      value={{ rooms, lastMessages, unreadCounts, initializeRooms, removeRoom }}
+      value={{
+        rooms,
+        lastMessages,
+        unreadCounts,
+        initializeRooms,
+        removeRoom,
+        registerUnsub,
+        clearAllListeners,
+      }}
     >
       {children}
     </ChatListContext.Provider>
@@ -232,6 +261,7 @@ export const useChatRoom = ({
       const all = snap.docs.map((d) => d.data() as IMessage).reverse();
       setMessages(all);
     });
+
     const newQ = query(messagesRef, orderBy("createdAt", "desc"), fbLimit(1));
     const unsubNew = onSnapshot(newQ, (snap) => {
       const msg = snap.docs[0]?.data() as IMessage | undefined;
@@ -248,6 +278,7 @@ export const useChatRoom = ({
           : [...prev, msg]
       );
     });
+
     return () => {
       unsubLoad();
       unsubNew();
