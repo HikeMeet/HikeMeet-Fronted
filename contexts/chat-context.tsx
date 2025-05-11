@@ -204,13 +204,19 @@ export const useChatList = (): ChatListContextProps => {
  */
 interface ChatRoomOptions {
   type: "user" | "group";
-  userId?: string;
+  userUid?: string;
+  userMongoId?: string;
   groupId?: string;
 }
-export const useChatRoom = ({ type, userId, groupId }: ChatRoomOptions) => {
+export const useChatRoom = ({
+  type,
+  userUid,
+  groupId,
+  userMongoId,
+}: ChatRoomOptions) => {
   const { mongoUser } = useAuth();
   const roomId =
-    type === "user" ? getRoomId(mongoUser!.firebase_id, userId!) : groupId!;
+    type === "user" ? getRoomId(mongoUser!.firebase_id, userUid!) : groupId!;
   const [messages, setMessages] = useState<IMessage[]>([]);
 
   // Subscribe to cached + initial batch
@@ -255,7 +261,7 @@ export const useChatRoom = ({ type, userId, groupId }: ChatRoomOptions) => {
       const snap = await getDoc(roomRef);
       const memberIds =
         type === "user"
-          ? [mongoUser!.firebase_id, userId!]
+          ? [mongoUser!._id, userMongoId!]
           : // for groups, assume members already exist in group document
             [];
       if (!snap.exists()) {

@@ -65,7 +65,8 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
   // context hook
   const { messages, sendMessage, clearUnread } = useChatRoom({
     type,
-    userId: type === "user" ? userParam?.firebase_id : undefined,
+    userUid: type === "user" ? userParam?.firebase_id : undefined,
+    userMongoId: type === "user" ? userParam?._id : undefined,
     groupId: type === "group" ? groupParam?._id : undefined,
   });
 
