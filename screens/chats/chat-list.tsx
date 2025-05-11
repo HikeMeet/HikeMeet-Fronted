@@ -1,5 +1,5 @@
 // screens/chat/ChatListPage.tsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View, Text, TextInput, FlatList } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import ChatItem from "./components.tsx/chat-item";
@@ -8,13 +8,25 @@ import { useAuth } from "../../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
 
 export default function ChatListPage({ navigation }: any) {
-  const { mongoUser } = useAuth();
+  const { mongoUser, fetchMongoUser, mongoId } = useAuth();
   const { rooms, lastMessages, unreadCounts, initializeRooms, removeRoom } =
     useChatList();
   const [query, setQuery] = useState("");
-
+  const [refreshing, setRefreshing] = useState(false); // ← track pull-to-refresh
   useEffect(() => initializeRooms(), [initializeRooms]);
   useFocusEffect(React.useCallback(() => initializeRooms(), [initializeRooms]));
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await initializeRooms();
+      if (mongoUser?._id) {
+        await fetchMongoUser(mongoUser._id);
+      }
+    } finally {
+      setRefreshing(false);
+    }
+  }, [initializeRooms, fetchMongoUser, mongoUser?._id]);
 
   const sorted = useMemo(
     () =>
@@ -75,6 +87,8 @@ export default function ChatListPage({ navigation }: any) {
         data={filtered}
         keyExtractor={(item) => item.key}
         extraData={[lastMessages, unreadCounts]}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
         renderItem={({ item }) => (
           <ChatItem
             type={item.type}
