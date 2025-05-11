@@ -166,7 +166,11 @@ const ChatItem: React.FC<ChatItemProps> = ({
 
       <ConfirmationModal
         visible={confirmVisible}
-        message={`Delete ${type === "user" ? "chat" : "group"} "${title}"?`}
+        message={
+          type === "user"
+            ? `Are you sure you want to remove ${title}?`
+            : `Are you sure you want to leave group chat "${title}"?`
+        }
         onConfirm={onConfirm}
         onCancel={onCancel}
       />
