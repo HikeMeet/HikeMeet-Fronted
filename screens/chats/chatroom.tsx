@@ -29,6 +29,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import ChatHeader from "./components.tsx/chat-header";
 import { handleProfilePress } from "./components.tsx/user-group-image-press";
 
+
 interface ChatRoomPageProps {
   route: {
     params: { type: "user"; user: IUser } | { type: "group"; group: IGroup };
