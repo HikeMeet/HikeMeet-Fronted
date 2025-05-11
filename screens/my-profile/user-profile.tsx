@@ -41,6 +41,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
   const [showRankModal, setShowRankModal] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [isPrivatePosts, setIsPrivatePosts] = useState(false);
 
   // Compute rank info once user is loaded
   const rankInfo: RankInfo | null = useMemo(
@@ -87,6 +89,31 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
         }
         const data = await response.json();
         setUser(data);
+
+        // בדיקת חסימה
+        const iBlockedHim = mongoUser?.friends?.some(
+          (f) => f.id === userId && f.status === "blocked"
+        );
+
+        const heBlockedMe = data.friends?.some(
+          (f) => f.id === mongoId && f.status === "blocked"
+        );
+
+        if (iBlockedHim || heBlockedMe) {
+          setIsBlocked(true);
+          return;
+        }
+
+        // בדיקת פרטיות פוסטים לחברים בלבד
+        const visibility = data.privacySettings?.postVisibility ?? "public";
+        const isFriend = data.friends?.some(
+          (f) => f.id === mongoId && f.status === "accepted"
+        );
+
+        if (visibility === "friends" && !isFriend && userId !== mongoId) {
+          setIsPrivatePosts(true);
+          return;
+        }
 
         // Now fetch friend status from current user's friends.
         if (mongoUser) {
@@ -267,7 +294,39 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
                 <View style={{ marginTop: 20, alignItems: "center" }}>
                   <ActivityIndicator size="large" color="#0000ff" />
                 </View>
-              ) : null
+              ) : isBlocked ? (
+                <View
+                  style={{
+                    marginTop: 20,
+                    alignItems: "center",
+                    paddingHorizontal: 16,
+                  }}
+                >
+                  <Text
+                    style={{ fontSize: 16, color: "red", textAlign: "center" }}
+                  >
+                    This user is blocked. You cannot view their posts.
+                  </Text>
+                </View>
+              ) : isPrivatePosts ? (
+                <View
+                  style={{
+                    marginTop: 20,
+                    alignItems: "center",
+                    paddingHorizontal: 16,
+                  }}
+                >
+                  <Text
+                    style={{ fontSize: 16, color: "gray", textAlign: "center" }}
+                  >
+                    This user's posts are private and visible to friends only.
+                  </Text>
+                </View>
+              ) : (
+                <View style={{ marginTop: 20, alignItems: "center" }}>
+                  <Text>No posts available.</Text>
+                </View>
+              )
             }
             refreshing={loadingPosts}
             onRefresh={fetchPosts}
