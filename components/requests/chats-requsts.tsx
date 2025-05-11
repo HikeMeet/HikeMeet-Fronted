@@ -72,3 +72,52 @@ export async function closeGroupChatroom(
     throw new Error(err.error || "Failed to close chatroom");
   }
 }
+
+// Mute a chatroom for the current user.
+
+export async function muteChat(token: string, roomId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/mute/${roomId}`, {
+    method: "POST",
+    headers: buildHeaders(token),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || "Failed to mute chat");
+  }
+}
+
+// Unmute a chatroom for the current user.
+export async function unmuteChat(token: string, roomId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/mute/${roomId}`, {
+    method: "DELETE",
+    headers: buildHeaders(token),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || "Failed to unmute chat");
+  }
+}
+
+export async function fetchPushTokensUnmuted(
+  token: string,
+  userIds: string[],
+  roomId: string
+): Promise<string[]> {
+  if (userIds.length === 0) return [];
+
+  const query = new URLSearchParams({
+    ids: userIds.join(","),
+    roomId,
+  });
+
+  const res = await fetch(`${API_BASE}/push-tokens?${query.toString()}`, {
+    method: "GET",
+    headers: buildHeaders(token),
+  });
+  if (!res.ok) {
+    throw new Error(`Error fetching push tokens: ${res.status}`);
+  }
+  const { tokens }: { tokens: string[] } = await res.json();
+  console.log("Fetched tokens for room", roomId, tokens);
+  return tokens;
+}

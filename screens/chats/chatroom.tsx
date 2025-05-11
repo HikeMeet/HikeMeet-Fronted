@@ -17,9 +17,14 @@ import { useChatRoom } from "../../contexts/chat-context";
 import MessagesList from "./components.tsx/messages-list";
 import { IGroup } from "../../interfaces/group-interface";
 import { IUser } from "../../interfaces/post-interface";
-import { sendPushNotification } from "../../components/requests/notification-requsts";
-import { MongoUser } from "../../interfaces/user-interface";
-import { openChatroom } from "../../components/requests/chats-requsts";
+import {
+  fetchPushTokens,
+  sendPushNotification,
+} from "../../components/requests/notification-requsts";
+import {
+  fetchPushTokensUnmuted,
+  openChatroom,
+} from "../../components/requests/chats-requsts";
 import { doc, getDoc } from "firebase/firestore";
 import { FIREBASE_DB } from "../../firebaseconfig";
 
@@ -113,18 +118,18 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
             : [];
       // Exclude sender
       const targets = recipientMongoIds.filter((id) => id !== mongoUser!._id);
-
-      // Fetch each user’s pushTokens from your Mongo API
-      const fetches = targets.map(async (id) =>
-        fetch(`${process.env.EXPO_LOCAL_SERVER}/api/user/${id}`, {
-          headers: { Authorization: `Bearer ${await getToken()}` },
-        }).then((r) => r.json() as Promise<MongoUser>)
-      );
-      const usersData = await Promise.all(fetches);
-      const expoTokens = usersData.flatMap((u) => u.pushTokens);
-
-      // Fire off the push
-      if (expoTokens.length) {
+      const token = await getToken();
+      // 1) batch-fetch push tokens
+      let expoTokens: string[];
+      try {
+        expoTokens = await fetchPushTokensUnmuted(token!, targets, roomId);
+      } catch (e) {
+        console.error("Failed to fetch push tokens:", e);
+        expoTokens = [];
+      }
+      console.log(expoTokens);
+      // 2) skip if muted or no tokens
+      if (expoTokens.length > 0) {
         await sendPushNotification(
           expoTokens,
           `${mongoUser!.username} sent you a message`,

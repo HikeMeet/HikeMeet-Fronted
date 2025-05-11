@@ -5,7 +5,6 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import ChatItem from "./components.tsx/chat-item";
 import { useChatList } from "../../contexts/chat-context";
 import { useAuth } from "../../contexts/auth-context";
-import { getRoomId } from "../../utils/chat-utils";
 import { useFocusEffect } from "@react-navigation/native";
 
 export default function ChatListPage({ navigation }: any) {

@@ -116,3 +116,27 @@ export const sendPushNotification = async (
     body: JSON.stringify(messages),
   });
 };
+
+/**
+ * Batch-fetch all push tokens for a list of user Mongo IDs.
+ */
+export async function fetchPushTokens(
+  token: string,
+  userIds: string[]
+): Promise<string[]> {
+  if (userIds.length === 0) return [];
+
+  const res = await fetch(
+    `${API_BASE}/push-tokens?ids=${encodeURIComponent(userIds.join(","))}`,
+    {
+      method: "GET",
+      headers: buildHeaders(token),
+    }
+  );
+  if (!res.ok) {
+    throw new Error(`Error fetching push tokens: ${res.status}`);
+  }
+  const body: { tokens: string[] } = await res.json();
+  console.log(body);
+  return body.tokens;
+}

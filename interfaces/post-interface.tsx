@@ -13,6 +13,7 @@ export interface IUser {
   first_name?: string;
   last_name?: string;
   firebase_id?: string;
+  mutedChats?: string[];
 }
 
 export interface IComment {

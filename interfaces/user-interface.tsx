@@ -46,4 +46,5 @@ export interface MongoUser {
   mutedGroups: string[];
   mutedNotificationTypes: string[];
   favorite_trips: string[];
+  muted_chats: string[];
 }

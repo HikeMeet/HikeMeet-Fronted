@@ -7,17 +7,21 @@ import {
   Image,
   Platform,
   UIManager,
+  Alert,
 } from "react-native";
 import { IUser } from "../../../interfaces/post-interface";
 import { IGroup } from "../../../interfaces/group-interface";
 import { IMessage } from "../../../interfaces/chat-interface";
-import { formatDate } from "../../../utils/chat-utils";
+import { formatDate, getRoomId } from "../../../utils/chat-utils";
 import ConfirmationModal from "../../../components/confirmation-modal";
 import {
   closeChatroom,
   closeGroupChatroom,
+  muteChat,
+  unmuteChat,
 } from "../../../components/requests/chats-requsts";
 import { useAuth } from "../../../contexts/auth-context";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 // Enable LayoutAnimation for Android
 if (
@@ -50,12 +54,17 @@ const ChatItem: React.FC<ChatItemProps> = ({
 }) => {
   const { mongoId, getToken, setMongoUser, mongoUser } = useAuth();
   const [confirmVisible, setConfirmVisible] = useState(false);
-
   // 🚀 REMOVED onLayout & extra animations here
 
   const title = type === "user" ? user!.username : group!.name;
   const avatarUrl =
     type === "user" ? user!.profile_picture.url : group!.main_image?.url;
+  const roomId =
+    type === "group"
+      ? group!._id
+      : getRoomId(mongoUser!.firebase_id, user!.firebase_id!);
+
+  const isMuted = mongoUser!.muted_chats.includes(roomId);
 
   const renderTime = (): string => {
     if (lastMessage === undefined) return "…";
@@ -110,66 +119,121 @@ const ChatItem: React.FC<ChatItemProps> = ({
     }
   };
 
+  const toggleMute = async () => {
+    const token = await getToken();
+
+    try {
+      // call the proper endpoint
+      console.log("isMuted", roomId, isMuted);
+      if (isMuted) {
+        await unmuteChat(token!, roomId);
+        setMongoUser((prev: any) => ({
+          ...prev,
+          muted_chats: prev.muted_chats.filter((id: string) => id !== roomId),
+        }));
+      } else {
+        await muteChat(token!, roomId);
+        setMongoUser((prev: any) => ({
+          ...prev,
+          muted_chats: [...prev.muted_chats, roomId],
+        }));
+      }
+    } catch (e: any) {
+      console.error("Mute toggle error:", e);
+      Alert.alert("Error", e.message);
+    }
+  };
+
   return (
     <Pressable
       onPress={() => {
         navigation.push("ChatStack", {
           screen: "ChatRoomPage",
           params: {
-            type: type, // 🚀 NEW
-            ...(type === "user" ? { user: user } : { group: group }),
+            type,
+            ...(type === "user" ? { user } : { group }),
           },
         });
       }}
       onLongPress={confirmDelete}
-      android_ripple={{ color: "#ddd" }}
+      android_ripple={{ color: "rgba(0,0,0,0.05)" }}
       style={({ pressed }) => [
-        { backgroundColor: pressed ? "#f0f0f0" : "white" },
+        {
+          backgroundColor: pressed ? "#f9fafb" : "#ffffff",
+          shadowColor: "#000",
+          shadowOpacity: 0.05,
+          shadowRadius: 4,
+          shadowOffset: { width: 0, height: 2 },
+          elevation: 2,
+          borderRadius: 12,
+          marginHorizontal: 12,
+          marginVertical: 6,
+        },
       ]}
-      className="flex-row items-center p-4 border-b border-gray-200"
     >
-      <Pressable onPress={handleProfilePress}>
-        {avatarUrl ? (
-          <Image
-            source={{ uri: avatarUrl }}
-            className="w-10 h-10 rounded-full"
-          />
-        ) : (
-          <View className="w-10 h-10 rounded-full bg-gray-300" />
-        )}
-      </Pressable>
+      <View className="flex-row items-center px-4 py-3">
+        {/* Avatar */}
+        <Pressable onPress={handleProfilePress} className="mr-4">
+          {avatarUrl ? (
+            <Image
+              source={{ uri: avatarUrl }}
+              className="w-12 h-12 rounded-full"
+            />
+          ) : (
+            <View className="w-12 h-12 rounded-full bg-gray-300" />
+          )}
+        </Pressable>
 
-      <View className="ml-4 flex-1">
-        <View className="flex-row items-center justify-between">
-          {/* Title: will shrink if needed */}
+        {/* Main content */}
+        <View className="flex-1">
           <Text
             numberOfLines={1}
-            className="flex-1 text-base font-semibold text-gray-800 truncate"
+            className="text-lg font-semibold text-gray-800"
           >
             {title}
           </Text>
-          {/* Time: flex-none so never shrinks */}
-          <Text className="shrink-0 text-sm font-semibold text-gray-600 ml-2 min-w-[48px] text-right">
-            {renderTime()}
+          <Text numberOfLines={1} className="text-sm text-gray-500 mt-0.5">
+            {renderLast()}
           </Text>
-          {/* ─── badge ─── */}
+        </View>
+
+        {/* Meta & controls */}
+        <View className="flex-row items-center space-x-3">
+          {/* Unread Badge */}
           {unreadCount > 0 && (
-            <View className="ml-2 bg-red-500 rounded-full w-5 h-5 justify-center items-center">
-              <Text className="text-white text-xs font-bold">
+            <View className="bg-red-500 rounded-full w-6 h-6 items-center justify-center">
+              <Text className="text-white text-[10px] font-bold">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </Text>
             </View>
           )}
+
+          {/* Timestamp */}
+          <Text className="text-xs text-gray-400">{renderTime()}</Text>
+
+          {/* Mute Toggle */}
+          <Pressable
+            onPress={toggleMute}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.6 : 1,
+            })}
+          >
+            <Icon
+              name={isMuted ? "bell-off" : "bell"}
+              size={22}
+              color={isMuted ? "#9ca3af" : "#6b7280"}
+            />
+          </Pressable>
         </View>
-        <Text className="text-sm text-gray-600 mt-1">{renderLast()}</Text>
       </View>
 
       <ConfirmationModal
         visible={confirmVisible}
         message={
           type === "user"
-            ? `Are you sure you want to remove ${title}?`
-            : `Are you sure you want to leave group chat "${title}"?`
+            ? `Remove ${title} from your chats?`
+            : `Leave group chat "${title}"?`
         }
         onConfirm={onConfirm}
         onCancel={onCancel}
