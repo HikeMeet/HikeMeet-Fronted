@@ -17,15 +17,12 @@ import { useChatRoom } from "../../contexts/chat-context";
 import MessagesList from "./components.tsx/messages-list";
 import { IGroup } from "../../interfaces/group-interface";
 import { IUser } from "../../interfaces/post-interface";
-import {
-  fetchPushTokens,
-  sendPushNotification,
-} from "../../components/requests/notification-requsts";
+import { sendPushNotification } from "../../components/requests/notification-requsts";
 import {
   fetchPushTokensUnmuted,
   openChatroom,
 } from "../../components/requests/chats-requsts";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { FIREBASE_DB } from "../../firebaseconfig";
 
 interface ChatRoomPageProps {
@@ -46,6 +43,22 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
   // load group metadata
   const [groupData, setGroupData] = React.useState<IGroup | null>(null);
   const [loadingGroup, setLoadingGroup] = React.useState(false);
+
+  const title =
+    type === "user"
+      ? userParam!.username
+      : loadingGroup
+        ? "Loading..."
+        : groupData?.name || "Group";
+  const avatarUrl =
+    type === "user"
+      ? userParam!.profile_picture.url
+      : groupData?.main_image?.url;
+
+  const roomId =
+    type === "user"
+      ? getRoomId(mongoUser!.firebase_id, userParam!.firebase_id!)
+      : groupParam!._id;
   useEffect(() => {
     if (type === "group") {
       setLoadingGroup(true);
@@ -69,6 +82,23 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
     userMongoId: type === "user" ? userParam?._id : undefined,
     groupId: type === "group" ? groupParam?._id : undefined,
   });
+
+  // ── NEW: clear my unread in Firestore whenever this screen is removed ──
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", async () => {
+      try {
+        const ref = doc(FIREBASE_DB, "rooms", roomId);
+        await updateDoc(ref, {
+          // reset your own count (keyed by firebase_id)
+          [`participants.${mongoUser!._id}`]: 0,
+        });
+      } catch (err) {
+        console.error("Failed to clear unread on exit:", err);
+      }
+      // once our async reset is kicked off, navigation will continue automatically
+    });
+    return unsubscribe;
+  }, [navigation, roomId, mongoUser]);
 
   // clear unread on blur
   useEffect(() => {
@@ -182,22 +212,6 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
     }
     return bar;
   };
-
-  const title =
-    type === "user"
-      ? userParam!.username
-      : loadingGroup
-        ? "Loading..."
-        : groupData?.name || "Group";
-  const avatarUrl =
-    type === "user"
-      ? userParam!.profile_picture.url
-      : groupData?.main_image?.url;
-
-  const roomId =
-    type === "user"
-      ? getRoomId(mongoUser!.firebase_id, userParam!.firebase_id!)
-      : groupParam!._id;
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
