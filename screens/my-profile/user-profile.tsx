@@ -92,7 +92,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
 
         // check Blocked
         const iBlockedHim = mongoUser?.friends?.some(
-          (f) => f.id === userId && f.status === "blocked"
+          (f: any) => f.id === userId && f.status === "blocked"
         );
 
         const heBlockedMe = data.friends?.some(
