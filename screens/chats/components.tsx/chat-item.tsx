@@ -22,6 +22,7 @@ import {
 } from "../../../components/requests/chats-requsts";
 import { useAuth } from "../../../contexts/auth-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { handleProfilePress } from "./user-group-image-press";
 
 // Enable LayoutAnimation for Android
 if (
@@ -101,24 +102,6 @@ const ChatItem: React.FC<ChatItemProps> = ({
     onDelete?.();
   };
 
-  const handleProfilePress = () => {
-    if (type === "user") {
-      if (user!._id === mongoId) {
-        navigation.push("Tabs", { screen: "Profile" });
-      } else {
-        navigation.push("AccountStack", {
-          screen: "UserProfile",
-          params: { userId: user!._id },
-        });
-      }
-    } else {
-      navigation.navigate("GroupsStack", {
-        screen: "GroupPage",
-        params: { groupId: group!._id },
-      });
-    }
-  };
-
   const toggleMute = async () => {
     const token = await getToken();
 
@@ -173,7 +156,18 @@ const ChatItem: React.FC<ChatItemProps> = ({
     >
       <View className="flex-row items-center px-4 py-3">
         {/* Avatar */}
-        <Pressable onPress={handleProfilePress} className="mr-4">
+        <Pressable
+          onPress={() =>
+            handleProfilePress({
+              type,
+              user: user,
+              group: group,
+              mongoId: mongoUser!._id,
+              navigation,
+            })
+          }
+          className="mr-4"
+        >
           {avatarUrl ? (
             <Image
               source={{ uri: avatarUrl }}

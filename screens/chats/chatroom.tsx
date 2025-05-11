@@ -26,6 +26,8 @@ import {
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { FIREBASE_DB } from "../../firebaseconfig";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import ChatHeader from "./components.tsx/chat-header";
+import { handleProfilePress } from "./components.tsx/user-group-image-press";
 
 interface ChatRoomPageProps {
   route: {
@@ -40,7 +42,7 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
   const { type } = route.params;
   const userParam = (route.params as any).user as IUser | undefined;
   const groupParam = (route.params as any).group as IGroup | undefined;
-  const { mongoUser, getToken, setMongoUser } = useAuth();
+  const { mongoUser, mongoId, getToken, setMongoUser } = useAuth();
 
   // load group metadata
   const [groupData, setGroupData] = React.useState<IGroup | null>(null);
@@ -182,21 +184,10 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
     }
   };
 
-  // input bar
-
   const renderInput = () => {
     const bar = (
-      <View
-        className="px-4 py-3 bg-white"
-        style={{
-          shadowColor: "#000",
-          shadowOpacity: 0.05,
-          shadowRadius: 8,
-          shadowOffset: { width: 0, height: -2 },
-          elevation: 5,
-        }}
-      >
-        <View className="flex-row items-center bg-gray-100 rounded-full px-4 py-2">
+      <View className="px-2 py-2 bg-white">
+        <View className="flex-row items-center">
           <TextInput
             ref={inputRef}
             className="flex-1 text-gray-800"
@@ -205,7 +196,15 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
             onChangeText={(v) => (textRef.current = v)}
             returnKeyType="send"
             onSubmitEditing={handleSend}
-            style={{ minHeight: 40 }}
+            style={{
+              flex: 1,
+              borderWidth: 1,
+              borderColor: "#ccc",
+              borderRadius: 8,
+              padding: 8,
+              fontSize: 16,
+              color: "#374151",
+            }}
             inputAccessoryViewID={
               Platform.OS === "ios" ? inputAccessoryID : undefined
             }
@@ -239,17 +238,20 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
   };
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
-      <View className="flex-row items-center p-3 bg-white border-b border-gray-200">
-        {avatarUrl ? (
-          <Image
-            source={{ uri: avatarUrl }}
-            style={{ width: 40, height: 40, borderRadius: 20 }}
-          />
-        ) : (
-          <View className="w-10 h-10 rounded-full bg-gray-300" />
-        )}
-        <Text className="ml-3 text-lg font-semibold">{title}</Text>
-      </View>
+      <ChatHeader
+        title={title}
+        avatarUrl={avatarUrl}
+        onBack={() => navigation.goBack()}
+        onAvatarPress={() =>
+          handleProfilePress({
+            type,
+            user: userParam,
+            group: groupParam,
+            mongoId: mongoUser!._id,
+            navigation,
+          })
+        }
+      />
 
       {type === "group" && !loadingGroup && !isMember ? (
         <View className="flex-1 justify-center items-center px-4">
