@@ -3,7 +3,6 @@ import React, { useEffect, useRef } from "react";
 import { getRoomId } from "../../utils/chat-utils";
 import {
   SafeAreaView,
-  View,
   Text,
   TextInput,
   Image,
@@ -11,6 +10,8 @@ import {
   Platform,
   Alert,
   InputAccessoryView,
+  View,
+  KeyboardAvoidingView,
 } from "react-native";
 import { useAuth } from "../../contexts/auth-context";
 import { useChatRoom } from "../../contexts/chat-context";
@@ -24,6 +25,7 @@ import {
 } from "../../components/requests/chats-requsts";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { FIREBASE_DB } from "../../firebaseconfig";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 interface ChatRoomPageProps {
   route: {
@@ -181,21 +183,44 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
   };
 
   // input bar
+
   const renderInput = () => {
     const bar = (
-      <View className="px-3 py-2 bg-white border-t border-gray-200">
-        <View className="flex-row items-center bg-gray-100 rounded-full px-3 py-1">
+      <View
+        className="px-4 py-3 bg-white"
+        style={{
+          shadowColor: "#000",
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+          shadowOffset: { width: 0, height: -2 },
+          elevation: 5,
+        }}
+      >
+        <View className="flex-row items-center bg-gray-100 rounded-full px-4 py-2">
           <TextInput
             ref={inputRef}
-            className="flex-1 text-gray-700"
+            className="flex-1 text-gray-800"
             placeholder="Type a message..."
+            placeholderTextColor="#999"
             onChangeText={(v) => (textRef.current = v)}
+            returnKeyType="send"
+            onSubmitEditing={handleSend}
+            style={{ minHeight: 40 }}
             inputAccessoryViewID={
               Platform.OS === "ios" ? inputAccessoryID : undefined
             }
           />
-          <TouchableOpacity onPress={handleSend}>
-            <Text className="text-blue-500 font-semibold">Send</Text>
+
+          <TouchableOpacity
+            onPress={handleSend}
+            className="ml-3"
+            style={{
+              backgroundColor: "#16a34a",
+              borderRadius: 20,
+              padding: 8,
+            }}
+          >
+            <Icon name="send" size={20} color="white" />
           </TouchableOpacity>
         </View>
       </View>
@@ -212,7 +237,6 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
     }
     return bar;
   };
-
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
       <View className="flex-row items-center p-3 bg-white border-b border-gray-200">
