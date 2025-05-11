@@ -8,52 +8,56 @@ import { formatDate } from "../../../utils/chat-utils";
 interface MessageItemProps {
   message?: IMessage;
   currentUser?: MongoUser;
-  type: "user" | "group"; // new prop
+  type: "user" | "group";
 }
 
 export default function MessageItem({
   message,
   currentUser,
-  type: chatType,
+  type,
 }: MessageItemProps) {
   if (!message) return null;
 
   const isMine = currentUser?.firebase_id === message.userId;
   const timeText = formatDate(message.createdAt.toDate());
 
+  // Alignment
+  const containerStyle = isMine
+    ? "flex-row justify-end pr-4 mb-3"
+    : "flex-row justify-start pl-4 mb-3";
+
+  // Bubble styling
+  const bubbleBase = "px-4 py-2 max-w-3/4";
+  const mineBubble = "bg-blue-500 rounded-2xl rounded-tr-sm";
+  const otherBubble =
+    "bg-white border border-gray-300 rounded-2xl rounded-tl-sm";
+
+  // Text colors
+  const textColor = isMine ? "text-white" : "text-gray-800";
+
+  // Timestamps: high-contrast for mine, muted for others
+  const timeColor = isMine ? "text-gray-500" : "text-gray-500";
+
   return (
-    <View
-      className={
-        isMine ? "flex-row justify-end mb-3 mr-3" : "flex-row mb-3 ml-3"
-      }
-    >
-      <View className="w-4/5">
-        {/* In group chats, show senderName for others */}
-        {chatType === "group" && !isMine && (
-          <Text className="text-xs text-gray-500 mb-1 ml-1">
+    <View className={containerStyle}>
+      <View>
+        {/* Sender name for group chats */}
+        {type === "group" && !isMine && (
+          <Text className="text-[12px] font-medium text-indigo-600 mb-0.5 ml-1">
             {message.senderName}
           </Text>
         )}
 
         {/* Bubble */}
-        <View
-          className={
-            isMine
-              ? "self-end p-3 rounded-2xl bg-[#3498db]"
-              : "self-start p-3 rounded-2xl bg-white"
-          }
-        >
-          <Text className={isMine ? "text-white" : "text-black"}>
-            {message.text}
-          </Text>
+        <View className={`${bubbleBase} ${isMine ? mineBubble : otherBubble}`}>
+          <Text className={`${textColor} text-base`}>{message.text}</Text>
         </View>
 
-        {/* Timestamp */}
+        {/* Timestamp below */}
         <Text
-          className={
-            (isMine ? "self-end" : "self-start") +
-            " mt-1 text-[10px] text-gray-400"
-          }
+          className={`mt-0.5 text-[10px] ${timeColor} ${
+            isMine ? "text-right pr-1" : "text-left pl-1"
+          }`}
         >
           {timeText}
         </Text>
