@@ -90,13 +90,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
         const data = await response.json();
         setUser(data);
 
-        // בדיקת חסימה
+        // check Blocked
         const iBlockedHim = mongoUser?.friends?.some(
           (f) => f.id === userId && f.status === "blocked"
         );
 
         const heBlockedMe = data.friends?.some(
-          (f) => f.id === mongoId && f.status === "blocked"
+          (f: any) => f.id === mongoId && f.status === "blocked"
         );
 
         if (iBlockedHim || heBlockedMe) {
@@ -104,10 +104,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
           return;
         }
 
-        // בדיקת פרטיות פוסטים לחברים בלבד
+        // check privacySettings
         const visibility = data.privacySettings?.postVisibility ?? "public";
         const isFriend = data.friends?.some(
-          (f) => f.id === mongoId && f.status === "accepted"
+          (f: any) => f.id === mongoId && f.status === "accepted"
         );
 
         if (visibility === "friends" && !isFriend && userId !== mongoId) {
