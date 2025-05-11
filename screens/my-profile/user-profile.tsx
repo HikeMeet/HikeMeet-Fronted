@@ -21,8 +21,7 @@ import ProfileImage from "../../components/profile-image";
 import { fetchPostsForUser } from "../../components/requests/fetch-posts";
 import PostCard from "../posts/components/post-card-on-feeds";
 import { IPost } from "../../interfaces/post-interface";
-import { checkRankLevel } from "./components/check-rank-level";
-import { RankInfo } from "../../interfaces/rank-info";
+import { getRankIcon } from "./components/rank-images";
 import RankInfoModal from "./components/rank-info-modal";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
@@ -41,12 +40,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
   const [showRankModal, setShowRankModal] = useState(false);
+const rankName = user?.rank;
+const RankIcon = rankName ? getRankIcon(rankName) : null;
 
-  // Compute rank info once user is loaded
-  const rankInfo: RankInfo | null = useMemo(
-    () => (user ? checkRankLevel(user.exp) : null),
-    [user]
-  );
 
   const toggleHikers = useCallback(() => {
     setShowHikers((prev) => !prev);
@@ -151,27 +147,25 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
                 {`${user.first_name} ${user.last_name}`}
               </Text>
 
-              {rankInfo && (
-                <View className="flex-row items-center">
-                  <TouchableOpacity
-                    onPress={() => setShowRankModal(true)}
-                    activeOpacity={0.7}
-                  >
-                    <Text className="text-sm text-gray-500 mr-2">
-                      Rank: {rankInfo.rankName}
-                    </Text>
-                  </TouchableOpacity>
+{rankName && (
+  <View className="flex-row items-center">
+    <TouchableOpacity
+      onPress={() => setShowRankModal(true)}
+      activeOpacity={0.7}
+    >
+      <Text className="text-sm text-gray-500 mr-2">Rank: {rankName}</Text>
+    </TouchableOpacity>
 
-                  {rankInfo?.rankImageUrl && (
-                    <TouchableOpacity
-                      onPress={() => setShowRankModal(true)}
-                      activeOpacity={0.7}
-                    >
-                      <rankInfo.rankImageUrl width={24} height={24} />
-                    </TouchableOpacity>
-                  )}
-                </View>
-              )}
+    {RankIcon && (
+      <TouchableOpacity
+        onPress={() => setShowRankModal(true)}
+        activeOpacity={0.7}
+      >
+        <RankIcon width={24} height={24} />
+      </TouchableOpacity>
+    )}
+  </View>
+)}
 
               <HikerButton
                 showHikers={showHikers}
@@ -227,14 +221,16 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      {rankInfo && (
-        <RankInfoModal
-          visible={showRankModal}
-          rankInfo={rankInfo}
-          onClose={() => setShowRankModal(false)}
-          isMyProfile={false}
-        />
-      )}
+{rankName && (
+  <RankInfoModal
+    visible={showRankModal}
+    rankName={rankName}
+    exp={user.exp}
+    onClose={() => setShowRankModal(false)}
+    isMyProfile={false}
+  />
+)}
+
 
       {showHikers ? (
         // Pass the memoized header to HikersList.

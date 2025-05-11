@@ -23,7 +23,6 @@ export const uploadMedia = async (
         }
       );
       videoScreenshot = screenshotUri;
-      console.log("Video screenshot generated:", screenshotUri);
     } catch (error) {
       console.error("Error generating video screenshot:", error);
     }
@@ -51,7 +50,6 @@ export const uploadMedia = async (
       headers: { "Content-Type": "multipart/form-data" },
     });
     const uploadResult = await uploadResponse.json();
-    console.log("Upload result:", uploadResult);
     const secureUrl =
       typeof uploadResult.secure_url === "string"
         ? uploadResult.secure_url

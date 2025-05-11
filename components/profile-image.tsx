@@ -160,7 +160,6 @@ const ProfileImage: React.FC<MainImageProps> = ({
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const asset = result.assets[0];
-      console.log("Image selected:", asset.uri);
       await handleRemovePhoto();
       await uploadMediaToBackend(asset.uri);
     } else {
