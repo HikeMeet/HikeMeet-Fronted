@@ -13,6 +13,8 @@ import { useAuth } from "../../contexts/auth-context";
 import { IReport, ReportStatus } from "../../interfaces/report-interface";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 import ReportCard from "./components/report-card";
+import ResolveAllButton from "./components/resolve-all-button";
+import DeleteResolvedButton from "./components/delete-resolved-button";
 
 const PAGE_SIZE = 6;
 
@@ -121,63 +123,6 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
     }
   };
 
-  //  resolve ALL reports
-  const resolveAllReports = async () => {
-    Alert.alert("Resolve all", "Mark every report as resolved?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Confirm",
-        onPress: async () => {
-          const prev = reports;
-          setReports((cur) => cur.map((r) => ({ ...r, status: "resolved" })));
-          try {
-            const token = await getToken();
-            const res = await fetch(
-              `${process.env.EXPO_LOCAL_SERVER}/api/report/resolve-all`,
-              {
-                method: "PATCH",
-                headers: { Authorization: `Bearer ${token}` },
-              }
-            );
-            if (!res.ok) throw await res.text();
-          } catch (err) {
-            console.error(" Bulk resolve failed:", err);
-            setReports(prev);
-          }
-        },
-      },
-    ]);
-  };
-
-  // ---------- delete ALL resolved ----------
-  const deleteResolvedReports = async () => {
-    Alert.alert("Delete resolved", "Remove all resolved reports permanently?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          const prev = reports;
-          setReports((cur) => cur.filter((r) => r.status !== "resolved"));
-          try {
-            const token = await getToken();
-            const res = await fetch(
-              `${process.env.EXPO_LOCAL_SERVER}/api/report/resolved`,
-              {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-              }
-            );
-            if (!res.ok) throw await res.text();
-          } catch (err) {
-            console.error("❌ Bulk delete failed:", err);
-            setReports(prev);
-          }
-        },
-      },
-    ]);
-  };
-
   //  refetch on focus
   useFocusEffect(
     useCallback(() => {
@@ -279,22 +224,17 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
         </View>
       </View>
 
-      {/* global actions */}
-      <View className="flex-row justify-around items-center px-4 py-2 bg-gray-100">
-        <TouchableOpacity
-          onPress={resolveAllReports}
-          className="flex-row items-center"
-        >
-          <MaterialIcons name="task-alt" size={18} color="#10b981" />
-          <Text className="ml-1 text-sm">Resolve all</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={deleteResolvedReports}
-          className="flex-row items-center"
-        >
-          <MaterialIcons name="delete-forever" size={18} color="#f44" />
-          <Text className="ml-1 text-sm">Delete resolved</Text>
-        </TouchableOpacity>
+      <View className="flex-row items-center justify-around px-4 py-3 bg-white border-t border-gray-200">
+        <ResolveAllButton
+          reports={reports}
+          setReports={setReports}
+          getToken={getToken}
+        />
+        <DeleteResolvedButton
+          reports={reports}
+          setReports={setReports}
+          getToken={getToken}
+        />
       </View>
 
       {/* list */}

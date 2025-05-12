@@ -1,20 +1,14 @@
 export type ReportType = "user" | "post" | "trip";
 export type ReportStatus = "pending" | "in_progress" | "resolved";
 
-export interface ReporterInfo {
-  _id: string;
-  username: string;
-  profile_picture: {
-    url: string;
-  };
-}
-
 export interface IReport {
   _id: string;
-  reporter: ReporterInfo;
+  reporter: { username: string; profile_picture?: string };
   targetId: string;
-  targetType: ReportType;
+  targetType: "user" | "post" | "trip";
+  targetName?: string; // ➕
+  targetOwner?: string | null;
   reason: string;
-  status: ReportStatus;
+  status: "pending" | "in_progress" | "resolved";
   createdAt: string;
 }
