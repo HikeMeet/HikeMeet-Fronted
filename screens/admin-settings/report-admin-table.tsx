@@ -5,7 +5,6 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   FlatList,
-  Modal,
   TextInput,
   Alert,
 } from "react-native";
@@ -13,13 +12,9 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "../../contexts/auth-context";
 import { IReport, ReportStatus } from "../../interfaces/report-interface";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
+import ReportCard from "./components/report-card";
 
-// ------------------ constants ------------------
-const STATUS_COLORS: Record<ReportStatus, string> = {
-  pending: "bg-yellow-200",
-  in_progress: "bg-blue-200",
-  resolved: "bg-green-200",
-};
+const PAGE_SIZE = 6;
 
 const FILTER_OPTIONS: (ReportStatus | "all")[] = [
   "all",
@@ -28,10 +23,10 @@ const FILTER_OPTIONS: (ReportStatus | "all")[] = [
   "resolved",
 ];
 
-// ================= COMPONENT ===================
 const ReportAdminTable = ({ navigation }: { navigation: any }) => {
   const [reports, setReports] = useState<IReport[]>([]);
   const [filteredReports, setFilteredReports] = useState<IReport[]>([]);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<ReportStatus | "all">("all");
   const { getToken } = useAuth();
@@ -40,7 +35,7 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
   );
   const [searchText, setSearchText] = useState<string>("");
 
-  // ---------- fetch all reports ----------
+  // fetch all reports
   const fetchReports = useCallback(async () => {
     try {
       setLoading(true);
@@ -60,7 +55,7 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
     }
   }, [getToken]);
 
-  // ---------- single status update (optimistic) ----------
+  // ingle status update
   const updateStatus = async (reportId: string, newStatus: ReportStatus) => {
     const prev = reports;
     setReports((cur) =>
@@ -83,11 +78,11 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
       if (!res.ok) throw await res.text();
     } catch (err) {
       console.error("❌ Failed to update report:", err);
-      setReports(prev); // rollback
+      setReports(prev);
     }
   };
 
-  // ---------- delete single report ----------
+  //  delete single report
   const deleteReport = async (reportId: string) => {
     Alert.alert(
       "Delete report",
@@ -111,8 +106,8 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
               );
               if (!res.ok) throw await res.text();
             } catch (err) {
-              console.error("❌ Delete failed:", err);
-              setReports(prev); // rollback
+              console.error(" Delete failed:", err);
+              setReports(prev);
             }
           },
         },
@@ -120,7 +115,13 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
     );
   };
 
-  // ---------- resolve ALL reports ----------
+  const loadMore = () => {
+    if (visibleCount < filteredReports.length) {
+      setVisibleCount((c) => Math.min(c + PAGE_SIZE, filteredReports.length));
+    }
+  };
+
+  //  resolve ALL reports
   const resolveAllReports = async () => {
     Alert.alert("Resolve all", "Mark every report as resolved?", [
       { text: "Cancel", style: "cancel" },
@@ -140,7 +141,7 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
             );
             if (!res.ok) throw await res.text();
           } catch (err) {
-            console.error("❌ Bulk resolve failed:", err);
+            console.error(" Bulk resolve failed:", err);
             setReports(prev);
           }
         },
@@ -177,14 +178,14 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
     ]);
   };
 
-  // ---------- refetch on focus ----------
+  //  refetch on focus
   useFocusEffect(
     useCallback(() => {
       fetchReports();
     }, [fetchReports])
   );
 
-  // ---------- filtering & search ----------
+  //  filtering & search
   useEffect(() => {
     const base =
       filter === "all" ? reports : reports.filter((r) => r.status === filter);
@@ -201,9 +202,10 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
         )
       );
     }
+    setVisibleCount(PAGE_SIZE);
   }, [filter, reports, searchText]);
 
-  // ---------- navigation helper ----------
+  //  navigation helper
   const navigateToTarget = (report: IReport) => {
     const { targetType, targetId } = report;
     if (targetType === "trip") {
@@ -224,90 +226,19 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
     }
   };
 
-  // ---------- each card ----------
+  //  each card
   const renderReport = ({ item }: { item: IReport }) => (
-    <View className="relative border border-gray-300 rounded-xl p-4 mb-3">
-      {/* clickable area */}
-      <TouchableOpacity
-        onPress={() => navigateToTarget(item)}
-        activeOpacity={0.8}
-      >
-        <Text className="font-bold text-sm">
-          Reporter: {item.reporter?.username || "Unknown"}
-        </Text>
-        <Text className="text-s">Type: {item.targetType}</Text>
-        <Text className="text-s">Reason: {item.reason}</Text>
-      </TouchableOpacity>
-
-      {/* status chip */}
-      <TouchableOpacity
-        onPress={() =>
-          setOpenStatusModalId((prev) => (prev === item._id ? null : item._id))
-        }
-        className={`absolute top-2 right-8 px-2 py-1 rounded-full flex-row items-center space-x-1 ${STATUS_COLORS[item.status]}`}
-      >
-        <Text className="text-xs capitalize text-black font-semibold">
-          {item.status.replace("_", " ")}
-        </Text>
-        <Feather name="chevron-down" size={14} color="#333" />
-      </TouchableOpacity>
-
-      {/* delete icon */}
-      <TouchableOpacity
-        onPress={() => deleteReport(item._id)}
-        className="absolute top-2 right-2 p-1"
-      >
-        <MaterialIcons name="delete" size={18} color="#f44" />
-      </TouchableOpacity>
-
-      {/* status modal */}
-      <Modal
-        visible={openStatusModalId === item._id}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setOpenStatusModalId(null)}
-      >
-        <TouchableOpacity
-          className="flex-1 bg-black/40 justify-center items-center"
-          activeOpacity={1}
-          onPress={() => setOpenStatusModalId(null)}
-        >
-          <View className="bg-white rounded-xl w-64 p-4">
-            {(["pending", "in_progress", "resolved"] as ReportStatus[]).map(
-              (status) => (
-                <TouchableOpacity
-                  key={status}
-                  onPress={() => {
-                    updateStatus(item._id, status);
-                    setOpenStatusModalId(null);
-                  }}
-                  className="py-2"
-                >
-                  <Text
-                    className={`text-sm capitalize text-center ${
-                      status === item.status
-                        ? "text-blue-600 font-bold"
-                        : "text-gray-800"
-                    }`}
-                  >
-                    {status.replace("_", " ")}
-                  </Text>
-                </TouchableOpacity>
-              )
-            )}
-            <TouchableOpacity
-              onPress={() => setOpenStatusModalId(null)}
-              className="mt-2"
-            >
-              <Text className="text-center text-xs text-gray-400">Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
-    </View>
+    <ReportCard
+      report={item}
+      openStatusModalId={openStatusModalId}
+      setOpenStatusModalId={setOpenStatusModalId}
+      onNavigate={navigateToTarget}
+      onDelete={deleteReport}
+      onUpdateStatus={updateStatus}
+    />
   );
 
-  // ---------- loading state ----------
+  //  loading state
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center">
@@ -368,9 +299,15 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
 
       {/* list */}
       <FlatList
-        data={filteredReports}
+        data={filteredReports.slice(0, visibleCount)}
         renderItem={renderReport}
         keyExtractor={(item) => item._id}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.4}
+        initialNumToRender={PAGE_SIZE}
+        maxToRenderPerBatch={PAGE_SIZE}
+        windowSize={5}
+        removeClippedSubviews={true}
         contentContainerStyle={{ paddingBottom: 100 }}
       />
     </View>
