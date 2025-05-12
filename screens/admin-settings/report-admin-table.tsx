@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Modal,
   TextInput,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "../../contexts/auth-context";
 import { IReport, ReportStatus } from "../../interfaces/report-interface";
 import { Feather } from "@expo/vector-icons";
@@ -36,7 +37,8 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
   );
   const [searchText, setSearchText] = useState<string>("");
 
-  const fetchReports = async () => {
+  // ---------- fetch ----------
+  const fetchReports = useCallback(async () => {
     try {
       setLoading(true);
       const token = await getToken();
@@ -49,13 +51,18 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
       const data = await res.json();
       setReports(data.reports || []);
     } catch (err) {
-      console.error("\u274C Error loading reports:", err);
+      console.error("❌ Error loading reports:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [getToken]);
 
+  // ---------- optimistic PATCH ----------
   const updateStatus = async (reportId: string, newStatus: ReportStatus) => {
+    setReports((prev) =>
+      prev.map((r) => (r._id === reportId ? { ...r, status: newStatus } : r))
+    );
+
     try {
       const token = await getToken();
       const res = await fetch(
@@ -69,12 +76,49 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
           body: JSON.stringify({ status: newStatus }),
         }
       );
-      if (res.ok) fetchReports();
+
+      if (!res.ok) {
+        const { status: serverStatus } = await res.json();
+        setReports((prev) =>
+          prev.map((r) =>
+            r._id === reportId ? { ...r, status: serverStatus } : r
+          )
+        );
+        console.error("❌ Failed to update report:", await res.text());
+      }
     } catch (err) {
-      console.error("\u274C Failed to update report:", err);
+      console.error("❌ Network error:", err);
     }
   };
 
+  // ---------- refetch when screen gains focus ----------
+  useFocusEffect(
+    useCallback(() => {
+      fetchReports();
+    }, [fetchReports])
+  );
+
+  // ---------- filtering & search ----------
+  useEffect(() => {
+    const base =
+      filter === "all" ? reports : reports.filter((r) => r.status === filter);
+
+    if (!searchText.trim()) {
+      setFilteredReports(base);
+    } else {
+      const q = searchText.toLowerCase();
+      setFilteredReports(
+        base.filter(
+          (r) =>
+            r.reporter?.username?.toLowerCase().includes(q) ||
+            r.reason?.toLowerCase().includes(q) ||
+            r.targetType?.toLowerCase().includes(q)
+        )
+      );
+    }
+  }, [filter, reports, searchText]);
+
+  // ---------- navigation helper ----------
   const navigateToTarget = (report: IReport) => {
     const { targetType, targetId } = report;
     if (targetType === "trip") {
@@ -95,34 +139,7 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
     }
   };
 
-  useEffect(() => {
-    fetchReports();
-  }, []);
-
-  useEffect(() => {
-    const baseList =
-      filter === "all"
-        ? reports
-        : reports.filter((r) => r.status === filter);
-
-    if (!searchText.trim()) {
-    setFilteredReports(baseList);
-    } else {
-      const filtered = baseList.filter((r) => {
-        const reporter = r.reporter?.username?.toLowerCase() || "";
-        const reason = r.reason?.toLowerCase() || "";
-        const target = r.targetType?.toLowerCase() || "";
-        return (
-          reporter.includes(searchText.toLowerCase()) ||
-          reason.includes(searchText.toLowerCase()) ||
-          target.includes(searchText.toLowerCase())
-        );
-     });
-
-      setFilteredReports(filtered);
-    }
-  }, [filter, reports, searchText]);
-
+  // ---------- render ----------
   const renderReport = ({ item }: { item: IReport }) => (
     <View className="relative border border-gray-300 rounded-xl p-4 mb-3">
       <TouchableOpacity
@@ -195,11 +212,16 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
   );
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
   }
 
   return (
     <View className="flex-1">
+      {/* filters */}
       <View className="flex-row justify-center mb-4 flex-wrap">
         {FILTER_OPTIONS.map((option) => (
           <TouchableOpacity
@@ -214,24 +236,24 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
         ))}
       </View>
 
-
-
-    <View className="px-4 mb-3">
-      <View className="flex-row items-center bg-gray-200 rounded-lg px-3 py-2">
-        <TextInput
-          placeholder="Search reports..."
-          className="flex-1 text-sm"
-          value={searchText}
-          onChangeText={setSearchText}
-        />
-        {searchText.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchText("")}>
-            <Feather name="x" size={18} color="gray" />
-          </TouchableOpacity>
-        )}
+      {/* search */}
+      <View className="px-4 mb-3">
+        <View className="flex-row items-center bg-gray-200 rounded-lg px-3 py-2">
+          <TextInput
+            placeholder="Search reports..."
+            className="flex-1 text-sm"
+            value={searchText}
+            onChangeText={setSearchText}
+          />
+          {searchText.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchText("")}>
+              <Feather name="x" size={18} color="gray" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
-    </View>
 
+      {/* list */}
       <FlatList
         data={filteredReports}
         renderItem={renderReport}
