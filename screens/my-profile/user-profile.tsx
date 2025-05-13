@@ -40,9 +40,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
   const [showRankModal, setShowRankModal] = useState(false);
-const rankName = user?.rank;
-const RankIcon = rankName ? getRankIcon(rankName) : null;
-
+  const rankName = user?.rank;
+  const RankIcon = rankName ? getRankIcon(rankName) : null;
 
   const toggleHikers = useCallback(() => {
     setShowHikers((prev) => !prev);
@@ -140,32 +139,32 @@ const RankIcon = rankName ? getRankIcon(rankName) : null;
               </TouchableOpacity>
             </View>
             <View className="flex-1 ml-2">
-              <Text className="text-xl font-bold">
-                {`${user.username} ${user.last_name}`}
-              </Text>
+              <Text className="text-xl font-bold">{`${user.username}`}</Text>
               <Text className="text-sm font-bold">
                 {`${user.first_name} ${user.last_name}`}
               </Text>
 
-{rankName && (
-  <View className="flex-row items-center">
-    <TouchableOpacity
-      onPress={() => setShowRankModal(true)}
-      activeOpacity={0.7}
-    >
-      <Text className="text-sm text-gray-500 mr-2">Rank: {rankName}</Text>
-    </TouchableOpacity>
+              {rankName && (
+                <View className="flex-row items-center">
+                  <TouchableOpacity
+                    onPress={() => setShowRankModal(true)}
+                    activeOpacity={0.7}
+                  >
+                    <Text className="text-sm text-gray-500 mr-2">
+                      Rank: {rankName}
+                    </Text>
+                  </TouchableOpacity>
 
-    {RankIcon && (
-      <TouchableOpacity
-        onPress={() => setShowRankModal(true)}
-        activeOpacity={0.7}
-      >
-        <RankIcon width={24} height={24} />
-      </TouchableOpacity>
-    )}
-  </View>
-)}
+                  {RankIcon && (
+                    <TouchableOpacity
+                      onPress={() => setShowRankModal(true)}
+                      activeOpacity={0.7}
+                    >
+                      <RankIcon width={24} height={24} />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
 
               <HikerButton
                 showHikers={showHikers}
@@ -221,16 +220,15 @@ const RankIcon = rankName ? getRankIcon(rankName) : null;
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-{rankName && (
-  <RankInfoModal
-    visible={showRankModal}
-    rankName={rankName}
-    exp={user.exp}
-    onClose={() => setShowRankModal(false)}
-    isMyProfile={false}
-  />
-)}
-
+      {rankName && (
+        <RankInfoModal
+          visible={showRankModal}
+          rankName={rankName}
+          exp={user.exp}
+          onClose={() => setShowRankModal(false)}
+          isMyProfile={false}
+        />
+      )}
 
       {showHikers ? (
         // Pass the memoized header to HikersList.
