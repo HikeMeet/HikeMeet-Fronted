@@ -58,7 +58,10 @@ const ChatItem: React.FC<ChatItemProps> = ({
   const [confirmVisible, setConfirmVisible] = useState(false);
   // 🚀 REMOVED onLayout & extra animations here
 
-  const title = type === "user" ? user!.username : group!.name;
+  const title =
+    type === "user"
+      ? (user?.username ?? "Unknown")
+      : (group?.name ?? "Unknown");
   const avatarUrl =
     type === "user" ? user!.profile_picture.url : group!.main_image?.url;
   const roomId =
@@ -66,7 +69,7 @@ const ChatItem: React.FC<ChatItemProps> = ({
       ? group!._id
       : getRoomId(mongoUser!.firebase_id, user!.firebase_id!);
 
-  const isMuted = mongoUser!.muted_chats.includes(roomId);
+  // const isMuted = mongoUser!.muted_chats.includes(roomId);
 
   const renderTime = (): string => {
     if (lastMessage === undefined) return "…";

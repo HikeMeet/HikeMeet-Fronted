@@ -121,22 +121,24 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
                 uploadType={"profile"}
                 editable={false}
               />
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.push("ChatStack", {
-                    screen: "ChatRoomPage",
-                    params: { user, type: "user" },
-                  });
-                }}
-                className="mt-2 flex-row items-center border-2 border-blue-500 p-1 rounded-full bg-blue-500"
-              >
-                <Ionicons
-                  name="chatbubble-ellipses-outline"
-                  size={20}
-                  color="white"
-                />
-                <Text className="ml-1 text-sm text-white">Send Message</Text>
-              </TouchableOpacity>
+              {friendStatus !== "blocked" && (
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.push("ChatStack", {
+                      screen: "ChatRoomPage",
+                      params: { user, type: "user" },
+                    });
+                  }}
+                  className="mt-2 flex-row items-center border-2 border-blue-500 p-1 rounded-full bg-blue-500"
+                >
+                  <Ionicons
+                    name="chatbubble-ellipses-outline"
+                    size={20}
+                    color="white"
+                  />
+                  <Text className="ml-1 text-sm text-white">Send Message</Text>
+                </TouchableOpacity>
+              )}
             </View>
             <View className="flex-1 ml-2">
               <Text className="text-xl font-bold">{`${user.username}`}</Text>
@@ -166,11 +168,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
                 </View>
               )}
 
-              <HikerButton
-                showHikers={showHikers}
-                toggleHikers={toggleHikers}
-                user={user}
-              />
+              {friendStatus !== "blocked" && (
+                <HikerButton
+                  showHikers={showHikers}
+                  toggleHikers={toggleHikers}
+                  user={user}
+                />
+              )}
               {mongoId && (
                 <View className="flex-row items-center">
                   <FriendActionButton
@@ -248,22 +252,24 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
             keyExtractor={(item) => item._id}
             renderItem={({ item }) => (
               <View className="p-4">
-                <PostCard
-                  post={item}
-                  navigation={navigation}
-                  onPostUpdated={(deletedPost) => {
-                    setPosts((prevPosts) =>
-                      prevPosts.filter((p) => p._id !== deletedPost._id)
-                    );
-                  }}
-                  onPostLiked={(updatedPost: IPost) => {
-                    setPosts((prevPosts) =>
-                      prevPosts.map((p) =>
-                        p._id === updatedPost._id ? updatedPost : p
-                      )
-                    );
-                  }}
-                />
+                {friendStatus !== "blocked" && (
+                  <PostCard
+                    post={item}
+                    navigation={navigation}
+                    onPostUpdated={(deletedPost) => {
+                      setPosts((prevPosts) =>
+                        prevPosts.filter((p) => p._id !== deletedPost._id)
+                      );
+                    }}
+                    onPostLiked={(updatedPost: IPost) => {
+                      setPosts((prevPosts) =>
+                        prevPosts.map((p) =>
+                          p._id === updatedPost._id ? updatedPost : p
+                        )
+                      );
+                    }}
+                  />
+                )}
               </View>
             )}
             ListHeaderComponent={memoizedHeader}
