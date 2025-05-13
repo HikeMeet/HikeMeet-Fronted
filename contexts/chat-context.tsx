@@ -86,10 +86,23 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // helper to clear them all at once
-  const clearAllListeners = () => {
+  const clearAllListeners = useCallback(() => {
+    // 1) tear down any live Firestore listeners
     snapshotUnsubs.current.forEach((u) => u());
     snapshotUnsubs.current = [];
-  };
+
+    // 2) reset your chat‐list state
+    setRooms([]);
+    setLastMessages({});
+    setUnreadCounts({});
+  }, [setRooms, setLastMessages, setUnreadCounts]);
+
+  useEffect(() => {
+    if (!mongoUser) {
+      clearAllListeners();
+    }
+  }, [mongoUser, clearAllListeners]);
+
   // Initialize rooms once when user data arrives
   const initializeRooms = useCallback(() => {
     if (!mongoUser || rooms.length) return;
