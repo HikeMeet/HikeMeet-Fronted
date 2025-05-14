@@ -52,12 +52,13 @@ const ReportCard: React.FC<Props> = ({
     onDelete(report._id);
   };
 
-  /* יעד – שם ידידותי או ID כ‑string */
   const targetLabel =
-    report.targetName ??
-    (typeof report.targetId === "string"
-      ? report.targetId
-      : String(report.targetId));
+    report.targetType === "post"
+      ? "" // hide long ID for posts
+      : (report.targetName ??
+        (typeof report.targetId === "string"
+          ? report.targetId
+          : String(report.targetId)));
 
   return (
     <TouchableOpacity
@@ -79,7 +80,8 @@ const ReportCard: React.FC<Props> = ({
 
       {/* Target info */}
       <Text className="text-xs text-gray-500 mb-1">
-        Target: {report.targetType} – {targetLabel}
+        Target: {report.targetType}
+        {targetLabel ? ` – ${targetLabel}` : ""}
       </Text>
 
       {/* Owner of post (optional) */}
