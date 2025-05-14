@@ -54,7 +54,7 @@ const ReportCard: React.FC<Props> = ({
 
   const targetLabel =
     report.targetType === "post"
-      ? "" // hide long ID for posts
+      ? report.targetName || "Post without text"
       : (report.targetName ??
         (typeof report.targetId === "string"
           ? report.targetId

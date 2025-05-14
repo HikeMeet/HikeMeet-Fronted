@@ -132,21 +132,44 @@ const ReportAdminTable = ({ navigation }: { navigation: any }) => {
 
   //  filtering & search
   useEffect(() => {
+    // sort by status
     const base =
       filter === "all" ? reports : reports.filter((r) => r.status === filter);
+
     if (!searchText.trim()) {
       setFilteredReports(base);
     } else {
       const q = searchText.toLowerCase();
+
+      //sort in seerch:
       setFilteredReports(
-        base.filter(
-          (r) =>
+        base.filter((r) => {
+          /*   reporter username + reason + targetType  */
+          const f1 =
             r.reporter?.username?.toLowerCase().includes(q) ||
             r.reason?.toLowerCase().includes(q) ||
-            r.targetType?.toLowerCase().includes(q)
-        )
+            r.targetType?.toLowerCase().includes(q);
+
+          /*  targetName  (post‑preview, trip name, user name) */
+          const f2 = r.targetName?.toLowerCase().includes(q);
+
+          /*   post owner  */
+          const f3 = r.targetOwner?.toLowerCase().includes(q);
+
+          /*   date / time  – dd Mon yyyy | hh:mm */
+          const dateStr = new Date(r.createdAt)
+            .toLocaleDateString()
+            .toLowerCase();
+          const timeStr = new Date(r.createdAt)
+            .toLocaleTimeString()
+            .toLowerCase();
+          const f4 = dateStr.includes(q) || timeStr.includes(q);
+
+          return f1 || f2 || f3 || f4;
+        })
       );
     }
+
     setVisibleCount(PAGE_SIZE);
   }, [filter, reports, searchText]);
 
