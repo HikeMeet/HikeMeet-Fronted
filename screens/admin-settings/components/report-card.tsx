@@ -77,23 +77,31 @@ const ReportCard: React.FC<Props> = ({
       <Text className="absolute bottom-2 right-3 text-xs text-gray-400">
         {formatDate(report.createdAt)}
       </Text>
-
       {/* Target info */}
       <Text className="text-xs text-gray-500 mb-1">
-        Target: {report.targetType}
-        {targetLabel ? ` – ${targetLabel}` : ""}
+        {/* label */}
+        <Text className="font-bold text-gray-700">Target:</Text>{" "}
+        {report.targetType}
+        {/* if post */}
+        {report.targetType === "post"
+          ? `\n\n${targetLabel || ""}\n`
+          : targetLabel
+            ? ` – ${targetLabel}`
+            : ""}
       </Text>
 
       {/* Owner of post (optional) */}
       {report.targetType === "post" && report.targetOwner && (
         <Text className="text-xs text-gray-500 mb-1">
-          Post owner: {report.targetOwner}
+          <Text className="font-bold text-black-700">Post owner:</Text>{" "}
+          {report.targetOwner}
         </Text>
       )}
 
       {/* Reason */}
       <Text className="text-sm text-gray-700 mb-4" numberOfLines={3}>
-        Reason: {report.reason}
+        <Text className="font-semibold text-black-700">Reason: </Text>
+        {report.reason}
       </Text>
 
       {/* Status chip */}
