@@ -7,44 +7,15 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { RankInfo } from "../../interfaces/rank-info";
+import { getRankIcon, getNextRankThreshold } from "./components/rank-images";
 
-const ranks: Omit<RankInfo, "exp">[] = [
-  {
-    rankName: "Rookie",
-    nextRank: 50,
-    rankImageUrl: require("../../assets/ranks/rookie.svg").default,
-  },
-  {
-    rankName: "Adventurer",
-    nextRank: 120,
-    rankImageUrl: require("../../assets/ranks/adventurer.svg").default,
-  },
-  {
-    rankName: "Veteran",
-    nextRank: 220,
-    rankImageUrl: require("../../assets/ranks/veteran.svg").default,
-  },
-  {
-    rankName: "Epic",
-    nextRank: 340,
-    rankImageUrl: require("../../assets/ranks/epic.svg").default,
-  },
-  {
-    rankName: "Elite",
-    nextRank: 480,
-    rankImageUrl: require("../../assets/ranks/elite.svg").default,
-  },
-  {
-    rankName: "Legend",
-    nextRank: Infinity,
-    rankImageUrl: require("../../assets/ranks/legend.svg").default,
-  },
-];
+const rankNames = ["Rookie", "Adventurer", "Veteran", "Epic", "Elite", "Legend"] as const;
 
-interface RankingSystemProps {
-  navigation: any;
-}
+const ranks = rankNames.map((rankName) => ({
+  rankName,
+  nextRank: getNextRankThreshold(rankName),
+  rankImage: getRankIcon(rankName),
+}));
 
 const expRules = [
   { category: "Groups", action: "Create a group", points: "+10" },
@@ -75,6 +46,10 @@ const expRules = [
   { category: "Friends", action: "Remove a friend", points: "-5 each" },
 ];
 
+interface RankingSystemProps {
+  navigation: any;
+}
+
 const RankingSystem: React.FC<RankingSystemProps> = ({ navigation }) => {
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -104,13 +79,13 @@ const RankingSystem: React.FC<RankingSystemProps> = ({ navigation }) => {
             key={rank.rankName}
             className="bg-gray-50 rounded-2xl p-2 mb-4 flex-row items-center shadow-sm"
           >
-            <rank.rankImageUrl width={36} height={36} />
+            {rank.rankImage && <rank.rankImage width={36} height={36} />}
             <View className="ml-4">
               <Text className="text-lg font-semibold text-gray-800">
                 {rank.rankName}
               </Text>
               <Text className="text-sm text-gray-500">
-                {rank.nextRank === Infinity
+                {rank.nextRank === null
                   ? "🏆 Final Rank - You've made it to the top!"
                   : `🎯 Reach ${rank.nextRank} EXP to unlock`}
               </Text>

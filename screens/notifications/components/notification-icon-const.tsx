@@ -12,6 +12,8 @@ export const getNotificationIconName = (
     iconName = "heart-outline";
   } else if (type.includes("share")) {
     iconName = "share-social-outline";
+  } else if (type.includes("rank")) {
+    iconName = "trophy-outline";
   } else if (
     type.includes("friend_request") ||
     type.includes("friend_accept")
