@@ -21,9 +21,9 @@ import ProfileImage from "../../components/profile-image";
 import { fetchPostsForUser } from "../../components/requests/fetch-posts";
 import PostCard from "../posts/components/post-card-on-feeds";
 import { IPost } from "../../interfaces/post-interface";
-import { checkRankLevel } from "./components/check-rank-level";
-import { RankInfo } from "../../interfaces/rank-info";
+import { getRankIcon } from "./components/rank-images";
 import RankInfoModal from "./components/rank-info-modal";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 interface UserProfileProps {
   route: any;
@@ -40,12 +40,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
   const [showRankModal, setShowRankModal] = useState(false);
-
-  // Compute rank info once user is loaded
-  const rankInfo: RankInfo | null = useMemo(
-    () => (user ? checkRankLevel(user.exp) : null),
-    [user]
-  );
+  const rankName = user?.rank;
+  const RankIcon = rankName ? getRankIcon(rankName) : null;
 
   const toggleHikers = useCallback(() => {
     setShowHikers((prev) => !prev);
@@ -62,7 +58,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   };
 
   useEffect(() => {
-    fetchMongoUser(mongoId!);
     fetchPosts();
   }, [user]);
 
@@ -107,7 +102,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
       }
     };
     fetchUser();
-  }, [userId, mongoId]);
+  }, [mongoId]);
 
   // Render header that stays at the top of the list.
   const renderPostsHeader = () => (
@@ -116,49 +111,70 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
       {user && (
         <View className="bg-white">
           {/* Profile Info Row */}
-          <View className="flex-row items-center p-4">
-            <ProfileImage
-              initialImage={user.profile_picture}
-              size={80}
-              id={user._id}
-              uploadType={"profile"}
-              editable={false}
-            />
+          <View className="flex-row items-center p-2">
+            <View className="flex-col items-start p-4 bg-white">
+              {/* Profile Image + Send Message button underneath */}
+              <ProfileImage
+                initialImage={user.profile_picture}
+                size={80}
+                id={user._id}
+                uploadType={"profile"}
+                editable={false}
+              />
+              {friendStatus !== "blocked" && (
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.push("ChatStack", {
+                      screen: "ChatRoomPage",
+                      params: { user, type: "user" },
+                    });
+                  }}
+                  className="mt-2 flex-row items-center border-2 border-blue-500 p-1 rounded-full bg-blue-500"
+                >
+                  <Ionicons
+                    name="chatbubble-ellipses-outline"
+                    size={20}
+                    color="white"
+                  />
+                  <Text className="ml-1 text-sm text-white">Send Message</Text>
+                </TouchableOpacity>
+              )}
+            </View>
             <View className="flex-1 ml-2">
-              <Text className="text-xl font-bold">
-                {`${user.username} ${user.last_name}`}
-              </Text>
+              <Text className="text-xl font-bold">{`${user.username}`}</Text>
               <Text className="text-sm font-bold">
                 {`${user.first_name} ${user.last_name}`}
               </Text>
 
-              {rankInfo && (
+              {rankName && (
                 <View className="flex-row items-center">
                   <TouchableOpacity
                     onPress={() => setShowRankModal(true)}
                     activeOpacity={0.7}
                   >
                     <Text className="text-sm text-gray-500 mr-2">
-                      Rank: {rankInfo.rankName}
+                      Rank: {rankName}
                     </Text>
                   </TouchableOpacity>
 
-                  {rankInfo?.rankImageUrl && (
+                  {RankIcon && (
                     <TouchableOpacity
                       onPress={() => setShowRankModal(true)}
                       activeOpacity={0.7}
                     >
-                      <rankInfo.rankImageUrl width={24} height={24} />
+                      <RankIcon width={24} height={24} />
                     </TouchableOpacity>
                   )}
                 </View>
               )}
 
-              <HikerButton
-                showHikers={showHikers}
-                toggleHikers={toggleHikers}
-                user={user}
-              />
+              {friendStatus !== "blocked" && (
+                <HikerButton
+                  showHikers={showHikers}
+                  toggleHikers={toggleHikers}
+                  user={user}
+                />
+              )}
               {mongoId && (
                 <View className="flex-row items-center">
                   <FriendActionButton
@@ -174,7 +190,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
           </View>
           {/* Bio Section Row */}
           <View className="p-4 bg-white">
-            <View className="h-px bg-gray-300 my-2" />
+            <View className="h-1 bg-gray-300 my-2" />
             <BioSection bio={user!.bio} editable={false} />
           </View>
         </View>
@@ -208,10 +224,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      {rankInfo && (
+      {rankName && (
         <RankInfoModal
           visible={showRankModal}
-          rankInfo={rankInfo}
+          rankName={rankName}
+          exp={user.exp}
           onClose={() => setShowRankModal(false)}
           isMyProfile={false}
         />
@@ -235,22 +252,24 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
             keyExtractor={(item) => item._id}
             renderItem={({ item }) => (
               <View className="p-4">
-                <PostCard
-                  post={item}
-                  navigation={navigation}
-                  onPostUpdated={(deletedPost) => {
-                    setPosts((prevPosts) =>
-                      prevPosts.filter((p) => p._id !== deletedPost._id)
-                    );
-                  }}
-                  onPostLiked={(updatedPost: IPost) => {
-                    setPosts((prevPosts) =>
-                      prevPosts.map((p) =>
-                        p._id === updatedPost._id ? updatedPost : p
-                      )
-                    );
-                  }}
-                />
+                {friendStatus !== "blocked" && (
+                  <PostCard
+                    post={item}
+                    navigation={navigation}
+                    onPostUpdated={(deletedPost) => {
+                      setPosts((prevPosts) =>
+                        prevPosts.filter((p) => p._id !== deletedPost._id)
+                      );
+                    }}
+                    onPostLiked={(updatedPost: IPost) => {
+                      setPosts((prevPosts) =>
+                        prevPosts.map((p) =>
+                          p._id === updatedPost._id ? updatedPost : p
+                        )
+                      );
+                    }}
+                  />
+                )}
               </View>
             )}
             ListHeaderComponent={memoizedHeader}

@@ -46,7 +46,7 @@ const ProfileImage: React.FC<MainImageProps> = ({
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [viewImageVisible, setViewImageVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { mongoId, setMongoUser } = useAuth();
+  const { mongoId, setMongoUser, mongoUser } = useAuth();
 
   useFocusEffect(
     useCallback(() => {
@@ -120,7 +120,7 @@ const ProfileImage: React.FC<MainImageProps> = ({
         setImage(updatedResponse.main_image);
       } else {
         setImage(updatedResponse.profile_picture);
-        setMongoUser(updatedResponse);
+        // setMongoUser(updatedResponse);
       }
       setErrorMessage(null);
     } catch (error: any) {
@@ -160,7 +160,6 @@ const ProfileImage: React.FC<MainImageProps> = ({
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const asset = result.assets[0];
-      console.log("Image selected:", asset.uri);
       await handleRemovePhoto();
       await uploadMediaToBackend(asset.uri);
     } else {
@@ -239,7 +238,7 @@ const ProfileImage: React.FC<MainImageProps> = ({
       } else {
         deletImage();
         setImage(updatedModel.profile_picture.url);
-        setMongoUser(updatedModel);
+        // setMongoUser(newData);
       }
       setTooltipVisible(false);
     } catch (error: any) {

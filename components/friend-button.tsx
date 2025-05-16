@@ -3,6 +3,7 @@ import { TouchableOpacity, Text, View, Modal } from "react-native";
 import tw from "twrnc";
 import { useAuth } from "../contexts/auth-context";
 import React from "react";
+import { useChatList } from "../contexts/chat-context";
 
 interface FriendActionButtonProps {
   status: string; // "accepted", "request_sent", "request_received", "blocked", or "none"
@@ -15,6 +16,7 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
   targetUserId,
   onStatusChange,
 }) => {
+  const { removeRoom } = useChatList();
   const { mongoUser, mongoId, fetchMongoUser } = useAuth();
   const [currentStatus, setCurrentStatus] = useState(status);
   const [showActions, setShowActions] = useState(false);
@@ -140,6 +142,7 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
       setCurrentStatus("blocked");
       onStatusChange && onStatusChange("blocked");
       setShowActions(false);
+      removeRoom(targetUserId);
       fetchMongoUser(mongoId!);
     } catch (error) {
       console.error("Error blocking user:", error);
