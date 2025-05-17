@@ -11,7 +11,6 @@ import { useAuth } from "../../contexts/auth-context";
 import TripImagesUploader from "./component/trip-image-gallery";
 import MapDirectionButton from "../../components/get-direction";
 import ShareTripModal from "./component/share-trip-to-post-modal";
-import StarRating from "./component/starts-rating";
 import TripStarRating from "./component/starts-rating";
 import ReportButton from "../admin-settings/components/report-button";
 
@@ -68,7 +67,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   // State to control ScrollView scrolling
   const [scrollEnabled, setScrollEnabled] = useState<boolean>(true);
   const { tripId, fromCreate = false, isArchived = false } = route.params;
-  const { mongoId, mongoUser, setMongoUser } = useAuth(); // current user's mongoId
+  const { mongoId, mongoUser, fetchMongoUser } = useAuth(); // current user's mongoId
   const [isFavorite, setIsFavorite] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
@@ -131,7 +130,6 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
       );
 
       const body = await res.json();
-      console.log("📋 Response:", res.status, body);
 
       // 3) bail on a non-OK status
       if (!res.ok) {
@@ -139,7 +137,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
       }
 
       // 4) update context and local state
-      setMongoUser(body); // or body.user if your API wraps it
+      fetchMongoUser(mongoId!); // or body.user if your API wraps it
       setIsFavorite((prev) => !prev);
     } catch (err: any) {
       console.error("❌ toggleFavorite failed:", err);

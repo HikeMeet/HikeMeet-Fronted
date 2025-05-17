@@ -14,7 +14,7 @@ import { styled } from "nativewind";
 import { useAuth } from "../../contexts/auth-context";
 
 const EditProfilePage = ({ navigation }: any) => {
-  const { mongoUser, mongoId, setMongoUser } = useAuth();
+  const { mongoUser, mongoId, fetchMongoUser } = useAuth();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [bio, setBio] = useState("");
@@ -65,7 +65,7 @@ const EditProfilePage = ({ navigation }: any) => {
         }
       );
       if (!res.ok) throw new Error("Failed to update profile");
-      setMongoUser(await res.json());
+      fetchMongoUser(mongoId!);
       navigation.goBack();
     } catch (err) {
       console.error("Update Error:", err);
