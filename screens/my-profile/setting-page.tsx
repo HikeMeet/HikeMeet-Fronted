@@ -58,6 +58,11 @@ const SettingsScreen = ({ navigation }: any) => {
             onPress={() => navigation.navigate("UserStats")}
           />
           <SettingsButton
+            title="Privacy"
+            onPress={() => navigation.navigate("PrivacySetting")}
+          />
+
+          <SettingsButton
             title="Logout"
             onPress={() => setLogoutPopupVisible(true)}
             color="bg-red-500"

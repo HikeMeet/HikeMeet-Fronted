@@ -51,7 +51,7 @@ const ProfilePage = ({ navigation }: any) => {
     fetchMongoUser(mongoId!);
     setLoadingPosts(true);
     try {
-      const fetchedPosts = await fetchPostsForUser(mongoUser!);
+      const fetchedPosts = await fetchPostsForUser(mongoUser!, mongoId!);
       setPosts(fetchedPosts);
     } catch (error) {
       console.error("Error fetching posts for user:", error);

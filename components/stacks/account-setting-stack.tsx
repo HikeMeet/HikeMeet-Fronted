@@ -13,6 +13,7 @@ import RankingSystem from "../../screens/my-profile/ranking-system";
 import ManageNotifications from "../../screens/my-profile/manage-notificaitons";
 import EditProfilePage from "../../screens/my-profile/edit-profile-page";
 import StatsPage from "../../screens/my-profile/user-stats-page";
+import PrivacySettingScreen from "../../screens/my-profile/my-privacy";
 
 const Stack = createNativeStackNavigator();
 
@@ -73,6 +74,11 @@ const AccountStack = () => {
         name="UserStats"
         component={StatsPage}
         options={{ headerShown: true, title: "User Stats" }}
+      />
+      <Stack.Screen
+        name="PrivacySetting"
+        component={PrivacySettingScreen}
+        options={{ headerShown: true, title: "Privacy" }}
       />
     </Stack.Navigator>
   );

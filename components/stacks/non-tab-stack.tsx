@@ -56,6 +56,7 @@ const NonTabScreensStack = () => {
           component={ReportAdminTable}
           options={{ title: "Admin Reports" }}
         />
+
         <Stack.Screen
           name="ChatStack"
           component={ChatStack}
