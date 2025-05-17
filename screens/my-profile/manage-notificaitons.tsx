@@ -35,7 +35,7 @@ const ALL_NOTIFICATION_TYPES = [
 type NotificationType = (typeof ALL_NOTIFICATION_TYPES)[number];
 
 export default function ManageNotifications() {
-  const { mongoUser, mongoId, setMongoUser } = useAuth();
+  const { mongoUser, mongoId, fetchMongoUser } = useAuth();
   const [mutedTypes, setMutedTypes] = useState<NotificationType[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -70,7 +70,7 @@ export default function ManageNotifications() {
           }
           const mongoUpdatedUser = await res.json();
           // refresh user in context
-          await setMongoUser(mongoUpdatedUser);
+          await fetchMongoUser(mongoId!);
         } catch (err: any) {
           console.error("Error saving muted types:", err);
           Alert.alert("Error", err.message || "Could not save settings");
@@ -78,7 +78,7 @@ export default function ManageNotifications() {
           setSaving(false);
         }
       }, 700),
-    [mongoUser, setMongoUser]
+    [mongoUser]
   );
 
   // Called on each toggle

@@ -160,7 +160,6 @@ const Home = ({ navigation }: any) => {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        
         <FlatList
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="none"
