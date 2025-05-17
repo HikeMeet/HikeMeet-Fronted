@@ -23,8 +23,7 @@ import { IPost } from "../../interfaces/post-interface";
 import PostCard from "../posts/components/post-card-on-feeds";
 import { fetchPostsForUser } from "../../components/requests/fetch-posts";
 import HikersList from "../../components/hikers-list-in-profile";
-import { checkRankLevel } from "./components/check-rank-level";
-import { RankInfo } from "../../interfaces/rank-info";
+import { getRankIcon } from "./components/rank-images";
 import RankInfoModal from "./components/rank-info-modal";
 import { FontAwesome } from "@expo/vector-icons";
 
@@ -34,6 +33,8 @@ const ProfilePage = ({ navigation }: any) => {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
   const [showRankModal, setShowRankModal] = useState(false);
+  const rankName = mongoUser?.rank;
+  const RankIcon = rankName ? getRankIcon(rankName) : null;
 
   const toggleHikers = () => {
     setShowHikers((prev) => !prev);
@@ -47,6 +48,7 @@ const ProfilePage = ({ navigation }: any) => {
   );
 
   const fetchPosts = async () => {
+    fetchMongoUser(mongoId!);
     setLoadingPosts(true);
     try {
       const fetchedPosts = await fetchPostsForUser(mongoUser!, mongoId!);
@@ -58,10 +60,6 @@ const ProfilePage = ({ navigation }: any) => {
     }
   };
 
-  const rankInfo: RankInfo | null = useMemo(
-    () => (mongoUser ? checkRankLevel(mongoUser.exp) : null),
-    [mongoUser]
-  );
 
   useEffect(() => {
     if (mongoUser) {
@@ -86,21 +84,20 @@ const ProfilePage = ({ navigation }: any) => {
           <View className="flex-1 ml-5">
             <Text className="text-lg font-bold">{mongoUser.username}</Text>
             <Text className="text-sm font-bold">{`${mongoUser.first_name} ${mongoUser.last_name}`}</Text>
-            {rankInfo && (
-              <View className="flex-row items-center">
-                <TouchableOpacity onPress={() => setShowRankModal(true)}>
-                  <Text className="text-sm text-gray-500 mr-2">
-                    Rank: {rankInfo.rankName}
-                  </Text>
-                </TouchableOpacity>
+{rankName && (
+  <View className="flex-row items-center">
+    <TouchableOpacity onPress={() => setShowRankModal(true)}>
+      <Text className="text-sm text-gray-500 mr-2">Rank: {rankName}</Text>
+    </TouchableOpacity>
 
-                {rankInfo?.rankImageUrl && (
-                  <TouchableOpacity onPress={() => setShowRankModal(true)}>
-                    <rankInfo.rankImageUrl width={24} height={24} />
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
+    {RankIcon && (
+      <TouchableOpacity onPress={() => setShowRankModal(true)}>
+        <RankIcon width={24} height={24} />
+      </TouchableOpacity>
+    )}
+  </View>
+)}
+
 
             <HikerButton
               showHikers={showHikers}
@@ -158,14 +155,16 @@ const ProfilePage = ({ navigation }: any) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      {rankInfo && (
-        <RankInfoModal
-          visible={showRankModal}
-          rankInfo={rankInfo}
-          onClose={() => setShowRankModal(false)}
-          isMyProfile={true}
-        />
-      )}
+{rankName && (
+  <RankInfoModal
+    visible={showRankModal}
+    onClose={() => setShowRankModal(false)}
+    rankName={rankName}
+    exp={mongoUser.exp}
+    isMyProfile={true}
+  />
+)}
+
 
       <View style={{ flex: 1 }}>
         {showHikers ? (

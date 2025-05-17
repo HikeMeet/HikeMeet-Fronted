@@ -19,7 +19,7 @@ import { IPost } from "../../interfaces/post-interface";
 import { useAuth } from "../../contexts/auth-context";
 
 const Home = ({ navigation }: any) => {
-  const { mongoId, mongoUser, fetchMongoUser } = useAuth();
+  const { user, mongoId, mongoUser, fetchMongoUser } = useAuth();
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -55,7 +55,7 @@ const Home = ({ navigation }: any) => {
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
-      fetchMongoUser(mongoId!);
+      if (mongoId) fetchMongoUser(user!.uid, true);
       fetchPosts();
     }, [showFriendsOnly]) // Re-fetch posts when filter changes.
   );
@@ -160,6 +160,7 @@ const Home = ({ navigation }: any) => {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
+        
         <FlatList
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="none"

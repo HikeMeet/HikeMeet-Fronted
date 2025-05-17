@@ -22,12 +22,14 @@ const ALL_NOTIFICATION_TYPES = [
   "comment_like",
   "friend_request",
   "friend_accept",
+  "Rank_up",
   "group_updated",
   "group_invite",
   "group_invite_accepted",
   "group_joined",
   "group_join_request",
   "group_join_approved",
+  "report_created",
 ] as const;
 
 type NotificationType = (typeof ALL_NOTIFICATION_TYPES)[number];

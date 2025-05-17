@@ -1,3 +1,4 @@
+import { IGroup } from "./group-interface";
 import { IImageModel } from "./image-interface";
 import { IPost, IUser } from "./post-interface";
 
@@ -24,6 +25,7 @@ export interface MongoUser {
   instagram_link: string;
   role: string;
   exp: number;
+  rank: string;
   social: {
     posts_saved: IPost[] | string[];
     posts_liked: IPost[] | string[];
@@ -33,6 +35,8 @@ export interface MongoUser {
   };
   trip_history: ITripHistoryEntry[];
   firebase_id: string;
+  chatrooms_with: IUser[];
+  chatrooms_groups: IGroup[];
   pushTokens: string[];
   unreadNotifications: number;
   created_on: string;
@@ -46,4 +50,5 @@ export interface MongoUser {
   privacySettings?: {
     postVisibility?: "public" | "friends";
   };
+  muted_chats: string[];
 }

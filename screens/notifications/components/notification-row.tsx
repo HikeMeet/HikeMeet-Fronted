@@ -191,7 +191,9 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
                   </Text>
                   <Text>{item.body}</Text>
                 </>
-              ) : null}
+              ) : (
+                <Text>{item.body}</Text>
+              )}
             </Text>
             <Text className="text-xs text-gray-500">{ago}</Text>
           </View>
