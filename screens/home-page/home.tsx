@@ -27,21 +27,25 @@ const Home = ({ navigation }: any) => {
   const [showFriendsOnly, setShowFriendsOnly] = useState(false);
   const [postsToShow, setPostsToShow] = useState<number>(5);
   const unread = mongoUser?.unreadNotifications ?? 0;
+  const [userr, setLoadingg] = useState(true);
 
   // Function to fetch posts.
-  const fetchPosts = async () => {
+  const fetchPosts = async (customMongoId?: string) => {
     try {
-      // Base URL always includes privacy=public.
-      let url = `${process.env.EXPO_LOCAL_SERVER}/api/post/all?privacy=public&userId`;
-      // If Friends Only is selected, append query parameters.
+      let url = `${process.env.EXPO_LOCAL_SERVER}/api/post/all?privacy=public`;
       if (showFriendsOnly) {
-        url = `${process.env.EXPO_LOCAL_SERVER}/api/post/all?friendsOnly=true&userId=${mongoId}`;
+        url = `${process.env.EXPO_LOCAL_SERVER}/api/post/all?friendsOnly=true`;
       }
-      const response = await fetch(url);
+
+      const headers: HeadersInit | undefined = customMongoId
+        ? { "x-current-user": customMongoId }
+        : undefined;
+
+      const response = await fetch(url, { headers });
       const data = await response.json();
       setPosts(data.posts);
-    } catch (error) {
-      console.error("Error fetching posts:", error);
+    } catch (err) {
+      console.error("Error fetching posts:", err);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -51,10 +55,32 @@ const Home = ({ navigation }: any) => {
   // When the screen is focused, refetch the posts.
   useFocusEffect(
     useCallback(() => {
-      setLoading(true);
-      if (mongoId) fetchMongoUser(user!.uid, true);
-      fetchPosts();
-    }, [showFriendsOnly]) // Re-fetch posts when filter changes.
+      let isActive = true;
+
+      const loadEverything = async () => {
+        setLoading(true);
+
+        if (!user?.uid) {
+          console.warn("User not ready");
+          return;
+        }
+
+        try {
+          const newMongoId = await fetchMongoUser(user.uid, true);
+          console.log("✅ mongoId fetched:", newMongoId);
+        } catch (err) {
+          console.error("Error during initial load:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      loadEverything();
+
+      return () => {
+        isActive = false;
+      };
+    }, [user?.uid, showFriendsOnly]) // ← צריך לעקוב גם אחרי user.uid
   );
 
   const handleLoadMorePosts = useCallback(() => {
@@ -65,11 +91,26 @@ const Home = ({ navigation }: any) => {
 
   // Handler for pull-to-refresh.
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    fetchPosts();
-    console.log(mongoId);
-    fetchMongoUser(mongoId!);
-  }, [showFriendsOnly]);
+    const refresh = async () => {
+      try {
+        setRefreshing(true);
+
+        if (!mongoId) {
+          console.warn("mongoId is not available during refresh");
+          return;
+        }
+
+        console.log("🔄 Pull-to-refresh with mongoId:", mongoId);
+        await fetchPosts(mongoId);
+      } catch (err) {
+        console.error("Error during pull-to-refresh:", err);
+      } finally {
+        setRefreshing(false);
+      }
+    };
+
+    refresh();
+  }, [mongoId, showFriendsOnly]);
 
   // Render the header for the FlatList.
   // Here we combine all header sections into one component so they scroll together.
@@ -157,7 +198,6 @@ const Home = ({ navigation }: any) => {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        
         <FlatList
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="none"

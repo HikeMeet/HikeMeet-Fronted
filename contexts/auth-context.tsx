@@ -31,7 +31,7 @@ interface AuthContextProps {
   setUsers: React.Dispatch<React.SetStateAction<IUser[]>>;
   userFriendsMinDetail: MongoUser[];
   setUserFriendsMinDetail: React.Dispatch<React.SetStateAction<MongoUser[]>>;
-  fetchMongoUser: (id: string, byFirebase?: boolean) => Promise<void>;
+  fetchMongoUser: (id: string, byFirebase?: boolean) => Promise<string>;
   getToken: () => Promise<string | null>;
 }
 
@@ -105,18 +105,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // — fetch Mongo user helper
-  const fetchMongoUser = useCallback(async (id: string, byFirebase = false) => {
-    const suffix = byFirebase ? "?firebase=true" : "";
-    const url = `${process.env.EXPO_LOCAL_SERVER}/api/user/${id}${suffix}`;
-    const resp = await fetch(url);
-    if (!resp.ok) {
-      throw new Error(`Error fetching user data: ${resp.status}`);
-    }
-    const data: MongoUser = await resp.json();
-    setMongoUser(data);
-    setMongoId(data._id);
-    await AsyncStorage.setItem("mongoId", data._id);
-  }, []);
+  const fetchMongoUser = useCallback(
+    async (id: string, byFirebase = false): Promise<string> => {
+      const suffix = byFirebase ? "?firebase=true" : "";
+      const url = `${process.env.EXPO_LOCAL_SERVER}/api/user/${id}${suffix}`;
+      const resp = await fetch(url);
+      if (!resp.ok) {
+        throw new Error(`Error fetching user data: ${resp.status}`);
+      }
+      const data: MongoUser = await resp.json();
+      setMongoUser(data);
+      const newMongoId = data._id;
+      setMongoId(newMongoId);
+      console.log("testttttttttttttttt", newMongoId);
+
+      await AsyncStorage.setItem("mongoId", data._id);
+      return newMongoId;
+    },
+    []
+  );
 
   // — load cached user & mongoId, then flag cacheLoaded
   const initializeAuth = async () => {
