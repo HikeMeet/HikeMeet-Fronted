@@ -14,14 +14,12 @@ const SettingsScreen = ({ navigation }: any) => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="flex-1 bg-white p-4">
-        {/* Header */}
-        {/* <Text className="text-lg font-bold mb-4">Settings</Text> */}
-
         {/* Buttons */}
         <View className="flex-1">
           {isAdmin ? (
             <SettingsButton
               title="Admin settings"
+              color="bg-blue-300"
               onPress={() => navigation.navigate("AdminSettings")}
             />
           ) : null}
@@ -59,11 +57,10 @@ const SettingsScreen = ({ navigation }: any) => {
             title="Stats"
             onPress={() => navigation.navigate("UserStats")}
           />
-
           <SettingsButton
             title="Logout"
             onPress={() => setLogoutPopupVisible(true)}
-            color="bg-red-700"
+            color="bg-red-500"
           />
           <LogoutConfirmPopup
             navigation={navigation}
@@ -75,7 +72,7 @@ const SettingsScreen = ({ navigation }: any) => {
           <SettingsButton
             title="Delete account"
             onPress={() => setDeleteLogoutPopupVisible(true)}
-            color="bg-red-700"
+            color="bg-red-500"
           />
           <DeleteConfirmPopup
             navigation={navigation}

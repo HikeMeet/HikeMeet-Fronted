@@ -23,6 +23,7 @@ import PostCard from "../posts/components/post-card-on-feeds";
 import { IPost } from "../../interfaces/post-interface";
 import { getRankIcon } from "./components/rank-images";
 import RankInfoModal from "./components/rank-info-modal";
+import ReportButton from "../admin-settings/components/report-button";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 interface UserProfileProps {
@@ -288,6 +289,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
           />
         </KeyboardAvoidingView>
       )}
+      <ReportButton
+        targetId={userId}
+        targetType="user"
+        positionClasses="absolute top-2 right-4"
+      />
     </SafeAreaView>
   );
 };
