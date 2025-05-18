@@ -23,13 +23,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { handleProfilePress } from "./user-group-image-press";
 import MuteToggleButton from "./mute-chat-togle";
 
-// Enable LayoutAnimation for Android
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+
 
 export interface ChatItemProps {
   type: "user" | "group";

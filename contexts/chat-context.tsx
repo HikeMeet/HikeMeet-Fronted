@@ -25,30 +25,7 @@ import { FIREBASE_DB } from "../firebaseconfig";
 import { IMessage } from "../interfaces/chat-interface";
 import { getRoomId } from "../utils/chat-utils";
 import { useAuth } from "./auth-context";
-import { LayoutAnimation, Platform, UIManager } from "react-native";
 
-// Enable LayoutAnimation on Android
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
-export const MOVE_ONLY = {
-  duration: 300,
-  create: {
-    type: LayoutAnimation.Types.easeIn, // opacity fade-in
-    property: LayoutAnimation.Properties.opacity,
-  },
-  update: {
-    type: LayoutAnimation.Types.spring, // bouncy reposition
-    springDamping: 0.6,
-  },
-  delete: {
-    type: LayoutAnimation.Types.easeOut, // fade-out on removals
-    property: LayoutAnimation.Properties.opacity,
-  },
-};
 const MESSAGE_LIMIT = 20;
 
 /**
@@ -156,7 +133,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         fbLimit(1)
       );
       return onSnapshot(q, (snap) => {
-        LayoutAnimation.configureNext(MOVE_ONLY);
         const msg = snap.docs[0]?.data() as IMessage | undefined;
         setLastMessages((prev) => ({ ...prev, [r.key]: msg ?? null }));
       });
@@ -279,7 +255,6 @@ export const useChatRoom = ({
     const unsubNew = onSnapshot(newQ, (snap) => {
       const msg = snap.docs[0]?.data() as IMessage | undefined;
       if (!msg) return;
-      LayoutAnimation.configureNext(MOVE_ONLY);
       setMessages((prev) =>
         prev.some(
           (m) =>
