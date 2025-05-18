@@ -6,7 +6,7 @@ import SignInLandingStack from "./components/stacks/signin-landing-stack";
 import NonTabScreensStack from "./components/stacks/non-tab-stack";
 
 const MainLayout: React.FC = () => {
-  const { user, isVerified, mongoUser } = useAuth();
+  const { user, isVerified, mongoUser, mongoId } = useAuth();
 
   // 1) Not signed in or email not verified → auth stack
   if (!user || !isVerified) {
@@ -14,7 +14,8 @@ const MainLayout: React.FC = () => {
   }
 
   // 2) Firebase auth is good, but mongoUser hasn’t loaded yet → spinner
-  if (!mongoUser) {
+  if (!mongoUser || !mongoId) {
+    console.log("mongoUser not loaded yet");
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" color="#0000ff" />

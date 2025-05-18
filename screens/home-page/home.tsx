@@ -52,7 +52,8 @@ const Home = ({ navigation }: any) => {
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
-      if (mongoId) fetchMongoUser(user!.uid, true);
+      console.log("::::", mongoId);
+      // if (mongoId) fetchMongoUser(user!.uid, true);
       fetchPosts();
     }, [showFriendsOnly]) // Re-fetch posts when filter changes.
   );
@@ -157,7 +158,6 @@ const Home = ({ navigation }: any) => {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        
         <FlatList
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="none"
