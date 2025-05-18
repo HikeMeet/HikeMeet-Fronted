@@ -41,6 +41,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
   const [showRankModal, setShowRankModal] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [isPrivatePosts, setIsPrivatePosts] = useState(false);
+
   const rankName = user?.rank;
   const RankIcon = rankName ? getRankIcon(rankName) : null;
 
@@ -50,12 +53,17 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
 
   const fetchPosts = async () => {
     setLoadingPosts(true);
-    if (user) {
-      await fetchPostsForUser(user).then((fetchedPosts) =>
-        setPosts(fetchedPosts)
-      );
+    try {
+      if (user && mongoId) {
+        await fetchPostsForUser(user, mongoId).then((fetchedPosts) =>
+          setPosts(fetchedPosts)
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      setLoadingPosts(false);
     }
-    setLoadingPosts(false);
   };
 
   useEffect(() => {
@@ -77,6 +85,25 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
         }
         const data = await response.json();
         setUser(data);
+
+        const heBlockedMe = data.friends?.some(
+          (f: any) => f.id === mongoId && f.status === "blocked"
+        );
+
+        if (friendStatus !== "blocked" || heBlockedMe) {
+          setIsBlocked(true);
+        }
+
+        // check privacySettings
+        const visibility = data.privacySettings?.postVisibility ?? "public";
+        const isFriend = data.friends?.some(
+          (f: any) => f.id === mongoId && f.status === "accepted"
+        );
+
+        if (visibility === "private" && !isFriend && userId !== mongoId) {
+          setIsPrivatePosts(true);
+          return;
+        }
 
         // Now fetch friend status from current user's friends.
         if (mongoUser) {
@@ -192,7 +219,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
           {/* Bio Section Row */}
           <View className="p-4 bg-white">
             <View className="h-1 bg-gray-300 my-2" />
-            <BioSection bio={user!.bio} editable={false} />
+            {friendStatus !== "blocked" && (
+              <BioSection bio={user!.bio} editable={false} />
+            )}
           </View>
         </View>
       )}
@@ -277,10 +306,26 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
             // Show a spinner below the header if posts are loading (and posts array is empty)
             ListEmptyComponent={
               loadingPosts ? (
-                <View style={{ marginTop: 20, alignItems: "center" }}>
+                <View className="mt-20 items-center">
                   <ActivityIndicator size="large" color="#0000ff" />
                 </View>
-              ) : null
+              ) : isBlocked ? (
+                <View className="mt-20 items-center px-16">
+                  <Text className="text-16 text-red text-center">
+                    This user is blocked. You cannot view their posts.
+                  </Text>
+                </View>
+              ) : isPrivatePosts ? (
+                <View className="mt-20 items-center px-16">
+                  <Text className="text-16 text-gray-500 text-center">
+                    This user's posts are private and visible to friends only.
+                  </Text>
+                </View>
+              ) : (
+                <View className="mt-20 items-center">
+                  <Text className="text-16">No posts available.</Text>
+                </View>
+              )
             }
             refreshing={loadingPosts}
             onRefresh={fetchPosts}
