@@ -1,70 +1,28 @@
-import { useState, useEffect } from "react";
+// MainLayout.tsx
 import React from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useAuth } from "./contexts/auth-context";
-import SignInLandingStack from "./components/stacks/signin-landing-stack";
 import { View, ActivityIndicator } from "react-native";
+import { useAuth } from "./contexts/auth-context"; // brings in user, isVerified, mongoUser :contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1}
+import SignInLandingStack from "./components/stacks/signin-landing-stack";
 import NonTabScreensStack from "./components/stacks/non-tab-stack";
 
-const MainLayout = () => {
-  const { user, isVerified } = useAuth();
-  const [initialRoute, setInitialRoute] = useState<string>("Landing");
-  const [loading, setLoading] = useState<boolean>(true);
+const MainLayout: React.FC = () => {
+  const { user, isVerified, mongoUser } = useAuth();
 
-  // need to delete (never used)
-  useEffect(() => {
-    const loadInitialRoute = async () => {
-      try {
-        const storedUser = await AsyncStorage.getItem("user");
-        const storedRoute = await AsyncStorage.getItem("lastRoute");
+  // 1) Not signed in or email not verified → auth stack
+  if (!user || !isVerified) {
+    return <SignInLandingStack />;
+  }
 
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          if (parsedUser.emailVerified) {
-            setInitialRoute("Home");
-          } else {
-            setInitialRoute("Verify");
-          }
-        } else {
-          setInitialRoute("Landing");
-        }
-
-        // שמירה של המסלול האחרון
-        if (storedRoute) {
-          setInitialRoute(storedRoute);
-        }
-      } catch (error) {
-        console.error("Error loading initial route:", error);
-        setInitialRoute("Landing");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadInitialRoute();
-  }, []);
-
-  useEffect(() => {
-    const updateLastRoute = async () => {
-      if (!loading) {
-        const route = user ? (isVerified ? "Home" : "Verify") : "Landing";
-        await AsyncStorage.setItem("lastRoute", route);
-      }
-    };
-
-    updateLastRoute();
-  }, [user, isVerified, loading]);
-
-  if (loading) {
+  // 2) Firebase auth is good, but mongoUser hasn’t loaded yet → spinner
+  if (!mongoUser) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
   }
 
-  if (!user) return <SignInLandingStack />;
-  if (!isVerified) return <SignInLandingStack />;
+  // 3) All set → your real app stack
   return <NonTabScreensStack />;
 };
 
