@@ -55,7 +55,8 @@ const Home = ({ navigation }: any) => {
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
-      if (mongoId) fetchMongoUser(user!.uid, true);
+      console.log("::::", mongoId);
+      // if (mongoId) fetchMongoUser(user!.uid, true);
       fetchPosts();
     }, [showFriendsOnly]) // Re-fetch posts when filter changes.
   );
