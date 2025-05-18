@@ -97,7 +97,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
 
         if (iBlockedHim || heBlockedMe) {
           setIsBlocked(true);
-          return;
         }
 
         // check privacySettings
@@ -106,7 +105,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
           (f: any) => f.id === mongoId && f.status === "accepted"
         );
 
-        if (visibility === "friends" && !isFriend && userId !== mongoId) {
+        if (visibility === "private" && !isFriend && userId !== mongoId) {
           setIsPrivatePosts(true);
           return;
         }

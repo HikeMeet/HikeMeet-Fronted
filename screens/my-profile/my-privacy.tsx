@@ -56,7 +56,7 @@ const PostPrivacySettingScreen = ({ navigation }: any) => {
       <RadioButton.Group onValueChange={setValue} value={value}>
         <View className="mb-4">
           <RadioButton.Item label="Everyone (public)" value="public" />
-          <RadioButton.Item label="Friends only" value="friends" />
+          <RadioButton.Item label="Friends only" value="private" />
         </View>
       </RadioButton.Group>
 

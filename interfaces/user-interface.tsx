@@ -48,7 +48,7 @@ export interface MongoUser {
   mutedNotificationTypes: string[];
   favorite_trips: string[];
   privacySettings?: {
-    postVisibility?: "public" | "friends";
+    postVisibility?: "public" | "private";
   };
   muted_chats: string[];
 }
