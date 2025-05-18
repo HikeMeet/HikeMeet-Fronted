@@ -1,5 +1,5 @@
 // components/chat/components/ChatItem.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Pressable,
   View,
@@ -17,8 +17,6 @@ import ConfirmationModal from "../../../components/confirmation-modal";
 import {
   closeChatroom,
   closeGroupChatroom,
-  muteChat,
-  unmuteChat,
 } from "../../../components/requests/chats-requsts";
 import { useAuth } from "../../../contexts/auth-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -58,6 +56,19 @@ const ChatItem: React.FC<ChatItemProps> = ({
   const [confirmVisible, setConfirmVisible] = useState(false);
   // 🚀 REMOVED onLayout & extra animations here
 
+  const isMissing = (type === "user" && !user) || (type === "group" && !group);
+
+  // 2) when that happens, call onDelete exactly once
+  useEffect(() => {
+    if (isMissing) {
+      onDelete?.();
+    }
+  }, [isMissing, onDelete]);
+
+  // 3) render nothing if missing
+  if (isMissing) {
+    return null;
+  }
   const title =
     type === "user"
       ? (user?.username ?? "Unknown")

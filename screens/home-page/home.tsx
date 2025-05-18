@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import React from "react";
 import {
   View,
@@ -46,6 +46,9 @@ const Home = ({ navigation }: any) => {
     }
   };
 
+  useEffect(() => {
+    fetchMongoUser(mongoId!);
+  }, []);
   // When the screen is focused, refetch the posts.
   useFocusEffect(
     useCallback(() => {
