@@ -16,15 +16,17 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Group } from "../../interfaces/group-interface";
 import { useAuth } from "../../contexts/auth-context";
 import { fetchGroups } from "../../components/requests/fetch-groups";
+import { useChatList } from "../../contexts/chat-context";
 
 const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const { mongoId } = useAuth();
+  const { mongoId, fetchMongoUser } = useAuth();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchText, setSearchText] = useState<string>("");
   const [showMyGroups, setShowMyGroups] = useState<boolean>(false);
   // Only show 5 groups initially.
   const [groupsToShow, setGroupsToShow] = useState<number>(5);
+  const { initializeRooms } = useChatList();
 
   const handleFetchGroups = useCallback(async () => {
     setLoading(true);
@@ -37,7 +39,10 @@ const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
       setLoading(false);
     }
   }, []);
-
+  useEffect(() => {
+    fetchMongoUser(mongoId!);
+    initializeRooms();
+  });
   useFocusEffect(
     useCallback(() => {
       handleFetchGroups();

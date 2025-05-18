@@ -14,6 +14,7 @@ import { MongoUser } from "../interfaces/user-interface";
 import { IUser } from "../interfaces/post-interface";
 import { styled } from "nativewind";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { useChatList } from "./chat-context";
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledActivityIndicator = styled(ActivityIndicator);
@@ -50,7 +51,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [userFriendsMinDetail, setUserFriendsMinDetail] = useState<MongoUser[]>(
     []
   );
-
   // — loading & coordination flags
   const [loading, setLoading] = useState(true);
   const [cacheLoaded, setCacheLoaded] = useState(false);
