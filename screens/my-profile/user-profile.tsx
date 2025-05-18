@@ -86,16 +86,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
         const data = await response.json();
         setUser(data);
 
-        // check Blocked
-        const iBlockedHim = mongoUser?.friends?.some(
-          (f: any) => f.id === userId && f.status === "blocked"
-        );
-
         const heBlockedMe = data.friends?.some(
           (f: any) => f.id === mongoId && f.status === "blocked"
         );
 
-        if (iBlockedHim || heBlockedMe) {
+        if (friendStatus !== "blocked" || heBlockedMe) {
           setIsBlocked(true);
         }
 
@@ -224,7 +219,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
           {/* Bio Section Row */}
           <View className="p-4 bg-white">
             <View className="h-1 bg-gray-300 my-2" />
-            <BioSection bio={user!.bio} editable={false} />
+            {friendStatus !== "blocked" && (
+              <BioSection bio={user!.bio} editable={false} />
+            )}
           </View>
         </View>
       )}
@@ -309,40 +306,24 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
             // Show a spinner below the header if posts are loading (and posts array is empty)
             ListEmptyComponent={
               loadingPosts ? (
-                <View style={{ marginTop: 20, alignItems: "center" }}>
+                <View className="mt-20 items-center">
                   <ActivityIndicator size="large" color="#0000ff" />
                 </View>
               ) : isBlocked ? (
-                <View
-                  style={{
-                    marginTop: 20,
-                    alignItems: "center",
-                    paddingHorizontal: 16,
-                  }}
-                >
-                  <Text
-                    style={{ fontSize: 16, color: "red", textAlign: "center" }}
-                  >
+                <View className="mt-20 items-center px-16">
+                  <Text className="text-16 text-red text-center">
                     This user is blocked. You cannot view their posts.
                   </Text>
                 </View>
               ) : isPrivatePosts ? (
-                <View
-                  style={{
-                    marginTop: 20,
-                    alignItems: "center",
-                    paddingHorizontal: 16,
-                  }}
-                >
-                  <Text
-                    style={{ fontSize: 16, color: "gray", textAlign: "center" }}
-                  >
+                <View className="mt-20 items-center px-16">
+                  <Text className="text-16 text-gray-500 text-center">
                     This user's posts are private and visible to friends only.
                   </Text>
                 </View>
               ) : (
-                <View style={{ marginTop: 20, alignItems: "center" }}>
-                  <Text>No posts available.</Text>
+                <View className="mt-20 items-center">
+                  <Text className="text-16">No posts available.</Text>
                 </View>
               )
             }
