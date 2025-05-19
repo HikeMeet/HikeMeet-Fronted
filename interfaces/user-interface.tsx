@@ -24,7 +24,7 @@ export interface MongoUser {
   facebook_link: string;
   instagram_link: string;
   role: string;
-  exp:number;
+  exp: number;
   rank: string;
   social: {
     posts_saved: IPost[] | string[];
@@ -47,5 +47,8 @@ export interface MongoUser {
   mutedGroups: string[];
   mutedNotificationTypes: string[];
   favorite_trips: string[];
+  privacySettings?: {
+    postVisibility?: "public" | "private";
+  };
   muted_chats: string[];
 }

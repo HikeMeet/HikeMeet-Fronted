@@ -23,6 +23,7 @@ import PostCard from "../posts/components/post-card-on-feeds";
 import { IPost } from "../../interfaces/post-interface";
 import { getRankIcon } from "./components/rank-images";
 import RankInfoModal from "./components/rank-info-modal";
+import ReportButton from "../admin-settings/components/report-button";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 interface UserProfileProps {
@@ -40,6 +41,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
   const [showRankModal, setShowRankModal] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [isPrivatePosts, setIsPrivatePosts] = useState(false);
+
   const rankName = user?.rank;
   const RankIcon = rankName ? getRankIcon(rankName) : null;
 
@@ -49,12 +53,17 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
 
   const fetchPosts = async () => {
     setLoadingPosts(true);
-    if (user) {
-      await fetchPostsForUser(user).then((fetchedPosts) =>
-        setPosts(fetchedPosts)
-      );
+    try {
+      if (user && mongoId) {
+        await fetchPostsForUser(user, mongoId).then((fetchedPosts) =>
+          setPosts(fetchedPosts)
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      setLoadingPosts(false);
     }
-    setLoadingPosts(false);
   };
 
   useEffect(() => {
@@ -76,6 +85,25 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
         }
         const data = await response.json();
         setUser(data);
+
+        const heBlockedMe =
+          data.friends?.some(
+            (f: any) => f.id === mongoId && f.status === "blocked"
+          ) ?? false;
+
+        // if the viewed user has blocked me, mark blocked; otherwise clear it
+        setIsBlocked(heBlockedMe);
+
+        // check privacySettings
+        const visibility = data.privacySettings?.postVisibility ?? "public";
+        const isFriend = data.friends?.some(
+          (f: any) => f.id === mongoId && f.status === "accepted"
+        );
+
+        if (visibility === "private" && !isFriend && userId !== mongoId) {
+          setIsPrivatePosts(true);
+          return;
+        }
 
         // Now fetch friend status from current user's friends.
         if (mongoUser) {
@@ -191,7 +219,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
           {/* Bio Section Row */}
           <View className="p-4 bg-white">
             <View className="h-1 bg-gray-300 my-2" />
-            <BioSection bio={user!.bio} editable={false} />
+            {friendStatus !== "blocked" && (
+              <BioSection bio={user!.bio} editable={false} />
+            )}
           </View>
         </View>
       )}
@@ -203,6 +233,16 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
     () => renderPostsHeader(),
     [user, friendStatus, showHikers]
   );
+
+  if (!loading && isBlocked) {
+    return (
+      <SafeAreaView className="flex-1 justify-center items-center bg-white">
+        <Text className="text-lg text-red-500">
+          This user has blocked you. You cannot view their profile.
+        </Text>
+      </SafeAreaView>
+    );
+  }
 
   if (loading) {
     // Full-page spinner only when the user data hasn't loaded yet.
@@ -276,10 +316,22 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
             // Show a spinner below the header if posts are loading (and posts array is empty)
             ListEmptyComponent={
               loadingPosts ? (
-                <View style={{ marginTop: 20, alignItems: "center" }}>
+                <View className="mt-20 items-center">
                   <ActivityIndicator size="large" color="#0000ff" />
                 </View>
-              ) : null
+              ) : friendStatus === "blocked" ? (
+                <View className="mt-20 items-center"></View>
+              ) : isPrivatePosts ? (
+                <View className="mt-20 items-center px-16">
+                  <Text className="text-16 text-gray-500 text-center">
+                    This user's posts are private and visible to friends only.
+                  </Text>
+                </View>
+              ) : (
+                <View className="mt-20 items-center">
+                  <Text className="text-16">No posts available.</Text>
+                </View>
+              )
             }
             refreshing={loadingPosts}
             onRefresh={fetchPosts}
@@ -288,6 +340,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
           />
         </KeyboardAvoidingView>
       )}
+      <ReportButton
+        targetId={userId}
+        targetType="user"
+        positionClasses="absolute top-2 right-4"
+      />
     </SafeAreaView>
   );
 };

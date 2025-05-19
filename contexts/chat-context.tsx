@@ -25,30 +25,7 @@ import { FIREBASE_DB } from "../firebaseconfig";
 import { IMessage } from "../interfaces/chat-interface";
 import { getRoomId } from "../utils/chat-utils";
 import { useAuth } from "./auth-context";
-import { LayoutAnimation, Platform, UIManager } from "react-native";
 
-// Enable LayoutAnimation on Android
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
-export const MOVE_ONLY = {
-  duration: 300,
-  create: {
-    type: LayoutAnimation.Types.easeIn, // opacity fade-in
-    property: LayoutAnimation.Properties.opacity,
-  },
-  update: {
-    type: LayoutAnimation.Types.spring, // bouncy reposition
-    springDamping: 0.6,
-  },
-  delete: {
-    type: LayoutAnimation.Types.easeOut, // fade-out on removals
-    property: LayoutAnimation.Properties.opacity,
-  },
-};
 const MESSAGE_LIMIT = 20;
 
 /**
@@ -122,25 +99,35 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   // Subscribe to unread counts for each room
   useEffect(() => {
     if (!rooms.length || !mongoUser) return;
-    const countsInit: Record<string, number> = {};
-    rooms.forEach((r) => (countsInit[r.key] = 0));
-    setUnreadCounts(countsInit);
 
+    // 1) Prune counts for removed rooms & seed any brand-new room at 0
+    setUnreadCounts((prev) => {
+      const updated: Record<string, number> = {};
+      rooms.forEach((r) => {
+        updated[r.key] = prev[r.key] ?? 0;
+      });
+      return updated;
+    });
+
+    // 2) Subscribe to Firestore for each room’s unread count
     const unsubs = rooms.map((r) =>
       onSnapshot(doc(FIREBASE_DB, "rooms", r.roomId), (snap) => {
-        const parts = snap.data()?.participants as Record<string, number>;
-        if (!parts) return;
+        const parts = snap.data()?.participants as
+          | Record<string, number>
+          | undefined;
+        // treat undefined (e.g. count removed) as 0
+        const count = parts?.[mongoUser._id] ?? 0;
         setUnreadCounts((prev) => ({
           ...prev,
-          [r.key]: parts[mongoUser._id] || 0,
+          [r.key]: count,
         }));
       })
     );
-    for (const unsub of unsubs) {
-      registerUnsub(unsub);
-    }
+
+    // track for cleanup
+    unsubs.forEach(registerUnsub);
     return () => unsubs.forEach((u) => u());
-  }, [rooms, mongoUser]);
+  }, [rooms, mongoUser]); // rerun only when rooms list or your user ID changes
 
   // Subscribe to last message for each room
   useEffect(() => {
@@ -156,7 +143,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         fbLimit(1)
       );
       return onSnapshot(q, (snap) => {
-        LayoutAnimation.configureNext(MOVE_ONLY);
         const msg = snap.docs[0]?.data() as IMessage | undefined;
         setLastMessages((prev) => ({ ...prev, [r.key]: msg ?? null }));
       });
@@ -279,7 +265,6 @@ export const useChatRoom = ({
     const unsubNew = onSnapshot(newQ, (snap) => {
       const msg = snap.docs[0]?.data() as IMessage | undefined;
       if (!msg) return;
-      LayoutAnimation.configureNext(MOVE_ONLY);
       setMessages((prev) =>
         prev.some(
           (m) =>

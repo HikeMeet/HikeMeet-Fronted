@@ -28,7 +28,7 @@ import { FIREBASE_DB } from "../../firebaseconfig";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import ChatHeader from "./components.tsx/chat-header";
 import { handleProfilePress } from "./components.tsx/user-group-image-press";
-
+import { MongoUser } from "../../interfaces/user-interface";
 
 interface ChatRoomPageProps {
   route: {
@@ -44,7 +44,9 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
   const userParam = (route.params as any).user as IUser | undefined;
   const groupParam = (route.params as any).group as IGroup | undefined;
   const { mongoUser, mongoId, getToken, setMongoUser } = useAuth();
-
+  const [fullUserData, setFullUserData] = React.useState<MongoUser | null>(
+    null
+  );
   // load group metadata
   const [groupData, setGroupData] = React.useState<IGroup | null>(null);
   const [loadingGroup, setLoadingGroup] = React.useState(false);
@@ -64,16 +66,43 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
     type === "user"
       ? getRoomId(mongoUser!.firebase_id, userParam!.firebase_id!)
       : groupParam!._id;
+
   useEffect(() => {
-    if (type === "group") {
-      setLoadingGroup(true);
-      fetch(`${process.env.EXPO_LOCAL_SERVER}/api/group/${groupParam!._id}`)
-        .then((r) => r.json())
-        .then(({ group }) => setGroupData(group))
-        .catch(console.error)
-        .finally(() => setLoadingGroup(false));
-    }
-  }, [type, groupParam]);
+    const fetchData = async () => {
+      if (type === "group") {
+        setLoadingGroup(true);
+        try {
+          const response = await fetch(
+            `${process.env.EXPO_LOCAL_SERVER}/api/group/${groupParam!._id}`
+          );
+          if (!response.ok) {
+            throw new Error("Failed to fetch group data");
+          }
+          const { group } = await response.json();
+          setGroupData(group);
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoadingGroup(false);
+        }
+      } else if (type === "user") {
+        try {
+          const response = await fetch(
+            `${process.env.EXPO_LOCAL_SERVER}/api/user/${userParam!._id}`
+          );
+          if (!response.ok) {
+            throw new Error("Failed to fetch user data");
+          }
+          const data = await response.json();
+          setFullUserData(data);
+          // Process user data if needed
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    };
+    fetchData();
+  }, [type, groupParam, userParam]);
 
   // membership
   const isMember =
@@ -171,6 +200,7 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
           `${mongoUser!.username} sent you a message`,
           txt,
           {
+            type: "chat",
             navigation: {
               name: "Tabs",
               params: {
@@ -237,6 +267,7 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
     }
     return bar;
   };
+
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
       <ChatHeader
@@ -261,6 +292,14 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
             Join the group to view messages.
           </Text>
         </View>
+      ) : (fullUserData?.friends?.some(
+          (f: any) => f.id === mongoId && f.status === "blocked"
+        ) ?? false) ? (
+        <View className="flex-1 justify-center items-center px-4">
+          <Text className="text-gray-500 text-center">
+            You are blocked by the user.
+          </Text>
+        </View>
       ) : (
         <MessagesList
           messages={messages}
@@ -269,7 +308,13 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
           type={type}
         />
       )}
-      {type === "group" && !isMember ? null : renderInput()}
+      {(type === "group" && !isMember) ||
+      (fullUserData?.friends?.some(
+        (f: any) => f.id === mongoId && f.status === "blocked"
+      ) ??
+        false)
+        ? null
+        : renderInput()}
     </SafeAreaView>
   );
 }
