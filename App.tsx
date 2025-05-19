@@ -26,11 +26,36 @@ if (!process.env.EXPO_LOCAL_SERVER) {
 }
 
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: false,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
+  handleNotification: async ({ request }) => {
+    // 1️⃣ First, try the “official” data field (iOS & Expo Go)
+    const contentData = request.content.data as Record<string, any> | undefined;
+
+    // 2️⃣ Next, if you’ve got the stringified blob, parse it
+    const dataString = (request.content as any).dataString;
+    const parsedData =
+      typeof dataString === "string" ? JSON.parse(dataString) : undefined;
+
+    // 3️⃣ Only then fall back to Android FCM remoteMessage.data
+    const remoteData = (request.trigger as any)?.remoteMessage?.data as
+      | Record<string, any>
+      | undefined;
+
+    // 4️⃣ Collapse into one object
+    const rawData = contentData ?? parsedData ?? remoteData ?? {};
+
+    const { type } = rawData as { type?: string };
+    const currentRoute = navigationRef.getCurrentRoute()?.name;
+    const isChat = type === "chat";
+    const inChatRoom = ["ChatRoomPage", "Chats"].includes(currentRoute!);
+    const shouldAlert = isChat && !inChatRoom;
+    console.log("currentRoute", currentRoute);
+    console.log("type", type);
+    return {
+      shouldShowAlert: shouldAlert,
+      shouldPlaySound: shouldAlert,
+      shouldSetBadge: shouldAlert,
+    };
+  },
 });
 if (
   Platform.OS === "android" &&

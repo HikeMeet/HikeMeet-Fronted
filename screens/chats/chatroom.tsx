@@ -29,7 +29,6 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import ChatHeader from "./components.tsx/chat-header";
 import { handleProfilePress } from "./components.tsx/user-group-image-press";
 
-
 interface ChatRoomPageProps {
   route: {
     params: { type: "user"; user: IUser } | { type: "group"; group: IGroup };
@@ -171,6 +170,7 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
           `${mongoUser!.username} sent you a message`,
           txt,
           {
+            type: "chat",
             navigation: {
               name: "Tabs",
               params: {
