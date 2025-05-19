@@ -17,6 +17,7 @@ import PostCard from "../posts/components/post-card-on-feeds";
 import { useFocusEffect } from "@react-navigation/native";
 import { IPost } from "../../interfaces/post-interface";
 import { useAuth } from "../../contexts/auth-context";
+import { useChatList } from "../../contexts/chat-context";
 
 const Home = ({ navigation }: any) => {
   const { user, mongoId, mongoUser, fetchMongoUser } = useAuth();
@@ -27,7 +28,7 @@ const Home = ({ navigation }: any) => {
   const [showFriendsOnly, setShowFriendsOnly] = useState(false);
   const [postsToShow, setPostsToShow] = useState<number>(5);
   const unread = mongoUser?.unreadNotifications ?? 0;
-
+  const { initializeRooms } = useChatList();
   // Function to fetch posts.
   const fetchPosts = async () => {
     try {
@@ -46,12 +47,11 @@ const Home = ({ navigation }: any) => {
     }
   };
 
-  useEffect(() => {
-    fetchMongoUser(mongoId!);
-  }, []);
   // When the screen is focused, refetch the posts.
   useFocusEffect(
     useCallback(() => {
+      fetchMongoUser(mongoId!);
+      initializeRooms();
       setLoading(true);
       console.log("::::", mongoId);
       // if (mongoId) fetchMongoUser(user!.uid, true);

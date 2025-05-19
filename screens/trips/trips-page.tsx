@@ -18,6 +18,8 @@ import {
   fetchTrips,
   fetchTripsByIds,
 } from "../../components/requests/fetch-trips";
+import { useChatList } from "../../contexts/chat-context";
+import { useFocusEffect } from "@react-navigation/native";
 
 type ViewMode = "all" | "history" | "favorites";
 
@@ -28,7 +30,8 @@ const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [searchText, setSearchText] = useState<string>("");
   const [tripsToShow, setTripsToShow] = useState<number>(5);
   const [viewMode, setViewMode] = useState<ViewMode>("all");
-  const { mongoUser } = useAuth();
+  const { mongoUser, fetchMongoUser, mongoId } = useAuth();
+  const { initializeRooms } = useChatList();
 
   // 1) Fetch all trips
   const handleFetchTrips = async () => {
@@ -89,17 +92,20 @@ const TripsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
   };
 
-  // 3) Wire into your viewMode effect
-  useEffect(() => {
-    setTripsToShow(5);
-    if (viewMode === "all") {
-      handleFetchTrips();
-    } else if (viewMode === "history") {
-      fetchTripHistory();
-    } /* favorites */ else {
-      fetchFavoriteTrips();
-    }
-  }, [viewMode]);
+  useFocusEffect(
+    useCallback(() => {
+      // fetchMongoUser(mongoId!);
+      // initializeRooms();
+      setTripsToShow(5);
+      if (viewMode === "all") {
+        handleFetchTrips();
+      } else if (viewMode === "history") {
+        fetchTripHistory();
+      } /* favorites */ else {
+        fetchFavoriteTrips();
+      }
+    }, [viewMode])
+  );
 
   // 4) Prepare the array to display
   let workingTrips = trips;
