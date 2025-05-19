@@ -48,8 +48,7 @@ Notifications.setNotificationHandler({
     const isChat = type === "chat";
     const inChatRoom = ["ChatRoomPage", "Chats"].includes(currentRoute!);
     const shouldAlert = isChat && !inChatRoom;
-    console.log("currentRoute", currentRoute);
-    console.log("type", type);
+
     return {
       shouldShowAlert: shouldAlert,
       shouldPlaySound: shouldAlert,
