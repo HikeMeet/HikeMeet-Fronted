@@ -9,6 +9,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { NotificationProvider } from "./contexts/notification-context";
 import * as Notifications from "expo-notifications";
 import { navigationRef } from "./root-navigation";
+import NetworkGuard from "./components/network-guard";
 import { UIManager, Platform } from "react-native";
 import ChatProvider from "./contexts/chat-context";
 
@@ -69,7 +70,9 @@ export default function App() {
         <ChatProvider>
           <NavigationContainer ref={navigationRef}>
             <GestureHandlerRootView style={{ flex: 1 }}>
-              <MainLayout />
+              <NetworkGuard>
+                <MainLayout />
+              </NetworkGuard>
             </GestureHandlerRootView>
           </NavigationContainer>
         </ChatProvider>
