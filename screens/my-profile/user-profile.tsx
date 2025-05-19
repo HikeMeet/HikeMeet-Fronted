@@ -86,13 +86,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
         const data = await response.json();
         setUser(data);
 
-        const heBlockedMe = data.friends?.some(
-          (f: any) => f.id === mongoId && f.status === "blocked"
-        );
+        const heBlockedMe =
+          data.friends?.some(
+            (f: any) => f.id === mongoId && f.status === "blocked"
+          ) ?? false;
 
-        if (friendStatus !== "blocked" || heBlockedMe) {
-          setIsBlocked(true);
-        }
+        // if the viewed user has blocked me, mark blocked; otherwise clear it
+        setIsBlocked(heBlockedMe);
 
         // check privacySettings
         const visibility = data.privacySettings?.postVisibility ?? "public";
@@ -234,6 +234,16 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
     [user, friendStatus, showHikers]
   );
 
+  if (!loading && isBlocked) {
+    return (
+      <SafeAreaView className="flex-1 justify-center items-center bg-white">
+        <Text className="text-lg text-red-500">
+          This user has blocked you. You cannot view their profile.
+        </Text>
+      </SafeAreaView>
+    );
+  }
+
   if (loading) {
     // Full-page spinner only when the user data hasn't loaded yet.
     return (
@@ -309,12 +319,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
                 <View className="mt-20 items-center">
                   <ActivityIndicator size="large" color="#0000ff" />
                 </View>
-              ) : isBlocked ? (
-                <View className="mt-20 items-center px-16">
-                  <Text className="text-16 text-red text-center">
-                    This user is blocked. You cannot view their posts.
-                  </Text>
-                </View>
+              ) : friendStatus === "blocked" ? (
+                <View className="mt-20 items-center"></View>
               ) : isPrivatePosts ? (
                 <View className="mt-20 items-center px-16">
                   <Text className="text-16 text-gray-500 text-center">

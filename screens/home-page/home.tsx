@@ -47,13 +47,11 @@ const Home = ({ navigation }: any) => {
     }
   };
 
-  useEffect(() => {
-    fetchMongoUser(mongoId!);
-    initializeRooms();
-  }, []);
   // When the screen is focused, refetch the posts.
   useFocusEffect(
     useCallback(() => {
+      fetchMongoUser(mongoId!);
+      initializeRooms();
       setLoading(true);
       console.log("::::", mongoId);
       // if (mongoId) fetchMongoUser(user!.uid, true);

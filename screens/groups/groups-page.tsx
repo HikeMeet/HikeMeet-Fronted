@@ -39,12 +39,10 @@ const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
       setLoading(false);
     }
   }, []);
-  useEffect(() => {
-    fetchMongoUser(mongoId!);
-    initializeRooms();
-  });
   useFocusEffect(
     useCallback(() => {
+      // fetchMongoUser(mongoId!);
+      // initializeRooms();
       handleFetchGroups();
     }, [handleFetchGroups])
   );
