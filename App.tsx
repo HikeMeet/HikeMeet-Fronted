@@ -26,6 +26,7 @@ if (!process.env.EXPO_LOCAL_SERVER) {
   console.error("EXPO_LOCAL_SERVER is not defined. Check your .env file.");
 }
 
+console.log("EXPO_LOCAL_SERVER", process.env.EXPO_LOCAL_SERVER);
 Notifications.setNotificationHandler({
   handleNotification: async ({ request }) => {
     // 1️⃣ First, try the “official” data field (iOS & Expo Go)
@@ -49,7 +50,6 @@ Notifications.setNotificationHandler({
     const isChat = type === "chat";
     const inChatRoom = ["ChatRoomPage", "Chats"].includes(currentRoute!);
     const shouldAlert = isChat && !inChatRoom;
-
     return {
       shouldShowAlert: shouldAlert,
       shouldPlaySound: shouldAlert,

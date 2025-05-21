@@ -10,6 +10,9 @@
       "android": {
         "buildType": "apk",
         "gradleCommand": ":app:assembleDebug"
+      },
+      "env": {
+        "APP_ENV": "stage"
       }
     },
     "preview": {
@@ -20,7 +23,10 @@
       "android": {
         "buildType": "apk"
       },
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "APP_ENV": "prod"
+      }
     }
   },
   "submit": {
