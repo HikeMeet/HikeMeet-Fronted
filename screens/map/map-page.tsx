@@ -147,6 +147,14 @@ export default function MapPage({ navigation }: MapPageProps) {
     );
   }
 
+  if (!userLocation) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#0D9488" />
+      </View>
+    );
+  }
+
   /* ---------- helpers ---------- */
   function hideCarousel() {
     if (!carouselVisible) return;
