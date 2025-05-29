@@ -8,7 +8,7 @@ import { mockAuthContext } from "../__mocks__/auth-context";
   ...global.process,
   env: {
     ...global.process?.env,
-    EXPO_LOCAL_SERVER: "http://172.20.10.3:3000",
+    EXPO_LOCAL_SERVER: process.env.EXPO_LOCAL_SERVER,
   },
 };
 
@@ -561,7 +561,7 @@ describe("CreateGroupPage", () => {
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          "http://172.20.10.3:3000/api/group/create",
+          `${process.env.EXPO_LOCAL_SERVER}/api/group/create`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -609,7 +609,7 @@ describe("CreateGroupPage", () => {
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          "http://172.20.10.3:3000/api/group/create",
+          `${process.env.EXPO_LOCAL_SERVER}/api/group/create`,
           expect.objectContaining({
             method: "POST",
             headers: { "Content-Type": "application/json" },

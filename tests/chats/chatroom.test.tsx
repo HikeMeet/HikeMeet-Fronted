@@ -8,7 +8,7 @@ import { mockAuthContext } from "../__mocks__/auth-context";
   ...global.process,
   env: {
     ...global.process?.env,
-    EXPO_LOCAL_SERVER: "http://172.20.10.3:3000",
+    EXPO_LOCAL_SERVER: process.env.EXPO_LOCAL_SERVER,
   },
 };
 
@@ -345,7 +345,7 @@ describe("ChatRoomPage", () => {
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          "http://172.20.10.3:3000/api/user/user-456"
+          `${process.env.EXPO_LOCAL_SERVER}/api/user/user-456`
         );
       });
     });
@@ -533,7 +533,7 @@ describe("ChatRoomPage", () => {
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          "http://172.20.10.3:3000/api/group/group-789"
+          `${process.env.EXPO_LOCAL_SERVER}/api/group/group-789`
         );
       });
     });
