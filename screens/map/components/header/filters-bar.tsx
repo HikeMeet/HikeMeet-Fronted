@@ -1,11 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
-
-export type ActiveFilter = {
-  id: string;
-  label: string;
-};
+import { ActiveFilter } from "../../../../interfaces/map-interface";
 
 type FiltersBarProps = {
   filters: ActiveFilter[];
