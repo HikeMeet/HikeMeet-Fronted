@@ -126,7 +126,7 @@ jest.mock("../../screens/chats/components.tsx/messages-list", () => ({
 
     return (
       <View testID="messages-list">
-        <Text testID={`messages-count`}>{messages.length} messages</Text>
+        <Text testID={"messages-count"}>{messages.length} messages</Text>
         <Text testID="room-id">{roomId}</Text>
         <Text testID="chat-type">{type}</Text>
         <FlatList
