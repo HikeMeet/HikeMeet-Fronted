@@ -33,6 +33,7 @@ const GenderDropdown: React.FC<GenderDropdownProps> = ({
           <Icon name={iconName} size={20} color="#6B7280" />
         </View>
         <Picker
+          testID="gender-picker"
           selectedValue={value}
           onValueChange={(item) => {
             if (item !== "other") {
