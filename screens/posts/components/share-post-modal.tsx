@@ -56,7 +56,6 @@ const SharePostModal: React.FC<SharePostModalProps> = ({
       );
       const data = await res.json();
       if (res.ok) {
-        console.log("Post shared successfully", data);
         navigation.push("PostStack", {
           screen: "PostPage",
           params: { postId: data.post._id },
