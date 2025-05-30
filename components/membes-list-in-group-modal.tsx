@@ -231,6 +231,7 @@ const MembersModal: React.FC<MembersModalProps> = ({
                     key={user._id || index}
                     user={user}
                     onStatusChange={(newStatus: string) =>
+                      console.log("Status changed:", newStatus)
                     }
                     isMyProfile={false}
                     navigation={navigation}
