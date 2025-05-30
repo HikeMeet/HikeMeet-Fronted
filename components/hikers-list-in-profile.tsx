@@ -187,6 +187,7 @@ const HikersList: React.FC<HikersListProps> = ({
             <UserRow
               user={item}
               onStatusChange={(newStatus: string) =>
+                console.log("Status changed:", newStatus)
               }
               isMyProfile={isMyProfile}
               navigation={navigation}

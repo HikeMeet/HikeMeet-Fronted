@@ -63,6 +63,7 @@ const LikesModal: React.FC<LikesModalProps> = ({
                   key={user._id || index}
                   user={user}
                   onStatusChange={(newStatus: string) =>
+                    console.log("Status changed:", newStatus)
                   }
                   navigation={navigation}
                 />
