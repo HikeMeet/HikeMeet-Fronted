@@ -53,7 +53,6 @@ const Home = ({ navigation }: any) => {
       fetchMongoUser(mongoId!);
       initializeRooms();
       setLoading(true);
-      console.log("::::", mongoId);
       // if (mongoId) fetchMongoUser(user!.uid, true);
       fetchPosts();
     }, [showFriendsOnly]) // Re-fetch posts when filter changes.
@@ -69,7 +68,6 @@ const Home = ({ navigation }: any) => {
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchPosts();
-    console.log(mongoId);
     fetchMongoUser(mongoId!);
   }, [showFriendsOnly]);
 

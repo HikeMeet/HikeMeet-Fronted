@@ -66,7 +66,6 @@ const CreateTripPage: React.FC = ({ navigation }: any) => {
   const handleLocationSelect = (coords: [number, number], address: string) => {
     setTripLocation(address);
     setTripCoordinates(coords);
-    console.log("Location selected:", coords, address);
   };
 
   // Callback from ImageUploadPhotos to get the list of image URLs.
@@ -126,7 +125,6 @@ const CreateTripPage: React.FC = ({ navigation }: any) => {
             {
               text: "OK",
               onPress: () => {
-                console.log("Created Trip ID:", data._id);
                 navigation.navigate("TripPage", {
                   tripId: data._id,
                   fromCreate: true,

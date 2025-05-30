@@ -7,6 +7,7 @@ import {
   Platform,
   TouchableOpacity,
   ScrollView,
+  SafeAreaView,
 } from "react-native";
 
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -22,7 +23,6 @@ import PasswordStrength, {
 } from "../../components/password-strength";
 import ErrorAlertComponent from "../../components/error/error-alert-component";
 import CustomTextInput from "../../components/custom-text-input";
-import BackButton from "../../components/back-button";
 import Button from "../../components/Button";
 import GenderDropdown from "../../components/gender-dropdown";
 import TermsPopup from "../../components/turms-and-conditions";
@@ -65,7 +65,6 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
       return;
     }
     if (gender === "") {
-      console.log("gender", gender);
       setError("No gender");
       return;
     }
@@ -127,136 +126,176 @@ export default function RegisterPage({ navigation }: { navigation: any }) {
   };
 
   return (
-    // <ScrollView className="flex-1 bg-gray-100">
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-slate-700"
-    >
-      <View className="flex-1 items-center justify-center px-6">
-        <BackButton onPress={() => navigation.goBack()} />
-
-        <Text className="text-3xl font-bold text-white mb-1">
-          Create an Account
-        </Text>
-        <Text className="text-lg text-gray-300 mb-2">
-          Join us to get started!
-        </Text>
-
-        {/* Display error messages */}
-        {error && <ErrorAlertComponent message={error} />}
-        <ScrollView
+    <>
+      <SafeAreaView className="flex-1 bg-slate-700">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           className="flex-1"
-          contentContainerStyle={{ paddingBottom: 20 }}
         >
-          <CustomTextInput
-            iconName="account"
-            placeholder="Username"
-            value={username}
-            onChangeText={setUsername}
-          />
-
-          {/* First and Last Name side by side */}
-          <View className="flex-row w-full space-x-4 mb-1">
-            <View className="flex-1">
-              <CustomTextInput
-                iconName="account-outline"
-                placeholder="First Name"
-                value={firstName}
-                onChangeText={setFirstName}
-              />
-            </View>
-            <View className="flex-1">
-              <CustomTextInput
-                iconName="account-outline"
-                placeholder="Last Name"
-                value={lastName}
-                onChangeText={setLastName}
-              />
-            </View>
-          </View>
-          <GenderDropdown
-            iconName="gender-male-female"
-            value={gender}
-            onValueChange={setGender}
-          />
-          {/* Birthdate Field */}
-          <CustomTextInput
-            iconName="calendar"
-            placeholder="Select Your Birthdate"
-            value={birthdate ? birthdate.toLocaleDateString() : ""}
-            onChangeText={() => setShowDatePicker(true)} // Trigger DatePicker on touch
-            onPress={() => setShowDatePicker(true)} // Trigger DatePicker on touch
-          />
-          {showDatePicker && (
-            <DateTimePicker
-              testID="birthdate-picker"
-              value={birthdate || new Date()}
-              mode="date"
-              display="default"
-              onChange={onDateChange}
-              maximumDate={new Date()} // Prevent future dates
-            />
-          )}
-
-          <CustomTextInput
-            iconName="email"
-            placeholder="Email"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
-          <CustomTextInput
-            iconName="lock"
-            placeholder="Password"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-          <PasswordStrength password={password} />
-          <CustomTextInput
-            iconName="lock"
-            placeholder="Confirm Password"
-            secureTextEntry
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-          />
-
-          <View className="flex-row items-center mb-2">
-            <CustomCheckbox
-              checked={acceptTerms}
-              onChange={() => setAcceptTerms(!acceptTerms)}
-              label="I accept the Terms & Conditions"
-            />
-            <TouchableOpacity onPress={() => setTermsVisible(true)}>
-              <Text className="text-green-300 font-bold ml-2">
-                Terms & Conditions
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <TermsPopup
-            visible={termsVisible}
-            onClose={() => setTermsVisible(false)}
-          />
-          <Button
-            title="Register"
-            onPress={handleRegister}
-            isLoading={loading}
-            color="bg-green-600"
-          />
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate("Login")}
-            className="mt-6"
+          <ScrollView
+            contentContainerStyle={{
+              flexGrow: 1,
+              paddingHorizontal: 16,
+              paddingVertical: 16,
+            }}
+            keyboardShouldPersistTaps="handled"
           >
-            <Text className="text-gray-300">
-              Already have an account?{" "}
-              <Text className="text-green-300 font-bold">Log in here</Text>
+            <Text className="text-3xl font-bold text-white text-center mt-4">
+              Create an Account
             </Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
-    </KeyboardAvoidingView>
-    // </ScrollView>
+            <Text className="text-lg text-gray-300 text-center mb-6">
+              Join us to get started!
+            </Text>
+
+            {error && (
+              <View className="mb-4">
+                <ErrorAlertComponent message={error} />
+              </View>
+            )}
+
+            <View className="bg-white rounded-2xl p-3 shadow-lg mx-auto w-full max-w-md">
+              {/* Username */}
+              <View className="mb-4">
+                <CustomTextInput
+                  iconName="account"
+                  placeholder="Username"
+                  value={username}
+                  onChangeText={setUsername}
+                />
+              </View>
+
+              {/* First + Last */}
+              <View className="flex-row space-x-4 mb-4">
+                <View className="flex-1">
+                  <CustomTextInput
+                    iconName="account-outline"
+                    placeholder="First Name"
+                    value={firstName}
+                    onChangeText={setFirstName}
+                  />
+                </View>
+                <View className="flex-1">
+                  <CustomTextInput
+                    iconName="account-outline"
+                    placeholder="Last Name"
+                    value={lastName}
+                    onChangeText={setLastName}
+                  />
+                </View>
+              </View>
+
+              {/* Gender */}
+              <View className="mb-4">
+                <GenderDropdown
+                  iconName="gender-male-female"
+                  value={gender}
+                  onValueChange={setGender}
+                />
+              </View>
+
+              {/* Birthdate */}
+              <View className="mb-4">
+                <CustomTextInput
+                  iconName="calendar"
+                  placeholder="Select Your Birthdate"
+                  value={birthdate ? birthdate.toLocaleDateString() : ""}
+                  onPress={() => setShowDatePicker(true)}
+                  onFocus={() => setShowDatePicker(true)}
+                  showSoftInputOnFocus={false}
+                  editable={false}
+                  onChangeText={function (text: string): void {
+                    throw new Error("Function not implemented.");
+                  }}
+                />
+
+                {showDatePicker && (
+                  <DateTimePicker
+                    testID="birthdate-picker"
+                    value={birthdate || new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={onDateChange}
+                    maximumDate={new Date()}
+                  />
+                )}
+              </View>
+
+              {/* Email */}
+              <View className="mb-4">
+                <CustomTextInput
+                  iconName="email"
+                  placeholder="Email"
+                  keyboardType="email-address"
+                  value={email}
+                  onChangeText={setEmail}
+                />
+              </View>
+
+              {/* Password */}
+              <View className="mb-4">
+                <CustomTextInput
+                  iconName="lock"
+                  placeholder="Password"
+                  secureTextEntry
+                  value={password}
+                  onChangeText={setPassword}
+                />
+              </View>
+              <PasswordStrength password={password} />
+
+              {/* Confirm Password */}
+              <View className="mb-4">
+                <CustomTextInput
+                  iconName="lock"
+                  placeholder="Confirm Password"
+                  secureTextEntry
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                />
+              </View>
+
+              {/* Terms & Conditions */}
+              <View className="flex-row items-center mb-4">
+                <CustomCheckbox
+                  checked={acceptTerms}
+                  onChange={() => setAcceptTerms(!acceptTerms)}
+                  label="I accept the Terms & Conditions"
+                />
+                <TouchableOpacity onPress={() => setTermsVisible(true)}>
+                  <Text className="text-green-600 font-bold ml-2">
+                    View Terms
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Register Button */}
+              <View className="mb-4">
+                <Button
+                  title="Register"
+                  onPress={handleRegister}
+                  isLoading={loading}
+                  color="bg-green-600"
+                />
+              </View>
+
+              {/* Switch to Login */}
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Login")}
+                className="mt-2"
+              >
+                <Text className="text-center text-gray-600">
+                  Already have an account?{" "}
+                  <Text className="text-green-600 font-bold">Log in here</Text>
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+      <TermsPopup
+        visible={termsVisible}
+        onClose={() => setTermsVisible(false)}
+      />
+    </>
   );
 }

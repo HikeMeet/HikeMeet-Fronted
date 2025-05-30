@@ -118,6 +118,5 @@ export async function fetchPushTokensUnmuted(
     throw new Error(`Error fetching push tokens: ${res.status}`);
   }
   const { tokens }: { tokens: string[] } = await res.json();
-  console.log("Fetched tokens for room", roomId, tokens);
   return tokens;
 }

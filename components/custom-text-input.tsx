@@ -1,5 +1,11 @@
+// CustomTextInput.tsx
 import React from "react";
-import { View, TextInput, TextInputProps } from "react-native";
+import {
+  View,
+  TextInput,
+  TextInputProps,
+  TouchableOpacity,
+} from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 interface CustomTextInputProps extends TextInputProps {
@@ -8,9 +14,7 @@ interface CustomTextInputProps extends TextInputProps {
   secureTextEntry?: boolean;
   value: string;
   onChangeText: (text: string) => void;
-  onPress?: () => void; // Add an optional onFocus prop
-  keyboardType?: "default" | "email-address" | "numeric" | "phone-pad";
-  testID?: string;
+  onPress?: () => void;
 }
 
 const CustomTextInput: React.FC<CustomTextInputProps> = ({
@@ -21,26 +25,30 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
   onChangeText,
   onPress,
   keyboardType = "default",
-  testID,
   ...rest
-}) => {
-  return (
-    <View className="flex-row items-center w-full px-4 py-3 border border-gray-300 rounded-md bg-white mb-3">
-      <Icon name={iconName} size={20} color="#aaa" style={{ marginRight: 8 }} />
-      <TextInput
-        className="flex-1 text-gray-800 text-base h-12 leading-6"
-        placeholder={placeholder}
-        secureTextEntry={secureTextEntry}
-        value={value}
-        onChangeText={onChangeText}
-        onPress={onPress}
-        keyboardType={keyboardType}
-        placeholderTextColor="#aaa"
-        testID={testID}
-        {...rest} // Spread other props for flexibility
-      />
-    </View>
-  );
-};
+}) => (
+  <TouchableOpacity
+    activeOpacity={1}
+    onPress={onPress}
+    className="flex-row items-center w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50"
+  >
+    <Icon
+      name={iconName}
+      size={20}
+      color="#6B7280"
+      style={{ marginRight: 10 }}
+    />
+    <TextInput
+      style={{ flex: 1 }}
+      placeholder={placeholder}
+      secureTextEntry={secureTextEntry}
+      value={value}
+      onChangeText={onChangeText}
+      keyboardType={keyboardType}
+      placeholderTextColor="#9CA3AF"
+      {...rest}
+    />
+  </TouchableOpacity>
+);
 
 export default CustomTextInput;

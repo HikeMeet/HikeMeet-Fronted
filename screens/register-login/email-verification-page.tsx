@@ -84,7 +84,6 @@ export default function VerifyEmailPage({
         );
       }
 
-      console.log("data:\n", data.user._id);
       return data.user._id; // Return the _id
     } catch (error) {
       console.error("Error inserting user:", error);
@@ -93,7 +92,6 @@ export default function VerifyEmailPage({
   };
 
   const checkVerificationStatus = async () => {
-    console.log(user);
     if (user) {
       try {
         await user.reload();
