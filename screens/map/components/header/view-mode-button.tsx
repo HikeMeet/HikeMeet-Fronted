@@ -18,6 +18,8 @@ export default function ViewModeButton({ viewMode, onToggle }: Props) {
       useNativeDriver: true,
     }).start(cb);
 
+  const backgroundColor = viewMode === "map" ? palette.primary : palette.third;
+
   return (
     <Animated.View
       style={{ transform: [{ scale }] }}
@@ -28,7 +30,7 @@ export default function ViewModeButton({ viewMode, onToggle }: Props) {
         onPressOut={() => animate(1, onToggle)}
         android_ripple={{ color: "#ffffff30", borderless: true }}
         className="flex-row items-center justify-center gap-1 px-3 h-10 rounded-full"
-        style={{ backgroundColor: palette.primary }}
+        style={{ backgroundColor }}
       >
         {viewMode === "map" ? (
           <>

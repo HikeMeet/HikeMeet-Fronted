@@ -3,6 +3,7 @@
 export const palette = {
   primary: "#0D9488", // Teal-600
   secondary: "#14B8A6", // Teal-500
+  third: "#111827",
   error: "#EF4444",
   gray900: "#111827",
   gray700: "#374151",
@@ -42,11 +43,13 @@ export const theme = {
   colors: {
     primary: palette.primary,
     secondary: palette.secondary,
+    third: palette.third,
     background: "#F9FAFB",
     surface: "#FFFFFF",
     text: {
       primary: palette.gray900,
       secondary: "#6B7280",
+      third: "#6B7280",
       light: "#9CA3AF",
     },
     border: "#E5E7EB",
