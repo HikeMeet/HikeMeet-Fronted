@@ -452,7 +452,13 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
         viewMode={viewMode}
         onToggleView={toggleViewMode}
         activeFilters={filters.activeFilters}
-        onRemoveFilter={filters.removeFilter}
+        onRemoveFilter={(filterId) => {
+          filters.removeFilter(filterId);
+
+          if (filterId.startsWith("city=")) {
+            setCityQuery("");
+          }
+        }}
         onOpenTripFilter={openTripFilterModal}
         onOpenGroupFilter={openGroupFilterModal}
       />
