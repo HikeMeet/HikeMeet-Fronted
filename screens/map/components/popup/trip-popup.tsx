@@ -55,9 +55,9 @@ export default function TripPopup({
         {/* button Add Group */}
         <TouchableOpacity
           onPress={onAddGroup}
-          className="absolute right-1 top-5 mt-0 bg-emerald-600 px-4 py-2 rounded-xl shadow-sm"
+          className="absolute right-1 top-2 mt-0 bg-emerald-600 px-3 py-2 rounded-xl shadow-sm"
         >
-          <Text className="text-white text-xs font-semibold">+ Add</Text>
+          <Text className="text-white text-xs font-semibold">+ Add group</Text>
         </TouchableOpacity>
       </View>
 

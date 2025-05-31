@@ -1,7 +1,8 @@
 import React from "react";
 import { View } from "react-native";
-import FiltersBar, { ActiveFilter } from "./filters-bar";
+import FiltersBar from "./filters-bar";
 import ViewModeButton from "./view-mode-button";
+import { ActiveFilter } from "../../../../interfaces/map-interface";
 
 type Props = {
   viewMode: "map" | "list";

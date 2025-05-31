@@ -18,7 +18,6 @@ type TripFilterModalProps = {
     filteredTrips: Trip[],
     chosenFilters: { id: string; label: string }[]
   ) => void;
-
   initialFilters?: {
     location: string;
     tags: string[];
@@ -112,26 +111,33 @@ export default function TripFilterModal({
 
   return (
     <TouchableWithoutFeedback onPress={onClose}>
-      <View className="absolute top-0 left-0 right-0 bottom-0 bg-black/30 justify-center items-center">
+      <View className="absolute top-0 left-0 right-0 bottom-0 bg-black/40 justify-center items-center">
         <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
-          <View className="w-[90%] bg-white rounded-xl p-5 max-h-[80%]">
-            <Text className="text-lg font-semibold mb-3">Trip Filters</Text>
+          <View className="w-[92%] bg-white rounded-3xl p-6 max-h-[85%] shadow-xl">
+            {/* Title */}
+            <Text className="text-xl font-bold text-gray-800 mb-4 tracking-tight">
+              Filter Trips
+            </Text>
 
-            {/* Location */}
+            {/* Location Input */}
             <TextInput
-              placeholder="Location"
+              placeholder="Search by location..."
+              placeholderTextColor="#999"
               value={filters.location}
               onChangeText={(val) =>
                 setFilters((prev) => ({ ...prev, location: val }))
               }
-              className="bg-gray-100 px-3 py-2 rounded mb-3"
+              className="bg-gray-100 px-4 py-3 rounded-xl mb-4 text-[15px] text-gray-800"
             />
 
-            <Text className="font-semibold mb-2">Tags</Text>
+            {/* Tags */}
+            <Text className="text-base font-semibold text-gray-700 mb-2">
+              Tags
+            </Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              className="mb-4"
+              className="mb-5"
             >
               {TAGS.map((tag) => {
                 const selected = filters.tags.includes(tag);
@@ -139,15 +145,15 @@ export default function TripFilterModal({
                   <TouchableOpacity
                     key={tag}
                     onPress={() => toggleTag(tag)}
-                    className={`px-3 py-1 mr-2 rounded-full border ${
+                    className={`px-4 py-2 mr-2 rounded-full border transition-all ${
                       selected
-                        ? "bg-green-600 border-green-600"
-                        : "border-gray-400"
+                        ? "bg-emerald-600 border-emerald-600"
+                        : "border-gray-300 bg-gray-100"
                     }`}
                   >
                     <Text
-                      className={`text-sm ${
-                        selected ? "text-white" : "text-gray-600"
+                      className={`text-sm font-medium ${
+                        selected ? "text-white" : "text-gray-700"
                       }`}
                     >
                       {tag}
@@ -157,11 +163,12 @@ export default function TripFilterModal({
               })}
             </ScrollView>
 
+            {/* Apply Button */}
             <TouchableOpacity
-              className="bg-green-600 py-2 rounded"
+              className="bg-emerald-600 py-3 rounded-xl shadow-sm"
               onPress={applyFilters}
             >
-              <Text className="text-white text-center font-semibold">
+              <Text className="text-white text-center text-base font-semibold">
                 Apply Filters
               </Text>
             </TouchableOpacity>
