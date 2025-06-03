@@ -95,16 +95,23 @@ export default function VerifyEmailPage({
     if (user) {
       try {
         await user.reload();
-        await signOut(FIREBASE_AUTH);
+
         if (user.emailVerified) {
-          insertUser(user.uid);
-          navigation.navigate("Login");
+          const insertedUserId = await insertUser(user.uid);
+          if (insertedUserId) {
+            await signOut(FIREBASE_AUTH); // sign out only after successful insertion
+            navigation.navigate("Login");
+          } else {
+            setMessage("Failed to insert user data. Please try again.");
+          }
         } else {
           setMessage("Email not verified yet. Please check your inbox.");
         }
       } catch (error: any) {
         setMessage(`Error: ${error.message}`);
       }
+    } else {
+      setMessage("No authenticated user found. Please log in again.");
     }
   };
 
