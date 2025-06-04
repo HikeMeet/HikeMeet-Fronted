@@ -36,7 +36,7 @@ export default function CitySearchBar({
     try {
       const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(
         text
-      )}&key=${process.env.GOOGLEMAP_API_KEKY}`;
+      )}&key=${process.env.GOOGLEMAP_API_KEY}`;
 
       const resp = await fetch(url);
       const data = await resp.json();
