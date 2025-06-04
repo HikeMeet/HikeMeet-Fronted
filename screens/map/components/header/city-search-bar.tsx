@@ -34,12 +34,31 @@ export default function CitySearchBar({
     }
 
     try {
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+      const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(
         text
-      )}.json?access_token=${process.env.MAPBOX_TOKEN_PUBLIC}&autocomplete=true`;
+      )}&key=${process.env.GOOGLEMAP_API_KEKY}`;
+
       const resp = await fetch(url);
       const data = await resp.json();
-      setResults(data?.features || []);
+
+      if (data && data.results) {
+        // Convert Google Places results to match our interface and limit to 6 results
+        const convertedResults = data.results
+          .slice(0, 6) // Limit to 6 results
+          .map((place: any) => ({
+            id: place.place_id,
+            place_name: place.formatted_address || place.name,
+            geometry: {
+              coordinates: [
+                place.geometry.location.lng,
+                place.geometry.location.lat,
+              ],
+            },
+          }));
+        setResults(convertedResults);
+      } else {
+        setResults([]);
+      }
     } catch {
       setResults([]);
     }

@@ -40,26 +40,42 @@ const MapSearch: React.FC<MapSearchProps> = ({
   const [clearOnEdit, setClearOnEdit] = useState<boolean>(false);
   const cameraRef = useRef<any>(null);
 
-  const searchMapbox = async (text: string) => {
+  const searchGoogle = async (text: string) => {
     setQuery(text);
     if (text.length < 3) {
       setResults([]);
       return;
     }
     try {
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+      const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(
         text
-      )}.json?access_token=${process.env.MAPBOX_TOKEN_PUBLIC}&autocomplete=true`;
+      )}&key=${process.env.GOOGLEMAP_API_KEKY}`;
+
       const response = await fetch(url);
       const data = await response.json();
-      if (data && data.features) {
-        setResults(data.features);
+
+      if (data && data.results) {
+        // Convert Google Places results to match our interface
+        const convertedResults = data.results
+          .slice(0, 6) // Limit to 6 results
+          .map((place: any) => ({
+            id: place.place_id,
+            place_name: place.formatted_address || place.name,
+            geometry: {
+              coordinates: [
+                place.geometry.location.lng,
+                place.geometry.location.lat,
+              ],
+            },
+          }));
+        setResults(convertedResults);
       } else {
-        console.error("No features found in response:", data);
+        console.error("No results found in Google response:", data);
         setResults([]);
       }
     } catch (error) {
-      console.error("Error fetching Mapbox results:", error);
+      console.error("Error fetching Google Places results:", error);
+      setResults([]);
     }
   };
 
@@ -130,7 +146,7 @@ const MapSearch: React.FC<MapSearchProps> = ({
               onFocus={() => {
                 if (query !== "") setClearOnEdit(true);
               }}
-              onChangeText={(text) => searchMapbox(text)}
+              onChangeText={(text) => searchGoogle(text)}
               className="w-full h-10 p-2 pr-10 border border-gray-400 rounded text-left"
             />
             {query.length > 0 && (
