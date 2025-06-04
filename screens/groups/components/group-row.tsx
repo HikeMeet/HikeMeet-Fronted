@@ -52,33 +52,35 @@ const GroupRow: React.FC<GroupRowProps> = ({
                 Status: {group.status}
               </Text>
             </View>
-            {/* Right container with join button and lock icon + membership count */}
-            <View className="flex-col items-end">
-              {/* Wrap JoinGroupActionButton to ensure it is aligned at the top */}
-              <View className="self-start">
-                <JoinGroupActionButton
-                  group={group}
-                  navigation={navigation}
-                  isInGroupPage={false}
-                  onAction={onAction}
-                />
-              </View>
-              <View className="flex-row items-center mt-1">
-                {group.privacy === "private" && (
-                  <Icon
-                    name="lock"
-                    size={16}
-                    color="#555"
-                    style={{ marginRight: 4 }}
-                  />
-                )}
-                <Text className="text-sm text-gray-500">
-                  {currentMembers}/{group.max_members}
-                </Text>
-                {/* how much place in group left*/}
+
+            {/* Right side: actions + availability */}
+            <View className="items-end ml-2">
+              <JoinGroupActionButton
+                group={group}
+                navigation={navigation}
+                isInGroupPage={false}
+                onAction={onAction}
+              />
+
+              {/* Member count + availability */}
+              <View className="items-end mt-1">
+                <View className="flex-row items-center">
+                  {group.privacy === "private" && (
+                    <Icon
+                      name="lock"
+                      size={16}
+                      color="#555"
+                      style={{ marginRight: 4 }}
+                    />
+                  )}
+                  <Text className="text-sm text-gray-500">
+                    {currentMembers}/{group.max_members}
+                  </Text>
+                </View>
+
                 {showAvailability && (
                   <Text
-                    className={`text-s font-semibold mt-1 ${
+                    className={`text-sm font-semibold mt-1 ${
                       isFull ? "text-red-600" : "text-emerald-600"
                     }`}
                   >
