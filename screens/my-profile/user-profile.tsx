@@ -25,6 +25,7 @@ import { getRankIcon } from "./components/rank-images";
 import RankInfoModal from "./components/rank-info-modal";
 import ReportButton from "../admin-settings/components/report-button";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import LtrText from "../../components/ltr-text";
 
 interface UserProfileProps {
   route: any;
@@ -169,10 +170,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
               )}
             </View>
             <View className="flex-1 ml-2">
-              <Text className="text-xl font-bold">{`${user.username}`}</Text>
-              <Text className="text-sm font-bold">
-                {`${user.first_name} ${user.last_name}`}
-              </Text>
+              <LtrText className="text-xl font-bold">{user.username}</LtrText>
+              <LtrText className="text-sm font-bold">
+                {user.first_name} {user.last_name}
+              </LtrText>
 
               {rankName && (
                 <View className="flex-row items-center">

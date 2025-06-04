@@ -4,6 +4,7 @@ import { View, Text } from "react-native";
 import { MongoUser } from "../../../interfaces/user-interface";
 import { IMessage } from "../../../interfaces/chat-interface";
 import { formatDate } from "../../../utils/chat-utils";
+import LtrText from "../../../components/ltr-text";
 
 interface MessageItemProps {
   message?: IMessage;
@@ -43,24 +44,24 @@ export default function MessageItem({
       <View>
         {/* Sender name for group chats */}
         {type === "group" && !isMine && (
-          <Text className="text-[12px] font-medium text-indigo-600 mb-0.5 ml-1">
+          <LtrText className="text-[12px] font-medium text-indigo-600 mb-0.5 ml-1">
             {message.senderName}
-          </Text>
+          </LtrText>
         )}
 
         {/* Bubble */}
         <View className={`${bubbleBase} ${isMine ? mineBubble : otherBubble}`}>
-          <Text className={`${textColor} text-base`}>{message.text}</Text>
+          <LtrText className={`${textColor} text-base`}>{message.text}</LtrText>
         </View>
 
         {/* Timestamp below */}
-        <Text
+        <LtrText
           className={`mt-0.5 text-[10px] ${timeColor} ${
             isMine ? "text-right pr-1" : "text-left pl-1"
           }`}
         >
           {timeText}
-        </Text>
+        </LtrText>
       </View>
     </View>
   );
