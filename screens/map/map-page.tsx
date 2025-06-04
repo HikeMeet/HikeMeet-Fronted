@@ -211,6 +211,11 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
 
   const handleSelectCity = useCallback(
     (coords: Coordinate, placeName: string) => {
+      // Close popup if open
+      if (popupTrip) {
+        closeTripPopup();
+      }
+
       location.setSearchCenter(coords);
       setCityQuery(placeName);
       filters.setCityFilter(placeName);
@@ -226,17 +231,22 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
       // Fetch trips for the selected city
       fetchAllData(placeName);
     },
-    []
+    [popupTrip]
   );
 
   const handleClearCity = useCallback(() => {
+    // Close popup if open
+    if (popupTrip) {
+      closeTripPopup();
+    }
+
     setCityQuery("");
     location.setSearchCenter(null);
     filters.removeFilter(
       filters.activeFilters.find((f) => f.id.startsWith("city="))?.id || ""
     );
     fetchAllData();
-  }, [filters.activeFilters]);
+  }, [filters.activeFilters, popupTrip]);
 
   const handleCenterOnMe = useCallback(() => {
     // Close popup if open
@@ -252,7 +262,7 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
         animationDuration: 1000,
       });
     }
-  }, [location.userLocation, popupTrip, closeTripPopup]);
+  }, [location.userLocation, popupTrip]);
 
   const toggleViewMode = useCallback(() => {
     // Close popup if open
@@ -266,7 +276,7 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
     } else {
       setViewMode("map");
     }
-  }, [viewMode, popupTrip, closeTripPopup]);
+  }, [viewMode, popupTrip]);
 
   const openTripPopup = useCallback(
     (trip: Trip) => {
@@ -474,6 +484,11 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
         onToggleView={toggleViewMode}
         activeFilters={filters.activeFilters}
         onRemoveFilter={(filterId) => {
+          // Close popup if open
+          if (popupTrip) {
+            closeTripPopup();
+          }
+
           filters.removeFilter(filterId);
 
           if (filterId.startsWith("city=")) {
