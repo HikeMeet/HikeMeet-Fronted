@@ -315,7 +315,6 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
       useNativeDriver: true,
     }).start(() => {
       setPopupTrip(null);
-      location.resetCenter();
       if (viewMode === "map") {
         setCarouselVisible(true);
       }
