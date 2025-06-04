@@ -3,6 +3,7 @@ import { TouchableOpacity, View, Text, Image } from "react-native";
 import { Group } from "../../../interfaces/group-interface";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import JoinGroupActionButton from "./group-join-action-button";
+import LtrText from "../../../components/ltr-text";
 
 interface GroupRowProps {
   group: Group;
@@ -41,13 +42,13 @@ const GroupRow: React.FC<GroupRowProps> = ({
           <View className="flex-row justify-between items-start">
             {/* Left container with group name and status stacked vertically */}
             <View className="flex-col flex-1">
-              <Text
+              <LtrText
                 className="text-lg font-bold"
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
                 {group.name}
-              </Text>
+              </LtrText>
               <Text className="text-sm text-gray-500">
                 Status: {group.status}
               </Text>

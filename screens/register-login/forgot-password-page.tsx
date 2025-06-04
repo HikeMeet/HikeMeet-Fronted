@@ -35,7 +35,7 @@ export default function ForgotPasswordPage({
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email }),
+          body: JSON.stringify({ email: email.toLowerCase() }),
         }
       );
 
@@ -44,7 +44,7 @@ export default function ForgotPasswordPage({
           "Success",
           "A verification code has been sent to your email."
         );
-        navigation.navigate("CodeVerrify", { email }); // Navigate to the verification page
+        navigation.navigate("CodeVerrify", { email: email.toLowerCase() });
       } else {
         const { error } = await response.json();
         Alert.alert("Error", error || "An error occurred");

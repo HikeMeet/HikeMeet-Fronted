@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity, Dimensions } from "react-native";
 import { Trip } from "../../../../interfaces/trip-interface";
+import LtrText from "../../../../components/ltr-text";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -19,10 +20,12 @@ export default function TripCard({
       className="bg-white rounded-3xl shadow-xl p-4 mx-2"
       style={{ width: SCREEN_WIDTH * 0.85 }}
     >
-      <Text className="text-base font-bold text-gray-900 mb-1">
+      <LtrText className="text-base font-bold text-gray-900 mb-1">
         {trip.name}
-      </Text>
-      <Text className="text-xs text-gray-500">{trip.location.address}</Text>
+      </LtrText>
+      <LtrText className="text-xs text-gray-500">
+        {trip.location.address}
+      </LtrText>
 
       {trip.main_image?.url && (
         <Image

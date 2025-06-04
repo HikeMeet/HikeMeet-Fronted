@@ -22,8 +22,7 @@ import { useAuth } from "../../../contexts/auth-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { handleProfilePress } from "./user-group-image-press";
 import MuteToggleButton from "./mute-chat-togle";
-
-
+import LtrText from "../../../components/ltr-text";
 
 export interface ChatItemProps {
   type: "user" | "group";
@@ -164,12 +163,12 @@ const ChatItem: React.FC<ChatItemProps> = ({
 
         {/* Main content */}
         <View className="flex-1">
-          <Text
+          <LtrText
             numberOfLines={1}
             className="text-lg font-semibold text-gray-800"
           >
             {title}
-          </Text>
+          </LtrText>
           <Text numberOfLines={1} className="text-sm text-gray-500 mt-0.5">
             {renderLast()}
           </Text>
