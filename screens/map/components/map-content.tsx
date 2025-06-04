@@ -15,7 +15,7 @@ interface MapContentProps {
   centerCoordinate: Coordinate;
   carouselVisible: boolean;
   selectedTripId: string | null;
-  disableControls: boolean;
+  hideControls: boolean;
   cameraRef: React.MutableRefObject<any>;
   onCenterOnMe: () => void;
   onMarkerPress: (trip: Trip) => void;
@@ -31,7 +31,7 @@ export default function MapContent({
   centerCoordinate,
   carouselVisible,
   selectedTripId,
-  disableControls,
+  hideControls,
   cameraRef,
   onCenterOnMe,
   onMarkerPress,
@@ -65,7 +65,7 @@ export default function MapContent({
         centerCoordinate={centerCoordinate}
         onCenterOnMe={onCenterOnMe}
         onMarkerPress={onMarkerPress}
-        disableControls={disableControls}
+        hideControls={hideControls}
         selectedTripId={selectedTripId}
       />
 

@@ -239,6 +239,12 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
   }, [filters.activeFilters]);
 
   const handleCenterOnMe = useCallback(() => {
+    // Close popup if open
+    if (popupTrip) {
+      closeTripPopup();
+      return;
+    }
+
     if (location.userLocation && cameraRef.current) {
       cameraRef.current.setCamera({
         centerCoordinate: location.userLocation,
@@ -246,16 +252,21 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
         animationDuration: 1000,
       });
     }
-  }, [location.userLocation]);
+  }, [location.userLocation, popupTrip, closeTripPopup]);
 
   const toggleViewMode = useCallback(() => {
+    // Close popup if open
+    if (popupTrip) {
+      closeTripPopup();
+    }
+
     if (viewMode === "map") {
       setCarouselVisible(false);
       setViewMode("list");
     } else {
       setViewMode("map");
     }
-  }, [viewMode]);
+  }, [viewMode, popupTrip, closeTripPopup]);
 
   const openTripPopup = useCallback(
     (trip: Trip) => {
@@ -336,14 +347,24 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
 
   // Modal handlers
   const openTripFilterModal = useCallback(() => {
+    // Close popup if open
+    if (popupTrip) {
+      closeTripPopup();
+    }
+
     setCarouselVisible(false);
     setShowTripFilter(true);
-  }, []);
+  }, [popupTrip, closeTripPopup]);
 
   const openGroupFilterModal = useCallback(() => {
+    // Close popup if open
+    if (popupTrip) {
+      closeTripPopup();
+    }
+
     setCarouselVisible(false);
     setShowGroupFilter(true);
-  }, []);
+  }, [popupTrip, closeTripPopup]);
 
   const onApplyTripFilters = useCallback(
     (filteredTrips: Trip[], chosen: ActiveFilter[]) => {
@@ -471,7 +492,7 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
         centerCoordinate={location.currentCenter}
         carouselVisible={carouselVisible}
         selectedTripId={selectedTripId}
-        disableControls={controlsDisabled}
+        hideControls={controlsDisabled}
         cameraRef={cameraRef}
         onCenterOnMe={handleCenterOnMe}
         onMarkerPress={openTripPopup}
