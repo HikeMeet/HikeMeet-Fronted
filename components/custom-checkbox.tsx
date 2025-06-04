@@ -24,7 +24,7 @@ export default function CustomCheckbox({
       >
         {checked && <Text className="text-white font-bold">✔</Text>}
       </View>
-      {label && <Text className="text-gray-300">{label}</Text>}
+      {label && <Text className="text-gray-600">{label}</Text>}
     </TouchableOpacity>
   );
 }

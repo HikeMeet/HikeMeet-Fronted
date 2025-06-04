@@ -17,75 +17,64 @@ const GenderDropdown: React.FC<GenderDropdownProps> = ({
 }) => {
   const [customText, setCustomText] = useState("");
   const [confirmedCustomText, setConfirmedCustomText] = useState("");
-  const handleCustomTextChange = (text: string) => {
-    setCustomText(text); // Update the input field's text
-  };
 
   const handleConfirmCustomText = () => {
-    if (customText.trim() !== "") {
-      setConfirmedCustomText(customText); // Save the confirmed custom text
-      onValueChange(customText); // Update the dropdown value
+    if (customText.trim()) {
+      setConfirmedCustomText(customText);
+      onValueChange(customText);
     }
   };
 
   return (
-    <View className="w-full">
+    <View className="w-full ">
       {/* Gender Picker */}
-      <View className="flex-row items-center w-full px-3 py-3 border border-gray-300 rounded-md bg-white mb-3">
-        <Icon
-          name={iconName}
-          size={16}
-          color="#aaa"
-          style={{ marginRight: 6 }}
-        />
+      <View className="flex-row items-center w-full px-4 py-2 h-12 border border-gray-200 rounded-lg bg-gray-50">
+        <View className="mr-2">
+          <Icon name={iconName} size={20} color="#6B7280" />
+        </View>
         <Picker
           testID="gender-picker"
           selectedValue={value}
-          onValueChange={(itemValue) => {
-            if (itemValue !== "other") {
-              setCustomText(""); // Clear custom text if not "Other"
-              setConfirmedCustomText(""); // Clear confirmed text
+          onValueChange={(item) => {
+            if (item !== "other") {
+              setCustomText("");
+              setConfirmedCustomText("");
             }
-            onValueChange(itemValue);
+            onValueChange(item);
           }}
-          style={{ flex: 1, color: "#333", fontSize: 14 }} // Adjust font size and flex
-          dropdownIconColor="#aaa"
+          style={{ flex: 1 }}
+          dropdownIconColor="#6B7280"
         >
           <Picker.Item label="Select Gender" value="" />
           <Picker.Item label="Male" value="male" />
           <Picker.Item label="Female" value="female" />
           <Picker.Item label="Other" value="other" />
-          {/* Add a dynamic item for confirmed custom text */}
-          {confirmedCustomText.trim() !== "" && (
+          {confirmedCustomText ? (
             <Picker.Item
               label={confirmedCustomText}
               value={confirmedCustomText}
             />
-          )}
+          ) : null}
         </Picker>
       </View>
 
-      {/* Custom Text Input */}
+      {/* “Other” custom input */}
       {value === "other" && (
         <View className="relative">
-          <View className="flex-row items-center w-full px-3 py-3 border border-gray-300 rounded-md bg-white mb-3">
-            <Icon
-              name="pencil"
-              size={16}
-              color="#aaa"
-              style={{ marginRight: 6 }}
-            />
+          <View className="flex-row items-center w-full px-4 py-2 h-12 border border-gray-200 rounded-lg bg-gray-50">
+            <View className="mr-2">
+              <Icon name="pencil" size={20} color="#6B7280" />
+            </View>
             <TextInput
-              className="flex-1 text-gray-800 text-sm h-12 leading-4"
+              className="flex-1 text-gray-800 text-sm"
               placeholder="Please specify"
-              placeholderTextColor="#aaa"
+              placeholderTextColor="#9CA3AF"
               value={customText}
-              onChangeText={handleCustomTextChange}
+              onChangeText={setCustomText}
             />
-            {/* Cube Button */}
             <TouchableOpacity
               onPress={handleConfirmCustomText}
-              className="absolute right-3 bg-blue-500 w-8 h-8 items-center justify-center rounded"
+              className="absolute right-3 top-3 w-6 h-6 bg-green-600 rounded items-center justify-center"
             >
               <Icon name="check" size={16} color="#fff" />
             </TouchableOpacity>

@@ -92,8 +92,6 @@ const ProfileImage: React.FC<MainImageProps> = ({
           ? { main_image: mediaResult, updated_by: mongoId }
           : { profile_picture: mediaResult };
 
-      console.log("Updating backend with URL:", requestUrl);
-
       const response = await fetch(requestUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -114,7 +112,6 @@ const ProfileImage: React.FC<MainImageProps> = ({
       }
 
       const updatedResponse = await response.json();
-      console.log("Update successful:", updatedResponse);
 
       if (uploadType === "trip" || uploadType === "group") {
         setImage(updatedResponse.main_image);
@@ -207,7 +204,6 @@ const ProfileImage: React.FC<MainImageProps> = ({
           type: "image",
         };
       }
-      console.log("Updating backend with URL:", requestUrl);
 
       // Send update request to backend
       const updatePayload =
@@ -227,7 +223,6 @@ const ProfileImage: React.FC<MainImageProps> = ({
       }
 
       const updatedModel = await response.json();
-      console.log("Photo removal successful:", updatedModel);
 
       // After successfully updating the backend, remove the old image from Cloudinary.
 

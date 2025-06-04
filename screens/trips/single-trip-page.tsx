@@ -82,7 +82,6 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   useEffect(() => {
     const fetchTripData = async () => {
       try {
-        console.log("Trip ID:", tripId);
         const endpoint = isArchived
           ? `${process.env.EXPO_LOCAL_SERVER}/api/trips/archive/${tripId}`
           : `${process.env.EXPO_LOCAL_SERVER}/api/trips/${tripId}`;
