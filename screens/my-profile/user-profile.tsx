@@ -343,7 +343,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
       <ReportButton
         targetId={userId}
         targetType="user"
-        positionClasses="absolute top-2 right-4"
+        positionClasses="absolute top-5 right-4"
       />
     </SafeAreaView>
   );

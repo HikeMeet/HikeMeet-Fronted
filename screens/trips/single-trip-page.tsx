@@ -1,7 +1,14 @@
 // TripDetailPage.tsx
 import { useState, useEffect } from "react";
 import React from "react";
-import { ScrollView, View, Text, TouchableOpacity, Alert } from "react-native";
+import {
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+  Alert,
+  SafeAreaView,
+} from "react-native";
 import Constants from "expo-constants";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
@@ -75,7 +82,6 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   useEffect(() => {
     const fetchTripData = async () => {
       try {
-        console.log("Trip ID:", tripId);
         const endpoint = isArchived
           ? `${process.env.EXPO_LOCAL_SERVER}/api/trips/archive/${tripId}`
           : `${process.env.EXPO_LOCAL_SERVER}/api/trips/${tripId}`;
@@ -160,16 +166,20 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   }, [navigation, fromCreate]);
 
   return (
-    <>
+    <SafeAreaView className="flex-1 bg-white">
       <ScrollView
         scrollEnabled={scrollEnabled}
-        style={{ flex: 1, backgroundColor: "white", padding: 16 }}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        style={{ flex: 1, backgroundColor: "white" }}
+        contentContainerStyle={{
+          paddingBottom: 40,
+          paddingHorizontal: 16,
+          paddingTop: 8,
+        }}
       >
         {/* Header: image, title, rating, and action icons */}
-        <View className="flex-row items-center justify-between p-4">
+        <View className="flex-row items-center justify-between py-2">
           {/* Left side: image + title */}
-          <View className="flex-row items-center">
+          <View className="flex-row items-center flex-1">
             {tripData && tripData.main_image && (
               <ProfileImage
                 initialImage={tripData.main_image}
@@ -196,7 +206,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
           </View>
 
           {/* Right side: vertical icons aligned to far right */}
-          <View className="flex-col items-end space-y-2">
+          <View className="flex-col top-6 items-end space-y-2 ml-2">
             <TouchableOpacity onPress={toggleFavorite}>
               <Ionicons
                 name={isFavorite ? "heart" : "heart-outline"}
@@ -280,7 +290,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
       <ReportButton
         targetId={tripId}
         targetType="trip"
-        positionClasses="absolute top-1 right-6"
+        positionClasses="absolute top-2 right-3"
       />
 
       {tripData && (
@@ -291,7 +301,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
           trip={tripData}
         />
       )}
-    </>
+    </SafeAreaView>
   );
 };
 

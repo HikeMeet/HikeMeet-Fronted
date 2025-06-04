@@ -81,7 +81,6 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
       navigation.push(data.navigation.name, data.navigation.params ?? {});
     }
 
-    console.log("Notification ID:", item._id);
     try {
       const token = await getToken();
       if (token) {

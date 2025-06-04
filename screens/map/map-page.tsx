@@ -1,30 +1,41 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
-  ActivityIndicator,
   Animated,
   Dimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
-import * as Location from "expo-location";
-import CitySearchBar from "./components/header/city-search-bar";
-
-import MapHeader from "./components/header/map-header";
-import { MapContainer } from "./components/map/map-container";
-import TripCarousel from "./components/carousel/trip-carousel";
-import TripPopup from "./components/popup/trip-popup";
-import TripList from "./components/list/trip-list";
-import TripFilterModal from "../../components/TripFilterModal";
-import GroupFilterModal from "../../components/GroupFilterModal";
 import Constants from "expo-constants";
 
+// Components
+import MapHeader from "./components/header/map-header";
+import MapContent from "./components/map-content";
+import CitySearchBar from "./components/header/city-search-bar";
+import TripPopup from "./components/popup/trip-popup";
+import NoLocationFallback from "./fallback/no-location-fallback";
+import TripFilterModal from "../../components/TripFilterModal";
+import GroupFilterModal from "../../components/GroupFilterModal";
+
+// Hooks
+import { useLocationManager } from "./hooks/useLocationManager";
+import { useFilterManager } from "./hooks/useFilterManager";
+
+// Types & Utils
 import { Trip } from "../../interfaces/trip-interface";
 import { Group } from "../../interfaces/group-interface";
-import { ActiveFilter } from "./components/header/filters-bar";
+import {
+  Coordinate,
+  ViewMode,
+  ActiveFilter,
+} from "../../interfaces/map-interface";
+import { distanceMeters } from "../../utils/geo";
+import { theme } from "../../utils/theme";
 
-// Load Mapbox dynamically
+// Dynamic Mapbox imports
 let Mapbox: any = null;
 let Camera: any = null;
 if (Constants.appOwnership !== "expo") {
@@ -33,91 +44,90 @@ if (Constants.appOwnership !== "expo") {
 }
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
-type TripFilter = { city?: string; category?: string };
-type MapPageProps = { navigation: any; route: any };
 
-// Load Mapbox dynamically
-
-if (Constants.appOwnership !== "expo") {
-  Mapbox = require("@rnmapbox/maps").default;
-  Camera = require("@rnmapbox/maps").Camera;
+interface MapScreenProps {
+  navigation: any;
+  route: any;
 }
 
-function distanceMeters(
-  [lon1, lat1]: [number, number],
-  [lon2, lat2]: [number, number]
-) {
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const R = 6371000;
-  const φ1 = toRad(lat1),
-    φ2 = toRad(lat2);
-  const Δφ = toRad(lat2 - lat1);
-  const Δλ = toRad(lon2 - lon1);
-  const a =
-    Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-  return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
+export default function MapPage({ navigation, route }: MapScreenProps) {
+  // Location management
+  const location = useLocationManager();
 
-export default function MapPage({ navigation }: MapPageProps) {
-  /* ---------- state ---------- */
-  const [trips, setTrips] = useState<Trip[]>([]);
+  // Filter management
+  const filters = useFilterManager();
+
+  // State
   const [allTrips, setAllTrips] = useState<Trip[]>([]);
-  const [groups, setGroups] = useState<Group[]>([]);
   const [allGroups, setAllGroups] = useState<Group[]>([]);
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<"map" | "list">("map");
-  const [city, setCity] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>("map");
   const [cityQuery, setCityQuery] = useState("");
-
-  const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
   const [carouselVisible, setCarouselVisible] = useState(true);
-  const [searchCenter, setSearchCenter] = useState<[number, number] | null>(
-    null
-  );
-
-  /* filter‑modal state */
   const [showTripFilter, setShowTripFilter] = useState(false);
   const [showGroupFilter, setShowGroupFilter] = useState(false);
-  const [tripModalInitialFilters, setTripModalInitialFilters] = useState({
-    location: "",
-    tags: [] as string[],
-  });
-  const [groupModalInitialFilters, setGroupModalInitialFilters] = useState({
-    difficulties: [] as string[],
-    statuses: [] as string[],
-    maxMembers: "",
-    scheduledStart: "",
-    scheduledEnd: "",
-  });
-
-  /* ---------- map & location ---------- */
-  const cameraRef = useRef<any>(null);
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(
-    null
-  );
-
-  /* ---------- animations ---------- */
-  const panelOldAnim = useRef(new Animated.Value(1)).current;
-  const panelNewAnim = useRef(new Animated.Value(0)).current;
   const [popupTrip, setPopupTrip] = useState<Trip | null>(null);
-
-  const controlsDisabled =
-    popupTrip !== null || showTripFilter || showGroupFilter;
-  /* ---------- carousel scroll sync ---------- */
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
 
+  // Animation refs
+  const cameraRef = useRef<any>(null);
+  const popupAnim = useRef(new Animated.Value(0)).current;
+
+  // Disable controls when modals are open
+  const controlsDisabled =
+    popupTrip !== null || showTripFilter || showGroupFilter;
+
+  // Fetch data on mount
   useEffect(() => {
-    fetchAllData({});
-    getUserLocation();
+    fetchAllData();
   }, []);
 
-  /* Sort by search center or user location */
+  // Sort trips by distance when center changes
   useEffect(() => {
-    const center = searchCenter || userLocation;
-    if (!center || !allTrips.length) return;
+    if (!allTrips.length) return;
 
-    const sorted = [...allTrips].sort((a, b) => {
+    const sortedTrips = sortTripsByDistance(allTrips, location.currentCenter);
+    setTrips(sortedTrips);
+
+    // Reset carousel to first item when center changes
+    setCurrentIndex(0);
+  }, [location.currentCenter, allTrips]);
+
+  // Apply filters when they change
+  useEffect(() => {
+    const filteredTrips = filters.filterTrips(allTrips);
+    const filteredGroups = filters.filterGroups(allGroups);
+
+    // Rebuild trips with filtered groups
+    const tripsWithGroups = rebuildTripsWithGroups(
+      filteredTrips,
+      filteredGroups
+    );
+    const sortedTrips = sortTripsByDistance(
+      tripsWithGroups,
+      location.currentCenter
+    );
+
+    setTrips(sortedTrips);
+    setGroups(filteredGroups);
+  }, [filters.activeFilters, allTrips, allGroups, location.currentCenter]);
+
+  // Show carousel when returning to map view
+  useEffect(() => {
+    if (viewMode === "map" && !popupTrip) {
+      setCarouselVisible(true);
+    }
+  }, [viewMode, popupTrip]);
+
+  // Helper functions
+  function sortTripsByDistance(
+    tripsToSort: Trip[],
+    center: Coordinate
+  ): Trip[] {
+    return [...tripsToSort].sort((a, b) => {
       const dA = distanceMeters(
         a.location.coordinates as [number, number],
         center
@@ -128,158 +138,65 @@ export default function MapPage({ navigation }: MapPageProps) {
       );
       return dA - dB;
     });
-    setTrips(sorted);
-  }, [searchCenter, userLocation, allTrips]);
-
-  useEffect(() => {
-    if (viewMode === "map" && !popupTrip) showCarousel();
-  }, [viewMode, popupTrip]);
-
-  /* ---------- effects ---------- */
-  if (!Mapbox || !Camera) {
-    return (
-      <View className="flex-1 items-center justify-center p-4">
-        <Text className="text-center text-gray-600">
-          Maps are disabled in Expo Go. Please use a custom dev client to view
-          maps.
-        </Text>
-      </View>
-    );
   }
 
-  /* ---------- helpers ---------- */
-  function hideCarousel() {
-    if (!carouselVisible) return;
-    Animated.timing(panelOldAnim, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: false,
-    }).start(() => setCarouselVisible(false));
-  }
-  function showCarousel() {
-    setCarouselVisible((prev) => {
-      if (prev) return prev;
-      Animated.timing(panelOldAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: false,
-      }).start();
-      return true;
-    });
-  }
-
-  /** Auxiliary – Constructs trips with filtered groups */
-  function rebuildTripsWithGroups(baseTrips: Trip[], filteredGroups: Group[]) {
-    const byTrip: Record<string, Group[]> = {};
+  function rebuildTripsWithGroups(
+    baseTrips: Trip[],
+    filteredGroups: Group[]
+  ): Trip[] {
+    const groupsByTrip: Record<string, Group[]> = {};
     filteredGroups.forEach((g) => {
-      if (!byTrip[g.trip]) byTrip[g.trip] = [];
-      byTrip[g.trip].push(g);
+      if (!groupsByTrip[g.trip]) groupsByTrip[g.trip] = [];
+      groupsByTrip[g.trip].push(g);
     });
     return baseTrips.map((tr) => ({
       ...tr,
-      groups: byTrip[tr._id] || [],
+      groups: groupsByTrip[tr._id] || [],
     }));
   }
 
-  /** Apply all active filters */
-  function applyAllFilters(filters: ActiveFilter[]) {
-    let t = [...allTrips];
-    let g = [...allGroups];
-
-    filters.forEach((f) => {
-      /* ---------- TRIP filters ---------- */
-      if (f.id.startsWith("tripTag=")) {
-        const tag = f.id.split("=")[1];
-        t = t.filter((tr) => (tr as any).tags?.includes(tag));
-      }
-      if (f.id.startsWith("tripLocation=")) {
-        const loc = f.id.split("=")[1].toLowerCase();
-        t = t.filter((tr) => tr.location.address.toLowerCase().includes(loc));
-      }
-
-      /* ---------- GROUP filters ---------- */
-      if (f.id.startsWith("groupStatus=")) {
-        const status = f.id.split("=")[1].toLowerCase();
-        g = g.filter((gr) => gr.status?.toLowerCase() === status);
-      }
-      if (f.id.startsWith("groupDifficulty=")) {
-        const diff = f.id.split("=")[1];
-        g = g.filter((gr: any) => gr.difficulty === diff);
-      }
-      if (f.id.startsWith("groupMaxMembers=")) {
-        const max = parseInt(f.id.split("=")[1], 10);
-        if (!isNaN(max)) g = g.filter((gr) => gr.max_members <= max);
-      }
-      if (f.id.startsWith("groupStart=")) {
-        const start = f.id.split("=")[1];
-        g = g.filter(
-          (gr: any) => gr.scheduled_start && gr.scheduled_start >= start
-        );
-      }
-      if (f.id.startsWith("groupEnd=")) {
-        const end = f.id.split("=")[1];
-        g = g.filter((gr: any) => gr.scheduled_end && gr.scheduled_end <= end);
-      }
-    });
-
-    setGroups(g);
-    setTrips(rebuildTripsWithGroups(t, g));
-  }
-
-  /* ---------- location ---------- */
-  async function getUserLocation() {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") return;
-      const loc = await Location.getCurrentPositionAsync({});
-      const first = [loc.coords.longitude, loc.coords.latitude] as [
-        number,
-        number,
-      ];
-      setUserLocation(first);
-      if (!searchCenter) setSearchCenter(first);
-    } catch (err) {
-      console.error("Failed to get user location", err);
-    }
-  }
-
-  /* ---------- data fetch ---------- */
-  async function fetchAllData(filter: TripFilter) {
+  async function fetchAllData(cityFilter?: string) {
     setLoading(true);
     try {
       const [tripsResp, groupsResp] = await Promise.all([
-        fetchTrips(filter),
+        fetchTrips(cityFilter),
         fetchGroups(),
       ]);
+
       const groupsByTrip: Record<string, Group[]> = {};
       groupsResp.forEach((g) => {
         if (!groupsByTrip[g.trip]) groupsByTrip[g.trip] = [];
         groupsByTrip[g.trip].push(g);
       });
+
       const merged = tripsResp.map((t) => ({
         ...t,
         groups: groupsByTrip[t._id] || [],
       }));
+
       setAllTrips(merged);
       setAllGroups(groupsResp);
       setGroups(groupsResp);
-      if (!userLocation) setTrips(merged);
+    } catch (error) {
+      Alert.alert(
+        "Failed to load trips",
+        "Please check your connection and try again"
+      );
     } finally {
       setLoading(false);
     }
   }
 
-  async function fetchTrips(filter: TripFilter): Promise<Trip[]> {
+  async function fetchTrips(city?: string): Promise<Trip[]> {
     let url = `${process.env.EXPO_LOCAL_SERVER}/api/trips/all`;
-    const params = new URLSearchParams();
-    if (filter.city?.trim()) params.append("city", filter.city.trim());
-    if (filter.category?.trim())
-      params.append("category", filter.category.trim());
-    if (params.toString()) url += `?${params.toString()}`;
+    if (city?.trim()) {
+      url += `?city=${encodeURIComponent(city.trim())}`;
+    }
     const resp = await fetch(url);
     const data: Trip[] = await resp.json();
     return data.map((t) => ({ ...t, groups: t.groups || [] }));
   }
+
   async function fetchGroups(): Promise<Group[]> {
     const resp = await fetch(`${process.env.EXPO_LOCAL_SERVER}/api/group/list`);
     const raw = await resp.json();
@@ -292,306 +209,315 @@ export default function MapPage({ navigation }: MapPageProps) {
       }));
   }
 
-  /* ---------- filter‑modal handlers ---------- */
-  function openTripFilterModal() {
-    hideCarousel();
-    const locFilter = activeFilters.find((f) =>
-      f.id.startsWith("tripLocation=")
-    );
-    const tagFilters = activeFilters
-      .filter((f) => f.id.startsWith("tripTag="))
-      .map((f) => f.id.split("=")[1]);
+  const handleSelectCity = useCallback(
+    (coords: Coordinate, placeName: string) => {
+      // Close popup if open
+      if (popupTrip) {
+        closeTripPopup();
+      }
 
-    setTripModalInitialFilters({
-      location: locFilter ? locFilter.id.split("=")[1] : "",
-      tags: tagFilters,
-    });
-    setShowTripFilter(true);
-  }
+      location.setSearchCenter(coords);
+      setCityQuery(placeName);
+      filters.setCityFilter(placeName);
 
-  function openGroupFilterModal() {
-    hideCarousel();
-    const difficulties = activeFilters
-      .filter((f) => f.id.startsWith("groupDifficulty="))
-      .map((f) => f.id.split("=")[1]);
-    const statuses = activeFilters
-      .filter((f) => f.id.startsWith("groupStatus="))
-      .map((f) => f.id.split("=")[1]);
-    const maxMem = activeFilters.find((f) =>
-      f.id.startsWith("groupMaxMembers=")
-    );
-    const startF = activeFilters.find((f) => f.id.startsWith("groupStart="));
-    const endF = activeFilters.find((f) => f.id.startsWith("groupEnd="));
-
-    setGroupModalInitialFilters({
-      difficulties,
-      statuses,
-      maxMembers: maxMem ? maxMem.id.split("=")[1] : "",
-      scheduledStart: startF ? startF.id.split("=")[1] : "",
-      scheduledEnd: endF ? endF.id.split("=")[1] : "",
-    });
-    setShowGroupFilter(true);
-  }
-
-  function onApplyTripFilters(filteredTrips: Trip[], chosen: ActiveFilter[]) {
-    setTrips(filteredTrips);
-    setActiveFilters((prev) => [
-      ...prev.filter(
-        (f) => !f.id.startsWith("tripTag=") && !f.id.startsWith("tripLocation=")
-      ),
-      ...chosen,
-    ]);
-    setShowTripFilter(false);
-    if (viewMode === "map") showCarousel();
-  }
-
-  function onApplyGroupFilters(
-    filteredGroups: Group[],
-    chosen: ActiveFilter[]
-  ) {
-    setGroups(filteredGroups);
-    setActiveFilters((prev) => [
-      ...prev.filter((f) => !f.id.startsWith("group")),
-      ...chosen,
-    ]);
-    setTrips(rebuildTripsWithGroups(allTrips, filteredGroups));
-    setShowGroupFilter(false);
-    if (viewMode === "map") showCarousel();
-  }
-
-  function handleRemoveFilter(filterId: string) {
-    const newFilters = activeFilters.filter((f) => f.id !== filterId);
-    setActiveFilters(newFilters);
-    applyAllFilters(newFilters);
-
-    if (filterId.startsWith("city=")) {
-      setCity("");
-      +setCityQuery("");
-      setSearchCenter(null);
-      if (viewMode === "map" && userLocation) {
-        cameraRef.current?.setCamera({
-          centerCoordinate: userLocation,
+      if (cameraRef.current) {
+        cameraRef.current.setCamera({
+          centerCoordinate: coords,
           zoomLevel: 13,
           animationDuration: 1000,
         });
       }
-    }
-  }
 
-  /* ---------- view‑mode toggle ---------- */
-  const toggleViewMode = () => {
+      // Fetch trips for the selected city
+      fetchAllData(placeName);
+    },
+    [popupTrip]
+  );
+
+  const handleClearCity = useCallback(() => {
+    // Close popup if open
+    if (popupTrip) {
+      closeTripPopup();
+    }
+
+    setCityQuery("");
+    location.setSearchCenter(null);
+    filters.removeFilter(
+      filters.activeFilters.find((f) => f.id.startsWith("city="))?.id || ""
+    );
+    fetchAllData();
+  }, [filters.activeFilters, popupTrip]);
+
+  const handleCenterOnMe = useCallback(() => {
+    // Close popup if open
+    if (popupTrip) {
+      closeTripPopup();
+      return;
+    }
+
+    if (location.userLocation && cameraRef.current) {
+      cameraRef.current.setCamera({
+        centerCoordinate: location.userLocation,
+        zoomLevel: 14,
+        animationDuration: 1000,
+      });
+    }
+  }, [location.userLocation, popupTrip]);
+
+  const toggleViewMode = useCallback(() => {
+    // Close popup if open
+    if (popupTrip) {
+      closeTripPopup();
+    }
+
     if (viewMode === "map") {
-      hideCarousel();
+      setCarouselVisible(false);
       setViewMode("list");
     } else {
       setViewMode("map");
     }
-  };
+  }, [viewMode, popupTrip]);
 
-  /* ---------- center‑on‑me ---------- */
-  function handleCenterOnMe() {
-    Location.getCurrentPositionAsync({}).then((loc) => {
-      cameraRef.current?.setCamera({
-        centerCoordinate: [loc.coords.longitude, loc.coords.latitude],
-        zoomLevel: 14,
-        animationDuration: 1000,
-      });
+  const openTripPopup = useCallback(
+    (trip: Trip) => {
+      const sameLocationCount = trips.filter((t) => {
+        const [lonA, latA] = t.location.coordinates;
+        const [lonB, latB] = trip.location.coordinates;
+        return lonA === lonB && latA === latB;
+      }).length;
+
+      const zoomLevel = sameLocationCount > 1 ? 20 : 16;
+
+      if (cameraRef.current) {
+        cameraRef.current.setCamera({
+          centerCoordinate: trip.location.coordinates as [number, number],
+          zoomLevel,
+          animationDuration: 1000,
+        });
+      }
+
+      setCarouselVisible(false);
+      setPopupTrip(trip);
+
+      Animated.timing(popupAnim, {
+        toValue: 1,
+        duration: theme.animation.normal,
+        useNativeDriver: true,
+      }).start();
+    },
+    [trips]
+  );
+
+  const closeTripPopup = useCallback(() => {
+    Animated.timing(popupAnim, {
+      toValue: 0,
+      duration: theme.animation.normal,
+      useNativeDriver: true,
+    }).start(() => {
+      setPopupTrip(null);
+      if (viewMode === "map") {
+        setCarouselVisible(true);
+      }
     });
+  }, [viewMode]);
+
+  const handleScrollEnd = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const offsetX = e.nativeEvent.contentOffset.x;
+      const newIdx = Math.round(offsetX / (SCREEN_WIDTH * 0.85));
+
+      if (newIdx !== currentIndex) {
+        setCurrentIndex(newIdx);
+        const trip = trips[newIdx];
+
+        if (trip?.location?.coordinates && cameraRef.current) {
+          const sameLocationCount = trips.filter((t) => {
+            const [lonA, latA] = t.location.coordinates;
+            const [lonB, latB] = trip.location.coordinates;
+            return lonA === lonB && latA === latB;
+          }).length;
+
+          const zoomLevel = sameLocationCount > 1 ? 20 : 16;
+
+          cameraRef.current.setCamera({
+            centerCoordinate: trip.location.coordinates as [number, number],
+            zoomLevel,
+            animationDuration: 1000,
+          });
+        }
+
+        if (trip?._id) {
+          setSelectedTripId(trip._id);
+        }
+      }
+    },
+    [currentIndex, trips]
+  );
+
+  // Modal handlers
+  const openTripFilterModal = useCallback(() => {
+    // Close popup if open
+    if (popupTrip) {
+      closeTripPopup();
+    }
+
+    setCarouselVisible(false);
+    setShowTripFilter(true);
+  }, [popupTrip, closeTripPopup]);
+
+  const openGroupFilterModal = useCallback(() => {
+    // Close popup if open
+    if (popupTrip) {
+      closeTripPopup();
+    }
+
+    setCarouselVisible(false);
+    setShowGroupFilter(true);
+  }, [popupTrip, closeTripPopup]);
+
+  const onApplyTripFilters = useCallback(
+    (filteredTrips: Trip[], chosen: ActiveFilter[]) => {
+      // Extract filter config from active filters
+      const location =
+        chosen
+          .find((f) => f.id.startsWith("tripLocation="))
+          ?.id.split("=")[1] || "";
+      const tags = chosen
+        .filter((f) => f.id.startsWith("tripTag="))
+        .map((f) => f.id.split("=")[1]);
+
+      filters.applyTripFilters({ location, tags });
+      setShowTripFilter(false);
+      if (viewMode === "map") setCarouselVisible(true);
+    },
+    [viewMode]
+  );
+
+  const onApplyGroupFilters = useCallback(
+    (filteredGroups: Group[], chosen: ActiveFilter[]) => {
+      // Extract filter config from active filters
+      const difficulties = chosen
+        .filter((f) => f.id.startsWith("groupDifficulty="))
+        .map((f) => f.id.split("=")[1]);
+      const statuses = chosen
+        .filter((f) => f.id.startsWith("groupStatus="))
+        .map((f) => f.id.split("=")[1]);
+      const maxMembers =
+        chosen
+          .find((f) => f.id.startsWith("groupMaxMembers="))
+          ?.id.split("=")[1] || "";
+      const scheduledStart =
+        chosen.find((f) => f.id.startsWith("groupStart="))?.id.split("=")[1] ||
+        "";
+      const scheduledEnd =
+        chosen.find((f) => f.id.startsWith("groupEnd="))?.id.split("=")[1] ||
+        "";
+
+      filters.applyGroupFilters({
+        difficulties,
+        statuses,
+        maxMembers,
+        scheduledStart,
+        scheduledEnd,
+      });
+      setShowGroupFilter(false);
+      if (viewMode === "map") setCarouselVisible(true);
+    },
+    [viewMode]
+  );
+
+  // Show no location fallback if needed
+  if (location.permissionDenied && !location.searchCenter) {
+    return (
+      <NoLocationFallback
+        onLocationSelect={handleSelectCity}
+        errorMessage={location.locationError || undefined}
+      />
+    );
   }
 
-  /* ---------- city select ---------- */
-  function handleSelectCity(coords: [number, number], placeName: string) {
-    cameraRef.current?.setCamera({
-      centerCoordinate: coords,
-      zoomLevel: 13,
-      animationDuration: 1000,
-    });
-    setCity(placeName);
-    setCityQuery(placeName);
-    setSearchCenter(coords);
-
-    fetchAllData({ city: placeName }).then(() => {
-      // ← Re-sort immediately after retrieval
-      const center = coords || searchCenter || userLocation;
-      const sorted = [...allTrips].sort((a, b) => {
-        const dA = distanceMeters(
-          a.location.coordinates as [number, number],
-          center
-        );
-        const dB = distanceMeters(
-          b.location.coordinates as [number, number],
-          center
-        );
-        return dA - dB;
-      });
-      setTrips(sorted);
-    });
-
-    setActiveFilters((prev) => [
-      ...prev.filter((f) => !f.id.startsWith("city=")),
-      { id: `city=${placeName}`, label: `City: ${placeName}` },
-    ]);
+  // Show loading while fetching location
+  if (location.isLoadingLocation && !location.searchCenter) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text className="mt-4 text-gray-600">Getting your location...</Text>
+      </View>
+    );
   }
 
-  /* ---------- popup open / close ---------- */
-  const oldPanelTranslateY = panelOldAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [700, 0],
-  });
-  const newPanelTranslateY = panelNewAnim.interpolate({
+  // Check if Mapbox is available
+  if (!Mapbox || !Camera) {
+    return (
+      <View className="flex-1 items-center justify-center p-4">
+        <Text className="text-center text-gray-600">
+          Maps are disabled in Expo Go. Please use a custom dev client to view
+          maps.
+        </Text>
+      </View>
+    );
+  }
+
+  const popupTranslateY = popupAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [SCREEN_HEIGHT, 0],
   });
 
-  function openTripPopup(trip: Trip) {
-    const sameLocationCount = trips.filter((t) => {
-      const [lonA, latA] = t.location.coordinates;
-      const [lonB, latB] = trip.location.coordinates;
-      return lonA === lonB && latA === latB;
-    }).length;
-
-    const zoomLevel = sameLocationCount > 1 ? 20 : 16;
-
-    cameraRef.current?.setCamera({
-      centerCoordinate: trip.location.coordinates as [number, number],
-      zoomLevel: zoomLevel,
-      animationDuration: 1000,
-    });
-    hideCarousel();
-    Animated.timing(panelOldAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: false,
-    }).start(() => {
-      setPopupTrip(trip);
-      Animated.timing(panelNewAnim, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: false,
-      }).start();
-    });
-  }
-  function closeTripPopup() {
-    Animated.timing(panelNewAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: false,
-    }).start(() => {
-      setPopupTrip(null);
-      if (viewMode === "map") showCarousel();
-    });
-  }
-
-  function handleScrollEnd(e: NativeSyntheticEvent<NativeScrollEvent>) {
-    const offsetX = e.nativeEvent.contentOffset.x;
-    const newIdx = Math.round(offsetX / (SCREEN_WIDTH * 0.85));
-
-    if (newIdx !== currentIndex) {
-      setCurrentIndex(newIdx);
-      const trip = trips[newIdx];
-      if (trip?.location?.coordinates) {
-        // Check if there is more than one trip with the same coordinates
-        const sameLocationCount = trips.filter((t) => {
-          const [lonA, latA] = t.location.coordinates;
-          const [lonB, latB] = trip.location.coordinates;
-          return lonA === lonB && latA === latB;
-        }).length;
-
-        const zoomLevel = sameLocationCount > 1 ? 20 : 16;
-
-        cameraRef.current?.setCamera({
-          centerCoordinate: trip.location.coordinates as [number, number],
-          zoomLevel: zoomLevel,
-          animationDuration: 1000,
-        });
-      }
-      if (trip?._id) {
-        setSelectedTripId(trip._id);
-      }
-    }
-  }
-
-  /* ---------- render ---------- */
   return (
     <View className="flex-1 bg-gray-50">
+      {/* City Search Bar */}
       <View className="flex-row items-center justify-between space-x-2">
-        {/* City SearchBar */}
         <View className="flex-[4]">
           <CitySearchBar
             value={cityQuery}
             onChangeText={setCityQuery}
             onSelectLocation={handleSelectCity}
-            onClearLocation={() => {
-              const cityFilter = activeFilters.find((f) =>
-                f.id.startsWith("city=")
-              );
-              if (cityFilter) {
-                handleRemoveFilter(cityFilter.id);
-              } else {
-                setCity("");
-                setCityQuery("");
-                setSearchCenter(null);
-                fetchAllData({});
-              }
-            }}
+            onClearLocation={handleClearCity}
           />
         </View>
       </View>
 
+      {/* Map Header */}
       <MapHeader
         viewMode={viewMode}
         onToggleView={toggleViewMode}
-        activeFilters={activeFilters}
-        onRemoveFilter={handleRemoveFilter}
+        activeFilters={filters.activeFilters}
+        onRemoveFilter={(filterId) => {
+          // Close popup if open
+          if (popupTrip) {
+            closeTripPopup();
+          }
+
+          filters.removeFilter(filterId);
+
+          if (filterId.startsWith("city=")) {
+            setCityQuery("");
+          }
+        }}
         onOpenTripFilter={openTripFilterModal}
         onOpenGroupFilter={openGroupFilterModal}
       />
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#0D9488" className="mt-10" />
-      ) : viewMode === "map" ? (
-        <>
-          <MapContainer
-            cameraRef={cameraRef}
-            trips={trips}
-            centerCoordinate={
-              searchCenter || userLocation || [34.7818, 32.0853]
-            }
-            onCenterOnMe={handleCenterOnMe}
-            onMarkerPress={openTripPopup}
-            disableControls={controlsDisabled}
-            selectedTripId={selectedTripId}
-          />
+      {/* Map Content */}
+      <MapContent
+        trips={trips}
+        viewMode={viewMode}
+        loading={loading}
+        centerCoordinate={location.currentCenter}
+        carouselVisible={carouselVisible}
+        selectedTripId={selectedTripId}
+        hideControls={controlsDisabled}
+        cameraRef={cameraRef}
+        onCenterOnMe={handleCenterOnMe}
+        onMarkerPress={openTripPopup}
+        onOpenPopup={openTripPopup}
+        onScrollEnd={handleScrollEnd}
+        onListScrollStart={() => {
+          if (popupTrip) closeTripPopup();
+        }}
+      />
 
-          {carouselVisible && trips.length > 0 && (
-            <Animated.View
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                transform: [{ translateY: oldPanelTranslateY }],
-              }}
-            >
-              <TripCarousel
-                trips={trips}
-                onOpenPopup={openTripPopup}
-                onScrollEnd={handleScrollEnd}
-              />
-            </Animated.View>
-          )}
-        </>
-      ) : (
-        <TripList
-          trips={trips}
-          onOpenTrip={openTripPopup}
-          onScrollStart={() => {
-            if (popupTrip) closeTripPopup();
-          }}
-        />
-      )}
-
-      {/* Popup */}
+      {/* Trip Popup */}
       {popupTrip && (
         <Animated.View
           style={{
@@ -599,7 +525,7 @@ export default function MapPage({ navigation }: MapPageProps) {
             left: 0,
             right: 0,
             bottom: 0,
-            transform: [{ translateY: newPanelTranslateY }],
+            transform: [{ translateY: popupTranslateY }],
           }}
         >
           <TripPopup
@@ -617,28 +543,27 @@ export default function MapPage({ navigation }: MapPageProps) {
         </Animated.View>
       )}
 
-      {/* Groups Filter Modal */}
-      <GroupFilterModal
-        visible={showGroupFilter}
-        onClose={() => {
-          setShowGroupFilter(false);
-          if (viewMode === "map" && !popupTrip) showCarousel();
-        }}
-        groups={allGroups}
-        onApply={onApplyGroupFilters}
-        initialFilters={groupModalInitialFilters}
-      />
-
-      {/* Trip Filter Modal */}
+      {/* Filter Modals */}
       <TripFilterModal
         visible={showTripFilter}
         onClose={() => {
           setShowTripFilter(false);
-          if (viewMode === "map" && !popupTrip) showCarousel();
+          if (viewMode === "map" && !popupTrip) setCarouselVisible(true);
         }}
         trips={allTrips}
         onApply={onApplyTripFilters}
-        initialFilters={tripModalInitialFilters}
+        initialFilters={filters.tripFilters}
+      />
+
+      <GroupFilterModal
+        visible={showGroupFilter}
+        onClose={() => {
+          setShowGroupFilter(false);
+          if (viewMode === "map" && !popupTrip) setCarouselVisible(true);
+        }}
+        groups={allGroups}
+        onApply={onApplyGroupFilters}
+        initialFilters={filters.groupFilters}
       />
     </View>
   );

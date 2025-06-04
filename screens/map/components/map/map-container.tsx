@@ -18,7 +18,7 @@ type Props = {
   centerCoordinate: [number, number];
   onCenterOnMe: () => void;
   onMarkerPress: (trip: Trip) => void;
-  disableControls: boolean;
+  hideControls: boolean;
   selectedTripId?: string | null;
 };
 
@@ -30,7 +30,7 @@ export const MapContainer = forwardRef<any, Props>(
       centerCoordinate,
       onCenterOnMe,
       onMarkerPress,
-      disableControls,
+      hideControls,
       selectedTripId,
     },
     _ref
@@ -51,7 +51,7 @@ export const MapContainer = forwardRef<any, Props>(
 
     return (
       <View className="flex-1">
-        <CenterOnMeButton onPress={onCenterOnMe} disabled={disableControls} />
+        <CenterOnMeButton onPress={onCenterOnMe} visible={!hideControls} />
 
         <MapView className="flex-1" styleURL={Mapbox.StyleURL.Street}>
           <Camera
