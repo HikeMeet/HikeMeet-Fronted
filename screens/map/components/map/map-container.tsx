@@ -63,11 +63,20 @@ export const MapContainer = forwardRef<any, Props>(
       <View className="flex-1">
         <CenterOnMeButton onPress={onCenterOnMe} visible={!hideControls} />
 
+        {/* Add Trip Hint - positioned inside map */}
+        {!hideControls && (
+          <View className="absolute top-5 right-4 bg-white/90 rounded-lg shadow-sm px-3 py-2 max-w-[180px] z-10">
+            <Text className="text-[11px] text-gray-700 text-center font-medium">
+              Press and hold to add trip 💡
+            </Text>
+          </View>
+        )}
+
         <MapView
           className="flex-1"
           styleURL={Mapbox.StyleURL.Street}
           onPress={() => {
-            onPress?.(); // ✅ נקרא רק אם מוגדר
+            onPress?.();
           }}
           onLongPress={
             onLongPress
