@@ -71,6 +71,8 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
   const [popupTrip, setPopupTrip] = useState<Trip | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [shouldCloseSearch, setShouldCloseSearch] = useState(false);
 
   // Animation refs
   const cameraRef = useRef<any>(null);
@@ -249,6 +251,12 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
   }, [filters.activeFilters, popupTrip]);
 
   const handleCenterOnMe = useCallback(() => {
+    // סגירת החיפוש כאשר לוחצים על center on me
+    if (isSearchActive) {
+      setIsSearchActive(false);
+      setShouldCloseSearch(true);
+    }
+
     // Close popup if open
     if (popupTrip) {
       closeTripPopup();
@@ -262,9 +270,15 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
         animationDuration: 1000,
       });
     }
-  }, [location.userLocation, popupTrip]);
+  }, [location.userLocation, popupTrip, isSearchActive]);
 
   const toggleViewMode = useCallback(() => {
+    // סגירת החיפוש כאשר משנים מצב תצוגה
+    if (isSearchActive) {
+      setIsSearchActive(false);
+      setShouldCloseSearch(true);
+    }
+
     // Close popup if open
     if (popupTrip) {
       closeTripPopup();
@@ -276,10 +290,16 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
     } else {
       setViewMode("map");
     }
-  }, [viewMode, popupTrip]);
+  }, [viewMode, popupTrip, isSearchActive]);
 
   const openTripPopup = useCallback(
     (trip: Trip) => {
+      // סגירת החיפוש כאשר פותחים פופאפ
+      if (isSearchActive) {
+        setIsSearchActive(false);
+        setShouldCloseSearch(true);
+      }
+
       const sameLocationCount = trips.filter((t) => {
         const [lonA, latA] = t.location.coordinates;
         const [lonB, latB] = trip.location.coordinates;
@@ -305,7 +325,7 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
         useNativeDriver: true,
       }).start();
     },
-    [trips]
+    [trips, isSearchActive]
   );
 
   const closeTripPopup = useCallback(() => {
@@ -323,6 +343,12 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
 
   const handleScrollEnd = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      // סגירת החיפוש כאשר מגללים בקרוסלה
+      if (isSearchActive) {
+        setIsSearchActive(false);
+        setShouldCloseSearch(true);
+      }
+
       const offsetX = e.nativeEvent.contentOffset.x;
       const newIdx = Math.round(offsetX / (SCREEN_WIDTH * 0.85));
 
@@ -351,11 +377,17 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
         }
       }
     },
-    [currentIndex, trips]
+    [currentIndex, trips, isSearchActive]
   );
 
   // Modal handlers
   const openTripFilterModal = useCallback(() => {
+    // סגירת החיפוש כאשר פותחים פילטר
+    if (isSearchActive) {
+      setIsSearchActive(false);
+      setShouldCloseSearch(true);
+    }
+
     // Close popup if open
     if (popupTrip) {
       closeTripPopup();
@@ -363,9 +395,15 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
 
     setCarouselVisible(false);
     setShowTripFilter(true);
-  }, [popupTrip, closeTripPopup]);
+  }, [popupTrip, closeTripPopup, isSearchActive]);
 
   const openGroupFilterModal = useCallback(() => {
+    // סגירת החיפוש כאשר פותחים פילטר
+    if (isSearchActive) {
+      setIsSearchActive(false);
+      setShouldCloseSearch(true);
+    }
+
     // Close popup if open
     if (popupTrip) {
       closeTripPopup();
@@ -373,7 +411,7 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
 
     setCarouselVisible(false);
     setShowGroupFilter(true);
-  }, [popupTrip, closeTripPopup]);
+  }, [popupTrip, closeTripPopup, isSearchActive]);
 
   const onApplyTripFilters = useCallback(
     (filteredTrips: Trip[], chosen: ActiveFilter[]) => {
@@ -473,6 +511,11 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
             onChangeText={setCityQuery}
             onSelectLocation={handleSelectCity}
             onClearLocation={handleClearCity}
+            shouldCloseResults={shouldCloseSearch}
+            onSearchStart={() => {
+              setIsSearchActive(true);
+              setShouldCloseSearch(false);
+            }}
           />
         </View>
       </View>

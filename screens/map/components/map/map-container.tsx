@@ -20,6 +20,7 @@ type Props = {
   onMarkerPress: (trip: Trip) => void;
   hideControls: boolean;
   selectedTripId?: string | null;
+  onLongPress?: (coordinates: [number, number]) => void;
 };
 
 export const MapContainer = forwardRef<any, Props>(
@@ -32,6 +33,7 @@ export const MapContainer = forwardRef<any, Props>(
       onMarkerPress,
       hideControls,
       selectedTripId,
+      onLongPress,
     },
     _ref
   ) => {
@@ -53,7 +55,21 @@ export const MapContainer = forwardRef<any, Props>(
       <View className="flex-1">
         <CenterOnMeButton onPress={onCenterOnMe} visible={!hideControls} />
 
-        <MapView className="flex-1" styleURL={Mapbox.StyleURL.Street}>
+        <MapView
+          className="flex-1"
+          styleURL={Mapbox.StyleURL.Street}
+          onLongPress={
+            onLongPress
+              ? (feature) => {
+                  const coordinates = feature.geometry.coordinates as [
+                    number,
+                    number,
+                  ];
+                  onLongPress(coordinates);
+                }
+              : undefined
+          }
+        >
           <Camera
             ref={cameraRef}
             zoomLevel={13}

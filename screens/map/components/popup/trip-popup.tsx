@@ -51,20 +51,20 @@ export default function TripPopup({
             })
           }
         />
+      </View>
 
-        {/* button Add Group */}
+      {/* title Available Groups עם כפתור Add Group באותה שורה */}
+      <View className="flex-row items-center justify-between mb-2">
+        <Text className="text-base font-medium text-gray-700">
+          Available Groups
+        </Text>
         <TouchableOpacity
           onPress={onAddGroup}
-          className="absolute right-1 top-2 mt-0 bg-emerald-600 px-3 py-2 rounded-xl shadow-sm"
+          className="bg-emerald-600 px-3 py-2 rounded-xl shadow-sm"
         >
           <Text className="text-white text-xs font-semibold">+ Add group</Text>
         </TouchableOpacity>
       </View>
-
-      {/* title– Available Groups */}
-      <Text className="text-base font-medium text-gray-700 mb-2">
-        Available Groups
-      </Text>
 
       {/* list groups*/}
       <ScrollView className="max-h-48" showsVerticalScrollIndicator={false}>
