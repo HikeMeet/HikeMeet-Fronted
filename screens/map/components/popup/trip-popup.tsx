@@ -61,6 +61,13 @@ export default function TripPopup({
         <Text className="text-base font-medium text-gray-700">
           Available Groups
         </Text>
+        <TouchableOpacity
+          onPress={onAddGroup}
+          activeOpacity={0.2}
+          className="flex-row items-center bg-gray-200 px-2 py-1 ml-1 rounded-full shadow-sm border border-black"
+        >
+          <Text className="text-black text-sm font-semibold">+ Add</Text>
+        </TouchableOpacity>
       </View>
 
       {/* list groups*/}
