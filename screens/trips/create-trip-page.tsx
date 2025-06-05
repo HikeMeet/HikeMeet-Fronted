@@ -31,7 +31,7 @@ const TRIP_TAGS = [
   "Museum",
 ];
 
-const CreateTripPage: React.FC = ({ navigation }: any) => {
+const CreateTripPage: React.FC = ({ navigation, route }: any) => {
   const [tripName, setTripName] = useState<string>("");
   const [description, setDescription] = useState<string>(""); // New description field
   // State to hold the chosen trip coordinates from MapSearch.
@@ -46,6 +46,35 @@ const CreateTripPage: React.FC = ({ navigation }: any) => {
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const { mongoId } = useAuth(); // current user's mongoId
+
+  // בדיקה אם נשלחו קואורדינטות מהמפה
+  useEffect(() => {
+    if (route?.params?.selectedCoordinates) {
+      const coords = route.params.selectedCoordinates as [number, number];
+      setTripCoordinates(coords);
+      setTripLocation("Selected from map");
+
+      // ניסיון לקבל כתובת מהקואורדינטות באמצעות reverse geocoding
+      reverseGeocode(coords);
+    }
+  }, [route?.params?.selectedCoordinates]);
+
+  // פונקציה לקבלת כתובת מקואורדינטות
+  const reverseGeocode = async (coords: [number, number]) => {
+    try {
+      const [lon, lat] = coords;
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${process.env.GOOGLEMAP_API_KEY}`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.results && data.results.length > 0) {
+        setTripLocation(data.results[0].formatted_address);
+      }
+    } catch (error) {
+      console.error("Reverse geocoding failed:", error);
+    }
+  };
 
   // Get user's current location.
   useEffect(() => {

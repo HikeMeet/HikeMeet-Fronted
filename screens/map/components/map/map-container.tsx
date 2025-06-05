@@ -60,7 +60,7 @@ export const MapContainer = forwardRef<any, Props>(
           styleURL={Mapbox.StyleURL.Street}
           onLongPress={
             onLongPress
-              ? (feature) => {
+              ? (feature: any) => {
                   const coordinates = feature.geometry.coordinates as [
                     number,
                     number,

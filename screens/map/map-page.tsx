@@ -464,6 +464,31 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
     [viewMode]
   );
 
+  // טיפול בלחיצה ארוכה על המפה להוספת טיול חדש
+  const handleMapLongPress = useCallback(
+    (coordinates: [number, number]) => {
+      // סגירת פופאפ אם פתוח
+      if (popupTrip) {
+        closeTripPopup();
+      }
+
+      // סגירת החיפוש אם פעיל
+      if (isSearchActive) {
+        setIsSearchActive(false);
+        setShouldCloseSearch(true);
+      }
+
+      // ניווט לדף יצירת טיול עם הקואורדינטות
+      navigation.navigate("TripsStack", {
+        screen: "CreateTripPage",
+        params: {
+          selectedCoordinates: coordinates,
+        },
+      });
+    },
+    [popupTrip, isSearchActive, navigation]
+  );
+
   // Show no location fallback if needed
   if (location.permissionDenied && !location.searchCenter) {
     return (
@@ -558,6 +583,7 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
         onListScrollStart={() => {
           if (popupTrip) closeTripPopup();
         }}
+        onLongPress={handleMapLongPress}
       />
 
       {/* Trip Popup */}
