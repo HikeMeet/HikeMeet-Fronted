@@ -7,6 +7,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import * as Location from "expo-location";
 import MapSearch from "../../components/map-search-creaete-trip";
@@ -45,20 +46,30 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
   );
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [isMapLoading, setIsMapLoading] = useState(false); // new state
   const { mongoId } = useAuth(); // current user's mongoId
 
-  // Get user's current location.
+  // Get user's current location if no coordinates provided
   useEffect(() => {
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.log("Permission to access location was denied");
-        return;
+    const fetchLocation = async () => {
+      if (!route?.params?.selectedCoordinates) {
+        setIsMapLoading(true);
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          console.log("Permission to access location was denied");
+          setIsMapLoading(false);
+          return;
+        }
+        const loc = await Location.getCurrentPositionAsync({});
+        const { latitude, longitude } = loc.coords;
+        const coords: [number, number] = [longitude, latitude];
+        setUserLocation(coords);
+        setTripCoordinates(coords);
+        setTripLocation("");
+        setIsMapLoading(false);
       }
-      const loc = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = loc.coords;
-      setUserLocation([longitude, latitude]);
-    })();
+    };
+    fetchLocation();
   }, []);
 
   // בדיקה אם נשלחו קואורדינטות מהמפה
@@ -69,12 +80,8 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
 
       // ניסיון לקבל כתובת מהקואורדינטות באמצעות reverse geocoding
       reverseGeocode(coords);
-    } else {
-      // התנהגות ברירת מחדל: מיקום משתמש, שדה חיפוש ריק
-      setTripCoordinates(userLocation);
-      setTripLocation("");
     }
-  }, [route?.params?.selectedCoordinates, userLocation]);
+  }, [route?.params?.selectedCoordinates]);
 
   // פונקציה לקבלת כתובת מקואורדינטות
   const reverseGeocode = async (coords: [number, number]) => {
@@ -203,13 +210,22 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
       />
 
       {/* MapSearch Component (integrated search field and map) */}
-      <MapSearch
-        onLocationSelect={handleLocationSelect}
-        initialLocation={tripCoordinates || userLocation}
-        initialAddress={tripLocation}
-        onMapTouchStart={() => setScrollEnabled(false)}
-        onMapTouchEnd={() => setScrollEnabled(true)}
-      />
+      <View className="h-[350px] mb-5">
+        {isMapLoading ? (
+          <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color="#1E90FF" />
+            <Text className="mt-2 text-gray-500">Loading map...</Text>
+          </View>
+        ) : (
+          <MapSearch
+            onLocationSelect={handleLocationSelect}
+            initialLocation={tripCoordinates || userLocation}
+            initialAddress={tripLocation}
+            onMapTouchStart={() => setScrollEnabled(false)}
+            onMapTouchEnd={() => setScrollEnabled(true)}
+          />
+        )}
+      </View>
 
       {/* Image Upload Photos Component */}
       {/* <ImageUploadPhotos onImagesChange={handleImagesChange} /> */}
