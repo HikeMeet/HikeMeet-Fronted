@@ -35,10 +35,10 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
   const [tripName, setTripName] = useState<string>("");
   const [description, setDescription] = useState<string>(""); // New description field
   // State to hold the chosen trip coordinates from MapSearch.
-  const [tripLocation, setTripLocation] = useState<string>("debug location");
+  const [tripLocation, setTripLocation] = useState<string>("");
   const [tripCoordinates, setTripCoordinates] = useState<
     [number, number] | null
-  >([135.617964, 34.325275]);
+  >(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null
@@ -47,17 +47,34 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const { mongoId } = useAuth(); // current user's mongoId
 
+  // Get user's current location.
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission to access location was denied");
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = loc.coords;
+      setUserLocation([longitude, latitude]);
+    })();
+  }, []);
+
   // בדיקה אם נשלחו קואורדינטות מהמפה
   useEffect(() => {
     if (route?.params?.selectedCoordinates) {
       const coords = route.params.selectedCoordinates as [number, number];
       setTripCoordinates(coords);
-      setTripLocation("Selected from map");
 
       // ניסיון לקבל כתובת מהקואורדינטות באמצעות reverse geocoding
       reverseGeocode(coords);
+    } else {
+      // התנהגות ברירת מחדל: מיקום משתמש, שדה חיפוש ריק
+      setTripCoordinates(userLocation);
+      setTripLocation("");
     }
-  }, [route?.params?.selectedCoordinates]);
+  }, [route?.params?.selectedCoordinates, userLocation]);
 
   // פונקציה לקבלת כתובת מקואורדינטות
   const reverseGeocode = async (coords: [number, number]) => {
@@ -75,20 +92,6 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
       console.error("Reverse geocoding failed:", error);
     }
   };
-
-  // Get user's current location.
-  useEffect(() => {
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.log("Permission to access location was denied");
-        return;
-      }
-      const loc = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = loc.coords;
-      setUserLocation([longitude, latitude]);
-    })();
-  }, []);
 
   // Callback to update location info from MapSearch.
   // Updates both the address and the chosen coordinates.
@@ -202,7 +205,8 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
       {/* MapSearch Component (integrated search field and map) */}
       <MapSearch
         onLocationSelect={handleLocationSelect}
-        initialLocation={userLocation}
+        initialLocation={tripCoordinates || userLocation}
+        initialAddress={tripLocation}
         onMapTouchStart={() => setScrollEnabled(false)}
         onMapTouchEnd={() => setScrollEnabled(true)}
       />

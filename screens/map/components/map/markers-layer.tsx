@@ -1,17 +1,28 @@
 import React from "react";
 import TripMarker from "./trip-marker";
 import { Trip } from "../../../../interfaces/trip-interface";
+import { TouchableOpacity, View, Text } from "react-native";
+import Constants from "expo-constants";
+
+let Mapbox: any = null;
+if (Constants.appOwnership !== "expo") {
+  Mapbox = require("@rnmapbox/maps").default;
+}
 
 type Props = {
   trips: Trip[];
   onMarkerPress: (trip: Trip) => void;
   selectedTripId?: string | null;
+  addTripMarkerLocation?: [number, number] | null;
+  onAddTripMarkerPress?: () => void;
 };
 
 export default function MarkersLayer({
   trips,
   onMarkerPress,
   selectedTripId,
+  addTripMarkerLocation,
+  onAddTripMarkerPress,
 }: Props) {
   // Default value for spacing between symbols (~10-12 meters, depending on where on the globe)
   // The smaller the number - the closer the symbols will be to each other.
@@ -58,6 +69,51 @@ export default function MarkersLayer({
           />
         );
       })}
+      {/* Add Trip Marker */}
+      {addTripMarkerLocation && Mapbox && (
+        <Mapbox.MarkerView
+          key="add-trip-marker"
+          coordinate={addTripMarkerLocation}
+          anchor={{ x: 0.5, y: 0.3 }}
+        >
+          <TouchableOpacity
+            onPress={onAddTripMarkerPress}
+            activeOpacity={0.9}
+            style={{ alignItems: "center" }}
+          >
+            <View
+              style={{
+                backgroundColor: "#247875",
+                borderRadius: 20,
+                padding: 10,
+                borderWidth: 2,
+                borderColor: "#fff",
+                marginBottom: 2,
+              }}
+            >
+              <Text style={{ color: "#fff", fontSize: 20, fontWeight: "bold" }}>
+                +
+              </Text>
+            </View>
+            <View
+              style={{
+                backgroundColor: "#ECF9F9",
+                borderRadius: 10,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderWidth: 1,
+                borderColor: "#ECF9F9",
+              }}
+            >
+              <Text
+                style={{ color: "#144543", fontWeight: "bold", fontSize: 12 }}
+              >
+                add trip
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </Mapbox.MarkerView>
+      )}
     </>
   );
 }

@@ -21,6 +21,8 @@ type Props = {
   hideControls: boolean;
   selectedTripId?: string | null;
   onLongPress?: (coordinates: [number, number]) => void;
+  addTripMarkerLocation?: [number, number] | null;
+  onAddTripMarkerPress?: () => void;
 };
 
 export const MapContainer = forwardRef<any, Props>(
@@ -34,6 +36,8 @@ export const MapContainer = forwardRef<any, Props>(
       hideControls,
       selectedTripId,
       onLongPress,
+      addTripMarkerLocation,
+      onAddTripMarkerPress,
     },
     _ref
   ) => {
@@ -82,6 +86,8 @@ export const MapContainer = forwardRef<any, Props>(
             trips={trips}
             onMarkerPress={onMarkerPress}
             selectedTripId={selectedTripId}
+            addTripMarkerLocation={addTripMarkerLocation}
+            onAddTripMarkerPress={onAddTripMarkerPress}
           />
         </MapView>
       </View>

@@ -21,6 +21,7 @@ const StyledIonicons = styled(Ionicons);
 type MapSearchProps = {
   onLocationSelect: (coords: [number, number], address: string) => void;
   initialLocation: [number, number] | null;
+  initialAddress?: string;
   onMapTouchStart?: () => void;
   onMapTouchEnd?: () => void;
 };
@@ -28,17 +29,44 @@ type MapSearchProps = {
 const MapSearch: React.FC<MapSearchProps> = ({
   onLocationSelect,
   initialLocation,
+  initialAddress,
   onMapTouchStart,
   onMapTouchEnd,
 }) => {
   // Always call hooks unconditionally
-  const [query, setQuery] = useState<string>("");
+  const [query, setQuery] = useState<string>(initialAddress || "");
   const [results, setResults] = useState<any[]>([]);
   const [selectedCoords, setSelectedCoords] = useState<[number, number] | null>(
     null
   );
   const [clearOnEdit, setClearOnEdit] = useState<boolean>(false);
   const cameraRef = useRef<any>(null);
+
+  // If initialLocation is provided and no initialAddress, do reverse geocode on mount
+  React.useEffect(() => {
+    if (initialLocation && !initialAddress) {
+      (async () => {
+        try {
+          const [longitude, latitude] = initialLocation;
+          const addresses = await Location.reverseGeocodeAsync({
+            latitude,
+            longitude,
+          });
+          let addressStr: string;
+          if (addresses.length > 0) {
+            const addr = addresses[0];
+            addressStr =
+              `${addr.name || ""} ${addr.street || ""} ${addr.city || ""} ${addr.region || ""} ${addr.country || ""}`.trim();
+          } else {
+            addressStr = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+          }
+          setQuery(addressStr);
+        } catch (error) {
+          // fallback
+        }
+      })();
+    }
+  }, [initialLocation, initialAddress]);
 
   const searchGoogle = async (text: string) => {
     setQuery(text);

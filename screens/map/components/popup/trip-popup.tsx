@@ -6,6 +6,7 @@ import { Trip } from "../../../../interfaces/trip-interface";
 import { Group } from "../../../../interfaces/group-interface";
 import TripRow from "../../../trips/component/trip-row";
 import GroupRow from "../../../groups/components/group-row";
+import { useAuth } from "../../../../contexts/auth-context";
 
 type TripPopupProps = {
   trip: Trip;
@@ -23,6 +24,7 @@ export default function TripPopup({
   navigation,
 }: TripPopupProps) {
   const groups = trip.groups || [];
+  const { mongoId } = useAuth();
 
   return (
     <View className="bg-white/90 rounded-t-[32px] shadow-2xl max-h-[100%] px-6 pt-5 pb-4 border-t border-gray-100">
@@ -55,16 +57,10 @@ export default function TripPopup({
       </View>
 
       {/* title Available Groups עם כפתור Add Group באותה שורה */}
-      <View className="flex-row items-center justify-between mb-2">
+      <View className="flex-row items-center mb-2">
         <Text className="text-base font-medium text-gray-700">
           Available Groups
         </Text>
-        <TouchableOpacity
-          onPress={onAddGroup}
-          className="bg-emerald-600 px-3 py-2 rounded-xl shadow-sm"
-        >
-          <Text className="text-white text-xs font-semibold">+ Add group</Text>
-        </TouchableOpacity>
       </View>
 
       {/* list groups*/}
@@ -78,6 +74,8 @@ export default function TripPopup({
               group={group}
               navigation={navigation}
               showAvailability
+              showAdminBadge={true}
+              currentUserId={mongoId || undefined}
               onAction={() => onGroupPress(group._id, "join")}
               onPress={() =>
                 navigation.navigate("GroupsStack", {

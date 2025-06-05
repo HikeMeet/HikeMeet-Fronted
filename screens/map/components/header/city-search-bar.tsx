@@ -45,7 +45,8 @@ export default function CitySearchBar({
 
     if (text.length < 3) {
       setResults([]);
-      if (text.length === 0 && !hasSelectedLocation) {
+      if (text.length === 0) {
+        setHasSelectedLocation(false);
         onClearLocation();
       }
       return;

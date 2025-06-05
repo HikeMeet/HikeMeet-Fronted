@@ -73,6 +73,11 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [shouldCloseSearch, setShouldCloseSearch] = useState(false);
+  const [pendingAddTripLocation, setPendingAddTripLocation] = useState<
+    [number, number] | null
+  >(null);
+  // שמירה על מרכז המפה במעבר בין map <-> list
+  const [lastMapCenter, setLastMapCenter] = useState<Coordinate | null>(null);
 
   // Animation refs
   const cameraRef = useRef<any>(null);
@@ -242,12 +247,9 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
       closeTripPopup();
     }
 
-    setCityQuery("");
-    location.setSearchCenter(null);
     filters.removeFilter(
       filters.activeFilters.find((f) => f.id.startsWith("city="))?.id || ""
     );
-    fetchAllData();
   }, [filters.activeFilters, popupTrip]);
 
   const handleCenterOnMe = useCallback(() => {
@@ -284,13 +286,20 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
       closeTripPopup();
     }
 
+    // תמיד נשמור את המרכז הנוכחי לפני כל מעבר
+    setLastMapCenter(location.currentCenter);
+
     if (viewMode === "map") {
       setCarouselVisible(false);
       setViewMode("list");
     } else {
+      // תמיד נחזיר את המרכז האחרון כשחוזרים ל-map
+      if (lastMapCenter) {
+        location.setCenterFromCamera(lastMapCenter);
+      }
       setViewMode("map");
     }
-  }, [viewMode, popupTrip, isSearchActive]);
+  }, [viewMode, popupTrip, isSearchActive, location, lastMapCenter]);
 
   const openTripPopup = useCallback(
     (trip: Trip) => {
@@ -467,27 +476,29 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
   // טיפול בלחיצה ארוכה על המפה להוספת טיול חדש
   const handleMapLongPress = useCallback(
     (coordinates: [number, number]) => {
-      // סגירת פופאפ אם פתוח
       if (popupTrip) {
         closeTripPopup();
       }
-
-      // סגירת החיפוש אם פעיל
       if (isSearchActive) {
         setIsSearchActive(false);
         setShouldCloseSearch(true);
       }
+      setPendingAddTripLocation(coordinates);
+    },
+    [popupTrip, isSearchActive]
+  );
 
-      // ניווט לדף יצירת טיול עם הקואורדינטות
+  const handleAddTripMarkerPress = useCallback(() => {
+    if (pendingAddTripLocation) {
       navigation.navigate("TripsStack", {
         screen: "CreateTripPage",
         params: {
-          selectedCoordinates: coordinates,
+          selectedCoordinates: pendingAddTripLocation,
         },
       });
-    },
-    [popupTrip, isSearchActive, navigation]
-  );
+      setPendingAddTripLocation(null);
+    }
+  }, [pendingAddTripLocation, navigation]);
 
   // Show no location fallback if needed
   if (location.permissionDenied && !location.searchCenter) {
@@ -584,6 +595,8 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
           if (popupTrip) closeTripPopup();
         }}
         onLongPress={handleMapLongPress}
+        addTripMarkerLocation={pendingAddTripLocation}
+        onAddTripMarkerPress={handleAddTripMarkerPress}
       />
 
       {/* Trip Popup */}

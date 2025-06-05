@@ -23,6 +23,8 @@ interface MapContentProps {
   onScrollEnd: (event: any) => void;
   onListScrollStart: () => void;
   onLongPress?: (coordinates: [number, number]) => void;
+  addTripMarkerLocation?: [number, number] | null;
+  onAddTripMarkerPress?: () => void;
 }
 
 export default function MapContent({
@@ -40,6 +42,8 @@ export default function MapContent({
   onScrollEnd,
   onListScrollStart,
   onLongPress,
+  addTripMarkerLocation,
+  onAddTripMarkerPress,
 }: MapContentProps) {
   if (loading) {
     return (
@@ -70,6 +74,8 @@ export default function MapContent({
         hideControls={hideControls}
         selectedTripId={selectedTripId}
         onLongPress={onLongPress}
+        addTripMarkerLocation={addTripMarkerLocation}
+        onAddTripMarkerPress={onAddTripMarkerPress}
       />
 
       <CarouselPanel visible={carouselVisible && trips.length > 0}>
