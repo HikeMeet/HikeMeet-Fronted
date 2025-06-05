@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { Trip } from "../../../interfaces/trip-interface";
+import TripStarRating from "./starts-rating";
 
 interface TripRowProps {
   trip: Trip;
@@ -8,6 +9,7 @@ interface TripRowProps {
   completedAt?: Date | null;
   fromMap?: boolean;
   smallImage?: boolean; // חדש
+  ismap?: boolean;
 }
 
 const TripRow: React.FC<TripRowProps> = ({
@@ -16,6 +18,7 @@ const TripRow: React.FC<TripRowProps> = ({
   completedAt,
   fromMap,
   smallImage = false,
+  ismap,
 }) => {
   const containerBg = fromMap ? "bg-white" : "bg-gray-100";
 
@@ -57,6 +60,17 @@ const TripRow: React.FC<TripRowProps> = ({
         <Text className="absolute top-2 right-2 text-xs text-gray-600">
           {new Date(completedAt).toLocaleDateString()}
         </Text>
+      )}
+      {ismap && (
+        <View className="mt-2">
+          <TripStarRating
+            tripId={trip._id}
+            avgRating={trip.avg_rating ?? 0}
+            totalRatings={trip.ratings?.length ?? 0}
+            yourRating={0}
+            ismap
+          />
+        </View>
       )}
     </TouchableOpacity>
   );

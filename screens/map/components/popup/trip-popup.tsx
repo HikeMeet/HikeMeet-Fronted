@@ -43,6 +43,7 @@ export default function TripPopup({
         <TripRow
           trip={trip}
           fromMap
+          ismap
           // You can reduce an image through a special prop or through design in TripRow
           onPress={() =>
             navigation.navigate("TripsStack", {
