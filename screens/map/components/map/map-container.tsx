@@ -65,9 +65,15 @@ export const MapContainer = forwardRef<any, Props>(
 
         {/* Add Trip Hint - positioned inside map */}
         {!hideControls && (
-          <View className="absolute top-5 right-4 bg-white/90 rounded-lg shadow-sm px-3 py-2 max-w-[180px] z-10">
-            <Text className="text-[11px] text-gray-700 text-center font-medium">
+          <View className="absolute top-5 right-4 bg-white/90 rounded-lg shadow-sm px-3 py-2 max-w-[200px] z-10">
+            <Text className="text-[11px] text-gray-800 text-center font-medium mb-1">
               Press and hold to add trip 💡
+            </Text>
+            <Text className="text-[10px] text-gray-700">
+              ● <Text className="text-emerald-700 font-semibold">Green</Text>:
+              groups available{"\n"}●{" "}
+              <Text className="text-rose-700 font-semibold">Red</Text>: no
+              availability{"\n"}● Number = how many groups in this trip
             </Text>
           </View>
         )}
