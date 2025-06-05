@@ -24,6 +24,7 @@ type MapSearchProps = {
   initialAddress?: string;
   onMapTouchStart?: () => void;
   onMapTouchEnd?: () => void;
+  shouldRunReverseGeocode?: boolean;
 };
 
 const MapSearch: React.FC<MapSearchProps> = ({
@@ -32,6 +33,7 @@ const MapSearch: React.FC<MapSearchProps> = ({
   initialAddress,
   onMapTouchStart,
   onMapTouchEnd,
+  shouldRunReverseGeocode,
 }) => {
   // Always call hooks unconditionally
   const [query, setQuery] = useState<string>(initialAddress || "");
@@ -44,7 +46,7 @@ const MapSearch: React.FC<MapSearchProps> = ({
 
   // If initialLocation is provided and no initialAddress, do reverse geocode on mount
   React.useEffect(() => {
-    if (initialLocation && !initialAddress) {
+    if (initialLocation && shouldRunReverseGeocode) {
       (async () => {
         try {
           const [longitude, latitude] = initialLocation;
@@ -62,11 +64,11 @@ const MapSearch: React.FC<MapSearchProps> = ({
           }
           setQuery(addressStr);
         } catch (error) {
-          // fallback
+          console.warn("Failed to reverse geocode:", error);
         }
       })();
     }
-  }, [initialLocation, initialAddress]);
+  }, [initialLocation, shouldRunReverseGeocode]);
 
   const searchGoogle = async (text: string) => {
     setQuery(text);

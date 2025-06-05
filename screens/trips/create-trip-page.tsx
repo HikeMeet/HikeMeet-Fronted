@@ -48,38 +48,35 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isMapLoading, setIsMapLoading] = useState(false); // new state
   const { mongoId } = useAuth(); // current user's mongoId
+  const cameWithCoordinates = !!route?.params?.selectedCoordinates;
 
-  // קבלת מיקום נוכחי אם לא נשלחו קואורדינטות, או טיפול בקואורדינטות שנשלחו
   useEffect(() => {
     const initLocation = async () => {
       if (route?.params?.selectedCoordinates) {
         const coords = route.params.selectedCoordinates as [number, number];
         setTripCoordinates(coords);
-
-        // ניסיון לקבל כתובת מהקואורדינטות באמצעות reverse geocoding
         reverseGeocode(coords);
       } else {
         setIsMapLoading(true);
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
-          console.log("Permission to access location was denied");
           setIsMapLoading(false);
           return;
         }
         const loc = await Location.getCurrentPositionAsync({});
-        const { latitude, longitude } = loc.coords;
-        const coords: [number, number] = [longitude, latitude];
+        const coords: [number, number] = [
+          loc.coords.longitude,
+          loc.coords.latitude,
+        ];
         setUserLocation(coords);
         setTripCoordinates(coords);
         setTripLocation("");
         setIsMapLoading(false);
       }
     };
-
     initLocation();
   }, []);
 
-  // פונקציה לקבלת כתובת מקואורדינטות
   const reverseGeocode = async (coords: [number, number]) => {
     try {
       const [lon, lat] = coords;
@@ -216,7 +213,8 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
           <MapSearch
             onLocationSelect={handleLocationSelect}
             initialLocation={tripCoordinates || userLocation}
-            initialAddress={tripLocation}
+            initialAddress={cameWithCoordinates ? tripLocation : ""}
+            shouldRunReverseGeocode={cameWithCoordinates}
             onMapTouchStart={() => setScrollEnabled(false)}
             onMapTouchEnd={() => setScrollEnabled(true)}
           />
