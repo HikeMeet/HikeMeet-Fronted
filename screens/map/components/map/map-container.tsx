@@ -23,6 +23,8 @@ type Props = {
   onLongPress?: (coordinates: [number, number]) => void;
   addTripMarkerLocation?: [number, number] | null;
   onAddTripMarkerPress?: () => void;
+  onPress?: () => void; // ✅ הוספה כאן
+  onMapMove?: () => void; // ← חדש
 };
 
 export const MapContainer = forwardRef<any, Props>(
@@ -38,6 +40,8 @@ export const MapContainer = forwardRef<any, Props>(
       onLongPress,
       addTripMarkerLocation,
       onAddTripMarkerPress,
+      onPress,
+      onMapMove,
     },
     _ref
   ) => {
@@ -62,6 +66,9 @@ export const MapContainer = forwardRef<any, Props>(
         <MapView
           className="flex-1"
           styleURL={Mapbox.StyleURL.Street}
+          onPress={() => {
+            onPress?.(); // ✅ נקרא רק אם מוגדר
+          }}
           onLongPress={
             onLongPress
               ? (feature: any) => {
@@ -73,6 +80,10 @@ export const MapContainer = forwardRef<any, Props>(
                 }
               : undefined
           }
+          onCameraChanged={() => {
+            // כאן תוכל לבטל פופאפ או add marker
+            onMapMove?.(); // נשלח את זה כפרופ למעלה
+          }}
         >
           <Camera
             ref={cameraRef}

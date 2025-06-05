@@ -49,10 +49,16 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
   const [isMapLoading, setIsMapLoading] = useState(false); // new state
   const { mongoId } = useAuth(); // current user's mongoId
 
-  // Get user's current location if no coordinates provided
+  // קבלת מיקום נוכחי אם לא נשלחו קואורדינטות, או טיפול בקואורדינטות שנשלחו
   useEffect(() => {
-    const fetchLocation = async () => {
-      if (!route?.params?.selectedCoordinates) {
+    const initLocation = async () => {
+      if (route?.params?.selectedCoordinates) {
+        const coords = route.params.selectedCoordinates as [number, number];
+        setTripCoordinates(coords);
+
+        // ניסיון לקבל כתובת מהקואורדינטות באמצעות reverse geocoding
+        reverseGeocode(coords);
+      } else {
         setIsMapLoading(true);
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
@@ -69,19 +75,9 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
         setIsMapLoading(false);
       }
     };
-    fetchLocation();
+
+    initLocation();
   }, []);
-
-  // בדיקה אם נשלחו קואורדינטות מהמפה
-  useEffect(() => {
-    if (route?.params?.selectedCoordinates) {
-      const coords = route.params.selectedCoordinates as [number, number];
-      setTripCoordinates(coords);
-
-      // ניסיון לקבל כתובת מהקואורדינטות באמצעות reverse geocoding
-      reverseGeocode(coords);
-    }
-  }, [route?.params?.selectedCoordinates]);
 
   // פונקציה לקבלת כתובת מקואורדינטות
   const reverseGeocode = async (coords: [number, number]) => {

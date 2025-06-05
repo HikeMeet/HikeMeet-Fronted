@@ -87,10 +87,14 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
   const controlsDisabled =
     popupTrip !== null || showTripFilter || showGroupFilter;
 
-  // Fetch data on mount
+  // Fetch data whenever this screen is focused
   useEffect(() => {
-    fetchAllData();
-  }, []);
+    const unsubscribe = navigation.addListener("focus", () => {
+      fetchAllData();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   // Sort trips by distance when center changes
   useEffect(() => {
@@ -595,6 +599,10 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
           if (popupTrip) closeTripPopup();
         }}
         onLongPress={handleMapLongPress}
+        onPress={() => {
+          // לחיצה רגילה תבטל את מצב ההוספה
+          setPendingAddTripLocation(null);
+        }}
         addTripMarkerLocation={pendingAddTripLocation}
         onAddTripMarkerPress={handleAddTripMarkerPress}
       />
