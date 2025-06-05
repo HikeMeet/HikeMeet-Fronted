@@ -16,6 +16,12 @@ export default function ChatListPage({ navigation }: any) {
   useEffect(() => initializeRooms(), [initializeRooms]);
   useFocusEffect(React.useCallback(() => initializeRooms(), [initializeRooms]));
 
+  // checkckkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk
+  // useEffect(() => {
+  //   fetchMongoUser(mongoId!);
+  //   initializeRooms();
+  // }, [initializeRooms, fetchMongoUser, mongoId]);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -27,7 +33,6 @@ export default function ChatListPage({ navigation }: any) {
       setRefreshing(false);
     }
   }, [initializeRooms, fetchMongoUser, mongoUser?._id]);
-
   const sorted = useMemo(
     () =>
       rooms

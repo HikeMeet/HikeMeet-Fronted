@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import React from "react";
 import {
   View,
@@ -17,6 +17,7 @@ import PostCard from "../posts/components/post-card-on-feeds";
 import { useFocusEffect } from "@react-navigation/native";
 import { IPost } from "../../interfaces/post-interface";
 import { useAuth } from "../../contexts/auth-context";
+import { useChatList } from "../../contexts/chat-context";
 
 const Home = ({ navigation }: any) => {
   const { user, mongoId, mongoUser, fetchMongoUser } = useAuth();
@@ -27,21 +28,19 @@ const Home = ({ navigation }: any) => {
   const [showFriendsOnly, setShowFriendsOnly] = useState(false);
   const [postsToShow, setPostsToShow] = useState<number>(5);
   const unread = mongoUser?.unreadNotifications ?? 0;
-
+  const { initializeRooms } = useChatList();
   // Function to fetch posts.
   const fetchPosts = async () => {
     try {
-      // Base URL always includes privacy=public.
-      let url = `${process.env.EXPO_LOCAL_SERVER}/api/post/all?privacy=public`;
-      // If Friends Only is selected, append query parameters.
+      let url = `${process.env.EXPO_LOCAL_SERVER}/api/post/all?privacy=public&userId=${mongoId}`;
       if (showFriendsOnly) {
         url = `${process.env.EXPO_LOCAL_SERVER}/api/post/all?friendsOnly=true&userId=${mongoId}`;
       }
       const response = await fetch(url);
       const data = await response.json();
       setPosts(data.posts);
-    } catch (error) {
-      console.error("Error fetching posts:", error);
+    } catch (err) {
+      console.error("Error fetching posts:", err);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -51,8 +50,11 @@ const Home = ({ navigation }: any) => {
   // When the screen is focused, refetch the posts.
   useFocusEffect(
     useCallback(() => {
+      fetchMongoUser(mongoId!);
+      initializeRooms();
       setLoading(true);
-      if (mongoId) fetchMongoUser(user!.uid, true);
+      console.log("::::", mongoId);
+      // if (mongoId) fetchMongoUser(user!.uid, true);
       fetchPosts();
     }, [showFriendsOnly]) // Re-fetch posts when filter changes.
   );
@@ -157,7 +159,6 @@ const Home = ({ navigation }: any) => {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        
         <FlatList
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="none"
