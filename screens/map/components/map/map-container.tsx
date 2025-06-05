@@ -73,7 +73,7 @@ export const MapContainer = forwardRef<any, Props>(
               ● <Text className="text-emerald-700 font-semibold">Green</Text>:
               groups available{"\n"}●{" "}
               <Text className="text-rose-700 font-semibold">Red</Text>: no
-              availability{"\n"}● Number = how many groups in this trip
+              availability group{"\n"}● Number = how many groups in trip
             </Text>
           </View>
         )}
