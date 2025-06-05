@@ -192,7 +192,6 @@ export default function ChatRoomPage({ route, navigation }: ChatRoomPageProps) {
         console.error("Failed to fetch push tokens:", e);
         expoTokens = [];
       }
-      console.log(expoTokens);
       // 2) skip if muted or no tokens
       if (expoTokens.length > 0) {
         await sendPushNotification(

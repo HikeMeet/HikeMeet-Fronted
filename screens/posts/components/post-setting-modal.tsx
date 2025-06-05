@@ -44,7 +44,6 @@ const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
     setConfirmVisible(false);
     setDeleting(true);
     try {
-      console.log("Deleting post:", post._id);
       const response = await fetch(
         `${process.env.EXPO_LOCAL_SERVER}/api/post/${post._id}/delete`,
         {
@@ -57,7 +56,6 @@ const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
       );
       const data = await response.json();
       if (response.ok) {
-        console.log("Post deleted successfully", data.post);
         if (onPostUpdated) onPostUpdated(data.post);
         setConfirmVisible(false);
         onClose();

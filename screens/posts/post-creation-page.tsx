@@ -144,7 +144,6 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
             "post_media"
           );
           if (uploaded) {
-            console.log("Media uploaded:", uploaded);
             uploadedItems.push(uploaded);
           } else {
             throw new Error("One or more media uploads failed.");
@@ -175,7 +174,6 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
       );
       const result = await response.json();
       if (response.ok) {
-        console.log("Post created successfully:", result.post._id);
         setPostId(result.post._id);
         Alert.alert("Post created", "Your post has been created successfully.", [
           { text: "OK", onPress: () => navigation.goBack() },
