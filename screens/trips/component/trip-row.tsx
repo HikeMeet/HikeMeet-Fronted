@@ -62,7 +62,7 @@ const TripRow: React.FC<TripRowProps> = ({
         </Text>
       )}
       {ismap && (
-        <View className="absolute bottom-12 right-3">
+        <View className="absolute bottom-14 right-3">
           <TripStarRating
             tripId={trip._id}
             avgRating={trip.avg_rating ?? 0}
