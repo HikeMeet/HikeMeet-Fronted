@@ -90,7 +90,7 @@ const GroupRow: React.FC<GroupRowProps> = ({
                     className="text-xs font-bold mt-1"
                     style={{ color: "#000000" }}
                   >
-                    • in group (admin)
+                    • in group
                   </Text>
                 ) : (
                   showAvailability && (
