@@ -6,6 +6,7 @@ import { Trip } from "../../../../interfaces/trip-interface";
 import { Group } from "../../../../interfaces/group-interface";
 import TripRow from "../../../trips/component/trip-row";
 import GroupRow from "../../../groups/components/group-row";
+import { useAuth } from "../../../../contexts/auth-context";
 
 type TripPopupProps = {
   trip: Trip;
@@ -23,6 +24,7 @@ export default function TripPopup({
   navigation,
 }: TripPopupProps) {
   const groups = trip.groups || [];
+  const { mongoId } = useAuth();
 
   return (
     <View className="bg-white/90 rounded-t-[32px] shadow-2xl max-h-[100%] px-6 pt-5 pb-4 border-t border-gray-100">
@@ -43,6 +45,7 @@ export default function TripPopup({
         <TripRow
           trip={trip}
           fromMap
+          ismap
           // You can reduce an image through a special prop or through design in TripRow
           onPress={() =>
             navigation.navigate("TripsStack", {
@@ -51,20 +54,21 @@ export default function TripPopup({
             })
           }
         />
-
-        {/* button Add Group */}
-        <TouchableOpacity
-          onPress={onAddGroup}
-          className="absolute right-1 top-2 mt-0 bg-emerald-600 px-3 py-2 rounded-xl shadow-sm"
-        >
-          <Text className="text-white text-xs font-semibold">+ Add group</Text>
-        </TouchableOpacity>
       </View>
 
-      {/* title– Available Groups */}
-      <Text className="text-base font-medium text-gray-700 mb-2">
-        Available Groups
-      </Text>
+      {/* title Available Groups עם כפתור Add Group באותה שורה */}
+      <View className="flex-row items-center mb-2">
+        <Text className="text-base font-medium text-gray-700">
+          Available Groups
+        </Text>
+        <TouchableOpacity
+          onPress={onAddGroup}
+          activeOpacity={0.2}
+          className="flex-row items-center bg-gray-200 px-2 py-1 ml-1 rounded-full shadow-sm border border-black"
+        >
+          <Text className="text-black text-sm font-semibold">+ Add</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* list groups*/}
       <ScrollView className="max-h-48" showsVerticalScrollIndicator={false}>
@@ -77,6 +81,8 @@ export default function TripPopup({
               group={group}
               navigation={navigation}
               showAvailability
+              showAdminBadge={true}
+              currentUserId={mongoId || undefined}
               onAction={() => onGroupPress(group._id, "join")}
               onPress={() =>
                 navigation.navigate("GroupsStack", {
