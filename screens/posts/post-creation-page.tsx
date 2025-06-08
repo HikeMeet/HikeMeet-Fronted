@@ -156,11 +156,10 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
         author: mongoId,
         content,
         images: uploadedItems || [],
-        // Here you can send arrays of ids if your backend supports it.
         attached_trips: selectedTrips.map((trip) => trip._id),
         attached_groups: selectedGroups.map((group) => group._id),
         is_shared: false,
-        privacy: in_group ? "private" : privacy, // include privacy option in the postData
+        privacy: in_group ? "private" : privacy,
         in_group: in_group ? groupId : undefined,
       };
 

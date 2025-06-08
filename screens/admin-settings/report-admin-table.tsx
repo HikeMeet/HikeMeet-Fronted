@@ -11,7 +11,7 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "../../contexts/auth-context";
 import { IReport, ReportStatus } from "../../interfaces/report-interface";
-import { Feather, MaterialIcons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import ReportCard from "./components/report-card";
 import ResolveAllButton from "./components/resolve-all-button";
 import DeleteResolvedButton from "./components/delete-resolved-button";

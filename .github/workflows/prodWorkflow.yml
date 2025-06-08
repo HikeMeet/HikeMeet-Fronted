@@ -9,28 +9,23 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      # Checkout the React Native repository
       - uses: actions/checkout@v4
 
-      # Set up Node.js for the React Native app
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 22.x
           cache: "npm"
 
-          # Install dependencies for the React Native app
       - name: Install React Native dependencies
         run: npm install
 
       - name: Run linter
         run: npm run lint
 
-      # Step 5: Install Expo CLI
       - name: Install Expo CLI
         run: npm install -g expo eas-cli
 
-      # Step 6: Build the Android app
       - name: Build Android App
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}

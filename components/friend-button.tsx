@@ -88,7 +88,7 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
           body: JSON.stringify({ currentUserId: mongoId, targetUserId }),
         }
       );
-      const data = await response.json();
+
       let newStatus = currentStatus;
       if (currentStatus === "none") {
         newStatus = "request_sent";

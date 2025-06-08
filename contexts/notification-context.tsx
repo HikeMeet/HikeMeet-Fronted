@@ -8,11 +8,10 @@ import React, {
 } from "react";
 import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "../utils/register-for-pushnotification-async";
-import { navigate, navigationRef } from "../root-navigation";
-import { CommonActions, StackActions } from "@react-navigation/native";
+import {  navigationRef } from "../root-navigation";
+import { CommonActions } from "@react-navigation/native";
 import { markNotificationAsRead } from "../components/requests/notification-requsts";
 import { useAuth } from "./auth-context";
-import { IUser } from "../interfaces/post-interface";
 export type Subscription = ReturnType<
   typeof Notifications.addNotificationReceivedListener
 >;

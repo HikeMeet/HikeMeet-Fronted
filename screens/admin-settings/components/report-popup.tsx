@@ -61,7 +61,6 @@ const ReportPopup = ({ visible, onClose, targetId, targetType }: Props) => {
       if (!user) throw new Error("You must be logged in to report.");
 
       const token = await user.getIdToken();
-
       const response = await fetch(
         `${process.env.EXPO_LOCAL_SERVER}/api/report`,
         {

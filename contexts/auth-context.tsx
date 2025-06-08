@@ -153,7 +153,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (currentUser) => {
         if (!isMounted) return;
-
         if (currentUser) {
           setUser(currentUser);
           setIsVerified(currentUser.emailVerified);

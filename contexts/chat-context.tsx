@@ -331,8 +331,6 @@ export const useChatRoom = ({
           updates[`participants.${uid}`] = increment(1);
       });
       await updateDoc(roomRef, updates);
-
-      // push logic left to individual screens or separate helper
     },
     [roomId, mongoUser]
   );

@@ -99,7 +99,7 @@ export default function VerifyEmailPage({
         if (user.emailVerified) {
           const insertedUserId = await insertUser(user.uid);
           if (insertedUserId) {
-            await signOut(FIREBASE_AUTH); // sign out only after successful insertion
+            await signOut(FIREBASE_AUTH);
             navigation.navigate("Login");
           } else {
             setMessage("Failed to insert user data. Please try again.");

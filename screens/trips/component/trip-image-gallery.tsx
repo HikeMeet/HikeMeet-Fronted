@@ -82,7 +82,7 @@ const TripImagesUploader: React.FC<TripImagesUploaderProps> = ({
           );
           // Append the new images using the $push operator.
           const backendUrl =
-            process.env.EXPO_LOCAL_SERVER || "http://192.168.1.100:3000";
+            process.env.EXPO_LOCAL_SERVER || "";
           const requestUrl = `${backendUrl}/api/trips/${tripId}/update`;
           const response = await fetch(requestUrl, {
             method: "POST",
