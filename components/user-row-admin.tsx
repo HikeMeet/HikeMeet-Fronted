@@ -34,7 +34,6 @@ const UserRow: React.FC<UserRowProps> = ({
 
       // Delete user from Firebase & MongoDB using firebase_id
       const result = await deleteFirebaseUser(user.firebase_id);
-      console.log("Delete Result:", result);
 
       // Notify the parent that this user was deleted so it can update the list.
       if (user._id) {

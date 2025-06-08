@@ -138,7 +138,6 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
         }
       );
       const data = await response.json();
-      console.log("Block User Response:", data);
       setCurrentStatus("blocked");
       onStatusChange && onStatusChange("blocked");
       setShowActions(false);
@@ -160,7 +159,6 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
         }
       );
       const data = await response.json();
-      console.log("Decline Request Response:", data);
       setCurrentStatus("none");
       onStatusChange && onStatusChange("none");
       setShowActions(false);

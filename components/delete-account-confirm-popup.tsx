@@ -52,7 +52,6 @@ const DeleteConfirmPopup: React.FC<ConfirmPopupProps> = ({
         }
 
         const result = await deleteMongoUser(mongoId);
-        console.log("Delete Result:", result);
         // Handle success (e.g., update UI)
       } catch (error) {
         console.error("Error deleting user:", error);

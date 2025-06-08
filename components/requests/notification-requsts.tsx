@@ -137,6 +137,5 @@ export async function fetchPushTokens(
     throw new Error(`Error fetching push tokens: ${res.status}`);
   }
   const body: { tokens: string[] } = await res.json();
-  console.log(body);
   return body.tokens;
 }
