@@ -356,13 +356,31 @@ jest.mock(
 );
 
 jest.mock("./components/TripFilterModal", () => {
-  const { TripFilterModal } = require("./tests/__mocks__/filter-modals");
-  return { default: TripFilterModal };
+  const React = require("react");
+  const { View, Text } = require("react-native");
+  return {
+    default: function TripFilterModal() {
+      return React.createElement(
+        View,
+        { testID: "trip-filter-modal" },
+        React.createElement(Text, null, "Trip Filter Modal")
+      );
+    },
+  };
 });
 
 jest.mock("./components/GroupFilterModal", () => {
-  const { GroupFilterModal } = require("./tests/__mocks__/filter-modals");
-  return { default: GroupFilterModal };
+  const React = require("react");
+  const { View, Text } = require("react-native");
+  return {
+    default: function GroupFilterModal() {
+      return React.createElement(
+        View,
+        { testID: "group-filter-modal" },
+        React.createElement(Text, null, "Group Filter Modal")
+      );
+    },
+  };
 });
 
 jest.mock("./screens/search/components/search-api", () =>

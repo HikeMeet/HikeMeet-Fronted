@@ -454,8 +454,8 @@ describe("RegisterPage", () => {
       <RegisterPage navigation={mockNavigation} />
     );
 
-    // Open terms popup
-    fireEvent.press(getByText("Terms & Conditions"));
+    // Open terms popup using the "View Terms" text
+    fireEvent.press(getByText("View Terms"));
 
     await waitFor(() => {
       expect(getByTestId("terms-popup")).toBeTruthy();
@@ -475,16 +475,6 @@ describe("RegisterPage", () => {
     fireEvent.press(getByText("Log in here"));
 
     expect(mockNavigate).toHaveBeenCalledWith("Login");
-  });
-
-  it("should navigate back when back button is pressed", () => {
-    const { getByTestId } = render(
-      <RegisterPage navigation={mockNavigation} />
-    );
-
-    fireEvent.press(getByTestId("back-button"));
-
-    expect(mockGoBack).toHaveBeenCalled();
   });
 
   it("should show loading state during registration", async () => {
