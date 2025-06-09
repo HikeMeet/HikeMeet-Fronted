@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 
 describe("Backend Health Check", () => {
   it('should respond with "Server is working"', async () => {
-    const baseUrl = process.env.EXPO_LOCAL_SERVER || "http://localhost:3000";
+    const baseUrl = process.env.EXPO_LOCAL_SERVER;
     const response = await fetch(`${baseUrl}/api`);
     const data = await response.text();
 
