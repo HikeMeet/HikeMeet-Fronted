@@ -3,6 +3,7 @@ import TripMarker from "./trip-marker";
 import { Trip } from "../../../../interfaces/trip-interface";
 import { TouchableOpacity, View, Text } from "react-native";
 import Constants from "expo-constants";
+import Animated, { FadeInUp, FadeOut } from "react-native-reanimated";
 
 let Mapbox: any = null;
 if (Constants.appOwnership !== "expo") {
@@ -49,15 +50,20 @@ export default function MarkersLayer({
         );
 
         return (
-          <TripMarker
+          <Animated.View
             key={trip._id}
-            trip={trip}
-            longitude={adjustedLon}
-            latitude={adjustedLat}
-            hasAvailability={hasAvailability}
-            isSelected={trip._id === selectedTripId}
-            onPressMarker={() => onMarkerPress(trip)}
-          />
+            entering={FadeInUp.duration(900)}
+            exiting={FadeOut.duration(200)}
+          >
+            <TripMarker
+              trip={trip}
+              longitude={adjustedLon}
+              latitude={adjustedLat}
+              hasAvailability={hasAvailability}
+              isSelected={trip._id === selectedTripId}
+              onPressMarker={() => onMarkerPress(trip)}
+            />
+          </Animated.View>
         );
       })}
 
