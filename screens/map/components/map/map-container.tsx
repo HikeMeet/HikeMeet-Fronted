@@ -111,10 +111,10 @@ export const MapContainer = forwardRef<any, Props>(
         />
 
         {!hideControls && (
-          <View className="absolute top-5 right-4 z-10 items-end">
+          <View className="absolute top-3 right-3 z-10 items-end">
             <Pressable
               onPress={() => setShowHint((prev) => !prev)}
-              className="bg-white/90 p-2 rounded-full shadow-sm"
+              className="bg-white/80 p-2 rounded-full shadow-sm"
             >
               <InfoIcon width={20} height={20} />
             </Pressable>

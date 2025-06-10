@@ -105,7 +105,7 @@ const TripStarRating: React.FC<TripStarRatingProps> = ({
         <View className="mt-9">
           <View className="flex-row items-center space-x-2">
             <View className="p-1 bg-white rounded-full items-center justify-center">
-              <Ionicons name="star" size={size * 0.7} color="#000" />
+              <Ionicons name="star" size={size * 0.7} color="#FFD700" />
             </View>
             <Text className="text-base font-semibold">
               {avgRating.toFixed(1)}
