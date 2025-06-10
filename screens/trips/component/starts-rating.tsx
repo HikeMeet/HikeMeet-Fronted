@@ -104,15 +104,9 @@ const TripStarRating: React.FC<TripStarRatingProps> = ({
       {ismap ? (
         <View className="mt-9">
           <View className="flex-row items-center space-x-2">
-            <TouchableOpacity
-              onPress={() => {
-                setSelected(yourRating || 0);
-                setModalVisible(true);
-              }}
-              className="p-1 bg-green-500 rounded-full items-center justify-center"
-            >
-              <Ionicons name="star-outline" size={size * 0.7} color="#fff" />
-            </TouchableOpacity>
+            <View className="p-1 bg-white rounded-full items-center justify-center">
+              <Ionicons name="star" size={size * 0.7} color="#000" />
+            </View>
             <Text className="text-base font-semibold">
               {avgRating.toFixed(1)}
             </Text>

@@ -1,11 +1,12 @@
-import React, { forwardRef } from "react";
-import { View, Text } from "react-native";
+import React, { forwardRef, useState, useRef, useEffect } from "react";
+import { View, Text, Pressable, Animated, Easing } from "react-native";
 import Constants from "expo-constants";
 
 import CenterOnMeButton from "./center-on-me-button";
 import Buildings3D from "./buildings-3D";
 import MarkersLayer from "./markers-layer";
 import { Trip } from "../../../../interfaces/trip-interface";
+import InfoIcon from "../../../../assets/info.svg";
 
 let Mapbox: any = null;
 if (Constants.appOwnership !== "expo") {
@@ -23,8 +24,8 @@ type Props = {
   onLongPress?: (coordinates: [number, number]) => void;
   addTripMarkerLocation?: [number, number] | null;
   onAddTripMarkerPress?: () => void;
-  onPress?: () => void; // ✅ הוספה כאן
-  onMapMove?: () => void; // ← חדש
+  onPress?: () => void;
+  onMapMove?: () => void;
 };
 
 export const MapContainer = forwardRef<any, Props>(
@@ -45,6 +46,46 @@ export const MapContainer = forwardRef<any, Props>(
     },
     _ref
   ) => {
+    const [showHint, setShowHint] = useState(false);
+    const animatedOpacity = useRef(new Animated.Value(0)).current;
+    const animatedTranslate = useRef(new Animated.Value(-10)).current;
+
+    const closeHint = () => {
+      if (showHint) setShowHint(false);
+    };
+
+    useEffect(() => {
+      if (showHint) {
+        Animated.parallel([
+          Animated.timing(animatedOpacity, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(animatedTranslate, {
+            toValue: 0,
+            duration: 200,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ]).start();
+      } else {
+        Animated.parallel([
+          Animated.timing(animatedOpacity, {
+            toValue: 0,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+          Animated.timing(animatedTranslate, {
+            toValue: -10,
+            duration: 150,
+            easing: Easing.in(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }
+    }, [showHint]);
+
     if (!Mapbox) {
       return (
         <View className="flex-1 items-center justify-center p-4">
@@ -61,20 +102,41 @@ export const MapContainer = forwardRef<any, Props>(
 
     return (
       <View className="flex-1">
-        <CenterOnMeButton onPress={onCenterOnMe} visible={!hideControls} />
+        <CenterOnMeButton
+          onPress={() => {
+            closeHint();
+            onCenterOnMe();
+          }}
+          visible={!hideControls}
+        />
 
-        {/* Add Trip Hint - positioned inside map */}
         {!hideControls && (
-          <View className="absolute top-5 right-4 bg-white/90 rounded-lg shadow-sm px-3 py-2 max-w-[200px] z-10">
-            <Text className="text-[11px] text-gray-800 text-center font-medium mb-1">
-              Press and hold to add trip 💡
-            </Text>
-            <Text className="text-[10px] text-gray-700">
-              ● <Text className="text-emerald-700 font-semibold">Green</Text>:
-              groups available{"\n"}●{" "}
-              <Text className="text-rose-700 font-semibold">Red</Text>: no
-              availability group{"\n"}● Number = how many groups in trip
-            </Text>
+          <View className="absolute top-5 right-4 z-10 items-end">
+            <Pressable
+              onPress={() => setShowHint((prev) => !prev)}
+              className="bg-white/90 p-2 rounded-full shadow-sm"
+            >
+              <InfoIcon width={20} height={20} />
+            </Pressable>
+
+            <Animated.View
+              pointerEvents={showHint ? "auto" : "none"}
+              style={{
+                opacity: animatedOpacity,
+                transform: [{ translateY: animatedTranslate }],
+              }}
+              className="mt-2 bg-white/90 rounded-lg shadow-md px-3 py-2 max-w-[220px]"
+            >
+              <Text className="text-[11px] text-gray-800 text-center font-medium mb-1">
+                Press and hold to add trip 💡
+              </Text>
+              <Text className="text-[10px] text-gray-700">
+                ● <Text className="text-emerald-700 font-semibold">Green</Text>:
+                groups available{"\n"}●{" "}
+                <Text className="text-rose-700 font-semibold">Red</Text>: no
+                availability group{"\n"}● Number = how many groups in trip
+              </Text>
+            </Animated.View>
           </View>
         )}
 
@@ -82,11 +144,13 @@ export const MapContainer = forwardRef<any, Props>(
           className="flex-1"
           styleURL={Mapbox.StyleURL.Street}
           onPress={() => {
+            closeHint();
             onPress?.();
           }}
           onLongPress={
             onLongPress
               ? (feature: any) => {
+                  closeHint();
                   const coordinates = feature.geometry.coordinates as [
                     number,
                     number,
@@ -96,8 +160,8 @@ export const MapContainer = forwardRef<any, Props>(
               : undefined
           }
           onCameraChanged={() => {
-            // כאן תוכל לבטל פופאפ או add marker
-            onMapMove?.(); // נשלח את זה כפרופ למעלה
+            closeHint();
+            onMapMove?.();
           }}
         >
           <Camera
@@ -110,10 +174,16 @@ export const MapContainer = forwardRef<any, Props>(
           <Buildings3D />
           <MarkersLayer
             trips={trips}
-            onMarkerPress={onMarkerPress}
+            onMarkerPress={(trip) => {
+              closeHint();
+              onMarkerPress(trip);
+            }}
             selectedTripId={selectedTripId}
             addTripMarkerLocation={addTripMarkerLocation}
-            onAddTripMarkerPress={onAddTripMarkerPress}
+            onAddTripMarkerPress={() => {
+              closeHint();
+              onAddTripMarkerPress?.();
+            }}
           />
         </MapView>
       </View>
