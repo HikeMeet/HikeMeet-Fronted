@@ -71,18 +71,18 @@ if (
 }
 export default function App() {
   return (
-    <AuthProvider>
-      <NotificationProvider>
-        <ChatProvider>
-          <NavigationContainer ref={navigationRef}>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <NetworkGuard>
+    <NetworkGuard>
+      <AuthProvider>
+        <NotificationProvider>
+          <ChatProvider>
+            <NavigationContainer ref={navigationRef}>
+              <GestureHandlerRootView style={{ flex: 1 }}>
                 <MainLayout />
-              </NetworkGuard>
-            </GestureHandlerRootView>
-          </NavigationContainer>
-        </ChatProvider>
-      </NotificationProvider>
-    </AuthProvider>
+              </GestureHandlerRootView>
+            </NavigationContainer>
+          </ChatProvider>
+        </NotificationProvider>
+      </AuthProvider>
+    </NetworkGuard>
   );
 }
