@@ -23,9 +23,10 @@ import PostCard from "../posts/components/post-card-on-feeds";
 import { IPost } from "../../interfaces/post-interface";
 import { getRankIcon } from "./components/rank-images";
 import RankInfoModal from "./components/rank-info-modal";
-import ReportButton from "../admin-settings/components/report-button";
 import Ionicons from "react-native-vector-icons/Ionicons";
-
+import LtrText from "../../components/ltr-text";
+import ReportPopup from "../admin-settings/components/report-popup";
+import ReportIcon from "../../assets/report.svg";
 interface UserProfileProps {
   route: any;
   navigation: any;
@@ -43,6 +44,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
   const [showRankModal, setShowRankModal] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
   const [isPrivatePosts, setIsPrivatePosts] = useState(false);
+  const [reportPopupVisible, setReportPopupVisible] = useState(false);
 
   const rankName = user?.rank;
   const RankIcon = rankName ? getRankIcon(rankName) : null;
@@ -157,22 +159,22 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
                       params: { user, type: "user" },
                     });
                   }}
-                  className="mt-2 flex-row items-center border-2 border-blue-500 p-1 rounded-full bg-blue-500"
+                  className="mt-2 flex-row items-center border p-1 rounded-full bg-blue-500"
                 >
                   <Ionicons
                     name="chatbubble-ellipses-outline"
                     size={20}
                     color="white"
                   />
-                  <Text className="ml-1 text-sm text-white">Send Message</Text>
+                  <Text className="ml-1 text-sm text-white ">Send Message</Text>
                 </TouchableOpacity>
               )}
             </View>
             <View className="flex-1 ml-2">
-              <Text className="text-xl font-bold">{`${user.username}`}</Text>
-              <Text className="text-sm font-bold">
-                {`${user.first_name} ${user.last_name}`}
-              </Text>
+              <LtrText className="text-xl font-bold">{user.username}</LtrText>
+              <LtrText className="text-sm font-bold">
+                {user.first_name} {user.last_name}
+              </LtrText>
 
               {rankName && (
                 <View className="flex-row items-center">
@@ -211,7 +213,14 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
                     onStatusChange={(newStatus: string) =>
                       setFriendStatus(newStatus)
                     }
+                    onReportPress={() => setReportPopupVisible(true)}
                   />
+                  <TouchableOpacity
+                    onPress={() => setReportPopupVisible(true)}
+                    className="ml-1 bg-red-300 p-1 rounded-full border"
+                  >
+                    <ReportIcon width={20} height={20} />
+                  </TouchableOpacity>
                 </View>
               )}
             </View>
@@ -340,10 +349,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ route, navigation }) => {
           />
         </KeyboardAvoidingView>
       )}
-      <ReportButton
+
+      <ReportPopup
+        visible={reportPopupVisible}
+        onClose={() => setReportPopupVisible(false)}
         targetId={userId}
         targetType="user"
-        positionClasses="absolute top-5 right-4"
       />
     </SafeAreaView>
   );
