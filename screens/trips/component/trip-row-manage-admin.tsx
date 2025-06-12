@@ -8,7 +8,7 @@ import ConfirmationModal from "../../../components/confirmation-modal";
 interface TripRowProps {
   trip: Trip;
   activeTab: "all" | "archived";
-  onNavigate: (tripId: string, isArchived: boolean) => void;
+  onNavigate: (tripId: string) => void;
   onArchive: (tripId: string) => void;
   onUnarchive: (tripId: string) => void;
   onDeleteArchived: (tripId: string) => void;
@@ -47,7 +47,7 @@ const TripRow: React.FC<TripRowProps> = ({
     <View className="flex-row items-center bg-white mb-4 p-4 rounded-lg h-24">
       {/* Left side: Image and info/buttons wrapped in a TouchableOpacity */}
       <TouchableOpacity
-        onPress={() => onNavigate(trip._id, activeTab === "archived")}
+        onPress={() => onNavigate(trip._id)}
         className="flex-row flex-1 items-center"
       >
         {trip.main_image ? (

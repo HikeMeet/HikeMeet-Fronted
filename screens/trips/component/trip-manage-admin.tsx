@@ -50,7 +50,7 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
   const fetchArchivedTrips = async () => {
     try {
       const response = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/trips/archive/all`
+        `${process.env.EXPO_LOCAL_SERVER}/api/trips/all?getArchived=true`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch archived trips");
@@ -91,9 +91,11 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
       if (!response.ok) {
         throw new Error("Failed to archive trip");
       }
-      const data = await response.json();
-      setTrips((prevTrips) => prevTrips.filter((trip) => trip._id !== tripId));
-      setArchivedTrips((prev) => [data.archivedTrip, ...prev]);
+      const { trip: archivedTrip } = await response.json();
+      setTrips((prev) => prev.filter((t) => t._id !== tripId));
+      if (archivedTrip) {
+        setArchivedTrips((prev) => [archivedTrip, ...prev]);
+      }
     } catch (error) {
       console.error("Error archiving trip:", error);
     }
@@ -103,7 +105,7 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
   const handleDeleteArchived = async (tripId: string) => {
     try {
       const response = await fetch(
-        `${process.env.EXPO_LOCAL_SERVER}/api/trips/archive/${tripId}`,
+        `${process.env.EXPO_LOCAL_SERVER}/api/trips/${tripId}/delete`,
         { method: "DELETE" }
       );
       if (!response.ok) {
@@ -135,10 +137,10 @@ const TripsManage: React.FC<TripsManageProps> = ({ navigation }) => {
   };
 
   // NEW: Handler for navigation
-  const handleNavigate = (tripId: string, isArchived: boolean) => {
+  const handleNavigate = (tripId: string) => {
     navigation.navigate("TripsStack", {
       screen: "TripPage",
-      params: { tripId, isArchived },
+      params: { tripId },
     });
   };
 

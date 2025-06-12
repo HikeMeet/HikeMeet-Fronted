@@ -142,12 +142,6 @@ const CreateGroupPage: React.FC<any> = ({ navigation, route }) => {
           onStartDateChange={setScheduledStart}
           onEndDateChange={setScheduledEnd}
         />
-        {/* <EmbarkedAtField
-          embarkedAt={embarkedAt}
-          setEmbarkedAt={setEmbarkedAt}
-          showTimePicker={showTimePicker}
-          setShowTimePicker={setShowTimePicker}
-        /> */}
         <TimeFields
           startTime={startTime}
           setStartTime={setStartTime}
