@@ -274,7 +274,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
         {tripData && (
           <TripImagesUploader
             tripId={tripId}
-            enabled={mongoId === tripData.createdBy}
+            // enabled={mongoId === tripData.createdBy}
             initialImages={tripData.images ?? []}
             onImagesUpdated={(imgs) =>
               setTripData((prevTripData) => {
