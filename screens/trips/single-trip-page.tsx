@@ -55,7 +55,7 @@ if (MapboxAvailable) {
 
 type TripDetailProps = {
   route: {
-    params: { tripId: string; fromCreate?: boolean; isArchived?: boolean };
+    params: { tripId: string; fromCreate?: boolean };
   };
   navigation: any;
 };
@@ -74,7 +74,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   const [bio, setBio] = useState<string>("");
   // State to control ScrollView scrolling
   const [scrollEnabled, setScrollEnabled] = useState<boolean>(true);
-  const { tripId, fromCreate = false, isArchived = false } = route.params;
+  const { tripId, fromCreate = false } = route.params;
   const { mongoId, mongoUser, fetchMongoUser } = useAuth(); // current user's mongoId
   const [isFavorite, setIsFavorite] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -83,9 +83,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   useEffect(() => {
     const fetchTripData = async () => {
       try {
-        const endpoint = isArchived
-          ? `${process.env.EXPO_LOCAL_SERVER}/api/trips/archive/${tripId}`
-          : `${process.env.EXPO_LOCAL_SERVER}/api/trips/${tripId}`;
+        const endpoint = `${process.env.EXPO_LOCAL_SERVER}/api/trips/${tripId}`;
         const response = await fetch(endpoint);
         if (!response.ok) {
           throw new Error("Failed to fetch trip data");
@@ -109,7 +107,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
     if (tripId) {
       fetchTripData();
     }
-  }, [tripId, isArchived]);
+  }, [tripId]);
 
   useEffect(() => {
     if (mongoUser?.favorite_trips) {
