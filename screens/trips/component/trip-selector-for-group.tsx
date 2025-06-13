@@ -13,8 +13,8 @@ import {
 import { Trip } from "../../../interfaces/trip-interface";
 
 interface TripSelectorProps {
-  onSelectTrip: (tripId: string) => void;
-  selectedTripId: string;
+  onSelectTrip: (trip: Trip) => void;
+  selectedTripId: Trip | null;
 }
 
 const truncateText = (text: string, maxLength: number = 30) => {
@@ -61,7 +61,7 @@ const TripSelector: React.FC<TripSelectorProps> = ({
 
   const handleTripPress = (trip: Trip) => {
     // Single tap selects the trip.
-    onSelectTrip(trip._id);
+    onSelectTrip(trip);
   };
 
   const handleTripLongPress = (trip: Trip) => {
@@ -92,9 +92,7 @@ const TripSelector: React.FC<TripSelectorProps> = ({
               onPress={() => handleTripPress(trip)}
               onLongPress={() => handleTripLongPress(trip)}
               className={`p-4 mr-4 border rounded ${
-                selectedTripId === trip._id
-                  ? "border-green-500"
-                  : "border-gray-300"
+                selectedTripId === trip ? "border-green-500" : "border-gray-300"
               }`}
             >
               <View className="flex-row items-center">

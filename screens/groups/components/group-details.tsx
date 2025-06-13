@@ -36,8 +36,9 @@ const GroupDetails: React.FC<GroupDetailsProps> = ({
           <TripRow
             trip={trip}
             onPress={() =>
-              navigation.push("TripPage", {
-                tripId: trip._id,
+              navigation.push("TripsStack", {
+                screen: "TripPage",
+                params: { tripId: trip._id },
               })
             }
           />
@@ -74,11 +75,11 @@ const GroupDetails: React.FC<GroupDetailsProps> = ({
           <View className="flex-1">
             <Text className="font-semibold text-gray-600">Meeting Point</Text>
             <Text className="text-gray-800 text-lg">
-              {group.meeting_point || "Not set"}
+              {group.meeting_point?.address || "Not set"}
             </Text>
           </View>
           {group.meeting_point && (
-            <MapDirectionButton destination={group.meeting_point} />
+            <MapDirectionButton destination={group.meeting_point.address} />
           )}
         </View>
         {/* Embarked At */}
