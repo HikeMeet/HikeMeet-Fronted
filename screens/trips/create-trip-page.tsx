@@ -46,7 +46,6 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
   );
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [isMapLoading, setIsMapLoading] = useState(false); // new state
   const { mongoId } = useAuth(); // current user's mongoId
   const cameWithCoordinates = !!route?.params?.selectedCoordinates;
 
@@ -57,10 +56,8 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
         setTripCoordinates(coords);
         reverseGeocode(coords);
       } else {
-        setIsMapLoading(true);
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
-          setIsMapLoading(false);
           return;
         }
         const loc = await Location.getCurrentPositionAsync({});
@@ -71,7 +68,6 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
         setUserLocation(coords);
         setTripCoordinates(coords);
         setTripLocation("");
-        setIsMapLoading(false);
       }
     };
     initLocation();
@@ -203,23 +199,14 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
       />
 
       {/* MapSearch Component (integrated search field and map) */}
-      <View className="h-[350px] mb-5">
-        {isMapLoading ? (
-          <View className="flex-1 justify-center items-center">
-            <ActivityIndicator size="large" color="#1E90FF" />
-            <Text className="mt-2 text-gray-500">Loading map...</Text>
-          </View>
-        ) : (
-          <MapSearch
-            onLocationSelect={handleLocationSelect}
-            initialLocation={tripCoordinates || userLocation}
-            initialAddress={cameWithCoordinates ? tripLocation : ""}
-            shouldRunReverseGeocode={cameWithCoordinates}
-            onMapTouchStart={() => setScrollEnabled(false)}
-            onMapTouchEnd={() => setScrollEnabled(true)}
-          />
-        )}
-      </View>
+      <MapSearch
+        onLocationSelect={handleLocationSelect}
+        initialLocation={tripCoordinates || userLocation}
+        initialAddress={cameWithCoordinates ? tripLocation : ""}
+        shouldRunReverseGeocode={cameWithCoordinates}
+        onMapTouchStart={() => setScrollEnabled(false)}
+        onMapTouchEnd={() => setScrollEnabled(true)}
+      />
 
       {/* Image Upload Photos Component */}
       {/* <ImageUploadPhotos onImagesChange={handleImagesChange} /> */}
