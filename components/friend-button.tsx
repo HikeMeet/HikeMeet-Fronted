@@ -9,12 +9,14 @@ interface FriendActionButtonProps {
   status: string; // "accepted", "request_sent", "request_received", "blocked", or "none"
   targetUserId: string;
   onStatusChange?: (newStatus: string) => void;
+  onReportPress?: () => void;
 }
 
 const FriendActionButton: React.FC<FriendActionButtonProps> = ({
   status,
   targetUserId,
   onStatusChange,
+  onReportPress,
 }) => {
   const { removeRoom } = useChatList();
   const { mongoUser, mongoId, fetchMongoUser } = useAuth();
@@ -204,6 +206,16 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
               <View
                 style={tw`bg-white border border-gray-300 rounded shadow-md p-2`}
               >
+                {onReportPress && (
+                  <TouchableOpacity
+                    onPress={() => onReportPress()}
+                    style={tw`py-1 px-2 bg-red-100 rounded mb-1`}
+                  >
+                    <Text style={tw`text-sm text-red-600 font-bold`}>
+                      Report User
+                    </Text>
+                  </TouchableOpacity>
+                )}
                 {currentStatus === "request_received" && (
                   <TouchableOpacity
                     onPress={handleDeclineRequest}

@@ -54,6 +54,7 @@ export default function VerifyEmailPage({
       }
     }
   };
+  const normalizedEmail = email.toLowerCase();
 
   const insertUser = async (userId: string): Promise<string | null> => {
     try {
@@ -66,7 +67,7 @@ export default function VerifyEmailPage({
           },
           body: JSON.stringify({
             username,
-            email,
+            email: normalizedEmail,
             first_name: firstName,
             last_name: lastName,
             firebase_id: userId,

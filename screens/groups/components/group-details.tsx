@@ -32,16 +32,22 @@ const GroupDetails: React.FC<GroupDetailsProps> = ({
             {group.description || "No description"}
           </Text>
         </View>
-        {trip && (
+        {trip ? (
           <TripRow
             trip={trip}
             onPress={() =>
-              navigation.push("TripsStack", {
-                screen: "TripPage",
-                params: { tripId: trip._id },
+              navigation.push("TripPage", {
+                tripId: trip._id,
               })
             }
           />
+        ) : (
+          <View className="p-4 bg-gray-100 rounded-2xl my-2 items-center justify-center">
+            <Text className="text-sm text-gray-500 text-center">
+              This trip is unavailable or has been deleted.{"\n"}
+              Please select a different trip.
+            </Text>
+          </View>
         )}
 
         {/* Hikers */}
@@ -152,20 +158,6 @@ const GroupDetails: React.FC<GroupDetailsProps> = ({
           ) : (
             <Text className="text-gray-800">Not set</Text>
           )}
-        </View>
-        {/* Created At */}
-        <View className="p-4 border-b border-gray-200">
-          <Text className="font-semibold text-gray-600">Created At</Text>
-          <Text className="text-gray-800">
-            {new Date(group.created_at).toLocaleString()}
-          </Text>
-        </View>
-        {/* Updated At */}
-        <View className="p-4">
-          <Text className="font-semibold text-gray-600">Updated At</Text>
-          <Text className="text-gray-800">
-            {new Date(group.updated_at).toLocaleString()}
-          </Text>
         </View>
       </ScrollView>
     </>
