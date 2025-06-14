@@ -19,7 +19,8 @@ import TripImagesUploader from "./component/trip-image-gallery";
 import MapDirectionButton from "../../components/get-direction";
 import ShareTripModal from "./component/share-trip-to-post-modal";
 import TripStarRating from "./component/starts-rating";
-import ReportButton from "../admin-settings/components/report-button";
+import ReportPopup from "../admin-settings/components/report-popup";
+import ReportIcon from "../../assets/report.svg";
 
 // Determine if native Mapbox code is available (i.e. not running in Expo Go)
 const MapboxAvailable = Constants.appOwnership !== "expo";
@@ -54,7 +55,7 @@ if (MapboxAvailable) {
 
 type TripDetailProps = {
   route: {
-    params: { tripId: string; fromCreate?: boolean; isArchived?: boolean };
+    params: { tripId: string; fromCreate?: boolean };
   };
   navigation: any;
 };
@@ -73,18 +74,16 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   const [bio, setBio] = useState<string>("");
   // State to control ScrollView scrolling
   const [scrollEnabled, setScrollEnabled] = useState<boolean>(true);
-  const { tripId, fromCreate = false, isArchived = false } = route.params;
+  const { tripId, fromCreate = false } = route.params;
   const { mongoId, mongoUser, fetchMongoUser } = useAuth(); // current user's mongoId
   const [isFavorite, setIsFavorite] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-
+  const [reportPopupVisible, setReportPopupVisible] = useState(false);
   // Fetch trip data from the backend using the tripId parameter.
   useEffect(() => {
     const fetchTripData = async () => {
       try {
-        const endpoint = isArchived
-          ? `${process.env.EXPO_LOCAL_SERVER}/api/trips/archive/${tripId}`
-          : `${process.env.EXPO_LOCAL_SERVER}/api/trips/${tripId}`;
+        const endpoint = `${process.env.EXPO_LOCAL_SERVER}/api/trips/${tripId}`;
         const response = await fetch(endpoint);
         if (!response.ok) {
           throw new Error("Failed to fetch trip data");
@@ -108,7 +107,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
     if (tripId) {
       fetchTripData();
     }
-  }, [tripId, isArchived]);
+  }, [tripId]);
 
   useEffect(() => {
     if (mongoUser?.favorite_trips) {
@@ -178,9 +177,9 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
       >
         {/* Header: image, title, rating, and action icons */}
         <View className="flex-row items-center justify-between py-2">
-          {/* Left side: image + title */}
+          {/* Left side: image + title + rating */}
           <View className="flex-row items-center flex-1">
-            {tripData && tripData.main_image && (
+            {tripData?.main_image && (
               <ProfileImage
                 initialImage={tripData.main_image}
                 size={60}
@@ -189,7 +188,8 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
                 editable={mongoId === tripData.createdBy}
               />
             )}
-            <View className="ml-2">
+            {/* ensure title+rating are left-aligned */}
+            <View className="ml-2 items-start">
               <Text className="text-lg font-bold">{tripName}</Text>
               {tripData && (
                 <TripStarRating
@@ -205,8 +205,12 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
             </View>
           </View>
 
-          {/* Right side: vertical icons aligned to far right */}
-          <View className="flex-col top-6 items-end space-y-2 ml-2">
+          {/* Right side: report + icons */}
+          {/* Right side: report + heart + share */}
+          <View className="flex-col ml-2 items-end space-y-2">
+            <TouchableOpacity onPress={() => setReportPopupVisible(true)}>
+              <ReportIcon width={20} height={20} />
+            </TouchableOpacity>
             <TouchableOpacity onPress={toggleFavorite}>
               <Ionicons
                 name={isFavorite ? "heart" : "heart-outline"}
@@ -268,7 +272,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
         {tripData && (
           <TripImagesUploader
             tripId={tripId}
-            enabled={mongoId === tripData.createdBy}
+            // enabled={mongoId === tripData.createdBy}
             initialImages={tripData.images ?? []}
             onImagesUpdated={(imgs) =>
               setTripData((prevTripData) => {
@@ -286,11 +290,11 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
           <Text className="text-white font-semibold">Back to Trips</Text>
         </TouchableOpacity>
       </ScrollView>
-
-      <ReportButton
+      <ReportPopup
+        visible={reportPopupVisible}
+        onClose={() => setReportPopupVisible(false)}
         targetId={tripId}
         targetType="trip"
-        positionClasses="absolute top-2 right-3"
       />
 
       {tripData && (

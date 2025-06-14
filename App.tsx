@@ -10,8 +10,14 @@ import { NotificationProvider } from "./contexts/notification-context";
 import * as Notifications from "expo-notifications";
 import { navigationRef } from "./root-navigation";
 import NetworkGuard from "./components/network-guard";
-import { UIManager, Platform } from "react-native";
+import { UIManager, Platform, I18nManager } from "react-native";
 import ChatProvider from "./contexts/chat-context";
+
+// Force LTR on every app launch
+if (I18nManager.isRTL) {
+  I18nManager.allowRTL(false);
+  I18nManager.forceRTL(false);
+}
 
 // Only import and configure Mapbox if not running in Expo Go
 let Mapbox;
@@ -65,18 +71,18 @@ if (
 }
 export default function App() {
   return (
-    <AuthProvider>
-      <NotificationProvider>
-        <ChatProvider>
-          <NavigationContainer ref={navigationRef}>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <NetworkGuard>
+    <NetworkGuard>
+      <AuthProvider>
+        <NotificationProvider>
+          <ChatProvider>
+            <NavigationContainer ref={navigationRef}>
+              <GestureHandlerRootView style={{ flex: 1 }}>
                 <MainLayout />
-              </NetworkGuard>
-            </GestureHandlerRootView>
-          </NavigationContainer>
-        </ChatProvider>
-      </NotificationProvider>
-    </AuthProvider>
+              </GestureHandlerRootView>
+            </NavigationContainer>
+          </ChatProvider>
+        </NotificationProvider>
+      </AuthProvider>
+    </NetworkGuard>
   );
 }

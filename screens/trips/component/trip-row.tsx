@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { Trip } from "../../../interfaces/trip-interface";
 import TripStarRating from "./starts-rating";
+import LtrText from "../../../components/ltr-text";
 
 interface TripRowProps {
   trip: Trip;
@@ -40,20 +41,20 @@ const TripRow: React.FC<TripRowProps> = ({
       )}
 
       <View className="flex-1">
-        <Text
+        <LtrText
           className="text-lg font-bold"
           numberOfLines={1}
           ellipsizeMode="tail"
         >
           {trip.name}
-        </Text>
-        <Text
+        </LtrText>
+        <LtrText
           className="text-sm text-gray-500 break-words"
           numberOfLines={2}
           ellipsizeMode="tail"
         >
           {trip.location.address}
-        </Text>
+        </LtrText>
       </View>
 
       {completedAt && (

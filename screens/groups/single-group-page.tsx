@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   BackHandler,
   TouchableOpacity,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
@@ -37,6 +38,8 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
   const [trip, setTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<"details" | "posts">("details");
+  const [expanded, setExpanded] = useState(false);
+  const nameLengthCrop = 17;
   const [isMuted, setIsMuted] = useState<boolean>(
     () => mongoUser?.mutedGroups?.includes(groupId) ?? false
   );
@@ -203,24 +206,45 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             />
           )}
           <View className="ml-2">
-            <Text
-              className="text-lg font-bold"
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {group.name}
-            </Text>
-            <JoinGroupActionButton
-              group={group}
-              navigation={navigation}
-              isInGroupPage={true}
-              onAction={fetchGroup}
-            />
+            <Pressable onPress={() => setExpanded((prev) => !prev)}>
+              <Text
+                className="text-lg font-bold"
+                // unlimited lines when expanded, else clamp to 1
+                numberOfLines={expanded ? undefined : 1}
+                ellipsizeMode="tail"
+              >
+                {expanded && group!.name.length > nameLengthCrop
+                  ? // insert newline after every nameLengthCrop chars
+                    group!.name.replace(
+                      new RegExp(`(.{${nameLengthCrop}})`, "g"),
+                      "$1-\n"
+                    )
+                  : group!.name.length > nameLengthCrop
+                    ? `${group!.name.substring(0, nameLengthCrop)}…`
+                    : group!.name}
+              </Text>
+            </Pressable>
+            <View className="flex-row items-center">
+              <JoinGroupActionButton
+                group={group}
+                navigation={navigation}
+                isInGroupPage={true}
+                onAction={fetchGroup}
+              />
+            </View>
           </View>
         </View>
 
         {/* Right-side controls */}
-        <View className="flex-row items-center space-x-2">
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            zIndex: 1,
+          }}
+          className="flex-row items-center space-x-2"
+        >
           {/* Mute/Unmute */}
           <TouchableOpacity onPress={toggleMute} className="p-2">
             <Ionicons

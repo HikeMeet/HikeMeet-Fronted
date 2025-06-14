@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import MuteToggleButton from "./mute-chat-togle";
+import LtrText from "../../../components/ltr-text";
 
 interface ChatHeaderProps {
   avatarUrl?: string;
@@ -35,12 +36,12 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
       )}
     </TouchableOpacity>
 
-    <Text
+    <LtrText
       numberOfLines={1}
       className="flex-1 text-lg font-semibold text-gray-900"
     >
       {title}
-    </Text>
+    </LtrText>
     <MuteToggleButton roomId={roomId} />
   </View>
 );
