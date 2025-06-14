@@ -11,6 +11,8 @@ interface GroupRowProps {
   onAction?: () => void;
   onPress: () => void;
   showAvailability?: boolean;
+  showAdminBadge?: boolean;
+  currentUserId?: string;
 }
 
 const GroupRow: React.FC<GroupRowProps> = ({
@@ -19,10 +21,15 @@ const GroupRow: React.FC<GroupRowProps> = ({
   onAction,
   onPress,
   showAvailability = false,
+  showAdminBadge = false,
+  currentUserId,
 }) => {
   const currentMembers = group.members ? group.members.length : 0;
   const spotsLeft = group.max_members - currentMembers;
   const isFull = spotsLeft <= 0;
+
+  const isAdmin =
+    showAdminBadge && currentUserId && group.created_by === currentUserId;
 
   return (
     <>
@@ -79,14 +86,23 @@ const GroupRow: React.FC<GroupRowProps> = ({
                   </Text>
                 </View>
 
-                {showAvailability && (
+                {isAdmin ? (
                   <Text
-                    className={`text-sm font-semibold mt-1 ${
-                      isFull ? "text-red-600" : "text-emerald-600"
-                    }`}
+                    className="text-xs font-bold mt-1"
+                    style={{ color: "#000000" }}
                   >
-                    {isFull ? "• Full" : `• ${spotsLeft} left`}
+                    • in group
                   </Text>
+                ) : (
+                  showAvailability && (
+                    <Text
+                      className={`text-xs font-semibold ${
+                        isFull ? "text-red-600" : "text-black-600"
+                      }`}
+                    >
+                      {isFull ? "• Full" : `• ${spotsLeft} left`}
+                    </Text>
+                  )
                 )}
               </View>
             </View>

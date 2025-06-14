@@ -21,6 +21,7 @@ interface TripStarRatingProps {
   /** Base size for interactive stars; avg stars will be 2/3 of this */
   size?: number;
   color?: string;
+  ismap?: boolean;
 }
 
 const TripStarRating: React.FC<TripStarRatingProps> = ({
@@ -31,6 +32,7 @@ const TripStarRating: React.FC<TripStarRatingProps> = ({
   onRated,
   size = 24,
   color = "#FFD700",
+  ismap,
 }) => {
   const { mongoUser } = useAuth();
   const userId = mongoUser!._id;
@@ -98,25 +100,44 @@ const TripStarRating: React.FC<TripStarRatingProps> = ({
   );
 
   return (
-    <View className="items-center ">
-      {/* Average + inline Rate icon */}
-      <View className="flex-row items-center ">
-        {renderStaticStars(avgRating, size * 0.66)}
+    <View className="items-center">
+      {ismap ? (
+        <View className="mt-9">
+          <View className="flex-row items-center space-x-2">
+            <View className="p-1 bg-white rounded-full items-center justify-center">
+              <Ionicons name="star" size={size * 0.7} color="#FFD700" />
+            </View>
+            <Text className="text-base font-semibold">
+              {avgRating.toFixed(1)}
+            </Text>
+          </View>
+        </View>
+      ) : (
+        // regular
+        <>
+          <View className="flex-row items-center">
+            {renderStaticStars(avgRating, size * 0.66)}
 
-        <TouchableOpacity
-          onPress={() => {
-            setSelected(yourRating || 0);
-            setModalVisible(true);
-          }}
-          className="mx-0.5 p-1 bg-green-500 rounded-full items-center justify-center"
-        >
-          <Ionicons name="star-outline" size={size * 0.4} color="#fff" />
-        </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setSelected(yourRating || 0);
+                setModalVisible(true);
+              }}
+              className="mx-0.5 p-1 bg-green-500 rounded-full items-center justify-center"
+            >
+              <Ionicons name="star-outline" size={size * 0.4} color="#fff" />
+            </TouchableOpacity>
 
-        <Text className="text-lg font-semibold">{avgRating.toFixed(1)}</Text>
-      </View>
+            <Text className="text-lg font-semibold">
+              {avgRating.toFixed(1)}
+            </Text>
+          </View>
 
-      <Text className="text-xs text-gray-600  ">({totalRatings} ratings)</Text>
+          <Text className="text-xs text-gray-600  ">
+            ({totalRatings} ratings)
+          </Text>
+        </>
+      )}
 
       {/* Rating Modal */}
       <Modal

@@ -7,6 +7,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import * as Location from "expo-location";
 import MapSearch from "../../components/map-search-creaete-trip";
@@ -31,14 +32,14 @@ const TRIP_TAGS = [
   "Museum",
 ];
 
-const CreateTripPage: React.FC = ({ navigation }: any) => {
+const CreateTripPage: React.FC = ({ navigation, route }: any) => {
   const [tripName, setTripName] = useState<string>("");
   const [description, setDescription] = useState<string>(""); // New description field
   // State to hold the chosen trip coordinates from MapSearch.
-  const [tripLocation, setTripLocation] = useState<string>("debug location");
+  const [tripLocation, setTripLocation] = useState<string>("");
   const [tripCoordinates, setTripCoordinates] = useState<
     [number, number] | null
-  >([135.617964, 34.325275]);
+  >(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null
@@ -46,20 +47,47 @@ const CreateTripPage: React.FC = ({ navigation }: any) => {
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const { mongoId } = useAuth(); // current user's mongoId
+  const cameWithCoordinates = !!route?.params?.selectedCoordinates;
 
-  // Get user's current location.
   useEffect(() => {
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.log("Permission to access location was denied");
-        return;
+    const initLocation = async () => {
+      if (route?.params?.selectedCoordinates) {
+        const coords = route.params.selectedCoordinates as [number, number];
+        setTripCoordinates(coords);
+        reverseGeocode(coords);
+      } else {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          return;
+        }
+        const loc = await Location.getCurrentPositionAsync({});
+        const coords: [number, number] = [
+          loc.coords.longitude,
+          loc.coords.latitude,
+        ];
+        setUserLocation(coords);
+        setTripCoordinates(coords);
+        setTripLocation("");
       }
-      const loc = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = loc.coords;
-      setUserLocation([longitude, latitude]);
-    })();
+    };
+    initLocation();
   }, []);
+
+  const reverseGeocode = async (coords: [number, number]) => {
+    try {
+      const [lon, lat] = coords;
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${process.env.GOOGLEMAP_API_KEY}`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.results && data.results.length > 0) {
+        setTripLocation(data.results[0].formatted_address);
+      }
+    } catch (error) {
+      console.error("Reverse geocoding failed:", error);
+    }
+  };
 
   // Callback to update location info from MapSearch.
   // Updates both the address and the chosen coordinates.
@@ -173,7 +201,9 @@ const CreateTripPage: React.FC = ({ navigation }: any) => {
       {/* MapSearch Component (integrated search field and map) */}
       <MapSearch
         onLocationSelect={handleLocationSelect}
-        initialLocation={userLocation}
+        initialLocation={tripCoordinates || userLocation}
+        initialAddress={cameWithCoordinates ? tripLocation : ""}
+        shouldRunReverseGeocode={cameWithCoordinates}
         onMapTouchStart={() => setScrollEnabled(false)}
         onMapTouchEnd={() => setScrollEnabled(true)}
       />
