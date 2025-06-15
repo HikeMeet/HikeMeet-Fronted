@@ -288,14 +288,6 @@ describe("Integration Tests - Resource Creation", () => {
         content: testData.postContent,
         author: mongoUserId,
         privacy: "public",
-        attached_trips: [tripId],
-        in_group: groupId,
-        images: [
-          {
-            url: "https://example.com/test-post-image.jpg",
-            image_id: "test_post_image_id",
-          },
-        ],
         type: "regular",
       };
 
