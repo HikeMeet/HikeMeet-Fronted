@@ -260,7 +260,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
               onPress={() =>
                 navigation.navigate("GroupsStack", {
                   screen: "EditGroupPage",
-                  params: { group },
+                  params: { group, trip },
                 })
               }
               className="px-2 py-1 bg-blue-600 rounded-md"

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { View, TextInput, TouchableOpacity, Text } from "react-native";
 import Constants from "expo-constants";
 import * as Location from "expo-location";
@@ -20,6 +20,7 @@ const StyledIonicons = styled(Ionicons);
 
 type MapSearchProps = {
   onLocationSelect: (coords: [number, number], address: string) => void;
+  userLocation?: [number, number];
   initialLocation: [number, number] | null;
   onMapTouchStart?: () => void;
   onMapTouchEnd?: () => void;
@@ -27,6 +28,7 @@ type MapSearchProps = {
 
 const MapSearch: React.FC<MapSearchProps> = ({
   onLocationSelect,
+  userLocation,
   initialLocation,
   onMapTouchStart,
   onMapTouchEnd,
@@ -35,10 +37,20 @@ const MapSearch: React.FC<MapSearchProps> = ({
   const [query, setQuery] = useState<string>("");
   const [results, setResults] = useState<any[]>([]);
   const [selectedCoords, setSelectedCoords] = useState<[number, number] | null>(
-    null
+    initialLocation
   );
   const [clearOnEdit, setClearOnEdit] = useState<boolean>(false);
   const cameraRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (initialLocation && cameraRef.current) {
+      // snap the pin to the new trip coord
+      setSelectedCoords(initialLocation);
+
+      // fly the camera there
+      cameraRef.current.flyTo(initialLocation, 1000);
+    }
+  }, [initialLocation]);
 
   const searchGoogle = async (text: string) => {
     setQuery(text);
@@ -121,8 +133,9 @@ const MapSearch: React.FC<MapSearchProps> = ({
   };
 
   const handleRecenter = () => {
-    if (initialLocation && cameraRef.current) {
-      cameraRef.current.flyTo(initialLocation, 1000);
+    if (userLocation && cameraRef.current) {
+      cameraRef.current.flyTo(userLocation, 1000);
+      setSelectedCoords(userLocation);
     }
   };
 

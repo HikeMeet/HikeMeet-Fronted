@@ -4,6 +4,7 @@ import React from "react";
 import { ScrollView, TouchableOpacity, Text, Alert, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import GroupCreatedModal from "../../components/post-group-creatonal";
+import * as Location from "expo-location";
 import { useAuth } from "../../contexts/auth-context";
 import { Group } from "../../interfaces/group-interface";
 import {
@@ -15,12 +16,14 @@ import {
   TimeFields,
   TripSelectorField,
 } from "./components/edit-page-components";
+import MapSearch from "../../components/map-search-creaete-trip";
+import { Trip } from "../../interfaces/trip-interface";
 
 const CreateGroupPage: React.FC<any> = ({ navigation, route }) => {
   const { trip } = route.params || {};
   // Form states
   const [groupName, setGroupName] = useState<string>("");
-  const [selectedTrip, setSelectedTrip] = useState<string>("");
+  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [maxMembers, setMaxMembers] = useState<string>("");
   const [privacy, setPrivacy] = useState<"public" | "private">("public");
   const [description, setDescription] = useState<string>("");
@@ -35,16 +38,56 @@ const CreateGroupPage: React.FC<any> = ({ navigation, route }) => {
   const [showEndTimePicker, setShowEndTimePicker] = useState<boolean>(false);
   const [startTime, setStartTime] = useState<string>("");
   const [finishTime, setFinishTime] = useState<string>("");
+  const [showMapSearch, setShowMapSearch] = useState<boolean>(false);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(
+    null
+  );
+  const [meetingPointLocation, setMeetingPointLocation] = useState<
+    string | null
+  >(null);
+  const [meetingPointCoordinates, setMeetingPointCoordinates] = useState<
+    [number, number] | null
+  >(null);
+  const [scrollEnabled, setScrollEnabled] = useState(true);
+
   const { mongoId } = useAuth(); // current user's data
 
   // Helper function to format date for backend (ISO string)
   const formatDateForBackend = (date: Date) => date.toISOString();
+  const handleLocationSelect = (coords: [number, number], address: string) => {
+    setMeetingPointLocation(address);
+    setMeetingPointCoordinates(coords);
+  };
+  useEffect(() => {
+    if (!selectedTrip || !showMapSearch) return;
+    setMeetingPointLocation(selectedTrip.location.address);
+    setMeetingPointCoordinates([
+      selectedTrip.location.coordinates[0],
+      selectedTrip.location.coordinates[1],
+    ]);
+  }, [selectedTrip]);
+  // Get user's current location.
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission to access location was denied");
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = loc.coords;
+      setUserLocation([longitude, latitude]);
+    })();
+  }, []);
 
-  // נשתמש בטיול כדי למלא שדות מראש
   useEffect(() => {
     if (trip) {
-      setSelectedTrip(trip._id);
-      // תוכל להוסיף כאן מילוי נוסף כמו: setLocation(trip.location) וכו'
+      setSelectedTrip(trip);
+      setMeetingPointLocation(trip.location.address);
+      setMeetingPointCoordinates([
+        trip.location.coordinates[0],
+        trip.location.coordinates[1],
+      ]);
     }
   }, [trip]);
   // Handler for creating group
@@ -55,9 +98,16 @@ const CreateGroupPage: React.FC<any> = ({ navigation, route }) => {
     }
     setCreating(true);
     try {
+      const finalMeetingPointLocation =
+        meetingPointLocation ?? selectedTrip.location.address;
+      const finalMeetingPointCoordinates = meetingPointCoordinates ?? [
+        selectedTrip.location.coordinates[0],
+        selectedTrip.location.coordinates[1],
+      ];
+
       const payload = {
         name: groupName,
-        trip: selectedTrip,
+        trip: selectedTrip._id,
         max_members: Number(maxMembers),
         privacy,
         description,
@@ -68,6 +118,10 @@ const CreateGroupPage: React.FC<any> = ({ navigation, route }) => {
         scheduled_end: scheduledEnd ? formatDateForBackend(scheduledEnd) : null,
         embarked_at: startTime,
         finish_time: finishTime,
+        meeting_point: {
+          address: finalMeetingPointLocation,
+          coordinates: finalMeetingPointCoordinates,
+        },
         created_by: mongoId,
       };
       const response = await fetch(
@@ -108,7 +162,7 @@ const CreateGroupPage: React.FC<any> = ({ navigation, route }) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white p-4">
-      <ScrollView>
+      <ScrollView scrollEnabled={scrollEnabled}>
         <LabeledTextInput
           label="Group Name"
           placeholder="Enter group name"
@@ -128,7 +182,50 @@ const CreateGroupPage: React.FC<any> = ({ navigation, route }) => {
           selectedTrip={selectedTrip}
           onSelectTrip={setSelectedTrip}
         />
-        <View className="flex-row justify-between">
+        {/* === Meeting Point Selector === */}
+        <View className="mt-2">
+          {/* === Toggle / Set Location Button === */}
+          <TouchableOpacity
+            onPress={() => setShowMapSearch((v) => !v)}
+            activeOpacity={0.7}
+            className={`rounded-xl py-1 items-center shadow-md ${showMapSearch ? "bg-green-600" : "bg-blue-600"}`}
+          >
+            <Text className="text-white text-lg font-bold">
+              {showMapSearch
+                ? "Set Meeting Point"
+                : meetingPointLocation
+                  ? "Change Meeting Point"
+                  : "Set Meeting Point"}
+            </Text>
+          </TouchableOpacity>
+
+          {/* === Address Display === */}
+          {meetingPointLocation && !showMapSearch && (
+            <View className=" bg-white rounded-lg p-4 shadow-md flex-row items-start">
+              <View className="flex-1">
+                <Text className="text-blue-600 font-semibold uppercase text-xs">
+                  Meeting Point
+                </Text>
+                <Text className="text-gray-800 font-medium text-sm mt-1">
+                  {meetingPointLocation}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* === Map Picker === */}
+          {showMapSearch && (
+            <MapSearch
+              initialLocation={meetingPointCoordinates || userLocation}
+              userLocation={userLocation || undefined}
+              onMapTouchStart={() => setScrollEnabled(false)}
+              onMapTouchEnd={() => setScrollEnabled(true)}
+              onLocationSelect={handleLocationSelect}
+            />
+          )}
+        </View>
+
+        <View className="flex-row justify-between mt-3">
           <MaxMembersField value={maxMembers} onChangeText={setMaxMembers} />
           <PrivacyField privacy={privacy} setPrivacy={setPrivacy} />
         </View>
