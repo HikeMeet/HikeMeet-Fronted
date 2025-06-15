@@ -138,16 +138,7 @@ jest.mock("../../screens/my-profile/components/rank-info-modal", () => {
   );
 });
 
-jest.mock("../../screens/admin-settings/components/report-button", () => {
-  const React = require("react");
-  const { TouchableOpacity, Text } = require("react-native");
-  return ({ targetId, targetType, positionClasses }: any) => (
-    <TouchableOpacity testID="report-button">
-      <Text testID="report-target-id">{targetId}</Text>
-      <Text testID="report-target-type">{targetType}</Text>
-    </TouchableOpacity>
-  );
-});
+// Report button mock removed - component not used in current codebase
 
 // Mock vector icons
 jest.mock("react-native-vector-icons/Ionicons", () => {
@@ -602,17 +593,14 @@ describe("UserProfile Tests", () => {
   });
 
   describe("Component Integration", () => {
-    it("displays report button", async () => {
+    it("renders user profile components correctly", async () => {
       const { getByTestId } = render(
         <UserProfile route={mockRoute} navigation={mockNavigation} />
       );
 
       await waitFor(() => {
-        expect(getByTestId("report-button")).toBeTruthy();
-        expect(getByTestId("report-target-id")).toHaveTextContent(
-          "target-user-123"
-        );
-        expect(getByTestId("report-target-type")).toHaveTextContent("user");
+        expect(getByTestId("profile-image")).toBeTruthy();
+        expect(getByTestId("bio-section")).toBeTruthy();
       });
     });
 

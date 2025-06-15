@@ -302,10 +302,7 @@ jest.mock(
   () => require("./tests/__mocks__/share-trip-modal").default
 );
 
-jest.mock(
-  "./screens/admin-settings/components/report-button",
-  () => require("./tests/__mocks__/report-button").default
-);
+// Report button mock removed - component not used in current codebase
 
 jest.mock(
   "./screens/trips/component/trip-row",

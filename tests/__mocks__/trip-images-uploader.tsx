@@ -23,12 +23,13 @@ const TripImagesUploader: React.FC<TripImagesUploaderProps> = ({
   return (
     <View testID="trip-images-uploader">
       <Text testID="images-count">Images: {initialImages.length}</Text>
-      {enabled && (
+      {enabled ? (
         <TouchableOpacity testID="add-image-button" onPress={handleAddImage}>
-          <Text>Add Image</Text>
+          <Text testID="add-image-text">Add Image</Text>
         </TouchableOpacity>
+      ) : (
+        <Text testID="not-enabled">Upload disabled</Text>
       )}
-      {!enabled && <Text testID="not-enabled">Upload disabled</Text>}
     </View>
   );
 };
