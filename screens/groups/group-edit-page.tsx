@@ -51,12 +51,12 @@ const EditGroupPage: React.FC<EditGroupPageProps> = ({ navigation, route }) => {
     group.scheduled_end ? new Date(group.scheduled_end) : null
   );
   const [startTime, setStartTime] = useState<string>(
-    group.scheduled_end ? formatDateToHHMM(new Date(group.scheduled_end)) : ""
-  );
-  const [finishTime, setFinishTime] = useState<string>(
     group.scheduled_start
       ? formatDateToHHMM(new Date(group.scheduled_start))
       : ""
+  );
+  const [finishTime, setFinishTime] = useState<string>(
+    group.scheduled_end ? formatDateToHHMM(new Date(group.scheduled_end)) : ""
   );
   const [showStartTimePicker, setShowStartTimePicker] =
     useState<boolean>(false);

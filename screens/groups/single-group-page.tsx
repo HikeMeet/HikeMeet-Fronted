@@ -33,7 +33,8 @@ interface SingleGroupProps {
 
 const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
   const { groupId, fromCreate } = route.params;
-  const { mongoId, mongoUser, getToken, setMongoUser } = useAuth();
+  const { mongoId, mongoUser, getToken, fetchMongoUser, setMongoUser } =
+    useAuth();
   const [group, setGroup] = useState<Group | null>(null);
   const [trip, setTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -115,7 +116,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
       const mongoUpdatedUser = await res.json();
       // 3) Update local state + re-fetch the full user
       setIsMuted(!isCurrentlyMuted);
-      await setMongoUser(mongoUpdatedUser);
+      fetchMongoUser(mongoId!);
     } catch (err) {
       console.error("Error toggling mute:", err);
     }
