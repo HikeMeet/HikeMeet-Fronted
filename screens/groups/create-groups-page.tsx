@@ -66,7 +66,6 @@ const CreateGroupPage: React.FC<any> = ({ navigation, route }) => {
       selectedTrip.location.coordinates[1],
     ]);
   }, [selectedTrip]);
-
   // Get user's current location.
   useEffect(() => {
     (async () => {
@@ -83,7 +82,7 @@ const CreateGroupPage: React.FC<any> = ({ navigation, route }) => {
 
   useEffect(() => {
     if (trip) {
-      setSelectedTrip(trip._id);
+      setSelectedTrip(trip);
       setMeetingPointLocation(trip.location.address);
       setMeetingPointCoordinates([
         trip.location.coordinates[0],

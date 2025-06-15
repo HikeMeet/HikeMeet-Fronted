@@ -37,7 +37,7 @@ const MapSearch: React.FC<MapSearchProps> = ({
   const [query, setQuery] = useState<string>("");
   const [results, setResults] = useState<any[]>([]);
   const [selectedCoords, setSelectedCoords] = useState<[number, number] | null>(
-    null
+    initialLocation
   );
   const [clearOnEdit, setClearOnEdit] = useState<boolean>(false);
   const cameraRef = useRef<any>(null);

@@ -52,7 +52,7 @@ export const TripSelectorField: React.FC<TripSelectorFieldProps> = ({
 }) => (
   <View className="mb-4">
     <Text className="mb-2">{label}</Text>
-    <TripSelector selectedTripId={selectedTrip} onSelectTrip={onSelectTrip} />
+    <TripSelector selectedTrip={selectedTrip} onSelectTrip={onSelectTrip} />
   </View>
 );
 

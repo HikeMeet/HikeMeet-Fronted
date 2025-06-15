@@ -145,7 +145,6 @@ const Home = ({ navigation }: any) => {
         <CreatePostButton
           navigation={navigation}
           location="home"
-          onPress={() => console.log("create post clicked")}
         />
       </View>
     </View>

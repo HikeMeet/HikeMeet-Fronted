@@ -8,6 +8,7 @@ import { DateDisplay } from "../../../components/date-present";
 import TripRow from "../../trips/component/trip-row";
 import { Trip } from "../../../interfaces/trip-interface";
 import HikersSwitcher from "../../../components/hiker-button-list-group-combined";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 interface GroupDetailsProps {
   group: Group;
@@ -71,12 +72,16 @@ const GroupDetails: React.FC<GroupDetailsProps> = ({
           </View>
         </View>
         {/* Meeting Point with Get Directions */}
-        <View className="p-4 border-b border-gray-200 flex-row items-center justify-between">
-          <View className="flex-1">
-            <Text className="font-semibold text-gray-600">Meeting Point</Text>
-            <Text className="text-gray-800 text-lg">
-              {group.meeting_point?.address || "Not set"}
+        <View className="bg-white rounded-lg shadow-md p-4 flex-row items-center justify-between mb-4">
+          <View className="flex-1 mr-4">
+            <Text className="text-gray-500 uppercase font-semibold text-xs">
+              Meeting Point
             </Text>
+            <View className="flex-row items-center mt-1">
+              <Text className="text-gray-900 font-medium text-base">
+                {group.meeting_point?.address || "Not set"}
+              </Text>
+            </View>
           </View>
           {group.meeting_point && (
             <MapDirectionButton destination={group.meeting_point.address} />
