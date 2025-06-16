@@ -132,7 +132,7 @@ const TripSelector: React.FC<TripSelectorProps> = ({
                 )}
                 <View>
                   <Text className="font-semibold">
-                    {truncateText(trip.name, 15)}
+                    {truncateText(trip.name, 20)}
                   </Text>
                   <Text
                     numberOfLines={1}
@@ -168,15 +168,12 @@ const TripSelector: React.FC<TripSelectorProps> = ({
                 <Text className="text-sm text-gray-500 mb-2">
                   {selectedTripForModal.location.address}
                 </Text>
-                {selectedTripForModal.images &&
-                selectedTripForModal.images.length > 0 ? (
-                  <Image
-                    source={{ uri: selectedTripForModal.main_image?.url }}
-                    className="w-full h-40 rounded mb-2"
-                  />
-                ) : (
-                  <View className="w-full h-40 bg-gray-300 rounded mb-2" />
-                )}
+
+                <Image
+                  source={{ uri: selectedTripForModal.main_image?.url }}
+                  className="w-full h-40 rounded mb-2"
+                />
+
                 <Text className="text-base mb-2">
                   {selectedTripForModal.description ||
                     "No description available."}
