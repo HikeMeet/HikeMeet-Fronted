@@ -7,30 +7,12 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  ActivityIndicator,
 } from "react-native";
 import * as Location from "expo-location";
 import MapSearch from "../../components/map-search-creaete-trip";
 // import ImageUploadPhotos from "../../components/insert-images-create-trip";
 import { useAuth } from "../../contexts/auth-context";
-
-const TRIP_TAGS = [
-  "Water",
-  "Ropes",
-  "Ladders",
-  "Lab",
-  "Camping",
-  "Hiking",
-  "Snow",
-  "Mountains",
-  "Desert",
-  "Beach",
-  "Kayaking",
-  "Rafting",
-  "Road Trip",
-  "City Tour",
-  "Museum",
-];
+import TagPicker from "./component/tag-lables";
 
 const CreateTripPage: React.FC = ({ navigation, route }: any) => {
   const [tripName, setTripName] = useState<string>("");
@@ -44,6 +26,7 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null
   );
+
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
 
@@ -88,10 +71,6 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
       setSelectedTags([...selectedTags, tag]);
     }
   };
-
-  // Split tags into two rows.
-  const row1 = TRIP_TAGS.filter((_, i) => i % 2 === 0);
-  const row2 = TRIP_TAGS.filter((_, i) => i % 2 !== 0);
 
   // Function to send trip data to backend.
   const handleCreateTrip = async () => {
@@ -204,33 +183,7 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View className="flex-col px-[10px]">
           <View className="flex-col">
-            {[row1, row2].map((row, rowIndex) => (
-              <View
-                key={rowIndex}
-                className={`flex-row ${rowIndex === 0 ? "mb-[10px]" : ""}`}
-              >
-                {row.map((tag) => {
-                  const isSelected = selectedTags.includes(tag);
-                  return (
-                    <TouchableOpacity
-                      key={tag}
-                      onPress={() => handleTagPress(tag)}
-                      className={`flex-row items-center mr-2.5 p-[5px] border border-gray-300 rounded-[5px] ${
-                        isSelected ? "bg-blue-500" : "bg-white"
-                      }`}
-                    >
-                      <Text
-                        className={`text-sm ${
-                          isSelected ? "text-white" : "text-black"
-                        }`}
-                      >
-                        {tag}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            ))}
+            <TagPicker />
           </View>
         </View>
       </ScrollView>

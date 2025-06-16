@@ -10,7 +10,7 @@ import { useAuth } from "../../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
 import SearchInput from "../../components/search-input";
 import SearchFilters from "./components/search-filters";
-import TripFilterModal from "../../components/TripFilterModal";
+import TripFilterModal from "../../components/trip-filter-modal";
 import GroupFilterModal from "../../components/GroupFilterModal";
 import UserRow from "../../components/user-row-search";
 import GroupRow from "../groups/components/group-row";
@@ -199,8 +199,7 @@ const SearchPage = ({ navigation }: any) => {
               <UserRow
                 user={item}
                 navigation={navigation}
-                onStatusChange={function (newStatus: string): void {
-                }}
+                onStatusChange={function (newStatus: string): void {}}
               />
             ) : item.max_members ? (
               <GroupRow
