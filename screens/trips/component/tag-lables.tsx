@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 
-// Pass in your tag list via props, or import directly:
+// your master list of tags…
 export const TRIP_TAGS = [
   "Water",
   "Ropes",
@@ -89,65 +89,97 @@ export const TRIP_TAGS = [
   "Mountain Retreat",
   "Urban Safari",
 ];
-export default function TagPicker() {
-  const tagsPerRow = 10;
+interface TagPickerProps {
+  /** controlled list of selected tags */
+  selectedTags?: string[];
+  /** callback when a tag is tapped */
+  onTagPress?: (tag: string) => void;
+  /** how many tags per row */
+  tagsPerRow?: number;
+  /** how many rows to show before “Show More” */
+  previewRows?: number;
+}
 
-  // 1) Group into rows of exactly `tagsPerRow`
+export default function TagPicker({
+  selectedTags: selectedTagsProp,
+  onTagPress,
+  tagsPerRow = 10,
+  previewRows = 3,
+}: TagPickerProps) {
+  // group into rows
   const rows = useMemo(() => {
     const out: string[][] = [];
     for (let i = 0; i < TRIP_TAGS.length; i += tagsPerRow) {
       out.push(TRIP_TAGS.slice(i, i + tagsPerRow));
     }
     return out;
-  }, [TRIP_TAGS]);
+  }, [tagsPerRow]);
 
-  // 2) Control whether we show all rows or just the first 3
+  // local state only if uncontrolled
+  const [localSelected, setLocalSelected] = useState<string[]>([]);
+  const isControlled =
+    Array.isArray(selectedTagsProp) && typeof onTagPress === "function";
+  const selectedTags = isControlled ? selectedTagsProp! : localSelected;
+
+  // show/hide rows
   const [showAll, setShowAll] = useState(false);
-  const displayedRows = showAll ? rows : rows.slice(0, 3);
+  const displayedRows = showAll ? rows : rows.slice(0, previewRows);
 
-  // 3) Local selection state
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const toggleTag = (tag: string) =>
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
+  // toggle logic
+  const handlePress = (tag: string) => {
+    if (isControlled) {
+      onTagPress!(tag);
+    } else {
+      setLocalSelected((prev) =>
+        prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+      );
+    }
+  };
 
   return (
-    <View className="">
-      {displayedRows.map((row, rowIdx) => (
-        <View key={rowIdx} className="flex-row flex-wrap ">
-          {row.map((tag) => {
-            const isSelected = selectedTags.includes(tag);
-            return (
-              <TouchableOpacity
-                key={tag}
-                onPress={() => toggleTag(tag)}
-                className={`
-                  m-1 px-2 py-1 border rounded-full
-                  ${
-                    isSelected
-                      ? "bg-blue-500 border-blue-500"
-                      : "bg-white border-gray-300"
-                  }
-                `}
-              >
-                <Text className={isSelected ? "text-white" : "text-black"}>
-                  {tag}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      ))}
+    <View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ flexDirection: "column" }}
+      >
+        {displayedRows.map((row, rowIdx) => (
+          <View key={rowIdx} style={{ flexDirection: "row", flexWrap: "wrap" }}>
+            {row.map((tag) => {
+              const isSelected = selectedTags.includes(tag);
+              return (
+                <TouchableOpacity
+                  key={tag}
+                  onPress={() => handlePress(tag)}
+                  style={{
+                    margin: 4,
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    borderRadius: 999,
+                    borderWidth: 1,
+                    backgroundColor: isSelected ? "#3B82F6" : "#FFFFFF",
+                    borderColor: isSelected ? "#3B82F6" : "#D1D5DB",
+                  }}
+                >
+                  <Text style={{ color: isSelected ? "#FFFFFF" : "#000000" }}>
+                    {tag}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        ))}
+      </ScrollView>
 
-      {/* 4) Left-aligned Show More / Show Less */}
-      {rows.length > 3 && (
+      {rows.length > previewRows && (
         <TouchableOpacity
           onPress={() => setShowAll((v) => !v)}
-          className="mt-1 self-start"
+          style={{ marginTop: 8, alignSelf: "flex-start" }}
         >
-          <Text className="text-blue-600">
-            {showAll ? "Show Less ▲" : `Show More (${rows.length - 3} more) ▼`}
+          <Text style={{ color: "#2563EB" }}>
+            {showAll
+              ? "Show Less ▲"
+              : `Show More (${rows.length - previewRows} more) ▼`}
           </Text>
         </TouchableOpacity>
       )}

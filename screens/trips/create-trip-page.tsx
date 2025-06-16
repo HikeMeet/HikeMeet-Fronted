@@ -180,13 +180,9 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
 
       {/* Tags Section */}
       <Text className="text-base font-semibold my-2.5">Select Tags:</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View className="flex-col px-[10px]">
-          <View className="flex-col">
-            <TagPicker />
-          </View>
-        </View>
-      </ScrollView>
+      {/* <ScrollView horizontal showsHorizontalScrollIndicator={false}> */}
+      <TagPicker selectedTags={selectedTags} onTagPress={handleTagPress} />
+      {/* </ScrollView> */}
 
       {/* Create Trip / Cancel Buttons */}
       <View className="flex-row justify-between mt-5">
