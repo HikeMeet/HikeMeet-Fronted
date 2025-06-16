@@ -30,7 +30,6 @@ jobs:
       - name: Install Expo CLI
         run: npm install -g expo eas-cli
 
-
       - name: Create google-services.json (prod)
         run: |
           echo "$GOOGLE_SERVICE_JSON" | base64 --decode > google-services.prod.json
