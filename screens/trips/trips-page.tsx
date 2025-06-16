@@ -20,7 +20,7 @@ import {
 } from "../../components/requests/fetch-trips";
 import { useChatList } from "../../contexts/chat-context";
 import { useFocusEffect } from "@react-navigation/native";
-import TripFilterModal from "../../components/TripFilterModal";
+import TripFilterModal from "../../components/trip-filter-modal";
 
 type ViewMode = "all" | "history" | "favorites";
 
