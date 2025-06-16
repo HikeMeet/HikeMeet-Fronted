@@ -69,6 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
       const loc = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = loc.coords;
+      console.log("location", latitude, longitude);
       setUserLocation([longitude, latitude]);
     })();
   }, []);

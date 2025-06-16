@@ -133,7 +133,7 @@ const MapSearch: React.FC<MapSearchProps> = ({
     setQuery(item.place_name);
     setResults([]);
     if (cameraRef.current) {
-      cameraRef.current.flyTo([longitude, latitude], 1000);
+      cameraRef.current.flyTo([longitude, latitude], 100);
     }
     onLocationSelect([longitude, latitude], item.place_name);
   };
@@ -143,7 +143,7 @@ const MapSearch: React.FC<MapSearchProps> = ({
     const [longitude, latitude] = geometry.coordinates;
     setSelectedCoords([longitude, latitude]);
     if (cameraRef.current) {
-      cameraRef.current.flyTo([longitude, latitude], 1000);
+      cameraRef.current.flyTo([longitude, latitude], 100);
     }
     try {
       const addresses = await Location.reverseGeocodeAsync({
@@ -181,7 +181,7 @@ const MapSearch: React.FC<MapSearchProps> = ({
 
       // 2) Move camera & pin
       if (cameraRef.current) {
-        cameraRef.current.flyTo(coords, 1000);
+        cameraRef.current.flyTo(coords, 100);
       }
       setSelectedCoords(coords);
 

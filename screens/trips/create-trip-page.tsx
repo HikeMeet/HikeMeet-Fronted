@@ -46,7 +46,6 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
   );
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const FALLBACK_LOCATION: [number, number] = [34.78176759999999, 32.0852999];
 
   const { mongoId, userLocationState } = useAuth(); // current user's mongoId
   const fetchUserLocation = async () => {
@@ -183,7 +182,7 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
         <MapSearch
           userLocation={userLocationState || userLocation!}
           onLocationSelect={handleLocationSelect}
-          initialLocation={route.params.selectedCoordinates}
+          initialLocation={route.params.selectedCoordinates || tripCoordinates!}
           onMapTouchStart={() => setScrollEnabled(false)}
           onMapTouchEnd={() => setScrollEnabled(true)}
         />
@@ -191,9 +190,7 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
         <MapSearch
           userLocation={userLocationState || userLocation!}
           onLocationSelect={handleLocationSelect}
-          initialLocation={
-            route?.params?.selectedCoordinates || tripCoordinates!
-          }
+          initialLocation={userLocationState || userLocation!}
           onMapTouchStart={() => setScrollEnabled(false)}
           onMapTouchEnd={() => setScrollEnabled(true)}
         />
