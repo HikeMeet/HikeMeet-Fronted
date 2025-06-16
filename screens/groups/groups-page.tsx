@@ -17,7 +17,7 @@ import { Group } from "../../interfaces/group-interface";
 import { useAuth } from "../../contexts/auth-context";
 import { fetchGroups } from "../../components/requests/fetch-groups";
 import { useChatList } from "../../contexts/chat-context";
-import GroupFilterModal from "../../components/GroupFilterModal";
+import GroupFilterModal from "../../components/group-filter-modal";
 
 const GroupsPage: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { mongoId, fetchMongoUser } = useAuth();

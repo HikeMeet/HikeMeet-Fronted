@@ -150,7 +150,7 @@ jest.mock("../../components/trip-filter-modal", () => {
   };
 });
 
-jest.mock("../../components/GroupFilterModal", () => {
+jest.mock("../../components/group-filter-modal", () => {
   const React = require("react");
   const { View, Text } = require("react-native");
   return function GroupFilterModal({ visible }: any) {

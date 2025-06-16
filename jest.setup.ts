@@ -352,7 +352,7 @@ jest.mock(
   () => require("./tests/__mocks__/empty-results").default
 );
 
-jest.mock("./components/TripFilterModal", () => {
+jest.mock("./components/trip-filter-modal", () => {
   const React = require("react");
   const { View, Text } = require("react-native");
   return {
@@ -366,7 +366,7 @@ jest.mock("./components/TripFilterModal", () => {
   };
 });
 
-jest.mock("./components/GroupFilterModal", () => {
+jest.mock("./components/group-filter-modal", () => {
   const React = require("react");
   const { View, Text } = require("react-native");
   return {
