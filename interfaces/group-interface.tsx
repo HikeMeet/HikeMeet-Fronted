@@ -33,7 +33,10 @@ export interface Group {
   pending: GroupPending[];
   scheduled_start?: string; // ISO date string (or convert to Date)
   scheduled_end?: string; // ISO date string (or convert to Date)
-  meeting_point?: string;
+  meeting_point?: {
+    address: string;
+    coordinates: [number, number];
+  };
   embarked_at?: string; // HH:mm format if applicable
   images?: IImageModel[];
   main_image?: IImageModel;

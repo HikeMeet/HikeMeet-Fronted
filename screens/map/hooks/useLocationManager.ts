@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import * as Location from "expo-location";
 import { Coordinate, LocationState } from "../../../interfaces/map-interface";
 import { TEL_AVIV_COORDS } from "../../../utils/geo";
+import { useAuth } from "../../../contexts/auth-context";
 
 export interface UseLocationManagerReturn extends LocationState {
   currentCenter: Coordinate;
@@ -30,7 +31,7 @@ export function useLocationManager(): UseLocationManagerReturn {
   });
 
   const timeoutRef = useRef<NodeJS.Timeout>();
-
+  const { userLocationState } = useAuth(); // current user's mongoId
   // Calculate current center based on priority
   // Priority: cameraCenterOverride > searchCenter > userLocation > default
   const currentCenter: Coordinate =
@@ -68,20 +69,15 @@ export function useLocationManager(): UseLocationManagerReturn {
         }));
       }, LOCATION_TIMEOUT);
 
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
+      const location = userLocationState;
 
       clearTimeout(timeoutRef.current);
 
-      const coords: Coordinate = [
-        location.coords.longitude,
-        location.coords.latitude,
-      ];
+      const coords: Coordinate = location!;
 
       setState((prev) => ({
         ...prev,
-        userLocation: coords,
+        userLocation: userLocationState || coords,
         isLoadingLocation: false,
         locationError: null,
         permissionDenied: false,

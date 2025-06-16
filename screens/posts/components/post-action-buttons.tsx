@@ -130,12 +130,10 @@ const PostActions: React.FC<PostActionsProps> = ({
   };
 
   const handleShare = () => {
-    console.log("Share pressed");
     setModalVisible(true);
   };
 
   const handleComment = () => {
-    console.log("Comment pressed");
     setCommentModalVisible(true);
   };
 

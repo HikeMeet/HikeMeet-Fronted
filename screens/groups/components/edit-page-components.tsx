@@ -5,6 +5,7 @@ import TripSelector from "../../trips/component/trip-selector-for-group";
 import DateRangePicker from "../../../components/schedual-time-group";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import TimePickerPopup from "../../../components/time-picker";
+import { Trip } from "../../../interfaces/trip-interface";
 
 interface LabeledTextInputProps {
   label: string;
@@ -40,8 +41,8 @@ export const LabeledTextInput: React.FC<LabeledTextInputProps> = ({
 
 interface TripSelectorFieldProps {
   label: string;
-  selectedTrip: string;
-  onSelectTrip: (tripId: string) => void;
+  selectedTrip: Trip | null;
+  onSelectTrip: (trip: Trip) => void;
 }
 
 export const TripSelectorField: React.FC<TripSelectorFieldProps> = ({
@@ -51,7 +52,7 @@ export const TripSelectorField: React.FC<TripSelectorFieldProps> = ({
 }) => (
   <View className="mb-4">
     <Text className="mb-2">{label}</Text>
-    <TripSelector selectedTripId={selectedTrip} onSelectTrip={onSelectTrip} />
+    <TripSelector selectedTrip={selectedTrip} onSelectTrip={onSelectTrip} />
   </View>
 );
 
@@ -128,7 +129,7 @@ export const DifficultyField: React.FC<DifficultyFieldProps> = ({
 }) => {
   const difficulties = ["beginner", "intermediate", "advanced", "hardcore"];
   return (
-    <View className="mb-4">
+    <View className="mb-4 mt-3">
       <Text className="mb-2">Difficulty</Text>
       <View className="flex-row flex-wrap justify-between">
         {difficulties.map((diff) => (
