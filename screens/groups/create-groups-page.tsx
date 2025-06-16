@@ -217,7 +217,7 @@ const CreateGroupPage: React.FC<any> = ({ navigation, route }) => {
           {showMapSearch && (
             <MapSearch
               initialLocation={
-                userLocationState || meetingPointCoordinates || userLocation
+                meetingPointCoordinates || userLocationState || userLocation
               }
               userLocation={userLocation || undefined}
               onMapTouchStart={() => setScrollEnabled(false)}
