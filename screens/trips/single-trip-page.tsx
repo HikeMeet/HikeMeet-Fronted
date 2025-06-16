@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
   SafeAreaView,
+  Pressable,
 } from "react-native";
 import Constants from "expo-constants";
 import { styled } from "nativewind";
@@ -79,6 +80,8 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [reportPopupVisible, setReportPopupVisible] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const nameLengthCrop = 22;
   // Fetch trip data from the backend using the tripId parameter.
   useEffect(() => {
     const fetchTripData = async () => {
@@ -190,7 +193,24 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
             )}
             {/* ensure title+rating are left-aligned */}
             <View className="ml-2 items-start">
-              <Text className="text-lg font-bold">{tripName}</Text>
+              <Pressable onPress={() => setExpanded((prev) => !prev)}>
+                <Text
+                  className="text-lg font-bold"
+                  // unlimited lines when expanded, else clamp to 1
+                  numberOfLines={expanded ? undefined : 1}
+                  ellipsizeMode="tail"
+                >
+                  {expanded && tripName.length > nameLengthCrop
+                    ? // insert newline after every nameLengthCrop chars
+                      tripName.replace(
+                        new RegExp(`(.{${nameLengthCrop}})`, "g"),
+                        "$1-\n"
+                      )
+                    : tripName.length > nameLengthCrop
+                      ? `${tripName.substring(0, nameLengthCrop)}…`
+                      : tripName}
+                </Text>
+              </Pressable>
               {tripData && (
                 <TripStarRating
                   tripId={tripId}

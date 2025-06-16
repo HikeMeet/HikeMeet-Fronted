@@ -1,5 +1,6 @@
 import React from "react";
 import { Alert, Linking, TouchableOpacity, Text } from "react-native";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 interface MapDirectionButtonProps {
   destination?: string;
@@ -32,10 +33,16 @@ const MapDirectionButton: React.FC<MapDirectionButtonProps> = ({
 
   return (
     <TouchableOpacity
+      activeOpacity={0.8}
       onPress={handlePress}
-      className="mt-2 bg-blue-500 px-1 py-1 rounded self-start"
+      className="
+        flex-row items-center
+        bg-blue-600 px-3 py-2
+        rounded-lg shadow
+      "
     >
-      <Text className="text-white text-sm font-semibold">Get Directions</Text>
+      <Icon name="directions" size={20} color="#fff" />
+      <Text className="text-white font-semibold ml-2">Get Directions</Text>
     </TouchableOpacity>
   );
 };
