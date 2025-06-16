@@ -17,7 +17,7 @@ import MapContent from "./components/map-content";
 import CitySearchBar from "./components/header/city-search-bar";
 import TripPopup from "./components/popup/trip-popup";
 import NoLocationFallback from "./fallback/no-location-fallback";
-import TripFilterModal from "../../components/TripFilterModal";
+import TripFilterModal from "../../components/trip-filter-modal";
 import GroupFilterModal from "../../components/GroupFilterModal";
 
 // Hooks

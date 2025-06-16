@@ -9,6 +9,7 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { Trip } from "../interfaces/trip-interface";
+import { TRIP_TAGS } from "../screens/trips/component/tag-lables";
 
 type TripFilterModalProps = {
   visible: boolean;
@@ -23,24 +24,6 @@ type TripFilterModalProps = {
     tags: string[];
   };
 };
-
-const TAGS = [
-  "Water",
-  "Ropes",
-  "Ladders",
-  "Lab",
-  "Camping",
-  "Hiking",
-  "Snow",
-  "Mountains",
-  "Desert",
-  "Beach",
-  "Kayaking",
-  "Rafting",
-  "Road Trip",
-  "City Tour",
-  "Museum",
-];
 
 export default function TripFilterModal({
   visible,
@@ -139,7 +122,7 @@ export default function TripFilterModal({
               showsHorizontalScrollIndicator={false}
               className="mb-5"
             >
-              {TAGS.map((tag) => {
+              {TRIP_TAGS.map((tag) => {
                 const selected = filters.tags.includes(tag);
                 return (
                   <TouchableOpacity
