@@ -5,21 +5,27 @@ const packageName =
   APP_ENV === "prod"
     ? "com.hikemeet.app"
     : "com.wooozai.exporeactnativewtailwind";
+
+const logoImage =
+  APP_ENV === "prod" ? "./assets/Logo2.png" : "./assets/Logo1.png";
+
+const appName = APP_ENV === "prod" ? "Hikemeet" : "Hikemeet-stage";
+
 export default ({ config }) => ({
   ...config,
   // EAS Update settings:
 
   expo: {
     ...config.expo,
-    name: "Hikemeet",
+    name: appName,
     slug: "hikemeetteam",
 
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/Logo2.png",
+    icon: logoImage,
     userInterfaceStyle: "light",
     splash: {
-      image: "./assets/Logo2.png",
+      image: logoImage,
       resizeMode: "contain",
       backgroundColor: "#ffffff",
     },
@@ -39,7 +45,7 @@ export default ({ config }) => ({
     android: {
       softwareKeyboardLayoutMode: "pan",
       adaptiveIcon: {
-        foregroundImage: "./assets/Logo2.png",
+        foregroundImage: logoImage,
         backgroundColor: "#ffffff",
       },
       package: packageName,

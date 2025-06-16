@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import React from "react";
 import {
   View,
@@ -13,8 +13,8 @@ import {
 import { Trip } from "../../../interfaces/trip-interface";
 
 interface TripSelectorProps {
-  onSelectTrip: (tripId: string) => void;
-  selectedTripId: string;
+  onSelectTrip: (trip: Trip) => void;
+  selectedTrip: Trip | null;
 }
 
 const truncateText = (text: string, maxLength: number = 30) => {
@@ -23,7 +23,7 @@ const truncateText = (text: string, maxLength: number = 30) => {
 
 const TripSelector: React.FC<TripSelectorProps> = ({
   onSelectTrip,
-  selectedTripId,
+  selectedTrip,
 }) => {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -32,6 +32,22 @@ const TripSelector: React.FC<TripSelectorProps> = ({
   const [selectedTripForModal, setSelectedTripForModal] = useState<Trip | null>(
     null
   );
+  const [tripLayouts, setTripLayouts] = useState<{ [id: string]: number }>({});
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // whenever selectedTrip changes and we know its x, scroll to it
+  useEffect(() => {
+    if (
+      selectedTrip &&
+      tripLayouts[selectedTrip._id] !== undefined &&
+      scrollViewRef.current
+    ) {
+      scrollViewRef.current.scrollTo({
+        x: tripLayouts[selectedTrip._id],
+        animated: true,
+      });
+    }
+  }, [selectedTrip, tripLayouts]);
 
   useEffect(() => {
     const fetchTrips = async () => {
@@ -61,7 +77,7 @@ const TripSelector: React.FC<TripSelectorProps> = ({
 
   const handleTripPress = (trip: Trip) => {
     // Single tap selects the trip.
-    onSelectTrip(trip._id);
+    onSelectTrip(trip);
   };
 
   const handleTripLongPress = (trip: Trip) => {
@@ -85,17 +101,25 @@ const TripSelector: React.FC<TripSelectorProps> = ({
       ) : filteredTrips.length === 0 ? (
         <Text>No trips found.</Text>
       ) : (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          ref={scrollViewRef}
+        >
           {filteredTrips.map((trip) => (
             <TouchableOpacity
               key={trip._id}
               onPress={() => handleTripPress(trip)}
               onLongPress={() => handleTripLongPress(trip)}
               className={`p-4 mr-4 border rounded ${
-                selectedTripId === trip._id
+                selectedTrip?._id === trip._id
                   ? "border-green-500"
                   : "border-gray-300"
               }`}
+              onLayout={(e) => {
+                const x = e.nativeEvent.layout.x;
+                setTripLayouts((prev) => ({ ...prev, [trip._id]: x }));
+              }}
             >
               <View className="flex-row items-center">
                 {trip.main_image ? (
@@ -108,7 +132,7 @@ const TripSelector: React.FC<TripSelectorProps> = ({
                 )}
                 <View>
                   <Text className="font-semibold">
-                    {truncateText(trip.name, 15)}
+                    {truncateText(trip.name, 20)}
                   </Text>
                   <Text
                     numberOfLines={1}
@@ -144,15 +168,12 @@ const TripSelector: React.FC<TripSelectorProps> = ({
                 <Text className="text-sm text-gray-500 mb-2">
                   {selectedTripForModal.location.address}
                 </Text>
-                {selectedTripForModal.images &&
-                selectedTripForModal.images.length > 0 ? (
-                  <Image
-                    source={{ uri: selectedTripForModal.main_image?.url }}
-                    className="w-full h-40 rounded mb-2"
-                  />
-                ) : (
-                  <View className="w-full h-40 bg-gray-300 rounded mb-2" />
-                )}
+
+                <Image
+                  source={{ uri: selectedTripForModal.main_image?.url }}
+                  className="w-full h-40 rounded mb-2"
+                />
+
                 <Text className="text-base mb-2">
                   {selectedTripForModal.description ||
                     "No description available."}

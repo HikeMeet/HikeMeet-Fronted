@@ -59,7 +59,6 @@ const PostCard: React.FC<PostCardProps> = ({
   const handleCancel = () => {
     setIsEditing(false);
   };
-
   const renderHeader = () => (
     <View className="flex-row items-center justify-between p-2">
       <ProfileHeaderLink

@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Modal } from "react-native";
 import { FIREBASE_AUTH } from "../firebaseconfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNotification } from "../contexts/notification-context";
+import { useChatList } from "../contexts/chat-context";
 
 interface ConfirmPopupProps {
   visible: boolean;
@@ -20,6 +21,7 @@ const LogoutConfirmPopup: React.FC<ConfirmPopupProps> = ({
   navigation,
 }) => {
   const { expoPushToken } = useNotification();
+  const { clearAllListeners } = useChatList();
   const handleLogout = async () => {
     try {
       // 1) Unregister this device token
@@ -39,6 +41,7 @@ const LogoutConfirmPopup: React.FC<ConfirmPopupProps> = ({
       }
 
       // 2) Sign out and clear storage
+      await clearAllListeners();
       await FIREBASE_AUTH.signOut();
       await AsyncStorage.removeItem("user");
       navigation.navigate("Landing");

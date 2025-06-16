@@ -8,6 +8,7 @@ import { DateDisplay } from "../../../components/date-present";
 import TripRow from "../../trips/component/trip-row";
 import { Trip } from "../../../interfaces/trip-interface";
 import HikersSwitcher from "../../../components/hiker-button-list-group-combined";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 interface GroupDetailsProps {
   group: Group;
@@ -32,7 +33,7 @@ const GroupDetails: React.FC<GroupDetailsProps> = ({
             {group.description || "No description"}
           </Text>
         </View>
-        {trip && (
+        {trip ? (
           <TripRow
             trip={trip}
             onPress={() =>
@@ -42,6 +43,13 @@ const GroupDetails: React.FC<GroupDetailsProps> = ({
               })
             }
           />
+        ) : (
+          <View className="p-4 bg-gray-100 rounded-2xl my-2 items-center justify-center">
+            <Text className="text-sm text-gray-500 text-center">
+              This trip is unavailable or has been deleted.{"\n"}
+              Please select a different trip.
+            </Text>
+          </View>
         )}
 
         {/* Hikers */}
@@ -64,15 +72,19 @@ const GroupDetails: React.FC<GroupDetailsProps> = ({
           </View>
         </View>
         {/* Meeting Point with Get Directions */}
-        <View className="p-4 border-b border-gray-200 flex-row items-center justify-between">
-          <View className="flex-1">
-            <Text className="font-semibold text-gray-600">Meeting Point</Text>
-            <Text className="text-gray-800 text-lg">
-              {group.meeting_point || "Not set"}
+        <View className="bg-white rounded-lg shadow-md p-4 flex-row items-center justify-between mb-4">
+          <View className="flex-1 mr-4">
+            <Text className="text-gray-500 uppercase font-semibold text-xs">
+              Meeting Point
             </Text>
+            <View className="flex-row items-center mt-1">
+              <Text className="text-gray-900 font-medium text-base">
+                {group.meeting_point?.address || "Not set"}
+              </Text>
+            </View>
           </View>
           {group.meeting_point && (
-            <MapDirectionButton destination={group.meeting_point} />
+            <MapDirectionButton destination={group.meeting_point.address} />
           )}
         </View>
         {/* Embarked At */}
@@ -152,20 +164,6 @@ const GroupDetails: React.FC<GroupDetailsProps> = ({
           ) : (
             <Text className="text-gray-800">Not set</Text>
           )}
-        </View>
-        {/* Created At */}
-        <View className="p-4 border-b border-gray-200">
-          <Text className="font-semibold text-gray-600">Created At</Text>
-          <Text className="text-gray-800">
-            {new Date(group.created_at).toLocaleString()}
-          </Text>
-        </View>
-        {/* Updated At */}
-        <View className="p-4">
-          <Text className="font-semibold text-gray-600">Updated At</Text>
-          <Text className="text-gray-800">
-            {new Date(group.updated_at).toLocaleString()}
-          </Text>
         </View>
       </ScrollView>
     </>

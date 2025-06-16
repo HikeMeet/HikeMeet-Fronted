@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import FriendActionButton from "./friend-button";
 import { useAuth } from "../contexts/auth-context";
+import LtrText from "./ltr-text";
 
 interface UserRowProps {
   isMyProfile?: boolean;
@@ -37,10 +38,10 @@ const UserRow: React.FC<UserRowProps> = ({
           className="w-10 h-10 rounded-full mr-4"
         />
         <View className="flex-1">
-          <Text className="text-lg font-bold">{user.username}</Text>
-          <Text className="text-sm text-gray-500">
+          <LtrText className="text-lg font-bold">{user.username}</LtrText>
+          <LtrText className="text-sm text-gray-500">
             {user.first_name} {user.last_name}
-          </Text>
+          </LtrText>
         </View>
         {mongoId !== user._id && (
           <FriendActionButton

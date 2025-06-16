@@ -3,7 +3,7 @@
 const API_BASE = `${process.env.EXPO_LOCAL_SERVER}/api/notification`;
 
 /** Build headers given a bearer token */
-function buildHeaders(token: string): Record<string, string> {
+export function buildHeaders(token: string): Record<string, string> {
   return {
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
@@ -90,4 +90,52 @@ export async function clearAllNotifications(token: string): Promise<void> {
   if (!res.ok) {
     throw new Error(`Error clearing notifications: ${res.status}`);
   }
+}
+
+export const sendPushNotification = async (
+  tokens: string[],
+  title: string,
+  body: string,
+  data: Record<string, any>
+) => {
+  const messages = tokens.map((to) => ({
+    to,
+    sound: "default",
+    title,
+    body,
+    data,
+  }));
+  // Expo push endpoint
+  await fetch("https://exp.host/--/api/v2/push/send", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Accept-encoding": "gzip, deflate",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(messages),
+  });
+};
+
+/**
+ * Batch-fetch all push tokens for a list of user Mongo IDs.
+ */
+export async function fetchPushTokens(
+  token: string,
+  userIds: string[]
+): Promise<string[]> {
+  if (userIds.length === 0) return [];
+
+  const res = await fetch(
+    `${API_BASE}/push-tokens?ids=${encodeURIComponent(userIds.join(","))}`,
+    {
+      method: "GET",
+      headers: buildHeaders(token),
+    }
+  );
+  if (!res.ok) {
+    throw new Error(`Error fetching push tokens: ${res.status}`);
+  }
+  const body: { tokens: string[] } = await res.json();
+  return body.tokens;
 }

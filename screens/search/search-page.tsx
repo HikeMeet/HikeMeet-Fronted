@@ -10,8 +10,8 @@ import { useAuth } from "../../contexts/auth-context";
 import { useFocusEffect } from "@react-navigation/native";
 import SearchInput from "../../components/search-input";
 import SearchFilters from "./components/search-filters";
-import TripFilterModal from "../../components/TripFilterModal";
-import GroupFilterModal from "../../components/GroupFilterModal";
+import TripFilterModal from "../../components/trip-filter-modal";
+import GroupFilterModal from "../../components/group-filter-modal";
 import UserRow from "../../components/user-row-search";
 import GroupRow from "../groups/components/group-row";
 import TripRow from "../trips/component/trip-row";
@@ -66,7 +66,7 @@ const SearchPage = ({ navigation }: any) => {
 
     try {
       if (filter === "All") {
-        const { friends, trips, groups } = await fetchAll(query);
+        const { friends, trips, groups } = await fetchAll(query, mongoId ?? "");
 
         const updatedUsers = friends.map((u: any) => ({
           ...u,
@@ -88,7 +88,7 @@ const SearchPage = ({ navigation }: any) => {
         setTrips(filterTripsByFilters(tripList, tripFilters));
         setAllTripsBackup(tripList);
       } else if (filter === "Hikes") {
-        const userList = await fetchUsers(query);
+        const userList = await fetchUsers(query, mongoId ?? "");
         const updated = userList.map((u: any) => ({
           ...u,
           friendStatus:
@@ -199,9 +199,7 @@ const SearchPage = ({ navigation }: any) => {
               <UserRow
                 user={item}
                 navigation={navigation}
-                onStatusChange={function (newStatus: string): void {
-                  console.log("New status:", newStatus);
-                }}
+                onStatusChange={function (newStatus: string): void {}}
               />
             ) : item.max_members ? (
               <GroupRow

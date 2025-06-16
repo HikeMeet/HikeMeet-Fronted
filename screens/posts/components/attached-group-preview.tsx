@@ -16,6 +16,7 @@ const SelectedGroupsList: React.FC<SelectedGroupsListProps> = ({
   onRemove,
 }) => {
   if (groups.length === 0) return null;
+  
   return (
     <View className="mb-4">
       <Text className="text-lg font-semibold mb-2">Attached Groups:</Text>

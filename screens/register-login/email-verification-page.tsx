@@ -54,6 +54,7 @@ export default function VerifyEmailPage({
       }
     }
   };
+  const normalizedEmail = email.toLowerCase();
 
   const insertUser = async (userId: string): Promise<string | null> => {
     try {
@@ -66,7 +67,7 @@ export default function VerifyEmailPage({
           },
           body: JSON.stringify({
             username,
-            email,
+            email: normalizedEmail,
             first_name: firstName,
             last_name: lastName,
             firebase_id: userId,
@@ -84,7 +85,6 @@ export default function VerifyEmailPage({
         );
       }
 
-      console.log("data:\n", data.user._id);
       return data.user._id; // Return the _id
     } catch (error) {
       console.error("Error inserting user:", error);
@@ -93,20 +93,26 @@ export default function VerifyEmailPage({
   };
 
   const checkVerificationStatus = async () => {
-    console.log(user);
     if (user) {
       try {
         await user.reload();
-        await signOut(FIREBASE_AUTH);
+
         if (user.emailVerified) {
-          insertUser(user.uid);
-          navigation.navigate("Login");
+          const insertedUserId = await insertUser(user.uid);
+          if (insertedUserId) {
+            await signOut(FIREBASE_AUTH); // sign out only after successful insertion
+            navigation.navigate("Login");
+          } else {
+            setMessage("Failed to insert user data. Please try again.");
+          }
         } else {
           setMessage("Email not verified yet. Please check your inbox.");
         }
       } catch (error: any) {
         setMessage(`Error: ${error.message}`);
       }
+    } else {
+      setMessage("No authenticated user found. Please log in again.");
     }
   };
 

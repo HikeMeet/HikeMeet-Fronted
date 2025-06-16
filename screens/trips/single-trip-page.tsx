@@ -1,7 +1,15 @@
 // TripDetailPage.tsx
 import { useState, useEffect } from "react";
 import React from "react";
-import { ScrollView, View, Text, TouchableOpacity, Alert } from "react-native";
+import {
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+  Alert,
+  SafeAreaView,
+  Pressable,
+} from "react-native";
 import Constants from "expo-constants";
 import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
@@ -11,8 +19,10 @@ import { useAuth } from "../../contexts/auth-context";
 import TripImagesUploader from "./component/trip-image-gallery";
 import MapDirectionButton from "../../components/get-direction";
 import ShareTripModal from "./component/share-trip-to-post-modal";
-import StarRating from "./component/starts-rating";
 import TripStarRating from "./component/starts-rating";
+import ReportPopup from "../admin-settings/components/report-popup";
+import ReportIcon from "../../assets/report.svg";
+
 // Determine if native Mapbox code is available (i.e. not running in Expo Go)
 const MapboxAvailable = Constants.appOwnership !== "expo";
 
@@ -46,7 +56,7 @@ if (MapboxAvailable) {
 
 type TripDetailProps = {
   route: {
-    params: { tripId: string; fromCreate?: boolean; isArchived?: boolean };
+    params: { tripId: string; fromCreate?: boolean };
   };
   navigation: any;
 };
@@ -65,19 +75,18 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   const [bio, setBio] = useState<string>("");
   // State to control ScrollView scrolling
   const [scrollEnabled, setScrollEnabled] = useState<boolean>(true);
-  const { tripId, fromCreate = false, isArchived = false } = route.params;
-  const { mongoId, mongoUser, setMongoUser } = useAuth(); // current user's mongoId
+  const { tripId, fromCreate = false } = route.params;
+  const { mongoId, mongoUser, fetchMongoUser } = useAuth(); // current user's mongoId
   const [isFavorite, setIsFavorite] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-
+  const [reportPopupVisible, setReportPopupVisible] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const nameLengthCrop = 22;
   // Fetch trip data from the backend using the tripId parameter.
   useEffect(() => {
     const fetchTripData = async () => {
       try {
-        console.log("Trip ID:", tripId);
-        const endpoint = isArchived
-          ? `${process.env.EXPO_LOCAL_SERVER}/api/trips/archive/${tripId}`
-          : `${process.env.EXPO_LOCAL_SERVER}/api/trips/${tripId}`;
+        const endpoint = `${process.env.EXPO_LOCAL_SERVER}/api/trips/${tripId}`;
         const response = await fetch(endpoint);
         if (!response.ok) {
           throw new Error("Failed to fetch trip data");
@@ -101,7 +110,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
     if (tripId) {
       fetchTripData();
     }
-  }, [tripId, isArchived]);
+  }, [tripId]);
 
   useEffect(() => {
     if (mongoUser?.favorite_trips) {
@@ -129,7 +138,6 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
       );
 
       const body = await res.json();
-      console.log("📋 Response:", res.status, body);
 
       // 3) bail on a non-OK status
       if (!res.ok) {
@@ -137,7 +145,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
       }
 
       // 4) update context and local state
-      setMongoUser(body); // or body.user if your API wraps it
+      fetchMongoUser(mongoId!); // or body.user if your API wraps it
       setIsFavorite((prev) => !prev);
     } catch (err: any) {
       console.error("❌ toggleFavorite failed:", err);
@@ -160,17 +168,21 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
   }, [navigation, fromCreate]);
 
   return (
-    <>
+    <SafeAreaView className="flex-1 bg-white">
       <ScrollView
         scrollEnabled={scrollEnabled}
-        style={{ flex: 1, backgroundColor: "white", padding: 16 }}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        style={{ flex: 1, backgroundColor: "white" }}
+        contentContainerStyle={{
+          paddingBottom: 40,
+          paddingHorizontal: 16,
+          paddingTop: 8,
+        }}
       >
         {/* Header: image, title, rating, and action icons */}
-        <View className="flex-row items-center justify-between p-4">
-          {/* Left side: image + title */}
-          <View className="flex-row items-center">
-            {tripData && tripData.main_image && (
+        <View className="flex-row items-center justify-between py-2">
+          {/* Left side: image + title + rating */}
+          <View className="flex-row items-center flex-1">
+            {tripData?.main_image && (
               <ProfileImage
                 initialImage={tripData.main_image}
                 size={60}
@@ -179,8 +191,26 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
                 editable={mongoId === tripData.createdBy}
               />
             )}
-            <View className="ml-2">
-              <Text className="text-lg font-bold">{tripName}</Text>
+            {/* ensure title+rating are left-aligned */}
+            <View className="ml-2 items-start">
+              <Pressable onPress={() => setExpanded((prev) => !prev)}>
+                <Text
+                  className="text-lg font-bold"
+                  // unlimited lines when expanded, else clamp to 1
+                  numberOfLines={expanded ? undefined : 1}
+                  ellipsizeMode="tail"
+                >
+                  {expanded && tripName.length > nameLengthCrop
+                    ? // insert newline after every nameLengthCrop chars
+                      tripName.replace(
+                        new RegExp(`(.{${nameLengthCrop}})`, "g"),
+                        "$1-\n"
+                      )
+                    : tripName.length > nameLengthCrop
+                      ? `${tripName.substring(0, nameLengthCrop)}…`
+                      : tripName}
+                </Text>
+              </Pressable>
               {tripData && (
                 <TripStarRating
                   tripId={tripId}
@@ -195,8 +225,12 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
             </View>
           </View>
 
-          {/* Right side: vertical icons aligned to far right */}
-          <View className="flex-col items-end space-y-2">
+          {/* Right side: report + icons */}
+          {/* Right side: report + heart + share */}
+          <View className="flex-col ml-2 items-end space-y-2">
+            <TouchableOpacity onPress={() => setReportPopupVisible(true)}>
+              <ReportIcon width={20} height={20} />
+            </TouchableOpacity>
             <TouchableOpacity onPress={toggleFavorite}>
               <Ionicons
                 name={isFavorite ? "heart" : "heart-outline"}
@@ -258,7 +292,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
         {tripData && (
           <TripImagesUploader
             tripId={tripId}
-            enabled={mongoId === tripData.createdBy}
+            // enabled={mongoId === tripData.createdBy}
             initialImages={tripData.images ?? []}
             onImagesUpdated={(imgs) =>
               setTripData((prevTripData) => {
@@ -276,6 +310,13 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
           <Text className="text-white font-semibold">Back to Trips</Text>
         </TouchableOpacity>
       </ScrollView>
+      <ReportPopup
+        visible={reportPopupVisible}
+        onClose={() => setReportPopupVisible(false)}
+        targetId={tripId}
+        targetType="trip"
+      />
+
       {tripData && (
         <ShareTripModal
           visible={showShareModal}
@@ -284,7 +325,7 @@ const TripDetailPage: React.FC<TripDetailProps> = ({ route, navigation }) => {
           trip={tripData}
         />
       )}
-    </>
+    </SafeAreaView>
   );
 };
 

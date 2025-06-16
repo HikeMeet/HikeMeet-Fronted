@@ -1,6 +1,8 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { Trip } from "../../../interfaces/trip-interface";
+import TripStarRating from "./starts-rating";
+import LtrText from "../../../components/ltr-text";
 
 interface TripRowProps {
   trip: Trip;
@@ -8,6 +10,7 @@ interface TripRowProps {
   completedAt?: Date | null;
   fromMap?: boolean;
   smallImage?: boolean; // חדש
+  ismap?: boolean;
 }
 
 const TripRow: React.FC<TripRowProps> = ({
@@ -16,6 +19,7 @@ const TripRow: React.FC<TripRowProps> = ({
   completedAt,
   fromMap,
   smallImage = false,
+  ismap,
 }) => {
   const containerBg = fromMap ? "bg-white" : "bg-gray-100";
 
@@ -37,26 +41,37 @@ const TripRow: React.FC<TripRowProps> = ({
       )}
 
       <View className="flex-1">
-        <Text
+        <LtrText
           className="text-lg font-bold"
           numberOfLines={1}
           ellipsizeMode="tail"
         >
           {trip.name}
-        </Text>
-        <Text
+        </LtrText>
+        <LtrText
           className="text-sm text-gray-500 break-words"
           numberOfLines={2}
           ellipsizeMode="tail"
         >
           {trip.location.address}
-        </Text>
+        </LtrText>
       </View>
 
       {completedAt && (
         <Text className="absolute top-2 right-2 text-xs text-gray-600">
           {new Date(completedAt).toLocaleDateString()}
         </Text>
+      )}
+      {ismap && (
+        <View className="absolute bottom-14 right-3">
+          <TripStarRating
+            tripId={trip._id}
+            avgRating={trip.avg_rating ?? 0}
+            totalRatings={trip.ratings?.length ?? 0}
+            yourRating={0}
+            ismap
+          />
+        </View>
       )}
     </TouchableOpacity>
   );

@@ -21,7 +21,6 @@ import { IImageModel } from "../../interfaces/image-interface";
 import SelectedMediaList, {
   ILocalMedia,
 } from "../../components/media-list-in-before-uploading";
-import ConfirmationModal from "../../components/confirmation-modal";
 import MentionTextInput from "../../components/metion-with-text-input";
 import { Group } from "../../interfaces/group-interface";
 import { Trip } from "../../interfaces/trip-interface";
@@ -57,7 +56,6 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
   const [uploading, setUploading] = useState(false);
   const [privacy, setPrivacy] = useState<"public" | "private">("public");
   const { mongoId } = useAuth();
-  const [confirmationVisible, setConfirmationVisible] = useState(false);
   const [postId, setPostId] = useState<string>("");
   const [groups, setGroups] = useState<Group[]>([]);
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -146,7 +144,6 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
             "post_media"
           );
           if (uploaded) {
-            console.log("Media uploaded:", uploaded);
             uploadedItems.push(uploaded);
           } else {
             throw new Error("One or more media uploads failed.");
@@ -177,10 +174,10 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
       );
       const result = await response.json();
       if (response.ok) {
-        console.log("Post created successfully:", result.post._id);
-        // Instead of using an alert, show the confirmation modal.
         setPostId(result.post._id);
-        setConfirmationVisible(true);
+        Alert.alert("Post created", "Your post has been created successfully.", [
+          { text: "OK", onPress: () => navigation.goBack() },
+        ]);
       } else {
         // You may still want to alert on error.
         if (uploadedItems.length > 0) {
@@ -325,16 +322,7 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Confirmation Modal */}
-      <ConfirmationModal
-        visible={confirmationVisible}
-        message="Post created successfully!"
-        onConfirm={() => {
-          setConfirmationVisible(false);
-          navigation.replace("PostPage", { postId: postId });
-        }}
-        onCancel={() => setConfirmationVisible(false)}
-      />
+      
 
       {showGroupModal && (
         <GroupSelectionModal

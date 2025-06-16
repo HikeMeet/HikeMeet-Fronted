@@ -14,6 +14,8 @@ type Props = {
   onSelectLocation: (coords: [number, number], placeName: string) => void;
   onClearLocation: () => void;
   placeholder?: string;
+  onSearchStart?: () => void;
+  shouldCloseResults?: boolean;
 };
 
 export default function CitySearchBar({
@@ -22,24 +24,60 @@ export default function CitySearchBar({
   onSelectLocation,
   onClearLocation,
   placeholder = "Search city...",
+  onSearchStart,
+  shouldCloseResults = false,
 }: Props) {
   const [results, setResults] = React.useState<any[]>([]);
+  const [hasSelectedLocation, setHasSelectedLocation] = React.useState(false);
+
+  React.useEffect(() => {
+    if (shouldCloseResults) {
+      setResults([]);
+    }
+  }, [shouldCloseResults]);
 
   async function handleSearch(text: string) {
     onChangeText(text);
+
+    if (text.length >= 1 && onSearchStart) {
+      onSearchStart();
+    }
+
     if (text.length < 3) {
       setResults([]);
-      if (text.length === 0) onClearLocation();
+      if (text.length === 0) {
+        setHasSelectedLocation(false);
+        onClearLocation();
+      }
       return;
     }
 
     try {
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+      const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(
         text
-      )}.json?access_token=${process.env.MAPBOX_TOKEN_PUBLIC}&autocomplete=true`;
+      )}&key=${process.env.GOOGLEMAP_API_KEY}`;
+
       const resp = await fetch(url);
       const data = await resp.json();
-      setResults(data?.features || []);
+
+      if (data && data.results) {
+        // Convert Google Places results to match our interface and limit to 6 results
+        const convertedResults = data.results
+          .slice(0, 6) // Limit to 6 results
+          .map((place: any) => ({
+            id: place.place_id,
+            place_name: place.formatted_address || place.name,
+            geometry: {
+              coordinates: [
+                place.geometry.location.lng,
+                place.geometry.location.lat,
+              ],
+            },
+          }));
+        setResults(convertedResults);
+      } else {
+        setResults([]);
+      }
     } catch {
       setResults([]);
     }
@@ -50,11 +88,13 @@ export default function CitySearchBar({
     onSelectLocation([lon, lat], item.place_name);
     onChangeText(item.place_name);
     setResults([]);
+    setHasSelectedLocation(true);
   }
 
   function clearInput() {
     onChangeText("");
     setResults([]);
+    setHasSelectedLocation(false);
     onClearLocation();
   }
 

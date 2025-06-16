@@ -46,7 +46,7 @@ const ProfileImage: React.FC<MainImageProps> = ({
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [viewImageVisible, setViewImageVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { mongoId, setMongoUser } = useAuth();
+  const { mongoId, setMongoUser, mongoUser } = useAuth();
 
   useFocusEffect(
     useCallback(() => {
@@ -92,8 +92,6 @@ const ProfileImage: React.FC<MainImageProps> = ({
           ? { main_image: mediaResult, updated_by: mongoId }
           : { profile_picture: mediaResult };
 
-      console.log("Updating backend with URL:", requestUrl);
-
       const response = await fetch(requestUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -114,13 +112,12 @@ const ProfileImage: React.FC<MainImageProps> = ({
       }
 
       const updatedResponse = await response.json();
-      console.log("Update successful:", updatedResponse);
 
       if (uploadType === "trip" || uploadType === "group") {
         setImage(updatedResponse.main_image);
       } else {
         setImage(updatedResponse.profile_picture);
-        setMongoUser(updatedResponse);
+        // setMongoUser(updatedResponse);
       }
       setErrorMessage(null);
     } catch (error: any) {
@@ -160,7 +157,6 @@ const ProfileImage: React.FC<MainImageProps> = ({
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const asset = result.assets[0];
-      console.log("Image selected:", asset.uri);
       await handleRemovePhoto();
       await uploadMediaToBackend(asset.uri);
     } else {
@@ -208,7 +204,6 @@ const ProfileImage: React.FC<MainImageProps> = ({
           type: "image",
         };
       }
-      console.log("Updating backend with URL:", requestUrl);
 
       // Send update request to backend
       const updatePayload =
@@ -228,7 +223,6 @@ const ProfileImage: React.FC<MainImageProps> = ({
       }
 
       const updatedModel = await response.json();
-      console.log("Photo removal successful:", updatedModel);
 
       // After successfully updating the backend, remove the old image from Cloudinary.
 
@@ -239,7 +233,7 @@ const ProfileImage: React.FC<MainImageProps> = ({
       } else {
         deletImage();
         setImage(updatedModel.profile_picture.url);
-        setMongoUser(updatedModel);
+        // setMongoUser(newData);
       }
       setTooltipVisible(false);
     } catch (error: any) {

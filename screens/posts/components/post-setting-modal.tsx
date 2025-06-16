@@ -6,6 +6,7 @@ import Modal from "react-native-modal";
 import { useAuth } from "../../../contexts/auth-context";
 import { IPost } from "../../../interfaces/post-interface";
 import ConfirmationModal from "../../../components/confirmation-modal";
+import ReportPopup from "../../admin-settings/components/report-popup"; // עדכן לפי המיקום האמיתי
 
 interface PostOptionsModalProps {
   visible: boolean;
@@ -17,22 +18,8 @@ interface PostOptionsModalProps {
   onPostUpdated?: (deletedPost: IPost) => void;
 }
 
-/*************  ✨ Windsurf Command ⭐  *************/
-/**
- * PostOptionsModal is a modal component that provides options for interacting with a post.
- * It allows authors or admins to edit or delete their post and all users to report a post.
- * It also supports callbacks to notify the parent component of changes.
- *
- * Props:
- * - visible: Controls the visibility of the modal.
- * - onClose: Callback to close the modal.
- * - post: The post object for which options are being displayed.
- * - navigation: Navigation object for navigating between screens.
- * - onEdit: Callback to trigger inline editing of the post.
- * - onPostUpdated: Callback to notify parent when the post is updated or deleted.
- */
 
-/*******  be9f35af-734a-4d9f-b7d0-e893ae80f941  *******/
+
 const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
   visible,
   onClose,
@@ -46,6 +33,7 @@ const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
   const authorId =
     typeof post.author === "object" ? post.author._id : post.author;
   const isAuthor = authorId === mongoId;
+  const [showReportPopup, setShowReportPopup] = useState(false);
 
   // Local state for the confirmation modal and deletion loading.
   const [confirmVisible, setConfirmVisible] = useState(false);
@@ -56,7 +44,6 @@ const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
     setConfirmVisible(false);
     setDeleting(true);
     try {
-      console.log("Deleting post:", post._id);
       const response = await fetch(
         `${process.env.EXPO_LOCAL_SERVER}/api/post/${post._id}/delete`,
         {
@@ -69,7 +56,6 @@ const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
       );
       const data = await response.json();
       if (response.ok) {
-        console.log("Post deleted successfully", data.post);
         if (onPostUpdated) onPostUpdated(data.post);
         setConfirmVisible(false);
         onClose();
@@ -96,8 +82,9 @@ const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
   };
 
   const handleReport = () => {
-    onClose();
-    console.log("Report post");
+    setTimeout(() => {
+      setShowReportPopup(true);
+    }, 250);
   };
 
   return (
@@ -148,6 +135,14 @@ const PostOptionsModal: React.FC<PostOptionsModalProps> = ({
         onConfirm={handleDelete}
         onCancel={handleCancelDelete}
       />
+
+      <ReportPopup
+        visible={showReportPopup}
+        onClose={() => setShowReportPopup(false)}
+        targetId={post._id}
+        targetType="post"
+      />
+
       {deleting && (
         <View className="mt-2">
           <ActivityIndicator size="small" color="#2563EB" />

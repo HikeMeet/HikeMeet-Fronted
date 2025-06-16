@@ -7,11 +7,12 @@ import {
   ActivityIndicator,
   BackHandler,
   TouchableOpacity,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 
-import { Group } from "../../interfaces/group-interface";
+import { Group, IGroup } from "../../interfaces/group-interface";
 import { Trip } from "../../interfaces/trip-interface";
 import { useAuth } from "../../contexts/auth-context";
 import { fetchGroupDetails } from "../../components/requests/fetch-group-and-users-data";
@@ -21,6 +22,7 @@ import JoinGroupActionButton from "./components/group-join-action-button";
 import GroupDetails from "./components/group-details";
 import GroupPostList from "./components/group-posts";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { openGroupChatroom } from "../../components/requests/chats-requsts";
 
 interface SingleGroupProps {
   navigation: any;
@@ -31,11 +33,14 @@ interface SingleGroupProps {
 
 const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
   const { groupId, fromCreate } = route.params;
-  const { mongoId, mongoUser, setMongoUser } = useAuth();
+  const { mongoId, mongoUser, getToken, fetchMongoUser, setMongoUser } =
+    useAuth();
   const [group, setGroup] = useState<Group | null>(null);
   const [trip, setTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<"details" | "posts">("details");
+  const [expanded, setExpanded] = useState(false);
+  const nameLengthCrop = 17;
   const [isMuted, setIsMuted] = useState<boolean>(
     () => mongoUser?.mutedGroups?.includes(groupId) ?? false
   );
@@ -54,6 +59,33 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
     }, [fromCreate, navigation])
   );
 
+  // Handler to join the chatroom
+  const handleJoinChat = async () => {
+    const token = await getToken();
+
+    if (!token) return;
+    await openGroupChatroom(group!._id, token);
+    if (!group) return;
+    const iGroup: IGroup = {
+      _id: group._id,
+      name: group.name,
+      members: group.members,
+      main_image: group.main_image,
+    };
+
+    // Add to local mongoUser.chatrooms_groups
+    setMongoUser({
+      ...mongoUser!,
+      chatrooms_groups: [...mongoUser!.chatrooms_groups, iGroup],
+    });
+    navigation.push("ChatStack", {
+      screen: "ChatRoomPage",
+      params: {
+        type: "group", // 🚀 NEW
+        group,
+      },
+    });
+  };
   const toggleMute = async () => {
     if (!mongoUser) return;
 
@@ -84,7 +116,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
       const mongoUpdatedUser = await res.json();
       // 3) Update local state + re-fetch the full user
       setIsMuted(!isCurrentlyMuted);
-      await setMongoUser(mongoUpdatedUser);
+      fetchMongoUser(mongoId!);
     } catch (err) {
       console.error("Error toggling mute:", err);
     }
@@ -127,6 +159,39 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
     (member) => member.user === mongoId && member.role === "admin"
   );
 
+  const renderChatButton = () => {
+    if (!mongoUser || !group?.members.some((member) => member.user === mongoId))
+      return null;
+    const inChat = mongoUser.chatrooms_groups.some((g) => g._id === group!._id);
+
+    if (inChat) {
+      // “Send Message” navigates directly into the group chat
+      return (
+        <TouchableOpacity
+          onPress={() =>
+            navigation.push("ChatStack", {
+              screen: "ChatRoomPage",
+              params: { type: "group", group },
+            })
+          }
+          className="bg-green-600 px-4 py-3 rounded mt-2"
+        >
+          <Text className="text-white font-medium">Send Message</Text>
+        </TouchableOpacity>
+      );
+    } else {
+      // “Join Group Chat” invokes your join logic
+      return (
+        <TouchableOpacity
+          onPress={handleJoinChat}
+          className="bg-blue-600 px-4 py-3 rounded mt-2"
+        >
+          <Text className="text-white font-medium">Join Group Chat</Text>
+        </TouchableOpacity>
+      );
+    }
+  };
+
   // Header with group info, HikersSwitcher, and tab buttons; always visible at the top.
   const renderHeader = () => (
     <View className="px-4 pt-4 pb-2 bg-white">
@@ -142,24 +207,45 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             />
           )}
           <View className="ml-2">
-            <Text
-              className="text-lg font-bold"
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {group.name}
-            </Text>
-            <JoinGroupActionButton
-              group={group}
-              navigation={navigation}
-              isInGroupPage={true}
-              onAction={fetchGroup}
-            />
+            <Pressable onPress={() => setExpanded((prev) => !prev)}>
+              <Text
+                className="text-lg font-bold"
+                // unlimited lines when expanded, else clamp to 1
+                numberOfLines={expanded ? undefined : 1}
+                ellipsizeMode="tail"
+              >
+                {expanded && group!.name.length > nameLengthCrop
+                  ? // insert newline after every nameLengthCrop chars
+                    group!.name.replace(
+                      new RegExp(`(.{${nameLengthCrop}})`, "g"),
+                      "$1-\n"
+                    )
+                  : group!.name.length > nameLengthCrop
+                    ? `${group!.name.substring(0, nameLengthCrop)}…`
+                    : group!.name}
+              </Text>
+            </Pressable>
+            <View className="flex-row items-center">
+              <JoinGroupActionButton
+                group={group}
+                navigation={navigation}
+                isInGroupPage={true}
+                onAction={fetchGroup}
+              />
+            </View>
           </View>
         </View>
 
         {/* Right-side controls */}
-        <View className="flex-row items-center space-x-2">
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            zIndex: 1,
+          }}
+          className="flex-row items-center space-x-2"
+        >
           {/* Mute/Unmute */}
           <TouchableOpacity onPress={toggleMute} className="p-2">
             <Ionicons
@@ -175,7 +261,7 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
               onPress={() =>
                 navigation.navigate("GroupsStack", {
                   screen: "EditGroupPage",
-                  params: { group },
+                  params: { group, trip },
                 })
               }
               className="px-2 py-1 bg-blue-600 rounded-md"
@@ -209,7 +295,6 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
       </View>
     </View>
   );
-
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Fixed header */}
@@ -224,9 +309,12 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             navigation={navigation}
             isAdmin={isAdmin}
           />
+
+          {renderChatButton()}
+
           <TouchableOpacity
             onPress={() => navigation.push("Tabs", { screen: "Groups" })}
-            className="bg-purple-500 px-4 py-3 rounded mt-6"
+            className="bg-purple-500 px-4 py-3 rounded mt-2"
           >
             <Text className="text-white text-center font-semibold">
               Back to Group List
@@ -242,6 +330,8 @@ const SingleGroupPage: React.FC<SingleGroupProps> = ({ route, navigation }) => {
             isMember={group.members.some((member) => member.user === mongoId)}
           />
           <View className="px-4 pb-4">
+            {renderChatButton()}
+
             <TouchableOpacity
               onPress={() => navigation.push("Tabs", { screen: "Groups" })}
               className="bg-purple-500 px-4 py-3 rounded mt-2"

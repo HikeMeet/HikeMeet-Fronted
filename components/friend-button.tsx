@@ -3,18 +3,22 @@ import { TouchableOpacity, Text, View, Modal } from "react-native";
 import tw from "twrnc";
 import { useAuth } from "../contexts/auth-context";
 import React from "react";
+import { useChatList } from "../contexts/chat-context";
 
 interface FriendActionButtonProps {
   status: string; // "accepted", "request_sent", "request_received", "blocked", or "none"
   targetUserId: string;
   onStatusChange?: (newStatus: string) => void;
+  onReportPress?: () => void;
 }
 
 const FriendActionButton: React.FC<FriendActionButtonProps> = ({
   status,
   targetUserId,
   onStatusChange,
+  onReportPress,
 }) => {
+  const { removeRoom } = useChatList();
   const { mongoUser, mongoId, fetchMongoUser } = useAuth();
   const [currentStatus, setCurrentStatus] = useState(status);
   const [showActions, setShowActions] = useState(false);
@@ -136,10 +140,10 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
         }
       );
       const data = await response.json();
-      console.log("Block User Response:", data);
       setCurrentStatus("blocked");
       onStatusChange && onStatusChange("blocked");
       setShowActions(false);
+      removeRoom(targetUserId);
       fetchMongoUser(mongoId!);
     } catch (error) {
       console.error("Error blocking user:", error);
@@ -157,7 +161,6 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
         }
       );
       const data = await response.json();
-      console.log("Decline Request Response:", data);
       setCurrentStatus("none");
       onStatusChange && onStatusChange("none");
       setShowActions(false);
@@ -203,6 +206,16 @@ const FriendActionButton: React.FC<FriendActionButtonProps> = ({
               <View
                 style={tw`bg-white border border-gray-300 rounded shadow-md p-2`}
               >
+                {onReportPress && (
+                  <TouchableOpacity
+                    onPress={() => onReportPress()}
+                    style={tw`py-1 px-2 bg-red-100 rounded mb-1`}
+                  >
+                    <Text style={tw`text-sm text-red-600 font-bold`}>
+                      Report User
+                    </Text>
+                  </TouchableOpacity>
+                )}
                 {currentStatus === "request_received" && (
                   <TouchableOpacity
                     onPress={handleDeclineRequest}

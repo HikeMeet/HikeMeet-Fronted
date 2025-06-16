@@ -53,6 +53,12 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
   const handleNotificationPress = async () => {
     const type = item.type;
 
+    if (type === "report_submitted" && mongoUser?.role === "admin") {
+      navigation.push("AccountStack", {
+        screen: "AdminSettings",
+        params: { tab: "reports" },
+      });
+    }
     if (type.startsWith("group_") && group?.id) {
       navigation.push("GroupsStack", {
         screen: "GroupPage",
@@ -75,7 +81,6 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
       navigation.push(data.navigation.name, data.navigation.params ?? {});
     }
 
-    console.log("Notification ID:", item._id);
     try {
       const token = await getToken();
       if (token) {
@@ -185,7 +190,9 @@ export const NotificationRow: React.FC<NotificationRowProps> = ({
                   </Text>
                   <Text>{item.body}</Text>
                 </>
-              ) : null}
+              ) : (
+                <Text>{item.body}</Text>
+              )}
             </Text>
             <Text className="text-xs text-gray-500">{ago}</Text>
           </View>

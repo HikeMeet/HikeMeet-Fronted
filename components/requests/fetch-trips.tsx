@@ -15,7 +15,6 @@ export const fetchTrips = async (): Promise<Trip[]> => {
   }
 };
 
-
 export async function fetchTripsByIds(ids: string[]): Promise<Trip[]> {
   if (!ids || ids.length === 0) {
     return [];

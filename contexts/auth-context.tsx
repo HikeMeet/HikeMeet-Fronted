@@ -1,11 +1,19 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { ActivityIndicator, View, Text } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { FIREBASE_AUTH } from "../firebaseconfig";
+import { FIREBASE_AUTH, FIREBASE_DB } from "../firebaseconfig";
 import { MongoUser } from "../interfaces/user-interface";
 import { IUser } from "../interfaces/post-interface";
 import { styled } from "nativewind";
+import * as Location from "expo-location";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -20,12 +28,13 @@ interface AuthContextProps {
   setMongoId: React.Dispatch<React.SetStateAction<string | null>>;
   mongoUser: MongoUser | null;
   setMongoUser: React.Dispatch<React.SetStateAction<MongoUser | null>>;
-  Users: IUser[];
+  users: IUser[];
   setUsers: React.Dispatch<React.SetStateAction<IUser[]>>;
   userFriendsMinDetail: MongoUser[];
   setUserFriendsMinDetail: React.Dispatch<React.SetStateAction<MongoUser[]>>;
   fetchMongoUser: (id: string, byFirebase?: boolean) => Promise<void>;
   getToken: () => Promise<string | null>;
+  userLocationState: [number, number] | null;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -39,15 +48,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [userId, setUserId] = useState<string | null>(null);
   const [mongoId, setMongoId] = useState<string | null>(null);
   const [mongoUser, setMongoUser] = useState<MongoUser | null>(null);
-  const [Users, setUsers] = useState<IUser[]>([]);
+  const [users, setUsers] = useState<IUser[]>([]);
+  const [userLocationState, setUserLocation] = useState<
+    [number, number] | null
+  >(null);
   const [userFriendsMinDetail, setUserFriendsMinDetail] = useState<MongoUser[]>(
     []
   );
-
   // — loading & coordination flags
   const [loading, setLoading] = useState(true);
   const [cacheLoaded, setCacheLoaded] = useState(false);
   const [authHandled, setAuthHandled] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission to access location was denied");
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = loc.coords;
+      console.log("location", latitude, longitude);
+      setUserLocation([longitude, latitude]);
+    })();
+  }, []);
 
   // — ping your backend root or health
   // 1) A utility that aborts fetch after `timeoutMs`
@@ -98,7 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // — fetch Mongo user helper
-  const fetchMongoUser = async (id: string, byFirebase = false) => {
+  const fetchMongoUser = useCallback(async (id: string, byFirebase = false) => {
     const suffix = byFirebase ? "?firebase=true" : "";
     const url = `${process.env.EXPO_LOCAL_SERVER}/api/user/${id}${suffix}`;
     const resp = await fetch(url);
@@ -109,7 +134,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setMongoUser(data);
     setMongoId(data._id);
     await AsyncStorage.setItem("mongoId", data._id);
-  };
+  }, []);
 
   // — load cached user & mongoId, then flag cacheLoaded
   const initializeAuth = async () => {
@@ -224,6 +249,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return null;
   };
 
+  const authContextValue = useMemo(
+    () => ({
+      user,
+      setUser,
+      isVerified,
+      setIsVerified,
+      userId,
+      mongoId,
+      setMongoId,
+      mongoUser,
+      setMongoUser,
+      users,
+      setUsers,
+      userFriendsMinDetail,
+      setUserFriendsMinDetail,
+      fetchMongoUser,
+      getToken,
+      userLocationState,
+    }),
+    [
+      user,
+      isVerified,
+      userId,
+      mongoId,
+      mongoUser,
+      users,
+      userFriendsMinDetail,
+      fetchMongoUser,
+      getToken,
+      userLocationState,
+    ]
+  );
   if (loading) {
     return (
       <StyledView className="flex-1 justify-center items-center bg-white p-5">
@@ -236,25 +293,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        setUser,
-        isVerified,
-        setIsVerified,
-        userId,
-        mongoId,
-        setMongoId,
-        mongoUser,
-        setMongoUser,
-        Users,
-        setUsers,
-        userFriendsMinDetail,
-        setUserFriendsMinDetail,
-        fetchMongoUser,
-        getToken,
-      }}
-    >
+    <AuthContext.Provider value={authContextValue}>
       {children}
     </AuthContext.Provider>
   );

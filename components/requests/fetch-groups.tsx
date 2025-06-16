@@ -3,7 +3,7 @@ import { Group } from "../../interfaces/group-interface";
 export const fetchGroups = async (): Promise<Group[]> => {
   try {
     const response = await fetch(
-      `${process.env.EXPO_LOCAL_SERVER}/api/group/list`
+      `${process.env.EXPO_LOCAL_SERVER}/api/group/list?getArchived=false`
     );
     if (!response.ok) {
       throw new Error("Failed to fetch trips");
