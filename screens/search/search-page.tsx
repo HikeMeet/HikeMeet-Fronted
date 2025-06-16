@@ -11,7 +11,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import SearchInput from "../../components/search-input";
 import SearchFilters from "./components/search-filters";
 import TripFilterModal from "../../components/trip-filter-modal";
-import GroupFilterModal from "../../components/GroupFilterModal";
+import GroupFilterModal from "../../components/group-filter-modal";
 import UserRow from "../../components/user-row-search";
 import GroupRow from "../groups/components/group-row";
 import TripRow from "../trips/component/trip-row";
