@@ -137,7 +137,7 @@ jest.mock("../../screens/search/components/empty-results", () => {
   };
 });
 
-jest.mock("../../components/TripFilterModal", () => {
+jest.mock("../../components/trip-filter-modal", () => {
   const React = require("react");
   const { View, Text } = require("react-native");
   return function TripFilterModal({ visible }: any) {
