@@ -13,8 +13,8 @@ import { FIREBASE_AUTH, FIREBASE_DB } from "../firebaseconfig";
 import { MongoUser } from "../interfaces/user-interface";
 import { IUser } from "../interfaces/post-interface";
 import { styled } from "nativewind";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { useChatList } from "./chat-context";
+import * as Location from "expo-location";
+
 const StyledView = styled(View);
 const StyledText = styled(Text);
 const StyledActivityIndicator = styled(ActivityIndicator);
@@ -34,6 +34,7 @@ interface AuthContextProps {
   setUserFriendsMinDetail: React.Dispatch<React.SetStateAction<MongoUser[]>>;
   fetchMongoUser: (id: string, byFirebase?: boolean) => Promise<void>;
   getToken: () => Promise<string | null>;
+  userLocationState: [number, number] | null;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -48,6 +49,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [mongoId, setMongoId] = useState<string | null>(null);
   const [mongoUser, setMongoUser] = useState<MongoUser | null>(null);
   const [users, setUsers] = useState<IUser[]>([]);
+  const [userLocationState, setUserLocation] = useState<
+    [number, number] | null
+  >(null);
   const [userFriendsMinDetail, setUserFriendsMinDetail] = useState<MongoUser[]>(
     []
   );
@@ -55,6 +59,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState(true);
   const [cacheLoaded, setCacheLoaded] = useState(false);
   const [authHandled, setAuthHandled] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission to access location was denied");
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = loc.coords;
+      console.log("location", latitude, longitude);
+      setUserLocation([longitude, latitude]);
+    })();
+  }, []);
 
   // — ping your backend root or health
   // 1) A utility that aborts fetch after `timeoutMs`
@@ -248,6 +266,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUserFriendsMinDetail,
       fetchMongoUser,
       getToken,
+      userLocationState,
     }),
     [
       user,
@@ -259,6 +278,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       userFriendsMinDetail,
       fetchMongoUser,
       getToken,
+      userLocationState,
     ]
   );
   if (loading) {

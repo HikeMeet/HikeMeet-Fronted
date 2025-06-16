@@ -22,6 +22,11 @@ interface MapContentProps {
   onOpenPopup: (trip: Trip) => void;
   onScrollEnd: (event: any) => void;
   onListScrollStart: () => void;
+  onLongPress?: (coordinates: [number, number]) => void;
+  addTripMarkerLocation?: [number, number] | null;
+  onAddTripMarkerPress?: () => void;
+  onPress?: () => void; // חדש
+  onMapMove?: () => void; // ← חדש
 }
 
 export default function MapContent({
@@ -38,6 +43,11 @@ export default function MapContent({
   onOpenPopup,
   onScrollEnd,
   onListScrollStart,
+  onLongPress,
+  addTripMarkerLocation,
+  onAddTripMarkerPress,
+  onPress,
+  onMapMove,
 }: MapContentProps) {
   if (loading) {
     return (
@@ -67,6 +77,11 @@ export default function MapContent({
         onMarkerPress={onMarkerPress}
         hideControls={hideControls}
         selectedTripId={selectedTripId}
+        onLongPress={onLongPress}
+        onPress={onPress} // ✅ כאן הוספת התמיכה
+        onMapMove={onPress}
+        addTripMarkerLocation={addTripMarkerLocation}
+        onAddTripMarkerPress={onAddTripMarkerPress}
       />
 
       <CarouselPanel visible={carouselVisible && trips.length > 0}>

@@ -7,6 +7,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import * as Location from "expo-location";
 import MapSearch from "../../components/map-search-creaete-trip";
@@ -31,34 +32,40 @@ const TRIP_TAGS = [
   "Museum",
 ];
 
-const CreateTripPage: React.FC = ({ navigation }: any) => {
+const CreateTripPage: React.FC = ({ navigation, route }: any) => {
   const [tripName, setTripName] = useState<string>("");
   const [description, setDescription] = useState<string>(""); // New description field
   // State to hold the chosen trip coordinates from MapSearch.
-  const [tripLocation, setTripLocation] = useState<string>("debug location");
+  const [tripLocation, setTripLocation] = useState<string>("");
   const [tripCoordinates, setTripCoordinates] = useState<
     [number, number] | null
-  >([135.617964, 34.325275]);
+  >(route?.params?.selectedCoordinates || null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null
   );
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const { mongoId } = useAuth(); // current user's mongoId
 
-  // Get user's current location.
-  useEffect(() => {
-    (async () => {
+  const { mongoId, userLocationState } = useAuth(); // current user's mongoId
+  const fetchUserLocation = async () => {
+    try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         console.log("Permission to access location was denied");
-        return;
+      } else {
+        const loc = await Location.getCurrentPositionAsync({});
+        const { latitude, longitude } = loc.coords;
+        setUserLocation([longitude, latitude]);
+        setTripCoordinates([longitude, latitude]);
       }
-      const loc = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = loc.coords;
-      setUserLocation([longitude, latitude]);
-    })();
+    } catch (err) {
+      console.warn("Location lookup failed:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserLocation();
   }, []);
 
   // Callback to update location info from MapSearch.
@@ -171,12 +178,23 @@ const CreateTripPage: React.FC = ({ navigation }: any) => {
       />
 
       {/* MapSearch Component (integrated search field and map) */}
-      <MapSearch
-        onLocationSelect={handleLocationSelect}
-        initialLocation={userLocation}
-        onMapTouchStart={() => setScrollEnabled(false)}
-        onMapTouchEnd={() => setScrollEnabled(true)}
-      />
+      {route?.params?.selectedCoordinates ? (
+        <MapSearch
+          userLocation={userLocationState || userLocation!}
+          onLocationSelect={handleLocationSelect}
+          initialLocation={route.params.selectedCoordinates || tripCoordinates!}
+          onMapTouchStart={() => setScrollEnabled(false)}
+          onMapTouchEnd={() => setScrollEnabled(true)}
+        />
+      ) : (
+        <MapSearch
+          userLocation={userLocationState || userLocation!}
+          onLocationSelect={handleLocationSelect}
+          initialLocation={userLocationState || userLocation!}
+          onMapTouchStart={() => setScrollEnabled(false)}
+          onMapTouchEnd={() => setScrollEnabled(true)}
+        />
+      )}
 
       {/* Image Upload Photos Component */}
       {/* <ImageUploadPhotos onImagesChange={handleImagesChange} /> */}

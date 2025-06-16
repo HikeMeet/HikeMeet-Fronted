@@ -9,6 +9,7 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { Group } from "../interfaces/group-interface";
+import { Modal } from "react-native";
 
 type GroupFilterModalProps = {
   visible: boolean;
@@ -62,8 +63,6 @@ export default function GroupFilterModal({
       });
     }
   }, [visible]);
-
-  if (!visible) return null;
 
   const toggleDifficulty = (diff: string) => {
     const newDiffs = filters.difficulties.includes(diff)
@@ -135,7 +134,7 @@ export default function GroupFilterModal({
     filters.statuses.forEach((st) => {
       chosenFilters.push({
         id: `groupStatus=${st}`,
-        label: `Group Status: ${st}`,
+        label: `${st}`,
       });
     });
 
@@ -158,132 +157,139 @@ export default function GroupFilterModal({
   };
 
   return (
-    <TouchableWithoutFeedback onPress={onClose}>
-      <View className="absolute top-0 left-0 right-0 bottom-0 bg-black/40 justify-center items-center">
-        <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
-          <View className="w-[92%] mt-20 bg-white rounded-3xl p-6 max-h-[85%] shadow-xl">
-            <Text className="text-xl font-bold text-gray-800 mb-4 tracking-tight">
-              Filter Groups
-            </Text>
-
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {/* Max Members */}
-              <Text className="font-semibold mb-1 text-gray-700">
-                Max Members
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View className="flex-1 bg-black/40 justify-center items-center">
+          <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+            <View className="w-[92%] bg-white rounded-3xl p-6 max-h-[85%] mt-15 shadow-xl">
+              <Text className="text-xl font-bold text-gray-800 mb-4 tracking-tight">
+                Filter Groups
               </Text>
-              <TextInput
-                placeholder="Max Members"
-                keyboardType="numeric"
-                value={filters.maxMembers}
-                onChangeText={(val) =>
-                  setFilters({ ...filters, maxMembers: val })
-                }
-                className="bg-gray-100 px-4 py-3 rounded-xl mb-4 text-gray-800"
-              />
 
-              {/* Difficulties */}
-              <Text className="font-semibold mb-2 text-gray-700">
-                Difficulty
-              </Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                className="mb-4"
-              >
-                {DIFFICULTIES.map((diff) => {
-                  const selected = filters.difficulties.includes(diff);
-                  return (
-                    <TouchableOpacity
-                      key={diff}
-                      onPress={() => toggleDifficulty(diff)}
-                      className={`px-4 py-2 mr-2 rounded-full border ${
-                        selected
-                          ? "bg-emerald-600 border-emerald-600"
-                          : "bg-gray-100 border-gray-300"
-                      }`}
-                    >
-                      <Text
-                        className={`text-sm font-medium ${
-                          selected ? "text-white" : "text-gray-700"
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {/* Max Members */}
+                <Text className="font-semibold mb-1 text-gray-700">
+                  Max Members
+                </Text>
+                <TextInput
+                  placeholder="Max Members"
+                  keyboardType="numeric"
+                  value={filters.maxMembers}
+                  onChangeText={(val) =>
+                    setFilters({ ...filters, maxMembers: val })
+                  }
+                  className="bg-gray-100 px-4 py-3 rounded-xl mb-4 text-gray-800"
+                />
+
+                {/* Difficulties */}
+                <Text className="font-semibold mb-2 text-gray-700">
+                  Difficulty
+                </Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  className="mb-4"
+                >
+                  {DIFFICULTIES.map((diff) => {
+                    const selected = filters.difficulties.includes(diff);
+                    return (
+                      <TouchableOpacity
+                        key={diff}
+                        onPress={() => toggleDifficulty(diff)}
+                        className={`px-4 py-2 mr-2 rounded-full border ${
+                          selected
+                            ? "bg-emerald-600 border-emerald-600"
+                            : "bg-gray-100 border-gray-300"
                         }`}
                       >
-                        {diff}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
+                        <Text
+                          className={`text-sm font-medium ${
+                            selected ? "text-white" : "text-gray-700"
+                          }`}
+                        >
+                          {diff}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
 
-              {/* Statuses */}
-              <Text className="font-semibold mb-2 text-gray-700">Status</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                className="mb-4"
-              >
-                {STATUSES.map((st) => {
-                  const selected = filters.statuses.includes(st);
-                  return (
-                    <TouchableOpacity
-                      key={st}
-                      onPress={() => toggleStatus(st)}
-                      className={`px-4 py-2 mr-2 rounded-full border ${
-                        selected
-                          ? "bg-emerald-600 border-emerald-600"
-                          : "bg-gray-100 border-gray-300"
-                      }`}
-                    >
-                      <Text
-                        className={`text-sm font-medium ${
-                          selected ? "text-white" : "text-gray-700"
+                {/* Statuses */}
+                <Text className="font-semibold mb-2 text-gray-700">Status</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  className="mb-4"
+                >
+                  {STATUSES.map((st) => {
+                    const selected = filters.statuses.includes(st);
+                    return (
+                      <TouchableOpacity
+                        key={st}
+                        onPress={() => toggleStatus(st)}
+                        className={`px-4 py-2 mr-2 rounded-full border ${
+                          selected
+                            ? "bg-emerald-600 border-emerald-600"
+                            : "bg-gray-100 border-gray-300"
                         }`}
                       >
-                        {st}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
+                        <Text
+                          className={`text-sm font-medium ${
+                            selected ? "text-white" : "text-gray-700"
+                          }`}
+                        >
+                          {st}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+
+                {/* Start Date */}
+                <Text className="font-semibold mb-1 text-gray-700">
+                  Start Date (YYYY-MM-DD)
+                </Text>
+                <TextInput
+                  placeholder="Start Date"
+                  value={filters.scheduledStart}
+                  onChangeText={(val) =>
+                    setFilters({ ...filters, scheduledStart: val })
+                  }
+                  className="bg-gray-100 px-4 py-3 rounded-xl mb-4 text-gray-800"
+                />
+
+                {/* End Date */}
+                <Text className="font-semibold mb-1 text-gray-700">
+                  End Date (YYYY-MM-DD)
+                </Text>
+                <TextInput
+                  placeholder="End Date"
+                  value={filters.scheduledEnd}
+                  onChangeText={(val) =>
+                    setFilters({ ...filters, scheduledEnd: val })
+                  }
+                  className="bg-gray-100 px-4 py-3 rounded-xl mb-6 text-gray-800"
+                />
               </ScrollView>
 
-              {/* Start Date */}
-              <Text className="font-semibold mb-1 text-gray-700">
-                Start Date (YYYY-MM-DD)
-              </Text>
-              <TextInput
-                placeholder="Start Date"
-                value={filters.scheduledStart}
-                onChangeText={(val) =>
-                  setFilters({ ...filters, scheduledStart: val })
-                }
-                className="bg-gray-100 px-4 py-3 rounded-xl mb-4 text-gray-800"
-              />
-
-              {/* End Date */}
-              <Text className="font-semibold mb-1 text-gray-700">
-                End Date (YYYY-MM-DD)
-              </Text>
-              <TextInput
-                placeholder="End Date"
-                value={filters.scheduledEnd}
-                onChangeText={(val) =>
-                  setFilters({ ...filters, scheduledEnd: val })
-                }
-                className="bg-gray-100 px-4 py-3 rounded-xl mb-6 text-gray-800"
-              />
-            </ScrollView>
-
-            {/* Apply Button */}
-            <TouchableOpacity
-              className="bg-emerald-600 py-3 rounded-xl shadow-sm"
-              onPress={applyFilters}
-            >
-              <Text className="text-white text-center text-base font-semibold">
-                Apply Filters
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableWithoutFeedback>
-      </View>
-    </TouchableWithoutFeedback>
+              {/* Apply Button */}
+              <TouchableOpacity
+                className="bg-emerald-600 py-3 rounded-xl shadow-sm"
+                onPress={applyFilters}
+              >
+                <Text className="text-white text-center text-base font-semibold">
+                  Apply Filters
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableWithoutFeedback>
+        </View>
+      </TouchableWithoutFeedback>
+    </Modal>
   );
 }

@@ -50,7 +50,7 @@ const CreateGroupPage: React.FC<any> = ({ navigation, route }) => {
   >(null);
   const [scrollEnabled, setScrollEnabled] = useState(true);
 
-  const { mongoId } = useAuth(); // current user's data
+  const { mongoId, userLocationState } = useAuth(); // current user's data
 
   // Helper function to format date for backend (ISO string)
   const formatDateForBackend = (date: Date) => date.toISOString();
@@ -216,7 +216,9 @@ const CreateGroupPage: React.FC<any> = ({ navigation, route }) => {
           {/* === Map Picker === */}
           {showMapSearch && (
             <MapSearch
-              initialLocation={meetingPointCoordinates || userLocation}
+              initialLocation={
+                userLocationState || meetingPointCoordinates || userLocation
+              }
               userLocation={userLocation || undefined}
               onMapTouchStart={() => setScrollEnabled(false)}
               onMapTouchEnd={() => setScrollEnabled(true)}

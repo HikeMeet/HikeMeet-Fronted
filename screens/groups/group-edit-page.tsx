@@ -31,7 +31,7 @@ interface EditGroupPageProps {
 
 const EditGroupPage: React.FC<EditGroupPageProps> = ({ navigation, route }) => {
   const { group, trip } = route.params;
-  const { mongoId } = useAuth();
+  const { mongoId, userLocationState } = useAuth();
 
   // Initialize states with the group's current data.
   const [groupName, setGroupName] = useState<string>(group.name);
@@ -263,7 +263,7 @@ const EditGroupPage: React.FC<EditGroupPageProps> = ({ navigation, route }) => {
           {showMapSearch && (
             <MapSearch
               initialLocation={meetingPointCoordinates || userLocation}
-              userLocation={userLocation || undefined}
+              userLocation={userLocationState || userLocation || undefined}
               onMapTouchStart={() => setScrollEnabled(false)}
               onMapTouchEnd={() => setScrollEnabled(true)}
               onLocationSelect={handleLocationSelect}

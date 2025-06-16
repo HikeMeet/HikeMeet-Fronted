@@ -71,6 +71,13 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
   const [popupTrip, setPopupTrip] = useState<Trip | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [shouldCloseSearch, setShouldCloseSearch] = useState(false);
+  const [pendingAddTripLocation, setPendingAddTripLocation] = useState<
+    [number, number] | null
+  >(null);
+  // שמירה על מרכז המפה במעבר בין map <-> list
+  const [lastMapCenter, setLastMapCenter] = useState<Coordinate | null>(null);
 
   // Animation refs
   const cameraRef = useRef<any>(null);
@@ -80,10 +87,14 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
   const controlsDisabled =
     popupTrip !== null || showTripFilter || showGroupFilter;
 
-  // Fetch data on mount
+  // Fetch data whenever this screen is focused
   useEffect(() => {
-    fetchAllData();
-  }, []);
+    const unsubscribe = navigation.addListener("focus", () => {
+      fetchAllData();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   // Sort trips by distance when center changes
   useEffect(() => {
@@ -240,15 +251,18 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
       closeTripPopup();
     }
 
-    setCityQuery("");
-    location.setSearchCenter(null);
     filters.removeFilter(
       filters.activeFilters.find((f) => f.id.startsWith("city="))?.id || ""
     );
-    fetchAllData();
   }, [filters.activeFilters, popupTrip]);
 
   const handleCenterOnMe = useCallback(() => {
+    // סגירת החיפוש כאשר לוחצים על center on me
+    if (isSearchActive) {
+      setIsSearchActive(false);
+      setShouldCloseSearch(true);
+    }
+
     // Close popup if open
     if (popupTrip) {
       closeTripPopup();
@@ -262,24 +276,43 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
         animationDuration: 1000,
       });
     }
-  }, [location.userLocation, popupTrip]);
+  }, [location.userLocation, popupTrip, isSearchActive]);
 
   const toggleViewMode = useCallback(() => {
+    // סגירת החיפוש כאשר משנים מצב תצוגה
+    if (isSearchActive) {
+      setIsSearchActive(false);
+      setShouldCloseSearch(true);
+    }
+
     // Close popup if open
     if (popupTrip) {
       closeTripPopup();
     }
 
+    // תמיד נשמור את המרכז הנוכחי לפני כל מעבר
+    setLastMapCenter(location.currentCenter);
+
     if (viewMode === "map") {
       setCarouselVisible(false);
       setViewMode("list");
     } else {
+      // תמיד נחזיר את המרכז האחרון כשחוזרים ל-map
+      if (lastMapCenter) {
+        location.setCenterFromCamera(lastMapCenter);
+      }
       setViewMode("map");
     }
-  }, [viewMode, popupTrip]);
+  }, [viewMode, popupTrip, isSearchActive, location, lastMapCenter]);
 
   const openTripPopup = useCallback(
     (trip: Trip) => {
+      // סגירת החיפוש כאשר פותחים פופאפ
+      if (isSearchActive) {
+        setIsSearchActive(false);
+        setShouldCloseSearch(true);
+      }
+
       const sameLocationCount = trips.filter((t) => {
         const [lonA, latA] = t.location.coordinates;
         const [lonB, latB] = trip.location.coordinates;
@@ -305,7 +338,7 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
         useNativeDriver: true,
       }).start();
     },
-    [trips]
+    [trips, isSearchActive]
   );
 
   const closeTripPopup = useCallback(() => {
@@ -323,6 +356,12 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
 
   const handleScrollEnd = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      // סגירת החיפוש כאשר מגללים בקרוסלה
+      if (isSearchActive) {
+        setIsSearchActive(false);
+        setShouldCloseSearch(true);
+      }
+
       const offsetX = e.nativeEvent.contentOffset.x;
       const newIdx = Math.round(offsetX / (SCREEN_WIDTH * 0.85));
 
@@ -351,11 +390,17 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
         }
       }
     },
-    [currentIndex, trips]
+    [currentIndex, trips, isSearchActive]
   );
 
   // Modal handlers
   const openTripFilterModal = useCallback(() => {
+    // סגירת החיפוש כאשר פותחים פילטר
+    if (isSearchActive) {
+      setIsSearchActive(false);
+      setShouldCloseSearch(true);
+    }
+
     // Close popup if open
     if (popupTrip) {
       closeTripPopup();
@@ -363,9 +408,15 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
 
     setCarouselVisible(false);
     setShowTripFilter(true);
-  }, [popupTrip, closeTripPopup]);
+  }, [popupTrip, closeTripPopup, isSearchActive]);
 
   const openGroupFilterModal = useCallback(() => {
+    // סגירת החיפוש כאשר פותחים פילטר
+    if (isSearchActive) {
+      setIsSearchActive(false);
+      setShouldCloseSearch(true);
+    }
+
     // Close popup if open
     if (popupTrip) {
       closeTripPopup();
@@ -373,7 +424,7 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
 
     setCarouselVisible(false);
     setShowGroupFilter(true);
-  }, [popupTrip, closeTripPopup]);
+  }, [popupTrip, closeTripPopup, isSearchActive]);
 
   const onApplyTripFilters = useCallback(
     (filteredTrips: Trip[], chosen: ActiveFilter[]) => {
@@ -426,6 +477,33 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
     [viewMode]
   );
 
+  // טיפול בלחיצה ארוכה על המפה להוספת טיול חדש
+  const handleMapLongPress = useCallback(
+    (coordinates: [number, number]) => {
+      if (popupTrip) {
+        closeTripPopup();
+      }
+      if (isSearchActive) {
+        setIsSearchActive(false);
+        setShouldCloseSearch(true);
+      }
+      setPendingAddTripLocation(coordinates);
+    },
+    [popupTrip, isSearchActive]
+  );
+
+  const handleAddTripMarkerPress = useCallback(() => {
+    if (pendingAddTripLocation) {
+      navigation.navigate("TripsStack", {
+        screen: "CreateTripPage",
+        params: {
+          selectedCoordinates: pendingAddTripLocation,
+        },
+      });
+      setPendingAddTripLocation(null);
+    }
+  }, [pendingAddTripLocation, navigation]);
+
   // Show no location fallback if needed
   if (location.permissionDenied && !location.searchCenter) {
     return (
@@ -473,6 +551,11 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
             onChangeText={setCityQuery}
             onSelectLocation={handleSelectCity}
             onClearLocation={handleClearCity}
+            shouldCloseResults={shouldCloseSearch}
+            onSearchStart={() => {
+              setIsSearchActive(true);
+              setShouldCloseSearch(false);
+            }}
           />
         </View>
       </View>
@@ -515,6 +598,13 @@ export default function MapPage({ navigation, route }: MapScreenProps) {
         onListScrollStart={() => {
           if (popupTrip) closeTripPopup();
         }}
+        onLongPress={handleMapLongPress}
+        onPress={() => {
+          // לחיצה רגילה תבטל את מצב ההוספה
+          setPendingAddTripLocation(null);
+        }}
+        addTripMarkerLocation={pendingAddTripLocation}
+        onAddTripMarkerPress={handleAddTripMarkerPress}
       />
 
       {/* Trip Popup */}
