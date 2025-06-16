@@ -30,6 +30,12 @@ jobs:
       - name: Install Expo CLI
         run: npm install -g expo eas-cli
 
+      - name: Create google-services.json (prod)
+        run: |
+          echo "$GOOGLE_SERVICE_JSON" | base64 --decode > google-services.prod.json
+        env:
+          GOOGLE_SERVICE_JSON: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64_PROD }}
+
       # Step 6: Build the Android app
       - name: Build Android App
         env:
