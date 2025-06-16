@@ -209,7 +209,6 @@ const ProfilePage = ({ navigation }: any) => {
                 <CreatePostButton
                   navigation={navigation}
                   location="home"
-                  onPress={() => console.log("create post clicked")}
                 />
               </>
             }

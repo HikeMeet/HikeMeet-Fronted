@@ -1,5 +1,11 @@
-import { useState, useRef } from "react";
-import { View, TextInput, TouchableOpacity, Text } from "react-native";
+import { useState, useRef, useEffect } from "react";
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  Text,
+  ActivityIndicator,
+} from "react-native";
 import Constants from "expo-constants";
 import * as Location from "expo-location";
 import { styled } from "nativewind";
@@ -20,55 +26,67 @@ const StyledIonicons = styled(Ionicons);
 
 type MapSearchProps = {
   onLocationSelect: (coords: [number, number], address: string) => void;
+  userLocation?: [number, number];
   initialLocation: [number, number] | null;
-  initialAddress?: string;
   onMapTouchStart?: () => void;
   onMapTouchEnd?: () => void;
-  shouldRunReverseGeocode?: boolean;
+  loading?: boolean;
 };
 
 const MapSearch: React.FC<MapSearchProps> = ({
   onLocationSelect,
+  userLocation,
   initialLocation,
-  initialAddress,
   onMapTouchStart,
   onMapTouchEnd,
-  shouldRunReverseGeocode,
+  loading,
 }) => {
   // Always call hooks unconditionally
-  const [query, setQuery] = useState<string>(initialAddress || "");
+  const [query, setQuery] = useState<string>("");
   const [results, setResults] = useState<any[]>([]);
   const [selectedCoords, setSelectedCoords] = useState<[number, number] | null>(
-    null
+    initialLocation
   );
+  const [hasInit, setHasInit] = useState<boolean>(false);
+
   const [clearOnEdit, setClearOnEdit] = useState<boolean>(false);
   const cameraRef = useRef<any>(null);
 
-  // If initialLocation is provided and no initialAddress, do reverse geocode on mount
-  React.useEffect(() => {
-    if (initialLocation && shouldRunReverseGeocode) {
-      (async () => {
-        try {
-          const [longitude, latitude] = initialLocation;
-          const addresses = await Location.reverseGeocodeAsync({
-            latitude,
-            longitude,
-          });
-          let addressStr: string;
-          if (addresses.length > 0) {
-            const addr = addresses[0];
-            addressStr =
-              `${addr.name || ""} ${addr.street || ""} ${addr.city || ""} ${addr.region || ""} ${addr.country || ""}`.trim();
-          } else {
-            addressStr = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-          }
-          setQuery(addressStr);
-        } catch (error) {
-          console.warn("Failed to reverse geocode:", error);
-        }
-      })();
+  useEffect(() => {
+    if (initialLocation && cameraRef.current) {
+      setSelectedCoords(initialLocation);
+      cameraRef.current.flyTo(initialLocation, 100);
     }
-  }, [initialLocation, shouldRunReverseGeocode]);
+  }, [initialLocation]);
+
+  useEffect(() => {
+    if (!initialLocation) return;
+    (async () => {
+      try {
+        const [longitude, latitude] = initialLocation;
+        const addresses = await Location.reverseGeocodeAsync({
+          latitude,
+          longitude,
+        });
+        let addressStr: string;
+        if (addresses.length > 0) {
+          const a = addresses[0];
+          addressStr =
+            `${a.name || ""} ${a.street || ""} ${a.city || ""} ${a.region || ""} ${a.country || ""}`.trim();
+        } else {
+          addressStr = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+        }
+        // update the search‐box:
+        setQuery(addressStr);
+        if (!hasInit) {
+          onLocationSelect(initialLocation, addressStr);
+          setHasInit(true);
+        }
+      } catch (e) {
+        console.warn("Reverse‐geocode failed on init:", e);
+      }
+    })();
+  }, [initialLocation]);
 
   const searchGoogle = async (text: string) => {
     setQuery(text);
@@ -150,9 +168,47 @@ const MapSearch: React.FC<MapSearchProps> = ({
     }
   };
 
-  const handleRecenter = () => {
-    if (initialLocation && cameraRef.current) {
-      cameraRef.current.flyTo(initialLocation, 1000);
+  const handleRecenter = async () => {
+    try {
+      // 1) Determine coords: prefer passed-in userLocation, otherwise ask GPS
+      let coords: [number, number];
+      if (userLocation) {
+        coords = userLocation;
+      } else {
+        const { coords: loc } = await Location.getCurrentPositionAsync({});
+        coords = [loc.longitude, loc.latitude];
+      }
+
+      // 2) Move camera & pin
+      if (cameraRef.current) {
+        cameraRef.current.flyTo(coords, 1000);
+      }
+      setSelectedCoords(coords);
+
+      // 3) Reverse–geocode into a human address
+      const [lng, lat] = coords;
+      let addressStr: string;
+      try {
+        const addresses = await Location.reverseGeocodeAsync({
+          latitude: lat,
+          longitude: lng,
+        });
+        if (addresses.length > 0) {
+          const a = addresses[0];
+          addressStr =
+            `${a.name || ""} ${a.street || ""} ${a.city || ""} ${a.region || ""} ${a.country || ""}`.trim();
+        } else {
+          addressStr = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        }
+      } catch {
+        addressStr = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      }
+
+      // 4) Update the search box and notify parent
+      setQuery(addressStr);
+      onLocationSelect(coords, addressStr);
+    } catch (error) {
+      console.error("Error in handleRecenter:", error);
     }
   };
 
@@ -238,6 +294,14 @@ const MapSearch: React.FC<MapSearchProps> = ({
                 </StyledMapView>
               );
             })()}
+            {loading && (
+              <View
+                pointerEvents="none"
+                className="absolute top-0 left-0 right-0 bottom-0 bg-white bg-opacity-60 flex justify-center items-center z-20"
+              >
+                <ActivityIndicator size="large" color="#0000ff" />
+              </View>
+            )}
 
             <TouchableOpacity
               onPress={handleRecenter}

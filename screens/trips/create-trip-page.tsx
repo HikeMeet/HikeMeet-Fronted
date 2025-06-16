@@ -39,55 +39,35 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
   const [tripLocation, setTripLocation] = useState<string>("");
   const [tripCoordinates, setTripCoordinates] = useState<
     [number, number] | null
-  >(null);
+  >(route?.params?.selectedCoordinates || null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null
   );
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const { mongoId } = useAuth(); // current user's mongoId
-  const cameWithCoordinates = !!route?.params?.selectedCoordinates;
+  const FALLBACK_LOCATION: [number, number] = [34.78176759999999, 32.0852999];
 
-  useEffect(() => {
-    const initLocation = async () => {
-      if (route?.params?.selectedCoordinates) {
-        const coords = route.params.selectedCoordinates as [number, number];
-        setTripCoordinates(coords);
-        reverseGeocode(coords);
-      } else {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          return;
-        }
-        const loc = await Location.getCurrentPositionAsync({});
-        const coords: [number, number] = [
-          loc.coords.longitude,
-          loc.coords.latitude,
-        ];
-        setUserLocation(coords);
-        setTripCoordinates(coords);
-        setTripLocation("");
-      }
-    };
-    initLocation();
-  }, []);
-
-  const reverseGeocode = async (coords: [number, number]) => {
+  const { mongoId, userLocationState } = useAuth(); // current user's mongoId
+  const fetchUserLocation = async () => {
     try {
-      const [lon, lat] = coords;
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${process.env.GOOGLEMAP_API_KEY}`;
-
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (data.results && data.results.length > 0) {
-        setTripLocation(data.results[0].formatted_address);
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission to access location was denied");
+      } else {
+        const loc = await Location.getCurrentPositionAsync({});
+        const { latitude, longitude } = loc.coords;
+        setUserLocation([longitude, latitude]);
+        setTripCoordinates([longitude, latitude]);
       }
-    } catch (error) {
-      console.error("Reverse geocoding failed:", error);
+    } catch (err) {
+      console.warn("Location lookup failed:", err);
     }
   };
+
+  useEffect(() => {
+    fetchUserLocation();
+  }, []);
 
   // Callback to update location info from MapSearch.
   // Updates both the address and the chosen coordinates.
@@ -199,14 +179,25 @@ const CreateTripPage: React.FC = ({ navigation, route }: any) => {
       />
 
       {/* MapSearch Component (integrated search field and map) */}
-      <MapSearch
-        onLocationSelect={handleLocationSelect}
-        initialLocation={tripCoordinates || userLocation}
-        initialAddress={cameWithCoordinates ? tripLocation : ""}
-        shouldRunReverseGeocode={cameWithCoordinates}
-        onMapTouchStart={() => setScrollEnabled(false)}
-        onMapTouchEnd={() => setScrollEnabled(true)}
-      />
+      {route?.params?.selectedCoordinates ? (
+        <MapSearch
+          userLocation={userLocationState || userLocation!}
+          onLocationSelect={handleLocationSelect}
+          initialLocation={route.params.selectedCoordinates}
+          onMapTouchStart={() => setScrollEnabled(false)}
+          onMapTouchEnd={() => setScrollEnabled(true)}
+        />
+      ) : (
+        <MapSearch
+          userLocation={userLocationState || userLocation!}
+          onLocationSelect={handleLocationSelect}
+          initialLocation={
+            route?.params?.selectedCoordinates || tripCoordinates!
+          }
+          onMapTouchStart={() => setScrollEnabled(false)}
+          onMapTouchEnd={() => setScrollEnabled(true)}
+        />
+      )}
 
       {/* Image Upload Photos Component */}
       {/* <ImageUploadPhotos onImagesChange={handleImagesChange} /> */}
